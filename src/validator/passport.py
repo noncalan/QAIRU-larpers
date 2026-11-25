@@ -69,12 +69,17 @@ def agent_version() -> tuple[str, str, bool]:
 
 
 def prompts_sha256(root: Path = PROMPTS_DIR) -> str:
-    """Хеш папки промптов: путь и содержимое каждого файла по порядку. Меняется при любой правке."""
+    """Хеш папки промптов: путь и содержимое каждого файла по порядку. Меняется при любой правке.
+
+    Порядок по строке пути, а не по ``Path``: на Windows ``Path`` сравнивается без учёта регистра,
+    ``README.md`` встал бы в середину, и хеш тех же промптов вышел бы другим, чем на Linux и macOS.
+    """
     digest = hashlib.sha256()
     if root.is_dir():
-        for path in sorted(p for p in root.rglob("*") if p.is_file()):
-            digest.update(path.relative_to(root).as_posix().encode("utf-8") + b"\0")
-            digest.update(path.read_bytes() + b"\0")
+        files = {p.relative_to(root).as_posix(): p for p in root.rglob("*") if p.is_file()}
+        for name in sorted(files):
+            digest.update(name.encode("utf-8") + b"\0")
+            digest.update(files[name].read_bytes() + b"\0")
     return digest.hexdigest()
 
 

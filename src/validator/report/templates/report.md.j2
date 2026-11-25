@@ -40,7 +40,11 @@
 {% if questions_by_finding.get(f.id) %}
 - **Вопрос автору:** {{ questions_by_finding[f.id] | join(", ") }}
 {% endif %}
+{% if f.found_in %}
 - **Найдено:** в {{ f.found_in }} из {{ f.of }} проходов{% if f.sources %} ({{ f.sources | map(attribute="label") | join(", ") }}){% endif %}
+{% else %}
+- **Найдено:** {{ f.sources | map(attribute="label") | join(", ") if f.sources else "без модели" }}; проходы модели этого не отметили (0 из {{ f.of }})
+{% endif %}
 
 {% if f.anchor_corrected %}
 - **Примечание:** место цитаты уточнил код (модель указала другой блок).

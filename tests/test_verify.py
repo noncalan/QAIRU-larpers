@@ -13,9 +13,11 @@ import pytest
 from conftest import REQUIREMENTS
 from validator import pipeline
 from validator.config import load_config
+from validator.ingest.blocks import is_empty_cell_quote
 from validator.models import (
     Anchor,
     Backend,
+    BlockKind,
     CriticAction,
     CriticDecision,
     DefectType,
@@ -28,6 +30,7 @@ from validator.models import (
     Property,
     Question,
     QuestionPriority,
+    Quote,
     QuoteMatch,
     Requirement,
     Scope,
@@ -38,6 +41,7 @@ from validator.models import (
     Verification,
 )
 from validator.questions import QuestionsOutcome
+from validator.report.fmt import quote_text
 from validator.segment import fallback_segmentation
 from validator.severity import SEVERITY_TABLE, severity_disputed, table_severity
 from validator.verify import TRAFFIC_RULE, light_with_questions, traffic_light, verify
@@ -167,6 +171,62 @@ def test_unmatched_quote_is_dropped_with_note(doc: ParsedDocument, seg: Segmenta
     finding = only(ver.findings)
     assert [q.located for q in finding.quotes] == [LIMIT_FIVE]
     assert any("1 из 2" in note for note in finding.notes)
+
+
+SIGN_OFF = """# Согласование
+
+| Подразделение | ФИО | Подпись |
+|---|---|---|
+| | | |
+| Отдел карт | | |
+"""
+
+
+def test_empty_cell_quote_is_checked_against_the_row_the_model_saw(
+    make_md: Callable[[str], ParsedDocument],
+) -> None:
+    """Живой прогон #36 на DOCX: находку «лист согласования пуст» с цитатой «(пусто)» отбрасывали."""
+    table = make_md(SIGN_OFF)
+    rows = [b for b in table.blocks if b.kind is BlockKind.TABLE_ROW]
+
+    ver = verify(
+        [merged("Подразделение: (пусто); ФИО: (пусто)", block_ids=(rows[0].id,))],
+        table,
+        fallback_segmentation(table),
+    )
+
+    finding = only(ver.findings)
+    quote = finding.quotes[0]
+    assert quote.match is QuoteMatch.EXACT
+    assert quote.anchor == rows[0].anchor and quote.located == rows[0].text
+    assert any("пустые ячейки таблицы" in n for n in finding.notes)
+
+
+def test_fuzzy_quote_with_empty_marker_is_not_shown_as_empty_cells() -> None:
+    """«(пусто)» в нечёткой цитате не делает её цитатой пустых ячеек: показываем фрагмент документа."""
+    fuzzy = Quote(text="Подпись: (пусто)", match=QuoteMatch.FUZZY, score=91.0, located="Подпись: Иванов")
+    exact = fuzzy.model_copy(update={"match": QuoteMatch.EXACT, "score": 100.0, "located": "| | |"})
+
+    assert not is_empty_cell_quote(fuzzy) and quote_text(fuzzy) == "Подпись: Иванов"
+    assert is_empty_cell_quote(exact) and quote_text(exact) == "Подпись: (пусто)"
+
+
+def test_empty_cell_quote_goes_to_the_one_row_where_the_cell_is_empty(
+    make_md: Callable[[str], ParsedDocument],
+) -> None:
+    table = make_md(SIGN_OFF)
+    rows = [b for b in table.blocks if b.kind is BlockKind.TABLE_ROW]
+
+    seg = fallback_segmentation(table)
+
+    wrong_row = verify([merged("Подразделение: (пусто)", block_ids=(rows[1].id,))], table, seg)
+    ambiguous = verify([merged("ФИО: (пусто)")], table, seg)
+    not_empty = verify([merged("Подразделение: (пусто); ФИО: Иванов")], table, seg)
+
+    moved = only(wrong_row.findings)
+    assert moved.anchor_corrected and moved.quotes[0].anchor == rows[0].anchor
+    assert not ambiguous.findings and not not_empty.findings
+    assert len(ambiguous.discarded) == len(not_empty.discarded) == 1
 
 
 # ---------------------------------------------------------------- якорь

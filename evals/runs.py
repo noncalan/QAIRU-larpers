@@ -28,10 +28,12 @@ from validator.models import (
     DocKind,
     Finding,
     ParsedDocument,
+    Quote,
     QuoteMatch,
     Report,
 )
 from validator.text import locate_quote, stable_key
+from validator.verify import empty_cell_quote
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 ANSWER_NAMES = ("answer.md", "answer.txt")
@@ -222,6 +224,15 @@ def _set_anchor(f: Finding) -> str:
     return "text:" + stable_key(f.explanation)
 
 
+def _recheck(doc: ParsedDocument, quote: Quote) -> QuoteMatch:
+    """Цитата итоговой находки заново по документу; пустые ячейки таблицы по правилу верификатора."""
+    found = locate_quote(doc, quote.text)
+    if found.verified or quote.anchor is None:
+        return found.match
+    cell = empty_cell_quote(doc, quote.text, quote.anchor.block_ids)
+    return cell.match if cell is not None else found.match
+
+
 def _load_agent(report_path: Path, label: str, fallback_document: Path) -> RunData:
     notes: list[str] = []
     try:
@@ -240,7 +251,7 @@ def _load_agent(report_path: Path, label: str, fallback_document: Path) -> RunDa
     )
     doc_path = _report_document(report, fallback_document, notes)
     doc = load_document(doc_path)
-    final = QuoteStats.from_matches(locate_quote(doc, q.text).match for f in findings for q in f.quotes)
+    final = QuoteStats.from_matches(_recheck(doc, q) for f in findings for q in f.quotes)
     records = _read_calls([report_path.parent / "run" / CALLS_NAME, report_path.parent / CALLS_NAME], notes)
     calls = CallStats.from_records(records, report.passport.duration_s)
     notes.extend(calls.notes())

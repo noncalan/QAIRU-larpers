@@ -438,6 +438,19 @@ def test_replay_falls_back_to_step_and_index_with_warning(tmp_path: Path) -> Non
     assert "search.1" in diag.message
 
 
+def test_replay_warning_lists_calls_in_pipeline_order_not_arrival_order(tmp_path: Path) -> None:
+    """Проходы поиска параллельны: порядок их прихода в replay случаен, а отчёт должен быть одинаковым."""
+    _record_run(tmp_path, request(1), request(2), request(3))
+    replay = ReplayLLM(tmp_path)
+    client = RecordingClient(replay)
+
+    for index in (3, 1, 2):
+        client.call(request(index, prompt="Документ: изменили."))
+
+    [diag] = replay.diagnostics
+    assert "(search.1, search.2, search.3)" in diag.message
+
+
 def test_replay_without_answer_gives_clear_error(tmp_path: Path) -> None:
     replay = ReplayLLM(_record_run(tmp_path, request(1)))
 

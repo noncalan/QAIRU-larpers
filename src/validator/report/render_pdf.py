@@ -164,15 +164,20 @@ def _finding_card(f: Finding, ctx: dict[str, Any]) -> Json:
         rows.append(("Предложенная формулировка", plain(f.suggestion)))
     if ctx["questions_by_finding"].get(f.id):
         rows.append(("Вопрос автору", ", ".join(ctx["questions_by_finding"][f.id])))
-    found = f"в {f.found_in} из {f.of} проходов"
-    if f.sources:
-        found += f" ({', '.join(s.label for s in f.sources)})"
-    rows.append(("Найдено", found))
+    rows.append(("Найдено", _found(f)))
     if f.anchor_corrected:
         rows.append(("Примечание", "место цитаты уточнил код (модель указала другой блок)"))
     rows += [("Примечание", plain(n)) for n in f.notes]
     head = f"{f.id} · {f.severity.label} · {f.verdict.label} · {f.property.label}"
     return _card(f.severity.value, head, rows)
+
+
+def _found(f: Finding) -> str:
+    """Как в Markdown: находку только линтера не пишем «в 0 из 3 проходов», а называем, кто её нашёл."""
+    sources = ", ".join(s.label for s in f.sources)
+    if f.found_in:
+        return f"в {f.found_in} из {f.of} проходов" + (f" ({sources})" if sources else "")
+    return f"{sources or 'без модели'}; проходы модели этого не отметили (0 из {f.of})"
 
 
 def _option_table(options: Sequence[QuestionOption]) -> Json:

@@ -28,8 +28,10 @@ from collections.abc import Iterable, Mapping, Sequence
 from enum import Enum
 from typing import Final, TypeVar
 
+from validator.ingest.blocks import EMPTY_CELL, is_empty_cell_quote
 from validator.models import (
     Anchor,
+    BlockKind,
     CriticAction,
     DefectType,
     DiscardedFinding,
@@ -51,7 +53,7 @@ from validator.models import (
     Verification,
 )
 from validator.severity import severity_for
-from validator.text import locate_quote
+from validator.text import locate_quote, normalize
 
 # ---------------------------------------------------------------- светофор
 
@@ -75,8 +77,29 @@ def _blocks_of(ids: Iterable[str]) -> set[str]:
     return {i.split(".", 1)[0] for i in ids}
 
 
+def empty_cell_quote(doc: ParsedDocument, quote: str, block_ids: Sequence[str]) -> Quote | None:
+    """Цитата пустых ячеек таблицы: «Подпись: (пусто)».
+
+    Модель видит строку таблицы как «Колонка: значение; …», а пустую ячейку как «(пусто)»
+    (``ingest.blocks.EMPTY_CELL``, так велит промпт поиска). В тексте документа на месте пустой ячейки
+    ничего нет, поэтому ``locate_quote`` такую цитату не найдёт. Код проверяет, что цитата дословно есть
+    в строке таблицы, которую видела модель (``Block.serialized``), и привязывает её к этой строке:
+    сначала среди блоков, которые указала модель, иначе к единственной подходящей строке документа.
+    """
+    norm = normalize(quote)[0]
+    if EMPTY_CELL not in norm:
+        return None
+    rows = [b for b in doc.blocks if b.kind is BlockKind.TABLE_ROW and norm in normalize(b.serialized)[0]]
+    named = _blocks_of(block_ids)
+    picked = [b for b in rows if b.id in named] or (rows if len(rows) == 1 else [])
+    if not picked:
+        return None
+    row = picked[0]
+    return Quote(text=quote, match=QuoteMatch.EXACT, score=100.0, located=row.text, anchor=row.anchor)
+
+
 def locate(doc: ParsedDocument, quote: str, block_ids: Sequence[str]) -> tuple[Quote, bool]:
-    """Сверка цитаты: сначала в блоках модели, затем во всём документе.
+    """Сверка цитаты: сначала в блоках модели, затем во всём документе, затем пустые ячейки таблиц.
 
     Второе значение ``True``, если цитата нашлась только вне блоков, которые указала модель
     (якорь исправил код). Если модель блоков не указала, исправлять нечего.
@@ -86,7 +109,12 @@ def locate(doc: ParsedDocument, quote: str, block_ids: Sequence[str]) -> tuple[Q
         if found.verified:
             return found, False
     found = locate_quote(doc, quote)
-    if not (block_ids and found.verified and found.anchor):
+    if not found.verified:
+        cell = empty_cell_quote(doc, quote, block_ids)
+        if cell is None or cell.anchor is None:
+            return found, False
+        return cell, bool(block_ids) and not (_blocks_of(cell.anchor.block_ids) & _blocks_of(block_ids))
+    if not (block_ids and found.anchor):
         return found, False
     return found, not (_blocks_of(found.anchor.block_ids) & _blocks_of(block_ids))
 
@@ -144,7 +172,11 @@ def _quote_notes(
     section: Sequence[str],
     seg: Segmentation,
 ) -> list[str]:
-    notes: list[str] = []
+    notes: list[str] = [
+        f"Цитата «{q.text}» это пустые ячейки таблицы: код проверил по документу, что они не заполнены."
+        for q in verified
+        if is_empty_cell_quote(q)
+    ]
     missing = len(m.quotes) - len(verified)
     if missing:
         notes.append(

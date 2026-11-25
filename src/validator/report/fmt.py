@@ -6,6 +6,7 @@ import re
 from collections.abc import Sequence
 from datetime import datetime
 
+from validator.ingest.blocks import is_empty_cell_quote
 from validator.models import Anchor, Extraction, Quote, ReportStatus
 
 _SPACES = re.compile(r"\s+")
@@ -77,7 +78,13 @@ def where(anchor: Anchor | None, section: Sequence[str] | None = None) -> str:
 
 
 def quote_text(quote: Quote, limit: int = 300) -> str:
-    """Цитата для отчёта: дословный фрагмент документа, если найден, иначе как дала модель."""
+    """Цитата для отчёта: дословный фрагмент документа, если найден, иначе как дала модель.
+
+    Цитату пустых ячеек («Подпись: (пусто)») показываем, как её видела модель: в документе на месте
+    пустой ячейки только разделители таблицы, а место строки даёт якорь.
+    """
+    if is_empty_cell_quote(quote):
+        return cell(quote.text, limit)
     return cell(quote.located or quote.text, limit)
 
 

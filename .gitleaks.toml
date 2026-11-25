@@ -14,3 +14,9 @@ description = "Хеш-ключи кеша вызовов модели и суд�
 condition = "AND"
 paths = ['''^evals/(cache|results)/''', '''^tests/fixtures/''']
 regexes = ['''^[0-9a-f]{64}$''']
+
+[[allowlists]]
+description = "Поле stable_key в снапшотах отчёта (tests/fixtures/e2e): 12 первых знаков sha256 нормализованной цитаты, а не секрет"
+condition = "AND"
+paths = ['''^tests/fixtures/''']
+regexes = ['''^[0-9a-f]{12}$''']

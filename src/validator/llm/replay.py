@@ -136,7 +136,7 @@ class ReplayLLM:
         """Предупреждение, если часть ответов найдена не по ключу запроса, а по шагу и номеру."""
         if not self.by_position_calls:
             return []
-        shown = ", ".join(self.by_position_calls[:SHOWN_CALL_IDS])
+        shown = ", ".join(sorted(self.by_position_calls, key=_call_order)[:SHOWN_CALL_IDS])
         more = len(self.by_position_calls) - SHOWN_CALL_IDS
         return [
             Diagnostic(
@@ -152,6 +152,16 @@ class ReplayLLM:
                 step="llm",
             )
         ]
+
+
+_STEP_ORDER = {step.value: n for n, step in enumerate(LLMStep)}
+
+
+def _call_order(call_id: str) -> tuple[int, int]:
+    """Шаги по порядку конвейера, вызовы шага по номеру. Проходы поиска идут параллельно, и порядок,
+    в котором они доходят до replay, от запуска к запуску разный, а отчёт из одной записи один."""
+    step, _, index = call_id.rpartition(".")
+    return _STEP_ORDER.get(step, len(_STEP_ORDER)), int(index) if index.isdigit() else 0
 
 
 __all__ = ["RESPONSES_DIR", "ReplayLLM", "resolve_run_dir"]

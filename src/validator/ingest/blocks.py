@@ -32,6 +32,8 @@ from validator.models import (
     Diagnostic,
     DocKind,
     ParsedDocument,
+    Quote,
+    QuoteMatch,
     Sentence,
     SourceLine,
     TableCell,
@@ -100,6 +102,22 @@ def _plain(text: str) -> str:
 
 EMPTY_CELL = "(пусто)"
 """Так модель видит пустую ячейку: незаполненное поле тоже факт документа (промпт поиска #14)."""
+
+
+def is_empty_cell_quote(quote: Quote) -> bool:
+    """Цитата пустых ячеек, которую верификатор сверил по строке таблицы (``verify.empty_cell_quote``).
+
+    Точное совпадение, в тексте цитаты «(пусто)», а во фрагменте документа его нет: так бывает, только
+    когда фрагментом стала строка таблицы с пустыми ячейками. Нечёткое совпадение сюда не относится.
+    """
+    return (
+        quote.match is QuoteMatch.EXACT
+        and quote.located is not None
+        and EMPTY_CELL in quote.text.lower()
+        and EMPTY_CELL not in quote.located.lower()
+    )
+
+
 KEY_VALUE_HEADERS = frozenset({"поле", "field", "параметр", "parameter", "ключ", "key"})
 """Таблица «поле | значение» показывается модели как «Поле: значение», без названий колонок."""
 
