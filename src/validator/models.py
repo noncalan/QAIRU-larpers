@@ -829,6 +829,16 @@ class CandidateFinding(Contract):
     suggestion: str | None = Field(default=None, description="Формулировка с плейсхолдерами [уточнить: …]")
     blocks_testing: bool = Field(default=False, description="Мешает ли написать тест-кейс")
     severity_hint: Severity | None = Field(default=None, description="Подсказка модели, решает код")
+    title: str | None = Field(
+        default=None, description="Суть находки одной строкой: заголовок «#### Н-k. …» ответа поиска"
+    )
+    scenario: str | None = Field(
+        default=None,
+        description="Сценарий, на котором виден дефект (строка «Сценарий»): вход для свидетеля #39",
+    )
+    test_gap: str | None = Field(
+        default=None, description="Чего не хватает для тест-кейса (после «Тест: мешает,»): вход для #40"
+    )
 
 
 class PassResult(Contract):
@@ -887,6 +897,16 @@ class MergedFinding(Contract):
     quotes: list[str] = Field(default_factory=list)
     explanation: str
     suggestion: str | None = None
+    title: str | None = Field(
+        default=None, description="Суть находки одной строкой: заголовок «#### Н-k. …» ответа поиска"
+    )
+    scenario: str | None = Field(
+        default=None,
+        description="Сценарий, на котором виден дефект (строка «Сценарий»): вход для свидетеля #39",
+    )
+    test_gap: str | None = Field(
+        default=None, description="Чего не хватает для тест-кейса (после «Тест: мешает,»): вход для #40"
+    )
     blocks_testing: bool = False
     severity_hint: Severity | None = None
     sources: list[FindingSource] = Field(default_factory=list)
@@ -916,6 +936,16 @@ class Finding(Contract):
     section_path: list[str] = Field(default_factory=list, description="Для находок уровня набора")
     explanation: str
     suggestion: str | None = None
+    title: str | None = Field(
+        default=None, description="Суть находки одной строкой: заголовок «#### Н-k. …» ответа поиска"
+    )
+    scenario: str | None = Field(
+        default=None,
+        description="Сценарий, на котором виден дефект (строка «Сценарий»): вход для свидетеля #39",
+    )
+    test_gap: str | None = Field(
+        default=None, description="Чего не хватает для тест-кейса (после «Тест: мешает,»): вход для #40"
+    )
     found_in: int = 1
     of: int = 1
     sources: list[FindingSource] = Field(default_factory=list)
