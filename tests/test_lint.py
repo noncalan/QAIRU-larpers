@@ -7,6 +7,7 @@
 
 from __future__ import annotations
 
+import time
 from collections.abc import Callable
 
 import pytest
@@ -507,3 +508,107 @@ CLEAN_DOCUMENT = """\
 
 def test_clean_realistic_document_gives_no_findings(make_md: MakeMd) -> None:
     assert findings_of(make_md, CLEAN_DOCUMENT) == []
+
+
+# ---------------------------------------------------------------- регрессии по ревью кода
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "- Время отклика склада не более 3 с на каждую заявку.",
+        "- Напряжение питания датчика не более 12 В при полной нагрузке.",
+        "- Ответ приходит в течение 2 с после запроса к складу.",
+    ],
+    ids=["секунды «с»", "вольты «В»", "«с» в середине"],
+)
+def test_l06_accepts_one_letter_units(make_md: MakeMd, text: str) -> None:
+    assert "L-06" not in rule_ids(findings_of(make_md, text))
+
+
+@pytest.mark.parametrize(
+    "sentence",
+    [
+        "Система должна соответствовать IEEE 830, раздел 4.3, при выдаче отчёта клиенту.",
+        "Склад действует по условиям из раздела 9.1 приложения к договору поставки.",
+    ],
+)
+def test_l07_ignores_references_to_other_documents(make_md: MakeMd, sentence: str) -> None:
+    text = "# Склад\n\n## 1. Приёмка\n\n### 1.1 Накладные\n\n### 1.2 Остатки\n\n" + f"{sentence}\n"
+
+    assert "L-07" not in rule_ids(findings_of(make_md, text))
+
+
+def test_l10_does_not_count_the_noun_obligation(make_md: MakeMd) -> None:
+    text = "- Список обязанностей оператора склада должен быть описан в регламенте."
+
+    assert "L-10" not in rule_ids(findings_of(make_md, text))
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "3.2.1 Система поиска должна быть удобной для оператора склада.",
+        "Система поиска по п. 3.2 должна быть удобной для оператора склада.",
+    ],
+    ids=["номер пункта в начале", "номер в ссылке"],
+)
+def test_l01_is_not_silenced_by_a_clause_number(make_md: MakeMd, text: str) -> None:
+    assert "L-01" in rule_ids(findings_of(make_md, text))
+
+
+def test_l08_and_l09_see_labels_in_the_first_table_cell(make_md: MakeMd) -> None:
+    text = (
+        "| ID | Требование |\n|---|---|\n"
+        "| СК-1 | Кладовщик принимает паллету по накладной |\n"
+        "| СК-2 | Кладовщик выдаёт паллету по заявке покупателя |\n"
+        "| СК-2 | Кладовщик возвращает паллету по накладной |\n"
+        "| СК-5 | Кладовщик списывает бракованную паллету |\n"
+    )
+
+    ids = rule_ids(findings_of(make_md, text))
+
+    assert {"L-08", "L-09"} <= ids
+
+
+def test_l07_knows_labels_defined_in_a_table(make_md: MakeMd) -> None:
+    text = (
+        "- **СК-1.** Кладовщик принимает паллету по накладной.\n"
+        "- **СК-2.** Кладовщик выдаёт паллету по заявке, как в СК-10.\n\n"
+        "| ID | Требование |\n|---|---|\n"
+        "| СК-10 | Кладовщик проверяет остаток перед выдачей паллеты |\n"
+    )
+
+    assert "L-07" not in rule_ids(findings_of(make_md, text))
+
+
+def test_id_quotes_do_not_start_with_the_bullet(make_md: MakeMd) -> None:
+    text = (
+        "- **СК-1.** Кладовщик принимает паллету по накладной.\n"
+        "- **СК-1.** Кладовщик выдаёт паллету по заявке покупателя.\n"
+    )
+
+    (finding,) = [f for f in findings_of(make_md, text) if f.source.rule_id == "L-08"]
+
+    assert all(q.startswith(("СК-1", "**СК-1")) for q in finding.quotes)
+
+
+def test_marker_glued_to_a_word_is_found(make_md: MakeMd) -> None:
+    assert "L-05" in rule_ids(findings_of(make_md, "- Срок хранения записей на складе???"))
+
+
+def test_stem_maximum_does_not_flag_the_plain_adjective(make_md: MakeMd) -> None:
+    text = "- Максимальное время хранения паллеты на складе указано в карточке товара."
+
+    assert "L-01" not in rule_ids(findings_of(make_md, text))
+
+
+def test_lint_is_fast_on_a_large_document(make_md: MakeMd) -> None:
+    text = "".join(f"- Кладовщик принимает паллету номер {i} по накладной.\n" for i in range(4000))
+    doc = make_md(text)
+    seg = fallback_segmentation(doc)
+
+    started = time.perf_counter()
+    lint(doc, seg)
+
+    assert time.perf_counter() - started < 3.0

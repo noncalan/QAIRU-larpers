@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import re
+from bisect import bisect_right
 from dataclasses import dataclass
 from functools import cached_property
 
@@ -19,9 +20,13 @@ MAX_QUOTE = 200
 
 _SCANNED_KINDS = frozenset({BlockKind.PARAGRAPH, BlockKind.LIST_ITEM, BlockKind.TABLE_ROW})
 _QUOTED = re.compile(r"«[^»\n]{0,160}»|“[^”\n]{0,160}”|\"[^\"\n]{0,160}\"|`[^`\n]+`")
-_LIST_MARKER = re.compile(r"^(?:[-*+•]|\d+[.)])\s+")
+_LIST_MARKER = re.compile(r"(?:[-*+•]|\d+[.)])\s+")
 _EDGE = " \t\r\n*_|#>`"
 _NUMBER = re.compile(r"(?<![\w\-‑.])\d")
+_LEADING_NUMBER = re.compile(r"^[\s*_#>|-]*\d+(?:\.\d+)*[.)]?\s+")
+_SECTION_REF = re.compile(
+    r"(?:п\.|пп\.|пункт\w*|раздел\w*|глав\w*|section|clause|§)\s*\d+(?:\.\d+)*", re.IGNORECASE
+)
 
 
 def mask_quoted(text: str) -> str:
@@ -30,7 +35,9 @@ def mask_quoted(text: str) -> str:
 
 
 def has_number(text: str) -> bool:
-    """Есть ли в тексте число; цифры в метках («АБ-1», «FR12») и в версиях через точку не считаем."""
+    """Есть ли в тексте число; не считаем цифры в метках («АБ-1», «FR12»), номер пункта в начале
+    («3.2.1 Система…») и номера в ссылках («п. 3.2», «раздел 4»)."""
+    text = _SECTION_REF.sub(" ", _LEADING_NUMBER.sub("", text, count=1))
     return _NUMBER.search(text) is not None
 
 
@@ -56,14 +63,14 @@ class Unit:
 def build_units(doc: ParsedDocument, seg: Segmentation) -> list[Unit]:
     """Единицы всех требований нарезки по порядку документа, без повторов."""
     ranges = sorted({(r.anchor.char_start, r.anchor.char_end) for r in seg.requirements})
+    blocks = sorted(doc.blocks, key=lambda b: b.anchor.char_start)
+    ends = [b.anchor.char_end for b in blocks]  # блоки идут подряд и не пересекаются: концы не убывают
     units: dict[tuple[int, int], Unit] = {}
     for lo, hi in ranges:
-        for block in doc.blocks:
-            if (
-                block.kind not in _SCANNED_KINDS
-                or block.anchor.char_end <= lo
-                or hi <= block.anchor.char_start
-            ):
+        for block in blocks[bisect_right(ends, lo) :]:
+            if block.anchor.char_start >= hi:
+                break
+            if block.kind not in _SCANNED_KINDS:
                 continue
             for start, end in _pieces(block):
                 a, b = max(start, lo), min(end, hi)

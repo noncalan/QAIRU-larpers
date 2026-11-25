@@ -55,7 +55,8 @@ def _compile(entry: dict[str, Any]) -> Term:
     if len(keys) != 1 or not entry.get("why"):
         raise ValueError(f"Запись словаря должна иметь ровно один из ключей {_KEYS} и поле why: {entry}")
     kind = keys[0]
-    value = fold(str(entry[kind]).strip())
+    # Регулярные выражения не сворачиваем: ``fold`` испортил бы ``\S``, ``\D``; пишем их строчными и с «е».
+    value = str(entry[kind]).strip() if kind == "pattern" else fold(str(entry[kind]).strip())
     if kind == "stem":
         body = re.escape(value) + r"\w*"
     elif kind == "word":
@@ -64,7 +65,10 @@ def _compile(entry: dict[str, Any]) -> Term:
         body = _phrase_regex(value)
     else:
         body = f"(?:{value})"
-    return Term(key=value, regex=re.compile(rf"(?<!\w){body}(?!\w)"), why=str(entry["why"]).strip())
+    # Границы слова ставим, если запись сама не отключила их (``boundary: none``: «???», «[указать …]»).
+    bounded = entry.get("boundary", "word") != "none"
+    lead, trail = (r"(?<!\w)", r"(?!\w)") if bounded else ("", "")
+    return Term(key=value, regex=re.compile(f"{lead}{body}{trail}"), why=str(entry["why"]).strip())
 
 
 @cache

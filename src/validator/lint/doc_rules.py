@@ -32,6 +32,7 @@ MIN_NUMBERED_HEADINGS = 2
 MIN_HEADINGS_FOR_NAMES = 3
 MAX_QUOTES_PER_HIT = 4
 
+_CELL_ID = re.compile(r"^(?P<id>(?:[A-ZА-ЯЁ][A-Za-zА-Яа-яЁё]{0,5}[-\u2011.\u2010_]|[A-ZА-ЯЁ]{1,6})\d+)$")
 _ID_PARTS = re.compile(r"^(?P<prefix>[^\d.]+)(?P<digits>\d+)$")
 _HEADING_NUMBER = re.compile(r"^\s*#*\s*(?P<num>\d+(?:\.\d+)*)[.)]?\s+\S")
 _HEADING_TITLE = re.compile(r"^\s*#*\s*(?:\d+(?:\.\d+)*[.)]?\s+)?(?P<title>.*?)\s*#*\s*$")
@@ -41,9 +42,19 @@ _SECTION_NUMBER_REF = re.compile(
 _SECTION_NAME_REF = re.compile(
     r"(?<!\w)(?:раздел(?:а|е|у|ом|ы|ов)?|глав(?:а|е|у|ой)|section|chapter)\s+[«\"“](?P<name>[^»\"”\n]{3,80})[»\"”]"
 )
-_OTHER_DOCUMENT = re.compile(r"документ|приложени|специфик|стандарт|регламент|document|appendix|spec")
+_OTHER_DOCUMENT = re.compile(
+    r"документ|приложени|специфик|стандарт|регламент|договор|закон|гост|ieee|iso|rfc|document|appendix|spec"
+)
 _THIS_DOCUMENT = re.compile(r"(?:этого|настоящего|данного|текущего)\s+документа|this\s+document")
 _MARKUP = re.compile(r"[*_`|#>]")
+
+
+def _row_id(block: Block) -> str | None:
+    """Метка в первой ячейке строки таблицы («ID | Требование»): разбор документа её не отмечает."""
+    if block.kind is not BlockKind.TABLE_ROW or not block.cells:
+        return None
+    match = _CELL_ID.match(block.cells[0].text.replace("**", "").replace("__", "").strip())
+    return match["id"].replace("\u2011", "-") if match else None
 
 
 @dataclass(frozen=True)
@@ -60,7 +71,12 @@ class DocContext:
     @cached_property
     def defined_ids(self) -> list[tuple[Block, str]]:
         """Все метки требований документа по порядку (не только внутри нарезки): чтобы знать, что есть."""
-        return [(b, b.source_id) for b in self.doc.blocks if b.source_id and b.kind is not BlockKind.HEADING]
+        found: list[tuple[Block, str]] = []
+        for block in self.doc.blocks:
+            ident = block.source_id or _row_id(block)
+            if ident and block.kind is not BlockKind.HEADING:
+                found.append((block, ident))
+        return found
 
     @cached_property
     def families(self) -> dict[str, dict[int, tuple[Block, str]]]:
@@ -187,15 +203,15 @@ def _broken_refs(ctx: DocContext, unit: Unit, own_id: str | None) -> list[tuple[
             is_own_label = own_id is not None and m.start() <= 8 and m.group(0) == fold(own_id)
             if not is_own_label and int(m["digits"]) not in ctx.families[m["prefix"]]:
                 found.append((m.start(), m.end(), unit.text[m.start() : m.end()]))
+    # Ссылка на раздел чужого документа («IEEE 830, раздел 4.3», «приложение к договору») не наша.
+    foreign = _OTHER_DOCUMENT.search(_THIS_DOCUMENT.sub(" ", text)) is not None
     numbered = ctx.heading_numbers
-    if len(numbered) >= MIN_NUMBERED_HEADINGS:
+    if len(numbered) >= MIN_NUMBERED_HEADINGS and not foreign:
         depths = {n.count(".") for n in numbered}
         for m in _SECTION_NUMBER_REF.finditer(text):
             if m["num"] not in numbered and m["num"].count(".") in depths:
                 found.append((m.start(), m.end(), unit.text[m.start() : m.end()]))
-    if len(ctx.heading_titles) >= MIN_HEADINGS_FOR_NAMES and not _OTHER_DOCUMENT.search(
-        _THIS_DOCUMENT.sub(" ", text)
-    ):
+    if len(ctx.heading_titles) >= MIN_HEADINGS_FOR_NAMES and not foreign:
         for m in _SECTION_NAME_REF.finditer(text):
             if not _heading_known(ctx, m["name"]):
                 found.append((m.start(), m.end(), unit.text[m.start() : m.end()]))
