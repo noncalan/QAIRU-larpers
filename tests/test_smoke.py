@@ -13,7 +13,16 @@ import yaml
 
 from conftest import FIXTURES_LLM, FORMATS, REQUIREMENTS, ROOT
 from validator.ingest import parse
-from validator.models import CallRecord, DiscardReason, DocKind, ExitCode, QuoteMatch, Report, ReportStatus
+from validator.models import (
+    CallRecord,
+    DiscardReason,
+    DocKind,
+    ExitCode,
+    QuoteMatch,
+    Report,
+    ReportStatus,
+    SourceKind,
+)
 
 REPORT_SECTIONS = (
     "## Итог на первой странице",
@@ -114,11 +123,12 @@ def test_title_scenario_and_test_gap_reach_report(fake_run: tuple[DocKind, Path,
     assert report.verification is not None
     findings = report.verification.findings
     by_id = {f.id: f for f in findings}
+    from_passes = [f for f in findings if any(s.kind is SourceKind.PASS for s in f.sources)]
 
-    # Ответ прохода в формате промпта #14 (#18): суть есть у каждой находки, сценарий и пробел теста там,
-    # где модель их написала.
-    assert findings and all(f.title for f in findings)
-    assert any(f.scenario and f.test_gap for f in findings)
+    # Ответ прохода в формате промпта #14 (#18): суть есть у каждой находки поиска (у линтера тоже),
+    # сценарий и пробел теста там, где модель их написала.
+    assert from_passes and all(f.title for f in findings)
+    assert any(f.scenario and f.test_gap for f in from_passes)
     first_page = out.read_text(encoding="utf-8").split("## 1. Паспорт прогона")[0]
     first = by_id[report.conclusion.fix_first[0]]
     assert f"**{first.id}**" in first_page
@@ -149,8 +159,10 @@ def test_calls_log_has_every_model_call(fake_run: tuple[DocKind, Path, int]) -> 
     lines = (out.parent / "run" / "calls.jsonl").read_text(encoding="utf-8").splitlines()
     records = [CallRecord.model_validate(json.loads(line)) for line in lines]
 
-    # Проходы поиска идут параллельно (#18): порядок строк лога это порядок завершения вызовов.
-    assert sorted(r.call_id for r in records) == ["search.1", "search.2", "search.3"]
+    ids = [r.call_id for r in records]
+    # Проходы поиска идут параллельно (#18): между собой они в порядке завершения вызовов.
+    assert ids[0] == "segment.1" and ids[-1] == "questions.1"
+    assert sorted(ids[1:-1]) == ["search.1", "search.2", "search.3"]
 
 
 def test_missing_input_gives_diagnostic_report(tmp_path: Path) -> None:

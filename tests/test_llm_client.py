@@ -13,7 +13,7 @@ from typing import Any
 
 import pytest
 
-from conftest import REQUIREMENTS
+from conftest import FIXTURES_LLM, REQUIREMENTS
 from validator.config import load_config
 from validator.errors import LLMError
 from validator.llm import (
@@ -49,7 +49,6 @@ from validator.models import (
     TokenUsage,
 )
 from validator.pipeline import run
-from validator.search import MAX_PARALLEL_PASSES
 
 POSIX_ONLY = pytest.mark.skipif(
     sys.platform == "win32", reason="скрипт с shebang вместо claude только в POSIX"
@@ -571,7 +570,12 @@ def _fake_claude(tmp_path: Path, mode: str = "ok") -> tuple[str, Path]:
         "          'usage': {'input_tokens': 100, 'output_tokens': 10},\n"
         "          'modelUsage': {args[args.index('--model') + 1]:\n"
         "                         {'inputTokens': 100, 'outputTokens': 10}}}\n"
-        "if '--json-schema' in args:\n    answer['structured_output'] = {'findings': []}\n"
+        # нарезка отвечает записанным живым ответом, остальные шаги пустым списком находок
+        f"segment = json.load(open({str(FIXTURES_LLM / 'segment' / '1.json')!r}, encoding='utf-8'))\n"
+        "if '--json-schema' in args:\n"
+        "    schema = json.loads(args[args.index('--json-schema') + 1])\n"
+        "    is_segment = 'requirements' in schema.get('properties', {})\n"
+        "    answer['structured_output'] = segment['structured_output'] if is_segment else {'findings': []}\n"
         "print(json.dumps(answer))\n",
         encoding="utf-8",
     )
@@ -640,14 +644,11 @@ def test_cli_timeout_is_retried_then_reported(tmp_path: Path, monkeypatch: pytes
 def test_budget_option_stops_the_run_with_diagnostic(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     exe, counter = _fake_claude(tmp_path)
     monkeypatch.setattr("validator.llm.claude_cli.find_claude", lambda: exe)
-    # Проходы поиска идут параллельно (#18): первые три уже в пути, лимит останавливает четвёртый.
-    cfg = _cli_run(tmp_path, "out", max_budget_usd=0.0000001).model_copy(
-        update={"passes": MAX_PARALLEL_PASSES + 1}
-    )
+    cfg = _cli_run(tmp_path, "out", max_budget_usd=0.0000001).model_copy(update={"passes": 3})
 
     outcome = run(cfg)
 
-    assert len(counter.read_text()) == MAX_PARALLEL_PASSES
+    assert len(counter.read_text()) == 1
     assert any(d.code == "LLM-003" for d in outcome.diagnostics)
 
 

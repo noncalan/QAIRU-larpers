@@ -131,6 +131,7 @@ uv run validator data/input/requirements.md out2/report.md --backend replay --re
 | `docs/case/case-analysis.md` | Разбор кейса и kick-off: критерии жюри, архитектуры, план, модели |
 | `docs/case/kickoff-transcript.md` | Расшифровка kick-off 25.11 |
 | `docs/gold/defects.md` | Эталон из 45 дефектов. **Спойлер**, только для eval |
+| `evals/` | Eval по эталону: судья, recall, цитаты, стабильность; результаты в `evals/results/` ([`evals/README.md`](evals/README.md)) |
 | `docs/research/` | Исследование, индекс в `README.md` |
 | `docs/ideas/` | Кандидаты идеи |
 | `docs/decisions.md` | Журнал решений |

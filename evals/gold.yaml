@@ -1,0 +1,325 @@
+# Эталон дефектов data/input/requirements.md в машиночитаемом виде (issue #24).
+# ТОЛЬКО ДЛЯ EVAL. Не класть в промпты, few-shot, чек-листы и правила агента (CLAUDE.md, правило 2).
+# Источник: docs/gold/defects.md, ячейки таблиц дословно. Тест tests/test_eval_gold.py сверяет этот
+# файл с MD по числу, номерам и тексту; правим оба файла одним PR.
+# severity: critical | medium | low (в MD «Критично», «Средне», «Низко»).
+# disputed: пометка «спорно», агенту не обязательно находить (recall всё равно считается по всем 45,
+#           как в исследовании 21). addendum: дефекты 34–45 из независимой перепроверки.
+version: "2026-11-25.1"
+source: docs/gold/defects.md
+defects:
+- id: 1
+  where: Ф-2 ↔ критерий приёмки 2
+  defect: По Ф-2 месяц по дате совершения (31 января = январь), критерий ждёт рост февральского счётчика
+  criterion: Согласованность
+  severity: critical
+  disputed: false
+  addendum: false
+- id: 2
+  where: Ф-3 ↔ Ф-4
+  defect: «Максимум один push за месяц» против «следующее достижение вызывает push независимо от истории» после смены порога в том же месяце
+  criterion: Согласованность
+  severity: critical
+  disputed: false
+  addendum: false
+- id: 3
+  where: Требования к интеграции ↔ часть B
+  defect: Приложение «читает и сохраняет» настройки, а в API есть только сохранение; метода чтения нет
+  criterion: Полнота
+  severity: critical
+  disputed: false
+  addendum: false
+- id: 4
+  where: Требования к данным
+  defect: 'Сумма покупки в тиынах, порог в тенге: риск ошибки сравнения в 100 раз, правило пересчёта не задано'
+  criterion: Согласованность
+  severity: critical
+  disputed: false
+  addendum: false
+- id: 5
+  where: Цели ↔ НФТ
+  defect: «В момент покупки» против «в течение минуты после события»
+  criterion: Согласованность
+  severity: medium
+  disputed: false
+  addendum: false
+- id: 6
+  where: Часть B, REST type
+  defect: 'Сохранение через GET с параметрами в query: нарушена семантика HTTP, данные карты попадают в логи URL'
+  criterion: Выполнимость / ИБ
+  severity: critical
+  disputed: false
+  addendum: false
+- id: 7
+  where: Часть B, Description
+  defect: '«Сохранение порога. Функциональные требования: чтение порога»: описание противоречит само себе'
+  criterion: Однозначность
+  severity: medium
+  disputed: false
+  addendum: false
+- id: 8
+  where: Часть B, статусы
+  defect: Ошибка суммы возвращается как 200 + `ERROR` и одновременно как 400 «параметры заполнены неверно»; «200 — успешный» при теле ERROR
+  criterion: Однозначность
+  severity: critical
+  disputed: false
+  addendum: false
+- id: 9
+  where: Часть B, 403/404
+  defect: Статус 403 объявлен, но не возвращается; 404 возвращается, но не внесён в список статусов
+  criterion: Согласованность
+  severity: medium
+  disputed: false
+  addendum: false
+- id: 10
+  where: Часть B, ответ
+  defect: 201 считается успехом, но нигде не описан; заголовок «200. Successful — Created» смешивает коды
+  criterion: Однозначность
+  severity: low
+  disputed: false
+  addendum: false
+- id: 11
+  where: Часть B, типы
+  defect: В запросе `amount`/`enabled` integer, в ответе string; Content-Type JSON при том, что тела нет
+  criterion: Согласованность
+  severity: low
+  disputed: false
+  addendum: false
+- id: 12
+  where: Часть B, Request URL
+  defect: 'Prod URL «—», Swagger «—»: интеграция не определена для прода'
+  criterion: Полнота
+  severity: medium
+  disputed: false
+  addendum: false
+- id: 13
+  where: Часть B ↔ Ф-1
+  defect: API не проверяет, что карта активна и в KZT; `amount` обязателен даже для выключения
+  criterion: Полнота
+  severity: medium
+  disputed: false
+  addendum: false
+- id: 14
+  where: Ф-2
+  defect: '«По дате совершения покупки в Алматы»: часовой пояс или место покупки; «проведённые» значит авторизация или клиринг'
+  criterion: Однозначность
+  severity: critical
+  disputed: false
+  addendum: false
+- id: 15
+  where: Ф-2
+  defect: 'Не заданы: покупки в валюте, частичный возврат, возврат без исходной покупки, отрицательный итог, прочие типы операций (комиссии, оплата услуг, quasi-cash)'
+  criterion: Полнота
+  severity: medium
+  disputed: false
+  addendum: false
+- id: 16
+  where: Ф-2 ↔ Ф-3
+  defect: Возврат за прошлый месяц меняет закрытый счётчик; что с уже отправленным push и повторным пересечением после возврата
+  criterion: Полнота
+  severity: medium
+  disputed: false
+  addendum: false
+- id: 17
+  where: Ф-1, Ф-3
+  defect: 'Включение или снижение порога ниже уже накопленной суммы: перехода «снизу вверх» нет, клиент не узнает ничего; считаются ли расходы при выключенном уведомлении'
+  criterion: Полнота
+  severity: medium
+  disputed: false
+  addendum: false
+- id: 18
+  where: Ф-1
+  defect: Нет поведения для неактивной/не-KZT карты, дополнительных держателей, блокировки карты после настройки
+  criterion: Полнота
+  severity: low
+  disputed: false
+  addendum: false
+- id: 19
+  where: Sequence Diagram
+  defect: '«Передать ... сумму»: сумму покупки или месячный итог; текст push нигде не задан'
+  criterion: Однозначность
+  severity: medium
+  disputed: false
+  addendum: false
+- id: 20
+  where: Архитектура ↔ Sequence ↔ UI
+  defect: «Учёт расходов» vs «сервис расходов»; UI показывает «сумму за месяц», но приложение связано только с сервисом настроек, источника суммы нет
+  criterion: Согласованность / полнота
+  severity: medium
+  disputed: false
+  addendum: false
+- id: 21
+  where: Наименование
+  defect: «Месячный порог расходов» vs «Уведомление о расходах»; «личный бюджет» vs «порог» — нет глоссария
+  criterion: Однозначность
+  severity: low
+  disputed: false
+  addendum: false
+- id: 22
+  where: НФТ
+  defect: Единственное НФТ без перцентиля и нагрузки; нет доступности, ИБ, аудита, хранения, поведения при отказе push
+  criterion: Полнота / верифицируемость
+  severity: medium
+  disputed: false
+  addendum: false
+- id: 23
+  where: Требования к данным
+  defect: Нет флага `enabled`, типа операции, валюты, даты покупки, связи возврата с исходной покупкой, срока хранения
+  criterion: Полнота
+  severity: medium
+  disputed: false
+  addendum: false
+- id: 24
+  where: Требования к интеграции
+  defect: Идемпотентность есть, но не сказано про порядок событий (возврат раньше покупки) и повтор при сбое push
+  criterion: Полнота
+  severity: low
+  disputed: false
+  addendum: false
+- id: 25
+  where: Критерии приёмки
+  defect: 'Только 3 сценария: нет границ Ф-1 (999 / 1 000 / 1 000 000 / 1 000 001), Ф-4, возврата, «один push в месяц», идемпотентности, НФТ, API'
+  criterion: Полнота / прослеживаемость
+  severity: critical
+  disputed: false
+  addendum: false
+- id: 26
+  where: Критерий приёмки 1
+  defect: Не указано, что уведомление включено, а по умолчанию оно выключено (Ф-1); не сказано, что push в этом месяце ещё не было
+  criterion: Полнота
+  severity: medium
+  disputed: false
+  addendum: false
+- id: 27
+  where: Требования к тестированию
+  defect: '«Заполняются тестировщиками»: раздел пуст'
+  criterion: Полнота
+  severity: medium
+  disputed: false
+  addendum: false
+- id: 28
+  where: Ревью требований, блок согласующих
+  defect: Версия и дата не заполнены, чек-лист без отметок, согласующих нет, схемы отката нет
+  criterion: Сопровождаемость / трассируемость
+  severity: medium
+  disputed: false
+  addendum: false
+- id: 29
+  where: BPMN
+  defect: 'Нет веток: уведомление выключено, push в месяце уже был, возврат, непокупка'
+  criterion: Полнота
+  severity: low
+  disputed: false
+  addendum: false
+- id: 30
+  where: UI
+  defect: Текст ошибки под полем не задан и не связан с `message` API; нельзя проверить
+  criterion: Верифицируемость
+  severity: low
+  disputed: false
+  addendum: false
+- id: 31
+  where: Часть B, `cardId`
+  defect: Формат не задан (PAN или токен?); если PAN, то номер карты в URL — нарушение PCI DSS
+  criterion: Однозначность / ИБ
+  severity: medium
+  disputed: false
+  addendum: false
+- id: 32
+  where: Часть B, особые правила ↔ Ф-4
+  defect: Правило 3 дублирует Ф-4 и описывает логику сервиса расходов в спецификации контроллера настроек
+  criterion: Единичность / избыточность
+  severity: low
+  disputed: false
+  addendum: false
+- id: 33
+  where: Цели
+  defect: Цель без измеримого бизнес-показателя (доля включивших, удержание)
+  criterion: Верифицируемость
+  severity: low
+  disputed: false
+  addendum: false
+- id: 34
+  where: Ф-2 ↔ Цели ↔ НФТ ↔ критерий приёмки 2
+  defect: '«Проведённые покупки»: авторизация или клиринг. Критерий 2 показывает, что «провести» — отдельное событие после покупки. Если это клиринг (1–3 дня), цель «в момент покупки» недостижима, а SLA в минуту теряет смысл'
+  criterion: Однозначность / достижимость
+  severity: critical
+  disputed: false
+  addendum: true
+- id: 35
+  where: Ф-3
+  defect: '«За календарный месяц»: месяц покупки или месяц отправки; что делать с январской покупкой, проведённой в феврале'
+  criterion: Однозначность
+  severity: medium
+  disputed: false
+  addendum: true
+- id: 36
+  where: Ф-2 (уточнение к 14)
+  defect: 'С 01.03.2024 весь Казахстан в UTC+5, раньше Алматы был UTC+6: устаревшая tzdata даст сдвиг на час у полуночи. Не сказано, чьё время брать: терминала (зарубежные и онлайн-покупки) или процессинга'
+  criterion: Однозначность / верифицируемость
+  severity: medium
+  disputed: false
+  addendum: true
+- id: 37
+  where: Часть B, логика п. 5 ↔ таблица ответа
+  defect: «Вернуть прежнее состояние», но в ответе ERROR нет `amount` и `enabled`; не сказано, что вернуть, если прежней настройки нет
+  criterion: Согласованность
+  severity: medium
+  disputed: false
+  addendum: true
+- id: 38
+  where: Ф-3 / Ф-4 ↔ данные
+  defect: Один «признак отправки» на карту и месяц не поддерживает сброс истории из Ф-4
+  criterion: Согласованность
+  severity: medium
+  disputed: false
+  addendum: true
+- id: 39
+  where: Термины в A и B
+  defect: '«Бюджет», «порог», `saveLimit`/`limit_kzt`: в карточном домене «лимит» блокирует операции, разработчик может так и реализовать'
+  criterion: Однозначность
+  severity: medium
+  disputed: false
+  addendum: true
+- id: 40
+  where: Ф-1 ↔ часть B, Authorization
+  defect: '«Держатель» и «владелец» — разные роли (дополнительные карты): кто имеет право настраивать (спорно)'
+  criterion: Однозначность
+  severity: low
+  disputed: true
+  addendum: true
+- id: 41
+  where: Ф-3 ↔ НФТ
+  defect: «Клиент получает push» непроверяемо (доставка через APNs/FCM), а НФТ говорит «передаёт на отправку»
+  criterion: Верифицируемость
+  severity: low
+  disputed: false
+  addendum: true
+- id: 42
+  where: Ф-1, Ф-3
+  defect: В каждом пункте два разных требования
+  criterion: Единичность
+  severity: low
+  disputed: false
+  addendum: true
+- id: 43
+  where: Ф-4 ↔ часть B, правило 2
+  defect: Считается ли «изменением порога» повторное сохранение того же значения или выключение и включение уведомления
+  criterion: Однозначность
+  severity: low
+  disputed: false
+  addendum: true
+- id: 44
+  where: Весь набор
+  defect: НФТ, данные, интеграция и критерии приёмки без идентификаторов; часть B не ссылается на Ф-1…Ф-4; нет приоритетов (IEEE 830 п. 4.3.5)
+  criterion: Прослеживаемость / ранжирование
+  severity: low
+  disputed: false
+  addendum: true
+- id: 45
+  where: Часть B, блок «Влияние на ИС» части A
+  defect: «400, 401 и далее» — размытый перечень; сервисов настроек и учёта расходов нет в списке затронутых систем
+  criterion: Однозначность / полнота
+  severity: low
+  disputed: false
+  addendum: true
