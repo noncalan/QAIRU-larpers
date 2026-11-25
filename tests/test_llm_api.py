@@ -388,10 +388,9 @@ def test_run_with_api_backend_and_no_key_gives_exit_5_and_a_report(
 
 def _step_of(system: str) -> str:
     """Шаг по системному промпту запроса: у каждого шага свой файл в ``src/validator/prompts``."""
-    for step in ("segment", "search_transfer", "search", "questions"):
-        head = (PROMPTS / f"{step}_system.md").read_text(encoding="utf-8")[:80]
-        if system.startswith(head):
-            return step
+    for path in sorted(PROMPTS.glob("*_system.md")):
+        if system.startswith(path.read_text(encoding="utf-8")[:80]):
+            return path.name.removesuffix("_system.md")
     raise AssertionError(f"неизвестный системный промпт: {system[:80]!r}")
 
 
