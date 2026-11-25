@@ -495,4 +495,5 @@ def test_pipeline_report_shows_found_in_n_of_3(tmp_path: Path) -> None:
     assert {f["of"] for f in findings} == {3}
     assert max(f["found_in"] for f in findings) == 3
     md = cfg.report_md_path.read_text(encoding="utf-8")
-    assert md.count("из 3 проходов") >= len(findings)
+    # Находка только линтера (0 из 3) пишется словами: «проходы модели этого не отметили (0 из 3)».
+    assert md.count("из 3 проходов") + md.count("не отметили (0 из 3)") >= len(findings)
