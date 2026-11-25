@@ -1,0 +1,94 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "duration_ms": 102000,
+  "duration_api_ms": 101000,
+  "num_turns": 1,
+  "result": "Фикстура тестов каркаса: проход 2.",
+  "structured_output": {
+    "findings": [
+      {
+        "block_ids": [
+          "B029"
+        ],
+        "quotes": [
+          "Сервис передаёт push на отправку в течение минуты после получения события."
+        ],
+        "property": "IND-VERIF",
+        "defect_type": "unverifiable",
+        "verdict": "violation",
+        "scope": "requirement",
+        "blocks_testing": true,
+        "severity_hint": "major",
+        "explanation": "Срок задан без доли событий, нагрузки и точки отсчёта: нельзя написать тест с однозначным ожидаемым результатом.",
+        "suggestion": "Сервис передаёт push на отправку не позднее [уточнить: N] с после получения события для [уточнить: доля событий] при нагрузке [уточнить: событий в секунду]."
+      },
+      {
+        "block_ids": [
+          "B023",
+          "B039"
+        ],
+        "quotes": [
+          "Месяц определяется по дате совершения покупки в Алматы.",
+          "Февральский счётчик вырос на 4 000 ₸"
+        ],
+        "property": "SET-CONS",
+        "defect_type": "contradiction",
+        "verdict": "violation",
+        "scope": "set",
+        "blocks_testing": true,
+        "severity_hint": "critical",
+        "explanation": "Правило относит покупку к месяцу совершения, а критерий приёмки для покупки на границе месяцев ждёт рост счётчика следующего месяца: одна реализация провалит одно из двух.",
+        "suggestion": "Месяц покупки определяется по [уточнить: дата совершения или дата проведения] по времени [уточнить: часовой пояс]; критерий приёмки привести к этому правилу."
+      },
+      {
+        "block_ids": [
+          "B023"
+        ],
+        "quotes": [
+          "В расходы входят проведённые покупки."
+        ],
+        "property": "IND-UNAMB",
+        "defect_type": "ambiguous",
+        "verdict": "unclear",
+        "scope": "requirement",
+        "blocks_testing": true,
+        "severity_hint": "major",
+        "explanation": "Не определено, какая покупка считается проведённой: после авторизации или после клиринга. От этого зависит момент пересчёта расходов.",
+        "suggestion": "В расходы входят покупки в статусе [уточнить: авторизована или проведена клирингом]."
+      },
+      {
+        "block_ids": [
+          "B061"
+        ],
+        "quotes": [
+          "Сохранение порога. Функциональные требования: чтение порога"
+        ],
+        "property": "IND-UNAMB",
+        "defect_type": "ambiguous",
+        "verdict": "violation",
+        "scope": "requirement",
+        "blocks_testing": false,
+        "severity_hint": "minor",
+        "explanation": "Описание метода называет одновременно сохранение и чтение: непонятно, что делает метод.",
+        "suggestion": "Description: [уточнить: сохранение или чтение] настройки."
+      }
+    ]
+  },
+  "session_id": "00000000-0000-0000-0000-000000000000",
+  "total_cost_usd": 0.28,
+  "usage": {
+    "input_tokens": 9000,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "output_tokens": 12000
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 9000,
+      "outputTokens": 12000,
+      "costUSD": 0.28
+    }
+  }
+}
