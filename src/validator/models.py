@@ -1210,6 +1210,15 @@ class RunConfig(Contract):
         return self.output_path.with_suffix(".md")
 
     @property
+    def wants_pdf(self) -> bool:
+        """ВЫХОД с расширением .pdf: рядом с Markdown собираем и PDF."""
+        return self.output_path.suffix.lower() == ".pdf"
+
+    @property
+    def report_pdf_path(self) -> Path:
+        return self.output_path
+
+    @property
     def report_json_path(self) -> Path:
         return self.output_path.with_suffix(".json")
 
@@ -1228,13 +1237,14 @@ class RunConfig(Contract):
     @property
     def output_files(self) -> tuple[Path, ...]:
         """Все файлы, которые пишет прогон: ни один не должен совпасть со входом."""
-        return (
+        files = (
             self.report_md_path,
             self.report_json_path,
             self.log_path,
             self.questions_path,
             self.run_dir / "calls.jsonl",
         )
+        return (*files, self.report_pdf_path) if self.wants_pdf else files
 
     def model_for(self, step: LLMStep) -> StepModel:
         return self.step_models[step]
