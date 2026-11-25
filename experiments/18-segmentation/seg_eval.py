@@ -7,6 +7,7 @@
   quote_valid      доля цитат предсказания, найденных в документе
   unit_recall      доля эталонных unit (label=req), с которыми пересекается хотя бы одна цитата
   atom P/R/F1      сопоставление один-к-одному «элемент нарезки ↔ атом эталона» при IoU спанов >= 0.5
+  atom_covered     мягкий recall: атом покрыт объединением цитат >= 80 % (гранулярность не важна)
   merged / split   элементы, покрывающие >= 2 атомов (склейка); атомы, разрезанные на части
   false_items      элементы, не пересекающие ни одной цитаты req/optional (выделено «не требование»)
   is_req_precision 1 - false_items/items: «выделенное вообще является требованием» (без учёта гранулярности)
@@ -112,6 +113,14 @@ def evaluate(doc: str, units, atoms, pred: list[dict]) -> dict:
     # разрезание: атом, с которым пересекаются >= 2 элемента, и ни один не совпал по IoU
     split = sum(1 for j, a in enumerate(atoms) if a["label"] == "req" and j not in used_j and
                 sum(1 for it in items if any(overlap(s, g) for s in it["spans"] for g in a["spans"])) >= 2)
+    # мягкий recall: атом покрыт объединением цитат предсказания не меньше чем на 80 %
+    def covered_share(g):
+        pts = set()
+        for it in items:
+            for a, b in it["spans"]:
+                pts.update(range(max(a, g[0]), min(b, g[1])))
+        return len(pts) / (g[1] - g[0]) if g[1] > g[0] else 0.0
+    covered_atoms = sum(1 for a in req_atoms if max(covered_share(g) for g in a["spans"]) >= 0.8)
     # покрытие строк с требованиями
     def lines(spans):
         out = set()
@@ -129,6 +138,7 @@ def evaluate(doc: str, units, atoms, pred: list[dict]) -> dict:
         "is_req_precision": round(1 - len(false_items) / len(items), 2) if items else None,
         "atom_tp": tp, "atom_precision": round(prec, 2), "atom_recall": round(rec, 2),
         "atom_f1": round(2 * prec * rec / (prec + rec), 2) if prec + rec else 0.0,
+        "atom_covered": f"{covered_atoms}/{len(req_atoms)}",
         "merged_items": merged, "split_atoms": split, "false_items": len(false_items),
         "req_line_cover": f"{len(gold_lines & pred_lines)}/{len(gold_lines)}",
         "missed_units": sorted({u['gid'] for u in req_units} - hit_units),
