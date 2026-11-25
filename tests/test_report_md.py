@@ -404,3 +404,8 @@ def _doc_stub(report: Report) -> ParsedDocument:
         text="x",
         extraction=info.extraction,
     )
+
+
+def test_markdown_marks_in_quotes_are_escaped_so_the_quote_reads_as_in_the_document() -> None:
+    assert cell("поле *id* и <b>сумма</b> и `код`") == "поле \\*id\\* и \\<b>сумма\\</b> и \\`код\\`"
+    assert cell("_метка_ и limit_kzt") == "\\_метка\\_ и limit_kzt"

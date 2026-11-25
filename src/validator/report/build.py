@@ -42,7 +42,7 @@ def _split(diagnostics: Sequence[Diagnostic]) -> tuple[list[Diagnostic], list[Di
 
 
 def _fix_first(ver: Verification) -> list[str]:
-    """Первая страница: нарушения со сверенной цитатой, по важности, затем в порядке верификатора."""
+    """Первая страница: нарушения со сверенной цитатой по важности, затем в порядке верификатора."""
     candidates = [
         f for f in ver.findings if f.verdict is Verdict.VIOLATION and any(q.verified for q in f.quotes)
     ]
