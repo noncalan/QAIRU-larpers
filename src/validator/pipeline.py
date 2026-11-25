@@ -71,7 +71,7 @@ from validator.questions import ask, write_questions_yaml
 from validator.report import build_report, render_md
 from validator.search import search
 from validator.segment import fallback_segmentation, segment
-from validator.verify import verify
+from validator.verify import light_with_questions, verify
 
 logger = logging.getLogger("validator")
 T = TypeVar("T")
@@ -292,6 +292,7 @@ def _execute(state: _State) -> None:
             list,
             action="Раздел вопросов собран без них",
         )
+        state.verification = light_with_questions(ver, state.questions)
 
 
 # ---------------------------------------------------------------- выходы

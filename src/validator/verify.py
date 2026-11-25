@@ -38,6 +38,8 @@ from validator.models import (
     MergedFinding,
     ParsedDocument,
     Property,
+    Question,
+    QuestionPriority,
     Quote,
     QuoteMatch,
     Scope,
@@ -55,8 +57,9 @@ from validator.text import locate_quote
 
 TRAFFIC_RULE: Final = (
     "красный, если есть критичное нарушение, которое мешает написать тест-кейс; жёлтый, если критичных "
-    "нет, но есть важные нарушения или находки «неясно»; зелёный, если остались только незначительные "
-    "нарушения или их нет. Цвет считает код по находкам со сверенными цитатами, модель его не выбирает."
+    "нет, но есть важные нарушения, находки «неясно» или вопросы автору, которые блокируют разработку или "
+    "тестирование; зелёный, если остались только незначительные нарушения или их нет. Цвет считает код "
+    "по находкам со сверенными цитатами, модель его не выбирает."
 )
 """Правило светофора (``traffic_light``) словами: отчёт показывает его рядом с итогом."""
 
@@ -356,6 +359,30 @@ def traffic_light(findings: Sequence[Finding]) -> tuple[TrafficLight, str]:
         minor = _violations(len(violations), ("незначительное", "незначительных", "незначительных"))
         return TrafficLight.GREEN, f"критичных и важных нарушений нет, есть {minor}"
     return TrafficLight.GREEN, "нарушений не найдено"
+
+
+BLOCKING_PRIORITIES: Final = (QuestionPriority.P0, QuestionPriority.P1)
+"""Вопросы автору, при которых свет не зелёный: блокируют разработку (P0) или тестирование (P1)."""
+
+
+def light_with_questions(ver: Verification, questions: Sequence[Question]) -> Verification:
+    """Светофор с учётом вопросов автору: шаг 8 идёт после шага 7, поэтому уточняем отдельно.
+
+    Зелёный значит «можно начинать разработку и тестирование», и рядом не должно быть открытого
+    вопроса, который их блокирует. Зелёный при таком вопросе становится жёлтым, причина называет
+    вопросы. Красный и жёлтый не меняются. Конвейер вызывает это сразу после шага вопросов.
+    """
+    blocking = [q.id for q in questions if q.priority in BLOCKING_PRIORITIES]
+    if ver.traffic_light is not TrafficLight.GREEN or not blocking:
+        return ver
+    n = len(blocking)
+    shown = ", ".join(blocking[:REASON_IDS_SHOWN]) + (
+        f" и ещё {n - REASON_IDS_SHOWN}" if n > REASON_IDS_SHOWN else ""
+    )
+    which = _plural(n, "который блокирует", "которые блокируют", "которые блокируют")
+    asks = f"{n} {_plural(n, 'вопрос', 'вопроса', 'вопросов')} автору, {which} разработку или тестирование"
+    reason = f"{ver.traffic_reason}, но есть {asks} ({shown})"
+    return ver.model_copy(update={"traffic_light": TrafficLight.YELLOW, "traffic_reason": reason})
 
 
 # ---------------------------------------------------------------- шаг 7 целиком
