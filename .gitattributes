@@ -1,0 +1,10 @@
+# Единые переводы строк на всех ОС: снапшот-тесты и отчёты сравниваются побайтно,
+# а на Windows git по умолчанию подставил бы CRLF.
+* text=auto eol=lf
+
+# Бинарные входные документы не трогаем.
+*.pdf binary
+*.docx binary
+*.doc binary
+*.png binary
+*.jpg binary
