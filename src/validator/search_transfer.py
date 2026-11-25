@@ -18,7 +18,7 @@ from validator.models import DefectType, LLMRequest, LLMStep, Property, RunConfi
 from validator.prompting import fill, load_prompt
 from validator.search_parse import Draft, RawFinding, block_ids_in, parse_defect_type, parse_severity, unwrap
 
-TRANSFER_SYSTEM = "search_transfer.md"
+TRANSFER_SYSTEM = "search_transfer_system.md"
 TRANSFER_USER = "search_transfer_user.md"
 TRANSFER_ATTEMPTS = 2
 """Перенос в JSON: попытка и один повтор, затем отказ."""

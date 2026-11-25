@@ -38,7 +38,9 @@ from validator.models import (
 from validator.pipeline import run
 from validator.prompting import PROMPTS_DIR, fill, load_prompt
 from validator.search import MAX_PARALLEL_PASSES, search
+from validator.search_parse import Draft, draft_from_raw, split_findings
 from validator.search_transfer import SEVERITY_LABELS, TRANSFER_SCHEMA, transferred
+from validator.text import locate_quote
 
 LIBRARY = """# Библиотека
 
@@ -467,7 +469,7 @@ def test_transfer_where_nothing_fits_schema_is_an_error() -> None:
 
 
 def test_transfer_prompt_and_schema_cover_every_property_and_label() -> None:
-    text = load_prompt("search_transfer.md")
+    text = load_prompt("search_transfer_system.md")
     item = TRANSFER_SCHEMA["properties"]["findings"]["items"]["properties"]
 
     for prop in Property:
@@ -496,3 +498,57 @@ def test_fixture_envelopes_are_claude_cli_format() -> None:
         data = json.loads(path.read_text(encoding="utf-8"))
         assert data["type"] == "result" and data["subtype"] == "success" and not data["is_error"], path
         assert "structured_output" not in data, "проход отвечает текстом без схемы"
+
+
+# ---------------------------------------------------------------- записанный живой проход
+
+
+LIVE = FIXTURES_LLM / "search" / "live"
+"""Живой проход Opus 5.5 medium и перенос всех его находок Haiku 5.5 medium (эксперимент 23)."""
+
+
+def live_payload(name: str) -> dict[str, Any]:
+    data: dict[str, Any] = json.loads((LIVE / name).read_text(encoding="utf-8"))
+    return data
+
+
+def test_live_pass_is_parsed_entirely_by_code(requirements_md: ParsedDocument) -> None:
+    """Настоящий ответ прохода по промпту #14: код разбирает все находки, перенос моделью не нужен."""
+    llm = FakeLLM(Path("/nonexistent"), {(LLMStep.SEARCH, 1): live_payload("pass-opus-medium.json")})
+
+    [result] = search(requirements_md, llm, config(1))
+
+    assert result.ok and result.diagnostics == []
+    assert [r.step for r in llm.requests] == [LLMStep.SEARCH]
+    assert len(result.candidates) == 49
+    assert all(c.title and c.explanation and c.block_ids and c.quotes for c in result.candidates)
+    quotes = [q for c in result.candidates for q in c.quotes]
+    assert all(locate_quote(requirements_md, q).verified for q in quotes), "цитаты Opus дословные"
+    assert {c.scope for c in result.candidates} == {Scope.REQUIREMENT, Scope.SET}
+    assert sum(c.verdict is Verdict.UNCLEAR for c in result.candidates) == 2
+
+
+def test_live_haiku_transfer_fits_schema_and_agrees_with_code(requirements_md: ParsedDocument) -> None:
+    """Перенос всех 49 находок живого прохода Haiku: все записи по схеме, свойство и тип как у кода."""
+    split = split_findings(live_payload("pass-opus-medium.json")["result"])
+    code = {raw.position: draft_from_raw(raw) for raw in split.findings}
+
+    moved, invalid = transferred(
+        live_payload("transfer-haiku-medium.json")["structured_output"], split.findings, "search_transfer.1"
+    )
+
+    assert (len(moved), invalid) == (49, 0)
+    pairs = [(code[int(pos)], d) for pos, d in moved]
+    assert all(isinstance(c, Draft) for c, _ in pairs)
+    agree = {
+        name: sum(getattr(c, name) == getattr(d, name) for c, d in pairs)
+        for name in ("property", "defect_type", "verdict", "severity_hint", "blocks_testing")
+    }
+    # Единственное расхождение: у модели в строке «Свойство» два свойства, код берёт первое.
+    assert agree == {
+        "property": 48,
+        "defect_type": 49,
+        "verdict": 49,
+        "severity_hint": 49,
+        "blocks_testing": 49,
+    }
