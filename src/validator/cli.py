@@ -86,6 +86,10 @@ def main(
     answers: Annotated[Path | None, typer.Option(help="answers.yaml с ответами автора")] = None,
     ask: Annotated[bool, typer.Option("--ask", help="Задать вопросы автору в терминале")] = False,
     max_budget_usd: Annotated[float | None, typer.Option(min=0.01, help="Стоп по цене прогона, $")] = None,
+    pdf_backend: Annotated[
+        str | None,
+        typer.Option("--pdf-backend", help="Движок PDF: mupdf (по умолчанию) или pdfium (без копилефта)"),
+    ] = None,
     version: Annotated[
         bool, typer.Option("--version", callback=_version, is_eager=True, help="Версия агента")
     ] = False,
@@ -98,18 +102,23 @@ def main(
     if output_path.suffix.lower() not in OUTPUT_SUFFIXES:
         typer.echo(f"Файл отчёта должен иметь расширение .md или .pdf: {output_path}", err=True)
         raise typer.Exit(ExitCode.USAGE)
-    cfg = load_config(
-        input_path,
-        output_path,
-        profile=profile,
-        passes=passes,
-        backend=backend,
-        replay_dir=replay,
-        cache=cache,
-        answers_path=answers,
-        ask=ask,
-        max_budget_usd=max_budget_usd,
-    )
+    try:
+        cfg = load_config(
+            input_path,
+            output_path,
+            profile=profile,
+            passes=passes,
+            backend=backend,
+            replay_dir=replay,
+            cache=cache,
+            answers_path=answers,
+            ask=ask,
+            max_budget_usd=max_budget_usd,
+            pdf_backend=pdf_backend,
+        )
+    except ValueError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(ExitCode.USAGE) from exc
     outcome = run(cfg)
     typer.echo(outcome.message, err=outcome.exit_code is not ExitCode.OK)
     raise typer.Exit(int(outcome.exit_code))

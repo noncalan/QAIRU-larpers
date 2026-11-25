@@ -220,3 +220,61 @@ def test_docx_tables_have_cells(requirements_docs: dict[DocKind, ParsedDocument]
     assert all(b.anchor.extraction is Extraction.TABLE for b in rows)
     assert all(b.cells for b in rows if b.text.replace("|", "").strip())  # у пустой строки ячеек нет
     assert all(b.anchor.table is not None and b.anchor.row for b in rows)
+
+
+# ---------------------------------------------------------------- строки-переносы PDF (#26)
+
+
+def _pdf_lines(*rows: tuple[str, bool]) -> list[SourceLine]:
+    return [
+        SourceLine(text=text, page=1, page_line=n, wrapped=wrapped)
+        for n, (text, wrapped) in enumerate(rows, 1)
+    ]
+
+
+def test_wrapped_lines_continue_a_list_item() -> None:
+    lines = _pdf_lines(
+        ("• Система должна принимать сумму от 1 до", False),
+        ("1000 единиц включительно.", True),
+        ("• Система должна отклонять остальные суммы.", False),
+    )
+
+    items = build_blocks(lines, DocKind.PDF)
+
+    assert [b.kind for b in items] == [BlockKind.LIST_ITEM, BlockKind.LIST_ITEM]
+    assert items[0].text.endswith("включительно.")
+    assert [b.anchor.page_line for b in items] == [1, 3]
+
+
+def test_wrapped_line_that_looks_like_a_list_marker_stays_in_its_paragraph() -> None:
+    lines = _pdf_lines(("Приказ вступает в силу с пункта", False), ("5. Остальное без изменений.", True))
+
+    blocks = build_blocks(lines, DocKind.PDF)
+
+    assert [b.kind for b in blocks] == [BlockKind.PARAGRAPH]
+
+
+def test_bullet_glyph_does_not_hide_the_requirement_label() -> None:
+    blocks = build_blocks(_pdf_lines(("• Ф-1. Система должна работать.", False)), DocKind.PDF)
+
+    assert blocks[0].source_id == "Ф-1"
+
+
+def test_furniture_blocks_are_not_shown_to_the_model() -> None:
+    lines = [
+        SourceLine(text="Система должна работать.", page=1),
+        SourceLine(text="Стр. 1 из 3", page=1, kind=BlockKind.FURNITURE),
+    ]
+    doc = ParsedDocument(
+        path="x.pdf",
+        name="x.pdf",
+        kind=DocKind.PDF,
+        sha256="0",
+        size_bytes=1,
+        text="\n".join(line.text for line in lines),
+        blocks=build_blocks(lines, DocKind.PDF),
+    )
+
+    shown = render_for_model(doc)
+
+    assert "Система должна работать." in shown and "Стр. 1" not in shown
