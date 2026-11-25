@@ -15,12 +15,6 @@ from validator.llm.claude_cli import DROP_ENV, build_args, clean_env
 from validator.models import Backend, CallStatus, Effort, LLMRequest, LLMStep
 
 SCHEMA: dict[str, Any] = {"type": "object", "properties": {"ok": {"type": "boolean"}}, "required": ["ok"]}
-# Фикстуры поиска отвечают по схеме заглушки поиска; тестам клиента хватает её верхнего уровня.
-FINDINGS_SCHEMA: dict[str, Any] = {
-    "type": "object",
-    "properties": {"findings": {"type": "array"}},
-    "required": ["findings"],
-}
 
 
 def request(
@@ -124,11 +118,12 @@ def test_non_object_payload_is_bad_response() -> None:
 
 
 def test_fake_llm_answers_from_fixture_files(fake_llm: FakeLLM) -> None:
-    resp = fake_llm.call(request(call_index=2, schema=FINDINGS_SCHEMA))
+    """Проход поиска отвечает свободным текстом без схемы (#18): фикстура это ответ в формате промпта."""
+    resp = fake_llm.call(request(schema=None, call_index=2))
 
     assert resp.backend is Backend.FAKE
-    assert isinstance(resp.structured, dict)
-    assert resp.structured["findings"]
+    assert resp.structured is None
+    assert "## Находки" in resp.text
 
 
 def test_fake_llm_without_fixture_raises(fake_llm: FakeLLM) -> None:
@@ -147,7 +142,7 @@ def test_fake_llm_accepts_inline_responses() -> None:
 def test_recording_client_logs_success_and_failure(fake_llm: FakeLLM) -> None:
     client = RecordingClient(fake_llm)
 
-    client.call(request(call_index=1, schema=FINDINGS_SCHEMA))
+    client.call(request(schema=None, call_index=1))
     with pytest.raises(LLMError):
         client.call(request(call_index=99))
 

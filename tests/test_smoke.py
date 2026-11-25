@@ -121,17 +121,18 @@ def test_title_scenario_and_test_gap_reach_report(fake_run: tuple[DocKind, Path,
     _, out, _ = fake_run
     report = Report.model_validate_json(out.with_suffix(".json").read_text(encoding="utf-8"))
     assert report.verification is not None
-    titled = [
-        f
-        for f in report.verification.findings
-        if f.title and any(s.kind is SourceKind.PASS for s in f.sources)  # находки линтера тоже с title
-    ]
+    findings = report.verification.findings
+    by_id = {f.id: f for f in findings}
+    from_passes = [f for f in findings if any(s.kind is SourceKind.PASS for s in f.sources)]
 
-    assert len(titled) == 1
-    assert titled[0].scenario and titled[0].test_gap
+    # Ответ прохода в формате промпта #14 (#18): суть есть у каждой находки поиска (у линтера тоже),
+    # сценарий и пробел теста там, где модель их написала.
+    assert from_passes and all(f.title for f in findings)
+    assert any(f.scenario and f.test_gap for f in from_passes)
     first_page = out.read_text(encoding="utf-8").split("## 1. Паспорт прогона")[0]
-    assert f"**{titled[0].id}**" in first_page
-    assert titled[0].title in first_page
+    first = by_id[report.conclusion.fix_first[0]]
+    assert f"**{first.id}**" in first_page
+    assert first.title is not None and first.title in first_page
 
 
 def test_invented_quote_is_discarded(fake_run: tuple[DocKind, Path, int]) -> None:
@@ -158,7 +159,10 @@ def test_calls_log_has_every_model_call(fake_run: tuple[DocKind, Path, int]) -> 
     lines = (out.parent / "run" / "calls.jsonl").read_text(encoding="utf-8").splitlines()
     records = [CallRecord.model_validate(json.loads(line)) for line in lines]
 
-    assert [r.call_id for r in records] == ["segment.1", "search.1", "search.2", "search.3", "questions.1"]
+    ids = [r.call_id for r in records]
+    # Проходы поиска идут параллельно (#18): между собой они в порядке завершения вызовов.
+    assert ids[0] == "segment.1" and ids[-1] == "questions.1"
+    assert sorted(ids[1:-1]) == ["search.1", "search.2", "search.3"]
 
 
 def test_missing_input_gives_diagnostic_report(tmp_path: Path) -> None:
