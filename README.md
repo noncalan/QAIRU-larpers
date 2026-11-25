@@ -12,7 +12,7 @@
 
 ### 0. Что понадобится
 
-- Аккаунт GitHub и **принятое приглашение** в этот репозиторий: https://github.com/noncalan/QAIRU-larpers/invitations
+- Аккаунт GitHub и **принятое приглашение** в этот репозиторий: https://github.com/noncalan/QAIRU-larpers-/invitations
 - Подписка **Claude Pro или Max** (бесплатный план Claude Code не включает).
 - Google-аккаунт для бесплатного ключа Gemini.
 - Git, uv (поставит Python сам).
@@ -37,8 +37,8 @@
 ### 3. Клонировать репозиторий
 
 ```bash
-git clone https://github.com/noncalan/QAIRU-larpers.git
-cd QAIRU-larpers
+git clone https://github.com/noncalan/QAIRU-larpers-.git
+cd QAIRU-larpers-
 ```
 
 Репозиторий приватный. Если git просит пароль, войди через [GitHub CLI](https://cli.github.com/) командой `gh auth login` (или клонируй через GitHub Desktop).
