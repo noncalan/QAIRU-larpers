@@ -32,6 +32,7 @@ from validator.models import (
     Property,
     RunConfig,
     Scope,
+    SearchInput,
     SourceKind,
     Verdict,
 )
@@ -60,9 +61,16 @@ LIBRARY = """# Библиотека
 Responses = Mapping[tuple[LLMStep, int], Mapping[str, Any]]
 
 
-def config(passes: int = 3, profile: Profile = Profile.STANDARD) -> RunConfig:
+def config(
+    passes: int = 3, profile: Profile = Profile.STANDARD, search_input: SearchInput | None = None
+) -> RunConfig:
     return load_config(
-        REQUIREMENTS[DocKind.MD], Path("out/report.md"), profile=profile, backend=Backend.FAKE, passes=passes
+        REQUIREMENTS[DocKind.MD],
+        Path("out/report.md"),
+        profile=profile,
+        backend=Backend.FAKE,
+        passes=passes,
+        search_input=search_input,
     )
 
 
@@ -135,10 +143,10 @@ def library(make_md: Callable[[str], ParsedDocument]) -> ParsedDocument:
 
 
 def run_search(
-    doc: ParsedDocument, responses: Responses, passes: int = 1
+    doc: ParsedDocument, responses: Responses, passes: int = 1, search_input: SearchInput | None = None
 ) -> tuple[list[PassResult], FakeLLM]:
     llm = FakeLLM(Path("/nonexistent"), responses)
-    return search(doc, llm, config(passes)), llm
+    return search(doc, llm, config(passes, search_input=search_input)), llm
 
 
 # ---------------------------------------------------------------- проходы по фикстурам
@@ -365,6 +373,57 @@ def test_transfer_unknown_block_ids_are_dropped_too(library: ParsedDocument) -> 
 
     assert result.candidates[0].block_ids == []
     assert [d.code for d in result.diagnostics] == ["LLM-032", "LLM-034"]
+
+
+# ---------------------------------------------------------------- вход поиска: блоки или сырой текст (#37)
+
+
+def test_search_input_defaults_to_blocks() -> None:
+    assert config(1).search_input is SearchInput.BLOCKS
+
+
+def test_raw_search_input_shows_canonical_text_without_block_ids(library: ParsedDocument) -> None:
+    responses = {(LLMStep.SEARCH, 1): envelope(answer())}
+
+    [result], llm = run_search(library, responses, search_input=SearchInput.RAW)
+
+    [req] = llm.requests
+    assert result.ok
+    shown = req.prompt.split("<документ>\n", 1)[1].split("\n</документ>", 1)[0]
+    assert shown == library.text.rstrip("\n") or shown == library.text
+    assert "[B001]" not in shown and "§" not in shown
+
+
+def test_raw_search_input_takes_blocks_from_quotes_not_from_model(library: ParsedDocument) -> None:
+    lent = bid(library, "Книга выдаётся")
+    limit = bid(library, "Максимум выдачи")
+    text = answer(
+        finding(1, blocks="раздел «Выдача книг», B999", quote="Книга выдаётся на срок"),
+        finding(2, blocks="таблица лимитов", quote="3 книги"),
+        finding(3, blocks=f"{lent}", quote="Книги выдаются бесплатно"),
+    )
+
+    [result], _ = run_search(library, {(LLMStep.SEARCH, 1): envelope(text)}, search_input=SearchInput.RAW)
+
+    assert [c.block_ids for c in result.candidates] == [[lent], [limit], []]
+    assert result.diagnostics == [], "ID модели в режиме raw не проверяются: их ей не показывали"
+
+
+def test_raw_search_input_transfer_sees_raw_text_and_blocks_come_from_quotes(library: ParsedDocument) -> None:
+    lent = bid(library, "Книга выдаётся")
+    responses = {
+        (LLMStep.SEARCH, 1): envelope(answer(finding(1, blocks="раздел 1", quote=None))),
+        (LLMStep.SEARCH_TRANSFER, 1): envelope(
+            structured={"findings": [record(1, blocks=["B998"], quotes=["Книга выдаётся"])]}
+        ),
+    }
+
+    [result], llm = run_search(library, responses, search_input=SearchInput.RAW)
+
+    transfer = next(r for r in llm.requests if r.step is LLMStep.SEARCH_TRANSFER)
+    assert library.text in transfer.prompt and "[B001]" not in transfer.prompt
+    assert result.candidates[0].block_ids == [lent]
+    assert [d.code for d in result.diagnostics] == ["LLM-032"]
 
 
 def test_unusable_transfer_is_retried_then_pass_fails(library: ParsedDocument) -> None:

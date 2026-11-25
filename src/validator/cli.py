@@ -14,7 +14,7 @@ from typing import Annotated, Any
 import typer
 
 from validator.config import load_config
-from validator.models import Backend, CacheMode, ExitCode, Profile
+from validator.models import Backend, CacheMode, ExitCode, Profile, SearchInput
 from validator.passport import agent_version
 from validator.pipeline import run
 
@@ -90,6 +90,13 @@ def main(
         str | None,
         typer.Option("--pdf-backend", help="Движок PDF: mupdf (по умолчанию) или pdfium (без копилефта)"),
     ] = None,
+    search_input: Annotated[
+        SearchInput | None,
+        typer.Option(
+            "--search-input",
+            help="Что видит поиск: blocks (документ с ID блоков) или raw (текст без ID, блоки по цитате)",
+        ),
+    ] = None,
     version: Annotated[
         bool, typer.Option("--version", callback=_version, is_eager=True, help="Версия агента")
     ] = False,
@@ -115,6 +122,7 @@ def main(
             ask=ask,
             max_budget_usd=max_budget_usd,
             pdf_backend=pdf_backend,
+            search_input=search_input,
         )
     except ValueError as exc:
         typer.echo(str(exc), err=True)

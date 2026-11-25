@@ -556,6 +556,15 @@ class CacheMode(StrEnum):
     OFF = "off"
 
 
+class SearchInput(StrEnum):
+    """Какой текст видят проходы поиска (#37, D-011, п. 2)."""
+
+    BLOCKS = "blocks"
+    """Документ с ID блоков и предложений (``render_for_model``), блоки называет модель."""
+    RAW = "raw"
+    """Канонический текст без ID блоков, блоки находит код по цитатам."""
+
+
 class Effort(StrEnum):
     LOW = "low"
     MEDIUM = "medium"
@@ -1202,6 +1211,7 @@ class RunConfig(Contract):
     step_models: dict[LLMStep, StepModel] = Field(default_factory=dict)
     fake_fixtures: Path | None = Field(default=None, description="Папка фикстур для бэкенда fake")
     pdf_backend: PdfBackendName = Field(default="mupdf", description="Движок PDF (#26)")
+    search_input: SearchInput = Field(default=SearchInput.BLOCKS, description="Вход поиска (#37, D-011)")
     call_timeout_s: int = Field(default=1200, ge=1)
     has_api_key: bool = Field(default=False, description="Есть ли ANTHROPIC_API_KEY (сам ключ не храним)")
 
@@ -1275,6 +1285,7 @@ class Passport(Contract):
     backend_used: Backend | None = None
     profile: Profile
     passes: int
+    search_input: SearchInput = Field(default=SearchInput.BLOCKS, description="Вход поиска (#37, D-011)")
     models: dict[str, str] = Field(default_factory=dict, description="Шаг → «модель · effort»")
     models_actual: list[str] = Field(default_factory=list, description="Фактические модели из ответов")
     calls_total: int = 0

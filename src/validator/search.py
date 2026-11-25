@@ -15,6 +15,9 @@
   ``experiments/23-search-pass``). Находки, которые перенос потерял, видны в диагностике ``LLM-033``.
 - ID блоков, которых нет в документе, отбрасываются с диагностикой; ID несуществующего предложения
   заменяется ID его блока. Цитаты здесь не сверяются: это делает верификатор (шаг 7).
+- Вход поиска задаёт ``cfg.search_input`` (#37, D-011, п. 2): ``blocks`` это документ с ID блоков
+  (``render_for_model``), ``raw`` это канонический текст ``doc.text`` без разметки. В режиме ``raw``
+  блоки, которые назвала модель, не берутся (ID ей не показывали): их находит код по цитатам находки.
 - Упавший проход это ``PassResult(ok=False)`` с диагностикой ``LLM-030`` «Проход k из K не удался»
   (``INT-002``, если упал код разбора), остальные идут дальше («K−1 из K»). Если упали все, шаг
   возвращает упавшие проходы без находок, а конвейер собирает отчёт без находок модели (``LLM-031``).
@@ -51,6 +54,7 @@ from validator.models import (
     ParsedDocument,
     PassResult,
     RunConfig,
+    SearchInput,
     SourceKind,
 )
 from validator.prompting import fill, load_prompt
@@ -65,6 +69,7 @@ from validator.search_transfer import (
     transfer_request,
     transferred,
 )
+from validator.text import locate_quote
 
 logger = logging.getLogger(__name__)
 
@@ -74,6 +79,13 @@ MAX_PARALLEL_PASSES = 3
 """Не больше трёх проходов одновременно: лимит подписки и нагрузка на машину (issue #18)."""
 EXAMPLES_IN_DIAGNOSTIC = 5
 """Сколько примеров ID показать в диагностике."""
+
+
+def search_text(doc: ParsedDocument, cfg: RunConfig) -> str:
+    """Текст документа для проходов: с ID блоков или сырой, по ``cfg.search_input``."""
+    if cfg.search_input is SearchInput.RAW:
+        return doc.text
+    return render_for_model(doc)
 
 
 def search_request(rendered: str, cfg: RunConfig, index: int) -> LLMRequest:
@@ -260,6 +272,22 @@ def _known_blocks(
     return kept
 
 
+def _quote_blocks(doc: ParsedDocument, quotes: Sequence[str]) -> list[str]:
+    """Блоки, где лежат цитаты находки (режим ``raw``). Ненайденная цитата блоков не даёт."""
+    ids: list[str] = []
+    for quote in quotes:
+        found = locate_quote(doc, quote)
+        if found.verified and found.anchor is not None:
+            ids.extend(found.anchor.block_ids)
+    return list(dict.fromkeys(ids))
+
+
+def _block_ids(ctx: _Context, d: Draft, unknown: list[str], coarse: list[str]) -> list[str]:
+    if ctx.cfg.search_input is SearchInput.RAW:
+        return _quote_blocks(ctx.doc, d.quotes)
+    return _known_blocks(ctx.doc, d.block_ids, unknown, coarse)
+
+
 def _candidates(ctx: _Context, index: int, call_id: str, drafts: Sequence[Draft], out: _Outcome) -> None:
     unknown: list[str] = []
     coarse: list[str] = []
@@ -273,7 +301,7 @@ def _candidates(ctx: _Context, index: int, call_id: str, drafts: Sequence[Draft]
                 defect_type=d.defect_type,
                 verdict=d.verdict,
                 scope=d.scope,
-                block_ids=_known_blocks(ctx.doc, d.block_ids, unknown, coarse),
+                block_ids=_block_ids(ctx, d, unknown, coarse),
                 quotes=list(d.quotes),
                 explanation=d.explanation,
                 suggestion=d.suggestion,
@@ -392,7 +420,7 @@ def search(doc: ParsedDocument, llm: LLMClient, cfg: RunConfig) -> list[PassResu
     """``cfg.passes`` проходов по документу. Упавший проход это ``PassResult(ok=False)``, а не исключение."""
     for name in (SEARCH_SYSTEM, SEARCH_USER, TRANSFER_SYSTEM, TRANSFER_USER):
         load_prompt(name)
-    ctx = _Context(doc=doc, rendered=render_for_model(doc), llm=llm, cfg=cfg)
+    ctx = _Context(doc=doc, rendered=search_text(doc, cfg), llm=llm, cfg=cfg)
     indexes = range(1, cfg.passes + 1)
     with ThreadPoolExecutor(
         max_workers=min(MAX_PARALLEL_PASSES, cfg.passes), thread_name_prefix="search"
@@ -402,4 +430,4 @@ def search(doc: ParsedDocument, llm: LLMClient, cfg: RunConfig) -> list[PassResu
     return [_result(o, ok, cfg.passes) for o in outcomes]
 
 
-__all__ = ["MAX_PARALLEL_PASSES", "search", "search_request"]
+__all__ = ["MAX_PARALLEL_PASSES", "search", "search_request", "search_text"]
