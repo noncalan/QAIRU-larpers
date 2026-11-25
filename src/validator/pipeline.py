@@ -13,7 +13,7 @@
 | 4 поиск | упал проход: «K−1 из K»; упали все: отчёт по линтеру, код 5 |
 | 5 слияние, 7 верификатор | внутренняя ошибка, код 1, отчёт из того, что есть |
 | 6 доказательства | находки без свидетеля, предупреждение |
-| 8 вопросы | раздел без вопросов, предупреждение |
+| 8 вопросы | редактор упал: вопросы кодом без редактуры; шаг упал: раздел без вопросов; предупреждение |
 | 9 отчёт | Markdown пишется всегда, в крайнем случае аварийный |
 """
 
@@ -67,7 +67,7 @@ from validator.models import (
     Verification,
 )
 from validator.passport import build_passport
-from validator.questions import ask, write_questions_yaml
+from validator.questions import build_questions, write_questions_yaml
 from validator.report import build_report, render_md
 from validator.search import search
 from validator.segment import fallback_segmentation, segment
@@ -288,12 +288,14 @@ def _execute(state: _State) -> None:
         asked = _step(
             state,
             "questions",
-            lambda: ask(ver, doc, seg, llm, cfg),
+            lambda: build_questions(ver, doc, seg, llm, cfg),
             lambda: None,
             action="Раздел вопросов собран без них",
         )
-        state.questions = asked or []
-        state.verification = light_with_questions(ver, asked)
+        if asked is not None:
+            state.questions = list(asked.questions)
+            state.diagnostics.extend(asked.diagnostics)
+        state.verification = light_with_questions(ver, state.questions if asked is not None else None)
 
 
 # ---------------------------------------------------------------- выходы
