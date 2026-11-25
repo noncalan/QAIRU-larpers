@@ -7,14 +7,16 @@
 
 Признаки для диагностики (``TextSignals``): страницы без текста (скан), доли букв, кириллицы и мусорных
 символов (испорченный ``/ToUnicode``), флаг ремонта. Диагностики и коды по ним делает «Защищённый вход» (#27);
-здесь только честный подсчёт. Таблицы по ячейкам делает #33, OCR и сканы #34.
+здесь только честный подсчёт. Таблицы читает ``pdf_tables`` по ячейкам (#33): строки таблицы идут в
+``SourceLine`` с номером таблицы, строки и ячейками, а их текст не попадает в поток абзацев. OCR и сканы: #34.
 """
 
 from __future__ import annotations
 
+import logging
 import unicodedata
 from collections.abc import Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 from validator.errors import IN_FURNITURE_REMOVED, IN_NO_TEXT, IN_PAGES_WITHOUT_TEXT
@@ -25,6 +27,7 @@ from validator.ingest.pdf_backends import (
     Glyph,
     PdfBackend,
     PdfSource,
+    RawPage,
     get_backend,
 )
 from validator.ingest.pdf_layout import (
@@ -36,6 +39,8 @@ from validator.ingest.pdf_layout import (
     find_furniture,
     group_lines,
 )
+from validator.ingest.pdf_table_lines import table_part_lines
+from validator.ingest.pdf_tables import LogicalTable, PageTable, find_tables, link_tables
 from validator.models import DiagLevel, Diagnostic, SourceLine, TextSignals
 
 MIN_PAGE_GLYPHS = 5
@@ -45,6 +50,7 @@ MIN_PAGE_GLYPHS = 5
 _GARBAGE_CATEGORIES = frozenset({"Cc", "Co", "Cn", "Cs"})
 _CYRILLIC = range(0x0400, 0x0530)
 FURNITURE_EXAMPLES = 3
+logger = logging.getLogger("validator")
 
 __all__ = ["BACKEND_NAMES", "DEFAULT_BACKEND", "parse_pdf"]
 
@@ -77,20 +83,57 @@ class _Counts:
         )
 
 
-def _read_pages(source: PdfSource, engine: PdfBackend) -> tuple[list[list[Line]], _Counts, int]:
-    pages: list[list[Line]] = []
-    counts = _Counts()
-    empty = 0
+@dataclass
+class _Pages:
+    """Прочитанные страницы: визуальные строки (все и только текст вне таблиц), таблицы, высоты страниц."""
+
+    lines: list[list[Line]] = field(default_factory=list)
+    prose: list[list[Line]] = field(default_factory=list)
+    tables: list[PageTable] = field(default_factory=list)
+    heights: dict[int, float] = field(default_factory=dict)
+    counts: _Counts = field(default_factory=_Counts)
+    empty: int = 0
+
+
+def _find_tables(raw: RawPage, gap_em: float) -> list[PageTable]:
+    """Таблицы страницы; сбой разбора одной страницы не роняет прогон: текст остаётся строками."""
+    try:
+        return find_tables(raw, gap_em)
+    except (ValueError, IndexError, KeyError, ArithmeticError) as exc:
+        logger.warning("Стр. %d: таблицы не разобраны (%s), текст страницы идёт строками", raw.number, exc)
+        return []
+
+
+def _renumber(prose: list[Line], full: list[Line]) -> list[Line]:
+    """Номер строки на странице у текста вне таблиц берём от ближайшей визуальной строки всей страницы."""
+    if not full:
+        return prose
+    return [
+        replace(line, page_line=min(full, key=lambda other: abs(other.center - line.center)).page_line)
+        for line in prose
+    ]
+
+
+def _read_pages(source: PdfSource, engine: PdfBackend) -> _Pages:
+    read = _Pages()
     for raw in source.pages():
-        counts.add(raw.glyphs)
-        empty += len(raw.glyphs) < MIN_PAGE_GLYPHS
-        pages.append(build_lines(raw, engine.space_gap_em))
-    return pages, counts, empty
+        read.counts.add(raw.glyphs)
+        read.empty += len(raw.glyphs) < MIN_PAGE_GLYPHS
+        read.heights[raw.number] = raw.height
+        full = build_lines(raw, engine.space_gap_em)
+        found = _find_tables(raw, engine.space_gap_em)
+        prose = full
+        if found:
+            rest = [g for g in raw.glyphs if not any(t.contains(g) for t in found)]
+            prose = _renumber(build_lines(replace(raw, glyphs=rest), engine.space_gap_em), full)
+        read.lines.append(full)
+        read.prose.append(prose)
+        read.tables.extend(found)
+    return read
 
 
-def _source_lines(lines: list[Line], stats: LayoutStats) -> list[SourceLine]:
-    out: list[SourceLine] = []
-    for paragraph in group_lines(assign_headings(lines, stats), stats):
+def _append_paragraphs(out: list[SourceLine], lines: list[Line], stats: LayoutStats) -> None:
+    for paragraph in group_lines(lines, stats):
         if out:
             out.append(SourceLine(text="", page=paragraph.lines[0].page))
         for k, line in enumerate(paragraph.lines):
@@ -103,6 +146,41 @@ def _source_lines(lines: list[Line], stats: LayoutStats) -> list[SourceLine]:
                     heading_level=line.heading_level,
                 )
             )
+
+
+def _source_lines(
+    lines: list[Line], stats: LayoutStats, tables: list[LogicalTable], pages: list[list[Line]]
+) -> list[SourceLine]:
+    """Абзацы и таблицы в порядке чтения: каждая часть таблицы встаёт на своём месте страницы.
+
+    Таблица разрывает абзац, даже если строки над ней и под ней стоят близко друг к другу. Часть таблицы на
+    следующей странице идёт после текста, который стоит над ней, а не вместе с первой частью.
+    """
+    out: list[SourceLine] = []
+    run: list[Line] = []
+    pending = sorted(
+        ((part.page, part.top, table, k) for table in tables for k, part in enumerate(table.parts)),
+        key=lambda item: item[:2],
+    )
+
+    def flush() -> None:
+        _append_paragraphs(out, run, stats)
+        run.clear()
+
+    def emit(page: int, table: LogicalTable, part: int) -> None:
+        flush()
+        if out and out[-1].text and out[-1].table != table.number:
+            out.append(SourceLine(text="", page=page))
+        out.extend(table_part_lines(table, part, pages))
+
+    for line in assign_headings(lines, stats):
+        while pending and pending[0][:2] <= (line.page, line.top):
+            page, _, table, part = pending.pop(0)
+            emit(page, table, part)
+        run.append(line)
+    flush()
+    for page, _, table, part in pending:
+        emit(page, table, part)
     return out
 
 
@@ -139,17 +217,21 @@ def parse_pdf(path: Path, backend: str | None = None) -> ParsedLines:
     engine = get_backend(backend)
     source = engine.open(path)
     try:
-        pages, counts, empty = _read_pages(source, engine)
+        read = _read_pages(source, engine)
         page_count, repaired = source.page_count, source.repaired
     finally:
         source.close()
-    marked = find_furniture(pages)
-    body = [line for lines in pages for line in lines if (line.page, line.page_line) not in marked]
-    furniture = [line for lines in pages for line in lines if (line.page, line.page_line) in marked]
+    tables = link_tables(read.tables, read.heights)
+    marked = find_furniture(read.prose)
+    body = [line for lines in read.prose for line in lines if (line.page, line.page_line) not in marked]
+    furniture = [line for lines in read.prose for line in lines if (line.page, line.page_line) in marked]
+    extraction = f"{engine.describe()}, символы с координатами в порядке чтения"
+    if tables:
+        extraction += f", таблицы по ячейкам ({len(tables)})"
     return ParsedLines(
-        lines=_source_lines(body, compute_stats(body)),
-        extraction=f"{engine.describe()}, символы с координатами в порядке чтения",
-        diagnostics=_diagnostics(page_count, empty, furniture),
+        lines=_source_lines(body, compute_stats(body), tables, read.lines),
+        extraction=extraction,
+        diagnostics=_diagnostics(page_count, read.empty, furniture),
         pages=page_count,
-        signals=counts.signals(page_count, empty, repaired),
+        signals=read.counts.signals(page_count, read.empty, repaired),
     )
