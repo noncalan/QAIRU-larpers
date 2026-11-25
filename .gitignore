@@ -23,6 +23,11 @@ build/
 experiments/out/
 *.log
 
+# Прогоны агента: отчёты, report.json, questions.yaml, run/calls.jsonl
+/out/
+/out-*/
+/runs/
+
 # Claude Code: личные файлы
 .claude/settings.local.json
 .claude/worktrees/

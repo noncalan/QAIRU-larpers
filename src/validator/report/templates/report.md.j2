@@ -1,0 +1,259 @@
+{#- Отчёт агента. Разделы ТЗ п. 6 по порядку плюс первая страница, вопросы автору и метрики.
+    Минимальная версия каркаса (#15): полноту и красоту делает #23. Текстов проверяемого документа
+    здесь нет и быть не должно: всё конкретное приходит из Report. -#}
+{% set r = report %}
+{% set p = r.passport %}
+{% set c = r.conclusion %}
+{% set v = r.verification %}
+{% set seg = r.segmentation %}
+{% macro finding_card(f) %}
+#### {{ f.id }} · {{ f.severity.label }} · {{ f.property.label }} ({{ f.property.value }})
+
+{% if f.scope.value == "set" %}
+- **Уровень:** весь набор требований{% if f.section_path %}, {{ f.section_path | join(" › ") }}{% endif %}
+
+{% endif %}
+{% if f.requirement_ids %}
+- **Требования:** {{ f.requirement_ids | join(", ") }}
+{% endif %}
+{% for q in f.quotes %}
+{% if q.verified %}
+- **Цитата:** «{{ q | quote_text }}» ({{ q.anchor | where(f.section_path) }}; сверено: {{ q.match.label }}{% if q.match.value == "fuzzy" %}, {{ "%.0f" | format(q.score) }} %{% endif %})
+{% else %}
+- **Цитата не найдена в документе:** «{{ q.text | cell(200) }}»
+{% endif %}
+{% endfor %}
+- **Нарушено:** {{ f.property.refs | join("; ") }}
+- **Вердикт:** {{ f.verdict.label }} · **тип дефекта:** {{ f.defect_type.label }} · **мешает написать тест-кейс:** {{ "да" if f.blocks_testing else "нет" }}
+- **Почему это проблема:** {{ f.explanation | cell }}
+{% if f.suggestion %}
+- **Как исправить:** {{ f.suggestion | cell }}
+{% endif %}
+- **Найдено:** в {{ f.found_in }} из {{ f.of }} проходов{% if f.sources %} ({{ f.sources | map(attribute="label") | join(", ") }}){% endif %}
+
+{% if f.anchor_corrected %}
+- **Примечание:** место цитаты уточнил код (модель указала другой блок).
+{% endif %}
+{% for note in f.notes %}
+- **Примечание:** {{ note | cell }}
+{% endfor %}
+{% endmacro %}
+{% macro diag_table(items) %}
+| Код | Уровень | Что обнаружено | Где | Что сделал агент | Что сделать вам |
+|---|---|---|---|---|---|
+{% for d in items %}
+| {{ d.code }} | {{ d.level.label }} | {{ d.message | cell }} | {{ d.location | cell if d.location else "—" }} | {{ d.action | cell if d.action else "—" }} | {{ d.hint | cell if d.hint else "—" }} |
+{% endfor %}
+{% endmacro %}
+# Отчёт о проверке требований: {{ p.document_name }}
+
+Проверка по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3). Отчёт сформировал агент QAIRU validator {{ p.agent_version }}, {{ p.started_at | when }}.
+
+## Итог на первой странице
+
+**{{ c.traffic_light.icon }} {{ c.headline }}**
+
+{% if v %}
+Требований: **{{ v.summary.requirements_total }}** · нарушений: **{{ v.summary.violations }}** · критичных: **{{ v.summary.critical }}** · «неясно»: **{{ v.summary.unclear }}** · вопросов автору: **{{ r.questions | length }}**
+
+### Что исправить первым
+
+{% for fid in c.fix_first %}
+{% set f = findings_by_id[fid] %}
+{% set q0 = (f.quotes | selectattr("verified") | first) if f.quotes else none %}
+{{ loop.index }}. **{{ f.id }}** · {{ f.severity.label }} · {{ f.property.label }}: {{ f.explanation | short(220) }}{% if q0 %} Цитата: «{{ q0 | quote_text(160) }}» ({{ q0.anchor | where }}).{% endif %}
+
+{% else %}
+Нарушений, которые нужно исправить до начала работ, не найдено.
+{% endfor %}
+
+### Какие вопросы задать автору первыми
+
+{% for qid in c.ask_first %}
+{% set q = questions_by_id[qid] %}
+{{ loop.index }}. **{{ q.id }}** · {{ q.priority.value }} ({{ q.priority.label }}): {{ q.question | short(220) }}
+{% else %}
+Вопросов, блокирующих разработку или тестирование, нет.
+{% endfor %}
+
+{% endif %}
+## 1. Паспорт прогона
+
+| Параметр | Значение |
+|---|---|
+| Документ | {{ p.document_name | cell }} ({{ p.document_kind.value }}{% if p.document_size_bytes %}, {{ p.document_size_bytes }} байт{% endif %}{% if p.document_pages %}, {{ p.document_pages }} стр.{% endif %}) |
+| SHA-256 документа | {{ p.document_sha256 or "—" }} |
+| Дата прогона | {{ p.started_at | when }} |
+| Длительность | {{ p.duration_s if p.duration_s is not none else "—" }} с |
+| Версия агента | {{ p.agent_version }} (источник: {{ p.agent_version_source }}){% if p.agent_dirty %}, есть незакоммиченные правки{% endif %} |
+| Хеш промптов | {{ p.prompts_sha256[:12] }} |
+| Способ вызова модели | {{ (p.backend_used or p.backend_requested).label }} |
+| Модели по шагам | {% for step, label in p.models.items() %}{{ step }}: {{ label }}{% if not loop.last %}; {% endif %}{% endfor %} |
+| Фактические модели | {{ p.models_actual | join(", ") if p.models_actual else "—" }} |
+| Профиль | {{ p.profile.value }}, проходов поиска: {{ p.passes }} |
+| Вызовов модели | {{ p.calls_total }} (с ошибкой: {{ p.calls_failed }}) |
+| Токены | вход {{ p.tokens.input_tokens }}, выход {{ p.tokens.output_tokens }}, запись в кеш {{ p.tokens.cache_creation_input_tokens }}, чтение из кеша {{ p.tokens.cache_read_input_tokens }} |
+| Цена по тарифу API | {{ p.cost_usd | money }} |
+| Окружение | {{ p.os | cell }}, Python {{ p.python }} |
+| Код завершения | {{ p.exit_code.value }}: {{ p.exit_code.meaning }} |
+{% if r.document and r.document.extraction %}
+| Извлечение текста | {{ r.document.extraction | cell }} |
+{% endif %}
+
+## 2. Диагностика входа
+
+{% if r.input_diagnostics %}
+{{ diag_table(r.input_diagnostics) }}
+{% else %}
+Вход прочитан полностью, замечаний нет.
+{% endif %}
+
+{% if not c.performed %}
+## Итог
+
+**{{ c.headline }}**
+
+Разделы о требованиях не сформированы: документ не удалось прочитать. Исправьте вход по таблице выше и запустите проверку снова.
+{% else %}
+## 3. Как агент нарезал требования
+
+{% if seg %}
+{% if seg.mode.value == "fallback" %}
+Нарезка упрощённая, без модели: каждый содержательный блок документа стал требованием. Цитату в таблицу подставил код.
+{% else %}
+Нарезку сделала модель по ID блоков, цитату в таблицу подставил код из текста документа.
+{% endif %}
+
+| ID в отчёте | ID в документе | Краткая формулировка | Тип | Цитата | Где |
+|---|---|---|---|---|---|
+{% for req in seg.requirements %}
+| {{ req.id }} | {{ req.source_id | cell if req.source_id else "нет номера (" ~ (req.source_locator | cell) ~ ")" }} | {{ req.summary | cell(160) }} | {{ req.type.label }} | «{{ req.quote | cell(300) }}» | {{ req.anchor | where }} |
+{% endfor %}
+
+Не вошли в требования: {{ seg.excluded | length }} блоков{% if seg.excluded %} ({% for label, group in seg.excluded | groupby("label") %}{{ label.label }}: {{ group | length }}{% if not loop.last %}, {% endif %}{% endfor %}){% endif %}.
+{% else %}
+Нарезка не выполнена, смотрите диагностику прогона.
+{% endif %}
+
+## 4. Проверка каждого требования
+
+{% if v and seg %}
+| Требование | Статус |
+|---|---|
+{% for req in seg.requirements %}
+{% set ids = v.requirement_status.get(req.id, []) %}
+| {{ req.id }} | {{ ids | join(", ") if ids else "нарушений нет" }} |
+{% endfor %}
+
+{% for f in req_findings %}
+{{ finding_card(f) }}
+{% else %}
+Нарушений в отдельных требованиях не найдено.
+{% endfor %}
+{% else %}
+Проверка требований не выполнена, смотрите диагностику прогона.
+{% endif %}
+
+## 5. Проверка всего набора требований
+
+{% if v %}
+{% for f in set_findings %}
+{{ finding_card(f) }}
+{% else %}
+Нарушений уровня набора (29148 п. 5.2.6, IEEE 830 п. 4.3) не найдено.
+{% endfor %}
+{% else %}
+Проверка набора не выполнена, смотрите диагностику прогона.
+{% endif %}
+
+## 6. Вопросы автору ТЗ
+
+{% if r.questions %}
+| ID | Приоритет | Адресат | Вопрос | Закрывает находки |
+|---|---|---|---|---|
+{% for q in r.questions %}
+| {{ q.id }} | {{ q.priority.value }} {{ q.priority.label }} | {{ q.addressee | map(attribute="label") | join(", ") }} | {{ q.question | cell(200) }} | {{ q.related_findings | join(", ") }} |
+{% endfor %}
+
+{% for q in r.questions %}
+### {{ q.id }} · {{ q.priority.value }} · {{ q.addressee | map(attribute="label") | join(", ") }}{% if q.topic %} · {{ q.topic }}{% endif %}
+
+**Вопрос.** {{ q.question | cell }}
+
+{% if q.quotes %}
+**Где в документе.**
+{% for qq in q.quotes %}
+- «{{ qq | quote_text(200) }}» ({{ qq.anchor | where }})
+{% endfor %}
+
+{% endif %}
+{% if q.why %}
+**Почему важно.** {{ q.why | cell }}
+
+{% endif %}
+| Вариант | Правило | Что поменять |
+|---|---|---|
+{% for o in q.options %}
+| {{ o.label }} | {{ o.text | cell }} | {{ o.change | cell if o.change else "—" }} |
+{% endfor %}
+| Другое | ___ | |
+
+{% if q.if_unanswered %}
+**Если не ответить.** {{ q.if_unanswered | cell }}
+{% endif %}
+
+{% endfor %}
+Ответы можно вписать в `questions.yaml` рядом с отчётом.
+{% else %}
+Вопросов к автору нет.
+{% endif %}
+
+## 7. Сводка
+
+{% if v %}
+{% set s = v.summary %}
+- Требований: **{{ s.requirements_total }}**, из них с нарушениями: **{{ s.requirements_with_findings }}**.
+- Находок: **{{ s.findings_total }}** (нарушений {{ s.violations }}, «неясно» {{ s.unclear }}, уровня набора {{ s.set_level }}).
+- По важности: {% for sev, n in s.by_severity.items() %}{{ sev.label }} {{ n }}{% if not loop.last %}, {% endif %}{% else %}нет находок{% endfor %}.
+- Критичных: **{{ s.critical }}**{% if s.critical_ids %} ({{ s.critical_ids | join(", ") }}){% endif %}.
+- Критичные классы по ТЗ (непроверяемые, противоречивые, неполные): {% for f in critical_classes %}{{ f.id }} {{ f.defect_type.label }}{% if not loop.last %}, {% endif %}{% else %}не найдены{% endfor %}.
+- Отброшено кодом: {{ s.discarded_total }}{% if s.discarded_by_reason %} ({% for reason, n in s.discarded_by_reason.items() %}{{ reason.label }}: {{ n }}{% if not loop.last %}; {% endif %}{% endfor %}){% endif %}.
+- Цитаты: сверено {{ s.quotes_exact + s.quotes_fuzzy }} из {{ s.quotes_total }} (точно {{ s.quotes_exact }}, нечётко {{ s.quotes_fuzzy }}).
+{% else %}
+Сводка недоступна: проверка выполнена не полностью.
+{% endif %}
+
+## 8. Итог
+
+**{{ c.traffic_light.icon }} {{ c.headline }}**
+
+{% if c.fix_first %}
+Исправить в первую очередь: {{ c.fix_first | join(", ") }}.
+{% endif %}
+{% if c.ask_first %}
+Спросить автора в первую очередь: {{ c.ask_first | join(", ") }}.
+{% endif %}
+
+Светофор считает код по сверенным находкам, а не модель.
+
+## 9. Метрики прогона
+
+| Метрика | Значение |
+|---|---|
+| Доля сверенных цитат | {{ r.metrics.verified_quote_share | pct }} ({{ r.metrics.quotes_verified }} из {{ r.metrics.quotes_total }}) |
+| Кандидатов от проходов и линтера | {{ r.metrics.candidates_total }} |
+| Находок после слияния | {{ r.metrics.merged_total }} |
+| Находок после верификатора | {{ r.metrics.findings_total }} |
+| Отброшено верификатором | {{ r.metrics.discarded_total }} |
+| Вызовов модели | {{ r.metrics.calls_total }} (с ошибкой {{ r.metrics.calls_failed }}, из кеша {{ r.metrics.calls_cached }}) |
+| Время прогона | {{ r.metrics.duration_s if r.metrics.duration_s is not none else "—" }} с |
+| Цена по тарифу API | {{ r.metrics.cost_usd | money }} |
+{% endif %}
+
+## {{ "10. " if c.performed else "" }}Диагностика прогона
+
+{% if r.diagnostics %}
+{{ diag_table(r.diagnostics) }}
+{% else %}
+Замечаний к прогону нет.
+{% endif %}
