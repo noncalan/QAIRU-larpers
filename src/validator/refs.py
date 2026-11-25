@@ -24,8 +24,11 @@ from validator.models import (
     Verification,
 )
 
-BLOCK_REF = re.compile(r"(?<![\w.-])B\d{3,}(?:\.\d+)?(?![\w-])")
-"""ID блока или предложения, как его видит модель: B012, B012.3 (не часть слова или номера)."""
+_ID = r"B\d{3,}(?:\.\d+)?"
+BLOCK_REF = re.compile(rf"(?<![\w.\-‑]){_ID}(?:\s*[-–‑]\s*{_ID})?(?![\w\-‑])")
+"""ID блока или предложения, как его видит модель: B012, B012.3 или диапазон B012-B015. Не часть
+слова или кода вроде «X-B012» и «B012-A»."""
+_ONE_ID = re.compile(_ID)
 
 MAX_IDS_SHOWN = 3
 """Сколько R-NN перечислить вместо одного ID блока, остальные «и ещё N»."""
@@ -40,17 +43,26 @@ class RefNamer:
 
     def __init__(self, doc: ParsedDocument, seg: Segmentation | None) -> None:
         self._blocks: dict[str, Block] = {b.id: b for b in doc.blocks}
+        # Код вида B250 из самого документа (тариф, артикул) это не ссылка модели на блок.
+        self._in_document = set(re.findall(rf"(?<![\w.]){_ID}(?!\w)", doc.text))
         self._by_ref: dict[str, list[str]] = {}
-        for req in seg.requirements if seg is not None else []:
+        requirements = seg.requirements if seg is not None else []
+        for req in requirements:
             for ref in [*req.anchor.block_ids, *req.anchor.sentence_ids]:
                 ids = self._by_ref.setdefault(ref, [])
                 if req.id not in ids:
                     ids.append(req.id)
+        # Как ``verify.requirement_ids``: если совпали и атом, и его родитель, остаётся атом.
+        parent = {r.id: r.parent_id for r in requirements}
+        for ref, ids in self._by_ref.items():
+            parents = {parent[i] for i in ids if parent.get(i)}
+            self._by_ref[ref] = [i for i in ids if i not in parents]
 
     def name(self, ref: str) -> str | None:
-        """Понятное читателю имя для ID блока или предложения; None, если такого ID в документе нет."""
-        block_id = ref.split(".", 1)[0]
-        block = self._blocks.get(block_id)
+        """Понятное читателю имя для ID блока или предложения; None, если это не ссылка на блок."""
+        if ref in self._in_document:
+            return None
+        block = self._blocks.get(ref.split(".", 1)[0])
         if block is None:
             return None
         ids = self._by_ref.get(ref, [])
@@ -61,10 +73,9 @@ class RefNamer:
         return _place(block)
 
     def text(self, value: str) -> str:
-        return BLOCK_REF.sub(lambda m: self.name(m.group(0)) or m.group(0), value)
-
-    def optional(self, value: str | None) -> str | None:
-        return None if value is None else self.text(value)
+        return BLOCK_REF.sub(
+            lambda m: _ONE_ID.sub(lambda r: self.name(r.group(0)) or r.group(0), m.group(0)), value
+        )
 
 
 def _place(block: Block) -> str:

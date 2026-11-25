@@ -28,7 +28,7 @@ from collections.abc import Iterable, Mapping, Sequence
 from enum import Enum
 from typing import Final, TypeVar
 
-from validator.ingest.blocks import EMPTY_CELL
+from validator.ingest.blocks import EMPTY_CELL, is_empty_cell_quote
 from validator.models import (
     Anchor,
     BlockKind,
@@ -53,7 +53,7 @@ from validator.models import (
     Verification,
 )
 from validator.severity import severity_for
-from validator.text import locate_quote
+from validator.text import locate_quote, normalize
 
 # ---------------------------------------------------------------- светофор
 
@@ -86,10 +86,10 @@ def empty_cell_quote(doc: ParsedDocument, quote: str, block_ids: Sequence[str]) 
     в строке таблицы, которую видела модель (``Block.serialized``), и привязывает её к этой строке:
     сначала среди блоков, которые указала модель, иначе к единственной подходящей строке документа.
     """
-    norm = " ".join(quote.split())
+    norm = normalize(quote)[0]
     if EMPTY_CELL not in norm:
         return None
-    rows = [b for b in doc.blocks if b.kind is BlockKind.TABLE_ROW and norm in " ".join(b.serialized.split())]
+    rows = [b for b in doc.blocks if b.kind is BlockKind.TABLE_ROW and norm in normalize(b.serialized)[0]]
     named = _blocks_of(block_ids)
     picked = [b for b in rows if b.id in named] or (rows if len(rows) == 1 else [])
     if not picked:
@@ -175,7 +175,7 @@ def _quote_notes(
     notes: list[str] = [
         f"Цитата «{q.text}» это пустые ячейки таблицы: код проверил по документу, что они не заполнены."
         for q in verified
-        if EMPTY_CELL in q.text and EMPTY_CELL not in (q.located or "")
+        if is_empty_cell_quote(q)
     ]
     missing = len(m.quotes) - len(verified)
     if missing:

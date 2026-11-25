@@ -36,7 +36,7 @@ from rapidfuzz import fuzz
 from evals.judge import EvalError, display_path, read_utf8
 from evals.report import money, num, pct
 from evals.runs import load_document
-from validator.ingest.blocks import EMPTY_CELL
+from validator.ingest.blocks import is_empty_cell_quote
 from validator.merge import PROPERTY_GROUPS
 from validator.models import Backend, CallRecord, DocKind, Finding, ParsedDocument, Quote, Report, Scope
 from validator.text import locate_quote, normalize
@@ -121,11 +121,13 @@ def live_seconds(folder: Path) -> float | None:
 
 
 def load_runs(paths: Sequence[Path]) -> list[FormatRun]:
-    runs = []
+    runs: list[FormatRun] = []
     for path in paths:
         report = load_report(path)
         kind = report.passport.document_kind
         label = kind.value.upper() if kind is not DocKind.UNKNOWN else display_path(path)
+        if any(r.label == label for r in runs):  # два прогона одного формата: метки различаем
+            label = f"{label} ({display_path(path)})"
         folder = path if path.is_dir() else path.parent
         runs.append(FormatRun(label=label, path=path, report=report, live_seconds=live_seconds(folder)))
     return runs
@@ -133,7 +135,7 @@ def load_runs(paths: Sequence[Path]) -> list[FormatRun]:
 
 def _shown(quote: Quote) -> str:
     """Фрагмент документа, а у цитаты пустых ячеек («Подпись: (пусто)») текст, как его видела модель."""
-    if quote.located and EMPTY_CELL in quote.text and EMPTY_CELL not in quote.located:
+    if is_empty_cell_quote(quote):
         return quote.text
     return quote.located or quote.text
 
@@ -197,7 +199,8 @@ def same_defect(a: Item, b: Item) -> bool:
 
 
 def clusters(items: Sequence[Item]) -> list[list[int]]:
-    """Группы похожих находок разных прогонов (объединение по парам, без пар внутри одного прогона)."""
+    """Группы похожих находок разных прогонов: объединение по парам, в группе не больше одной находки
+    каждого прогона (как запрет цепочек в ``merge.py``)."""
     parent = list(range(len(items)))
 
     def root(i: int) -> int:
@@ -206,9 +209,14 @@ def clusters(items: Sequence[Item]) -> list[list[int]]:
             i = parent[i]
         return i
 
+    runs_of = [{it.run} for it in items]
     for i, j in combinations(range(len(items)), 2):
-        if items[i].run != items[j].run and same_defect(items[i], items[j]):
-            parent[root(j)] = root(i)
+        ri, rj = root(i), root(j)
+        # Без цепочек через третью находку: в группе не больше одной находки каждого прогона.
+        if ri == rj or runs_of[ri] & runs_of[rj] or not same_defect(items[i], items[j]):
+            continue
+        parent[rj] = ri
+        runs_of[ri] |= runs_of[rj]
     groups: dict[int, list[int]] = {}
     for i in range(len(items)):
         groups.setdefault(root(i), []).append(i)

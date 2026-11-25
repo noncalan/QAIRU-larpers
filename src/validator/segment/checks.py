@@ -45,6 +45,7 @@ from validator.segment.build import (
     word_count,
 )
 from validator.segment.spans import Piece, content_span, narrow, resolve, runs, trim
+from validator.text import normalize
 
 LABEL_REASON = "метка пункта"
 LABEL_PUNCTUATION = ".:)·*"
@@ -179,7 +180,12 @@ def _is_label_only(unit: _Unit, block: Block) -> bool:
     предложением. Решения модели оно не требует и пропуском не считается."""
     if not block.source_id:
         return False
-    return unit.text.strip().strip(LABEL_PUNCTUATION) == block.source_id.strip().strip(LABEL_PUNCTUATION)
+    return _bare_label(unit.text) == _bare_label(block.source_id)
+
+
+def _bare_label(text: str) -> str:
+    """Метка без регистра, разметки, вида дефиса и знаков вокруг: «**REQ‑7.**» и «req-7» совпадают."""
+    return normalize(text)[0].strip(LABEL_PUNCTUATION + " ")
 
 
 def _is_covered(unit: _Unit, drafts: Sequence[Draft]) -> bool:

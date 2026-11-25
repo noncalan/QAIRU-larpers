@@ -6,7 +6,7 @@ import re
 from collections.abc import Sequence
 from datetime import datetime
 
-from validator.ingest.blocks import EMPTY_CELL
+from validator.ingest.blocks import is_empty_cell_quote
 from validator.models import Anchor, Extraction, Quote, ReportStatus
 
 _SPACES = re.compile(r"\s+")
@@ -83,7 +83,7 @@ def quote_text(quote: Quote, limit: int = 300) -> str:
     Цитату пустых ячеек («Подпись: (пусто)») показываем, как её видела модель: в документе на месте
     пустой ячейки только разделители таблицы, а место строки даёт якорь.
     """
-    if quote.located and EMPTY_CELL in quote.text and EMPTY_CELL not in quote.located:
+    if is_empty_cell_quote(quote):
         return cell(quote.text, limit)
     return cell(quote.located or quote.text, limit)
 

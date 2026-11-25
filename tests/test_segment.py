@@ -348,6 +348,14 @@ def test_label_only_sentence_is_not_reported_as_missed(make_md: Callable[[str], 
     assert quotes == ["Система хранит заказ.", "Пользователь видит статус заказа."]
 
 
+def test_label_with_non_breaking_hyphen_is_still_a_label(make_md: Callable[[str], ParsedDocument]) -> None:
+    doc = make_md("# Заказы\n\n- REQ\u20117. Система хранит заказ. Пользователь видит статус заказа.\n")
+
+    seg = run(doc, answer([item("B002.2"), item("B002.3")], []))
+
+    assert LLM_SEGMENT_UNCOVERED not in {d.code for d in seg.diagnostics}
+
+
 def test_furniture_is_excluded_without_missed_warning(doc: ParsedDocument) -> None:
     blocks = [b.model_copy(update={"kind": BlockKind.FURNITURE}) if b.id == "B002" else b for b in doc.blocks]
     with_footer = doc.model_copy(update={"blocks": blocks})

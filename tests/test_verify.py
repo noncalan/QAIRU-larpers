@@ -13,6 +13,7 @@ import pytest
 from conftest import REQUIREMENTS
 from validator import pipeline
 from validator.config import load_config
+from validator.ingest.blocks import is_empty_cell_quote
 from validator.models import (
     Anchor,
     Backend,
@@ -29,6 +30,7 @@ from validator.models import (
     Property,
     Question,
     QuestionPriority,
+    Quote,
     QuoteMatch,
     Requirement,
     Scope,
@@ -39,6 +41,7 @@ from validator.models import (
     Verification,
 )
 from validator.questions import QuestionsOutcome
+from validator.report.fmt import quote_text
 from validator.segment import fallback_segmentation
 from validator.severity import SEVERITY_TABLE, severity_disputed, table_severity
 from validator.verify import TRAFFIC_RULE, light_with_questions, traffic_light, verify
@@ -197,6 +200,15 @@ def test_empty_cell_quote_is_checked_against_the_row_the_model_saw(
     assert quote.match is QuoteMatch.EXACT
     assert quote.anchor == rows[0].anchor and quote.located == rows[0].text
     assert any("пустые ячейки таблицы" in n for n in finding.notes)
+
+
+def test_fuzzy_quote_with_empty_marker_is_not_shown_as_empty_cells() -> None:
+    """«(пусто)» в нечёткой цитате не делает её цитатой пустых ячеек: показываем фрагмент документа."""
+    fuzzy = Quote(text="Подпись: (пусто)", match=QuoteMatch.FUZZY, score=91.0, located="Подпись: Иванов")
+    exact = fuzzy.model_copy(update={"match": QuoteMatch.EXACT, "score": 100.0, "located": "| | |"})
+
+    assert not is_empty_cell_quote(fuzzy) and quote_text(fuzzy) == "Подпись: Иванов"
+    assert is_empty_cell_quote(exact) and quote_text(exact) == "Подпись: (пусто)"
 
 
 def test_empty_cell_quote_goes_to_the_one_row_where_the_cell_is_empty(

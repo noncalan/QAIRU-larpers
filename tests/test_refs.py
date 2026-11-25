@@ -106,3 +106,22 @@ def test_humanize_rewrites_findings_and_questions_but_not_quotes(
     assert finding.quotes[0].text == "B002 сохраняет"
     assert new_q.question == "Что показывать в R-01.2?"
     assert new_q.options[0].change == "Исправить R-01.2"
+
+
+def test_range_of_ids_is_rewritten_and_document_codes_stay(
+    make_md: Callable[[str], ParsedDocument],
+) -> None:
+    doc = make_md(DOC + "\nТариф B004 действует везде.\n")
+    seg = Segmentation(requirements=[], mode=SegmentationMode.MODEL)
+    namer = RefNamer(doc, seg)
+
+    assert namer.text("блоки B002-B003") == "блоки фрагмент в разделе «Заказы» (строка 3)-раздел «Справка»"
+    assert namer.text("тариф B004 и X-B002 и B002-A") == "тариф B004 и X-B002 и B002-A"
+
+
+def test_parent_is_dropped_when_its_atoms_match(doc: ParsedDocument, seg: Segmentation) -> None:
+    atom = seg.requirements[0]
+    parent = atom.model_copy(update={"id": "R-01", "parent_id": None})
+    with_parent = seg.model_copy(update={"requirements": [parent, *seg.requirements]})
+
+    assert RefNamer(doc, with_parent).text("B002") == "R-01.1, R-01.2"

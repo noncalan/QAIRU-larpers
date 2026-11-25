@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from evals.formats import FormatRun, clusters, items_of, live_seconds, main, render
+from evals.formats import FormatRun, clusters, items_of, live_seconds, load_runs, main, render
 from report_factory import full_report
 from validator.models import (
     Backend,
@@ -169,3 +169,34 @@ def test_set_level_gap_with_same_property_groups_across_places(reference: Parsed
 
     f05 = [g for g in groups if any(items[i].finding.id == "F-05" for i in g)]
     assert len(f05) == 1 and {items[i].run for i in f05[0]} == {0, 1}
+
+
+def test_no_chaining_two_findings_of_one_run_through_a_third(reference: ParsedDocument) -> None:
+    """Два разных дефекта MD на одной фразе и одна находка PDF, похожая на оба: группа берёт один."""
+    base = full_report()
+    assert base.verification is not None
+    f02 = base.verification.findings[1]
+    twin = f02.model_copy(update={"id": "F-09", "defect_type": DefectType.UNVERIFIABLE})
+    md = base.model_copy(
+        update={"verification": base.verification.model_copy(update={"findings": [f02, twin]})}
+    )
+    pdf = _with(md, DocKind.PDF, keep=lambda fid: fid == "F-02")
+
+    items = items_of(_runs(_with(md, DocKind.MD), pdf), reference)
+    groups = clusters(items)
+
+    assert len(groups) == 2
+    assert all(len({items[i].run for i in g}) == len(g) for g in groups)
+
+
+def test_two_runs_of_one_format_get_different_labels(tmp_path: Path) -> None:
+    base = full_report()
+    for name in ("md1", "md2"):
+        (tmp_path / name).mkdir()
+        (tmp_path / name / "report.json").write_text(
+            _with(base, DocKind.MD).model_dump_json(), encoding="utf-8"
+        )
+
+    runs = load_runs([tmp_path / "md1", tmp_path / "md2"])
+
+    assert len({r.label for r in runs}) == 2
