@@ -18,7 +18,7 @@ import report_factory as factory
 from conftest import REQUIREMENTS
 from validator import pipeline
 from validator.config import load_config
-from validator.models import Backend, DocKind, ExitCode, Report
+from validator.models import Backend, DocKind, ExitCode, QuestionMetrics, Report, WithdrawnQuestion
 from validator.report import PdfRenderError, render_md, render_pdf
 from validator.report.render_pdf import FONTS_DIR, SECTION_TITLES, build_view
 
@@ -54,6 +54,45 @@ def test_pdf_contains_every_section_heading_of_the_markdown_report(name: str) ->
 
     for heading in md_headings(render_md(report)):
         assert heading in text, heading
+
+
+def test_pdf_shows_withdrawn_questions_and_question_metrics_like_markdown() -> None:
+    report = load("full")
+    assert report.verification is not None
+    answer = next(q for f in report.verification.findings for q in f.quotes if q.verified)
+    withdrawn = WithdrawnQuestion(
+        question=report.questions[0].model_copy(update={"id": "Q-90"}),
+        reason="срок указан в разделе о бронировании",
+        answer=answer,
+    )
+    metrics = report.metrics.model_copy(
+        update={
+            "questions": QuestionMetrics(
+                total=3,
+                before_critic=4,
+                withdrawn=1,
+                reviewed=4,
+                with_scenario=0.75,
+                closed=1.0,
+                without_errors=0.5,
+                by_addressee={"analyst": 2, "business": 1},
+            )
+        }
+    )
+    both = report.model_copy(update={"questions_withdrawn": [withdrawn], "metrics": metrics})
+
+    markdown, text = render_md(both), pdf_text(render_pdf(both))
+
+    for needle in (
+        "Снятые вопросы: ответ есть в документе",
+        "Q-90",
+        "срок указан в разделе о бронировании",
+        "до самопроверки 4, снято 1",
+        "Вопросы: со сценарием",
+        "аналитик 2, бизнес 1",
+    ):
+        assert needle in markdown, needle
+        assert needle in text, needle
 
 
 def test_pdf_section_titles_match_markdown_headings() -> None:

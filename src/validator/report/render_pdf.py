@@ -24,6 +24,7 @@ from validator.models import (
     Diagnostic,
     Finding,
     Question,
+    QuestionMetrics,
     QuestionOption,
     Quote,
     Report,
@@ -420,6 +421,22 @@ def _set_section(report: Report, ctx: dict[str, Any]) -> Json:
     }
 
 
+def _withdrawn_blocks(report: Report, ctx: dict[str, Any]) -> list[Json]:
+    """Вопросы, снятые самопроверкой: ответ нашёлся в документе, цитату-ответ сверил код."""
+    if not report.questions_withdrawn:
+        return []
+    items = [
+        f"{w.question.id}. {plain(w.question.question, 200)} Ответ: {plain(w.reason, 200)}. "
+        f"Документ: «{quote_plain(w.answer, 200)}» ({where(w.answer.anchor, ctx['section_of'](w.answer))})."
+        for w in report.questions_withdrawn
+    ]
+    intro = (
+        "Перед отчётом агент попытался сам ответить на каждый вопрос по документу. Эти вопросы сняты: "
+        "ответ нашёлся, и код сверил цитату-ответ с документом."
+    )
+    return [{"t": "h2", "text": "Снятые вопросы: ответ есть в документе"}, _para(intro), _bullets(items)]
+
+
 def _questions_section(report: Report, ctx: dict[str, Any]) -> Json:
     title = SECTION_TITLES["questions"]
     v = report.verification
@@ -441,9 +458,14 @@ def _questions_section(report: Report, ctx: dict[str, Any]) -> Json:
         )
         blocks = [table, *(_question_card(q, ctx) for q in report.questions)]
         blocks.append(_para("Ответы можно вписать в questions.yaml рядом с отчётом."))
-        return {"title": title, "blocks": blocks}
+        return {"title": title, "blocks": [*blocks, *_withdrawn_blocks(report, ctx)]}
     failed = [d for d in report.diagnostics if d.step == "questions" and d.level.value != "info"]
-    if failed:
+    if report.questions_withdrawn:
+        text = (
+            "Открытых вопросов нет: самопроверка нашла в документе ответы на все вопросы, "
+            "они перечислены ниже."
+        )
+    elif failed:
         text = "Вопросы не сформированы: шаг вопросов завершился с ошибкой, смотрите диагностику прогона."
     elif v is not None and v.findings:
         text = (
@@ -454,7 +476,7 @@ def _questions_section(report: Report, ctx: dict[str, Any]) -> Json:
         text = "Вопросов нет: нарушений и неясностей не найдено."
     else:
         text = "Вопросы не сформированы: проверка выполнена не полностью, смотрите диагностику прогона."
-    return {"title": title, "blocks": [_para(text)]}
+    return {"title": title, "blocks": [_para(text), *_withdrawn_blocks(report, ctx)]}
 
 
 def _summary_section(report: Report, ctx: dict[str, Any]) -> Json:
@@ -516,7 +538,13 @@ def _conclusion_section(report: Report, ctx: dict[str, Any]) -> Json:
     return {"title": SECTION_TITLES["conclusion"], "blocks": blocks}
 
 
-def _metrics_section(report: Report) -> Json:
+def _questions_count(qm: QuestionMetrics) -> str:
+    if not qm.reviewed:
+        return f"{qm.total} (самопроверка не выполнена)"
+    return f"{qm.total} (до самопроверки {qm.before_critic}, снято {qm.withdrawn}: ответ есть в документе)"
+
+
+def _metrics_section(report: Report, ctx: dict[str, Any]) -> Json:
     m = report.metrics
     t = m.tokens
     rows = [
@@ -537,6 +565,19 @@ def _metrics_section(report: Report) -> Json:
         ("Время прогона", f"{m.duration_s if m.duration_s is not None else '—'} с"),
         ("Цена по тарифу API", money(m.cost_usd)),
     ]
+    qm = m.questions
+    if qm is not None and qm.before_critic:
+        rows += [
+            ("Вопросов автору", _questions_count(qm)),
+            ("Вопросы: со сценарием", pct(qm.with_scenario)),
+            ("Вопросы: закрытые (2–4 варианта с последствиями)", pct(qm.closed)),
+            ("Вопросы: без ошибок формулировки", pct(qm.without_errors)),
+            ("Вопросы: дубли с находками, повторы", f"{qm.obvious_fix}, {qm.duplicate_pairs}"),
+            (
+                "Вопросы: адресаты",
+                ", ".join(f"{ctx['addressee_label'](a)} {n}" for a, n in qm.by_addressee.items()) or "—",
+            ),
+        ]
     return {"title": SECTION_TITLES["metrics"], "blocks": [_kv(rows)]}
 
 
@@ -561,7 +602,7 @@ def build_view(report: Report) -> Json:
             _questions_section(report, ctx),
             _summary_section(report, ctx),
             _conclusion_section(report, ctx),
-            _metrics_section(report),
+            _metrics_section(report, ctx),
         ]
     sections.append(_diagnostics_section(report))
     return {

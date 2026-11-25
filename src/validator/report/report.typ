@@ -147,6 +147,8 @@
 #let render-block(b) = {
   if b.t == "para" {
     par[#b.text]
+  } else if b.t == "h2" {
+    heading(level: 2)[#b.text]
   } else if b.t == "note" {
     par(text(size: 8pt, fill: muted)[#b.text])
   } else if b.t == "bullets" {
