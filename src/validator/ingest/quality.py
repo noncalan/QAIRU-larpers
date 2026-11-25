@@ -26,15 +26,13 @@ from validator.errors import (
     IN_NOT_REQUIREMENTS,
     IN_PAGES_WITHOUT_TEXT,
 )
-from validator.models import DiagLevel, Diagnostic, ParsedDocument, TextSignals
+from validator.models import BlockKind, DiagLevel, Diagnostic, ParsedDocument, TextSignals
 
 GARBLED_FATAL_SHARE = 0.3
 """Доля служебных символов (управляющие, частная область Unicode, «�»), с которой текст нечитаем целиком.
 У испорченного ``/ToUnicode`` она 0,8–0,9 (исследование 04: 5817 управляющих из 8715 символов)."""
 GARBLED_WARN_SHARE = 0.05
 """Доля служебных символов, с которой часть текста считаем искажённой. В нормальном тексте их нет."""
-MIN_LETTERS_SHARE = 0.3
-"""Доля букв среди непробельных символов, ниже которой текст подозрителен (в обычном ТЗ 0,7–0,9)."""
 MIN_OBLIGATIONS_PER_1000_WORDS = 1.0
 """Меньше формулировок-обязательств на 1000 слов и нет ни одного ID: документ не похож на требования
 (исследование 04, строка 27). В спецификациях их десятки на 1000 слов. Планка низкая нарочно: ложная
@@ -47,11 +45,12 @@ _OBLIGATION = re.compile(
     r"(?i)\b(?:"
     r"долж(?:ен|на|но|ны)|обязан\w*|необходимо|требуется|нужно|следует|"
     r"не\s+допускается|запрещ\w*|не\s+(?:более|менее|позднее|ранее)|"
-    r"обеспечива\w*|позволя\w*|поддержива\w*|"
+    r"обеспечива\w*|позволя\w*|поддержива\w*|может|могут|хочу|"
     r"тиіс|қажет|керек|міндетті|"
-    r"shall|must|should|required?|requires"
+    r"shall|must|should|will|can|may|required?|requires|want"
     r")\b"
 )
+_STRUCTURED = frozenset({BlockKind.LIST_ITEM, BlockKind.TABLE_ROW})
 _REQUIREMENT_ID = re.compile(r"\b[A-ZА-ЯЁ]{1,6}-\d{1,4}\b")
 _WORD = re.compile(r"\w+")
 
@@ -101,7 +100,8 @@ def _garbled(doc: ParsedDocument) -> list[Diagnostic]:
                 step="parse",
             )
         ]
-    if garbage > GARBLED_WARN_SHARE or letters < MIN_LETTERS_SHARE:
+    # По одной доле букв не судим: таблицы чисел и примеры JSON честно дают мало букв.
+    if garbage > GARBLED_WARN_SHARE:
         return [
             Diagnostic(
                 code=IN_GARBLED_TEXT,
@@ -171,6 +171,8 @@ def _name_pages(doc: ParsedDocument, diagnostics: list[Diagnostic]) -> list[Diag
 def _not_requirements(doc: ParsedDocument, known: set[str]) -> list[Diagnostic]:
     if known & {IN_NO_TEXT, IN_HEADINGS_ONLY}:
         return []  # пустой документ и пустой шаблон уже названы точнее
+    if any(b.kind in _STRUCTURED for b in doc.blocks):
+        return []  # списки и таблицы: так пишут требования, даже без модальных слов и ID
     words = len(_WORD.findall(doc.text))
     obligations = len(_OBLIGATION.findall(doc.text))
     ids = len(_REQUIREMENT_ID.findall(doc.text))

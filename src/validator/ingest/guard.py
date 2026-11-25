@@ -13,6 +13,7 @@
 from __future__ import annotations
 
 import hashlib
+import logging
 from pathlib import Path
 
 from validator.errors import (
@@ -20,12 +21,15 @@ from validator.errors import (
     IN_EXTENSION_MISMATCH,
     IN_NOT_A_FILE,
     IN_NOT_FOUND,
+    IN_PARSE_FAILED,
     IN_TOO_LARGE,
     IN_UNSUPPORTED,
 )
 from validator.ingest.containers import Probe, input_diag, probe_ole, probe_pdf, probe_zip, reject
 from validator.ingest.sniff import SNIFF_BYTES, Sniffed, image_format, sniff
 from validator.models import DiagLevel, Diagnostic, DocKind, GuardResult
+
+logger = logging.getLogger("validator.guard")
 
 MAX_INPUT_BYTES = 100 * 1024 * 1024
 """Больше этого не читаем: защита от случайно поданного архива или видео."""
@@ -82,6 +86,14 @@ def _probe(sniffed: Sniffed, path: Path, head: bytes, workdir: Path | None) -> P
             return probe_zip(path)
         case Sniffed.OLE:
             return probe_ole(path)
+        case Sniffed.TEXT if by_extension in (DocKind.PDF, DocKind.DOCX):
+            # PostScript, XML, выгрузка в текст под именем .pdf: не гадаем, что это, а говорим прямо.
+            return reject(
+                IN_UNSUPPORTED,
+                f"Расширение {path.suffix}, но внутри обычный текст, а не {by_extension.value.upper()}",
+                "Если это текст требований, сохраните его с расширением .md или .txt; "
+                "иначе пришлите исходный документ в PDF или DOCX",
+            )
         case Sniffed.TEXT:
             return Probe(kind=DocKind.MD)
         case Sniffed.HTML if by_extension is DocKind.MD:
@@ -157,7 +169,15 @@ def guard(path: Path, *, workdir: Path | None = None) -> GuardResult:
         digest = file_sha256(path)
     except OSError as exc:
         return _unreadable(path, exc)
-    probe = _probe(sniff(head), path, head, workdir)
+    try:
+        probe = _probe(sniff(head), path, head, workdir)
+    except Exception:  # граница шага 0 на враждебном входе: чужая библиотека не роняет агента
+        logger.exception("Проверка входа упала")
+        probe = reject(
+            IN_PARSE_FAILED,
+            "Файл повреждён так, что его не удалось даже проверить",
+            "Пересохраните документ (Word: «Сохранить как», PDF: «Печать в PDF») или пришлите другой формат",
+        )
     if probe.kind is None:
         return _fatal(path, probe, size, digest)
     diagnostics = _located(path, [*_extension_note(path, probe.kind), *probe.diagnostics])

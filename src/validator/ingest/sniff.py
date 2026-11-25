@@ -13,7 +13,8 @@ from enum import StrEnum
 SNIFF_BYTES = 8192
 """Сколько байт с начала файла смотрим. Хватает на сигнатуры и на оценку «текст или двоичный»."""
 PDF_HEADER_WINDOW = 1024
-"""Заголовок ``%PDF-`` может стоять не в самом начале: перед ним бывает мусор (так читают и просмотрщики)."""
+"""Заголовок ``%PDF-`` может стоять не в самом начале: перед ним бывают пробелы или двоичный мусор
+(такие файлы открывают и просмотрщики)."""
 MAX_CONTROL_SHARE = 0.05
 """Доля управляющих символов, выше которой «текст» считаем двоичным файлом. В настоящем тексте их нет,
 в случайных байтах около 10 %."""
@@ -110,14 +111,24 @@ def _is_text(head: bytes) -> bool:
     return bad / len(head) <= MAX_CONTROL_SHARE
 
 
+def _junk_before_pdf(prefix: bytes) -> bool:
+    """Перед заголовком PDF только пробелы или двоичный мусор. Текст перед ним значит, что это документ,
+    который просто упоминает формат PDF («файлы, начинающиеся с %PDF-1.7»)."""
+    # Нулевой байт: двоичный мусор (UTF-16 тут ни при чём: в нём «%PDF-» не шёл бы подряд).
+    return not prefix.strip() or b"\x00" in prefix or not _is_text(prefix)
+
+
 def sniff(head: bytes) -> Sniffed:
     """Тип по сигнатуре. Пустой ``head`` сюда не приходит: пустой файл отсекает ``guard``."""
-    if _PDF_HEADER.search(head[:PDF_HEADER_WINDOW]):
+    if head.startswith(b"%PDF-"):
         return Sniffed.PDF
     if head.startswith((b"PK\x03\x04", b"PK\x05\x06")):
         return Sniffed.ZIP
     if head.startswith(_OLE_MAGIC):
         return Sniffed.OLE
+    late_pdf = _PDF_HEADER.search(head[:PDF_HEADER_WINDOW])
+    if late_pdf and _junk_before_pdf(head[: late_pdf.start()]):
+        return Sniffed.PDF
     if head.startswith(b"{\\rtf"):
         return Sniffed.RTF
     if image_format(head) is not None:

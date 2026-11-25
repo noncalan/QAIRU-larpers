@@ -191,7 +191,8 @@ def test_fatal_input_still_has_hash_in_passport(tmp_path: Path) -> None:
         (RU_REQUIREMENTS.encode("koi8-r"), Sniffed.TEXT),
         (RU_REQUIREMENTS.encode("utf-16-le"), Sniffed.TEXT),
         (RU_REQUIREMENTS.encode("utf-8")[:-1], Sniffed.TEXT),  # окно обрезало многобайтовый символ
-        (b"junk\n%PDF-1.4\n...", Sniffed.PDF),
+        (b"\x00\x01\x02\x03\x04\x05\x06\x07junk%PDF-1.4\n...", Sniffed.PDF),
+        (b"Text that mentions %PDF-1.4 header.", Sniffed.TEXT),
         (b"{\\rtf1\\ansi text}", Sniffed.RTF),
         (b"<!DOCTYPE html><html><body>x</body></html>", Sniffed.HTML),
         (b"\xff\xd8\xff\xe0\x00\x10JFIF", Sniffed.IMAGE),
@@ -204,6 +205,7 @@ def test_fatal_input_still_has_hash_in_passport(tmp_path: Path) -> None:
         "utf16le-nobom",
         "cut-utf8",
         "pdf-after-junk",
+        "pdf-mentioned",
         "rtf",
         "html",
         "jpeg",
@@ -262,3 +264,88 @@ def test_short_text_is_not_judged_by_genre(make_md: Callable[[str], ParsedDocume
     doc = make_md("# Заметка\n\nВстреча перенесена на пятницу.")
 
     assert "IN-080" not in {d.code for d in review(doc).diagnostics}
+
+
+# ---------------------------------------------------------------- регрессии по ревью
+
+
+def _corrupt_member(source: Path, target: Path, member: str) -> Path:
+    """Копия DOCX, в которой испорчен сжатый поток одной части (заголовки архива целы)."""
+    data = bytearray(source.read_bytes())
+    with zipfile.ZipFile(source) as archive:
+        info = archive.getinfo(member)
+    start = info.header_offset + 30 + len(info.filename.encode()) + len(info.extra)
+    for k in range(start + 2, start + min(info.compress_size, 40)):
+        data[k] ^= 0x5A
+    target.write_bytes(bytes(data))
+    return target
+
+
+def test_corrupt_deflate_stream_in_docx_is_input_error_not_crash(tmp_path: Path) -> None:
+    path = _corrupt_member(REQUIREMENTS[DocKind.DOCX], tmp_path / "bad.docx", "[Content_Types].xml")
+
+    result = guard(path)
+
+    assert result.fatal
+    assert result.diagnostics[0].code == "IN-032"
+
+
+def test_markdown_mentioning_pdf_header_is_text(tmp_path: Path) -> None:
+    path = tmp_path / "spec.md"
+    path.write_text(
+        "# Формат\n\nСистема должна принимать файлы, начинающиеся с %PDF-1.7.\n", encoding="utf-8"
+    )
+
+    result = guard(path)
+
+    assert not result.fatal
+    assert result.kind is DocKind.MD
+
+
+def test_utf16_without_bom_is_decoded(tmp_path: Path) -> None:
+    path = tmp_path / "spec.md"
+    path.write_bytes(RU_REQUIREMENTS.encode("utf-16-le"))
+
+    code, report, _ = run_on(path, tmp_path)
+
+    assert code is ExitCode.OK
+    assert report.document is not None
+    assert "IN-052" not in {d.code for d in report.input_diagnostics}
+
+
+def test_descriptive_english_spec_is_not_flagged_as_non_requirements(
+    make_md: Callable[[str], ParsedDocument],
+) -> None:
+    text = (
+        "# Software requirements\n\n" + "The system will authenticate users. The user can export data. " * 40
+    )
+
+    assert "IN-080" not in {d.code for d in review(make_md(text)).diagnostics}
+
+
+def test_numbered_list_spec_is_not_flagged_as_non_requirements(
+    make_md: Callable[[str], ParsedDocument],
+) -> None:
+    items = "\n".join(f"{n}. Сервис отправляет отчёт номер {n} клиенту по почте." for n in range(1, 40))
+
+    assert "IN-080" not in {d.code for d in review(make_md("# Отчёты\n\n" + items)).diagnostics}
+
+
+def test_number_tables_are_not_garbled_text(make_md: Callable[[str], ParsedDocument]) -> None:
+    rows = "\n".join(f"| {n} | {n * 100} | 0..999 | {n}.{n} |" for n in range(1, 60))
+
+    doc = make_md("# Лимиты\n\n| a | b | c | d |\n|---|---|---|---|\n" + rows)
+
+    assert "IN-052" not in {d.code for d in review(doc).diagnostics}
+
+
+def test_salvage_never_overwrites_input_inside_workdir(tmp_path: Path) -> None:
+    path = tmp_path / "salvaged.pdf"
+    original = (BROKEN_DIR / "truncated.pdf").read_bytes()
+    path.write_bytes(original)
+
+    result = guard(path, workdir=tmp_path)
+
+    assert path.read_bytes() == original
+    assert result.read_path is not None
+    assert Path(result.read_path) != path

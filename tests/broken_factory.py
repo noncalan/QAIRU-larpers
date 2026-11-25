@@ -204,7 +204,7 @@ CASES: dict[str, Case] = {
     "header_only.pdf": Case(lambda: b"%PDF-1.7\n", 4, "IN-040", "от PDF остался только заголовок"),
     "truncated.pdf": Case(_truncated(TRUNCATE_SOFT), 3, "IN-043", "PDF обрезан на 60 %, страницы спасены"),
     "truncated_hard.pdf": Case(_truncated(TRUNCATE_HARD), 4, "IN-042", "PDF обрезан на 5 %, страниц нет"),
-    "bad_xref.pdf": Case(_bad_xref_pdf, 3, "IN-041", "битая ссылка на таблицу xref, PDF восстановлен"),
+    "bad_xref.pdf": Case(_bad_xref_pdf, 0, "IN-041", "битая ссылка на таблицу xref, PDF восстановлен"),
     "password.pdf": Case(_encrypted_pdf, 4, "IN-020", "PDF с паролем на открытие"),
     "owner_only.pdf": Case(_owner_only_pdf, 0, "IN-022", "PDF с паролем владельца (запрет копирования)"),
     "scan.pdf": Case(_scan(0), 4, "IN-071", "скан: страницы-картинки без текстового слоя"),
@@ -215,6 +215,7 @@ CASES: dict[str, Case] = {
     "truncated.docx": Case(lambda: _source_docx()[: len(_source_docx()) // 2], 4, "IN-032", "DOCX обрезан"),
     "spreadsheet.docx": Case(_spreadsheet_zip, 4, "IN-031", "таблица Excel с расширением .docx"),
     "pdf_named.docx": Case(lambda: _pdf(list(SMALL_REQUIREMENTS)), 0, "IN-011", "PDF с расширением .docx"),
+    "text_named.pdf": Case(RU_REQUIREMENTS.encode, 4, "IN-010", "обычный текст с расширением .pdf"),
     "binary.md": Case(_binary, 4, "IN-010", "двоичный мусор как .md"),
     "utf16.md": Case(lambda: RU_REQUIREMENTS.encode("utf-16"), 0, "IN-061", "Markdown в UTF-16"),
     "headings_only.md": Case(

@@ -15,7 +15,10 @@ from __future__ import annotations
 import io
 import logging
 import re
+import struct
+import tempfile
 import zipfile
+import zlib
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -53,7 +56,7 @@ CONTENT_TYPES_LIMIT = 1024 * 1024
 """Сколько читать из ``[Content_Types].xml``: на деле там единицы КБ."""
 SALVAGE_SCAN_BYTES = 400
 """Сколько байт после «N 0 obj» смотреть, чтобы узнать объект страницы."""
-SALVAGED_NAME = "salvaged.pdf"
+SALVAGED_PREFIX = "salvaged-"
 
 _DOCX_MAIN = "wordprocessingml.document.main+xml"
 _ZIP_KINDS = (
@@ -74,6 +77,17 @@ _OLE_KINDS = {
     "PowerPoint Document": "презентация PowerPoint старого формата (.ppt)",
 }
 _ZIP_ENCRYPTED_FLAG = 0x1
+_ZIP_ERRORS = (
+    zipfile.BadZipFile,
+    zipfile.LargeZipFile,
+    zlib.error,
+    struct.error,
+    EOFError,
+    OSError,
+    NotImplementedError,
+    RuntimeError,
+    ValueError,
+)
 _SAVE_AS_DOCX = "Откройте файл в Word или LibreOffice и сохраните как DOCX или PDF"
 _NOT_READ = "Проверка не выполнялась: файл не прочитан"
 
@@ -158,14 +172,7 @@ def probe_zip(path: Path) -> Probe:
                     IN_OFFICE_ENCRYPTED, "Архив защищён паролем", "Снимите пароль и запустите проверку снова"
                 )
             kind = _zip_kind(archive, {i.filename for i in infos})
-    except (
-        zipfile.BadZipFile,
-        zipfile.LargeZipFile,
-        EOFError,
-        OSError,
-        NotImplementedError,
-        RuntimeError,
-    ) as exc:
+    except _ZIP_ERRORS as exc:
         logger.info("ZIP не читается: %r", exc)
         return reject(
             IN_DOCX_BROKEN,
@@ -185,7 +192,7 @@ def probe_ole(path: Path) -> Probe:
     try:
         with olefile.OleFileIO(str(path)) as ole:
             streams = {"/".join(entry) for entry in ole.listdir()}
-    except (OSError, ValueError, IndexError) as exc:  # olefile.OleFileError наследует OSError
+    except (OSError, ValueError, IndexError, struct.error) as exc:  # OleFileError наследует OSError
         logger.info("OLE не читается: %r", exc)
         return reject(IN_UNSUPPORTED, "Файл Office старого формата повреждён и не читается", _SAVE_AS_DOCX)
     if "EncryptedPackage" in streams:
@@ -240,8 +247,13 @@ def _salvage_or_reject(path: Path, workdir: Path | None, code: str, message: str
     hint = "Пришлите полный файл или пересохраните PDF из исходника"
     if workdir is None:
         return reject(code, message, hint)
-    target = workdir / SALVAGED_NAME
+    # Своё уникальное имя: восстановленная копия никогда не затрёт входной файл, даже если он лежит в workdir.
+    target: Path | None = None
     try:
+        with tempfile.NamedTemporaryFile(
+            dir=workdir, prefix=SALVAGED_PREFIX, suffix=".pdf", delete=False
+        ) as tmp:
+            target = Path(tmp.name)
         pages = salvage_pdf(path.read_bytes(), target)
     except (
         pikepdf.PdfError,
@@ -251,10 +263,13 @@ def _salvage_or_reject(path: Path, workdir: Path | None, code: str, message: str
         OSError,
         KeyError,
         TypeError,
+        AttributeError,
     ) as exc:
         logger.info("Спасение PDF не удалось: %r", exc)
         pages = 0
-    if not pages:
+    if not pages or target is None:
+        if target is not None:
+            target.unlink(missing_ok=True)
         return reject(code, f"{message}; восстановить страницы не удалось", hint)
     diag = input_diag(
         IN_PDF_SALVAGED,
@@ -304,10 +319,11 @@ def probe_pdf(path: Path, workdir: Path | None = None) -> Probe:
         diagnostics.append(
             input_diag(
                 IN_PDF_REPAIRED,
-                DiagLevel.WARNING,
-                "Таблица ссылок PDF повреждена, файл восстановлен автоматически",
-                "Проверка идёт по восстановленному файлу: часть текста могла потеряться",
-                "Пересохраните PDF из исходника и сверьте цитаты отчёта с оригиналом",
+                DiagLevel.INFO,
+                f"Таблица ссылок PDF повреждена, файл восстановлен автоматически ({pages} стр.)",
+                "Проверка идёт по восстановленному файлу. Если страниц без текста нет, "
+                "текст прочитан целиком",
+                "Пересохраните PDF из исходника, если число страниц не совпадает с оригиналом",
             )
         )
     return Probe(kind=DocKind.PDF, diagnostics=diagnostics)
