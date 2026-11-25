@@ -27,6 +27,7 @@ from validator.errors import (
 from validator.llm import FakeLLM
 from validator.models import (
     Backend,
+    BlockKind,
     BlockLabel,
     DecidedBy,
     DiagLevel,
@@ -39,6 +40,7 @@ from validator.models import (
 )
 from validator.segment import RESPONSE_SCHEMA, build_prompt, fallback_segmentation, segment
 from validator.segment.answer import AnswerError, parse_answer
+from validator.segment.build import fallback_label
 from validator.segment.checks import from_answer
 from validator.segment.spans import normalize_ref
 
@@ -414,3 +416,20 @@ def test_recorded_answer_on_requirements_document(requirements_md: ParsedDocumen
     assert len(seg.requirements) == len(payload["structured_output"]["requirements"])
     assert all(r.decided_by is DecidedBy.MODEL for r in seg.requirements)
     assert_quotes_from_document(requirements_md, seg)
+
+
+def test_quote_block_can_hold_requirement(make_md: Callable[[str], ParsedDocument]) -> None:
+    doc = make_md("# Журнал\n\n> Система должна хранить журнал входов не меньше года.\n")
+
+    seg = fallback_segmentation(doc)
+
+    assert [doc.block(r.anchor.block_ids[0]).kind for r in seg.requirements] == [BlockKind.QUOTE]
+    assert seg.requirements[0].quote == "Система должна хранить журнал входов не меньше года."
+
+
+@pytest.mark.parametrize("kind", [BlockKind.QUOTE, BlockKind.FOOTNOTE])
+def test_quote_and_footnote_are_content_blocks(doc: ParsedDocument, kind: BlockKind) -> None:
+    block = doc.block("B005")
+    assert block is not None
+
+    assert fallback_label(block.model_copy(update={"kind": kind}))[0] is BlockLabel.REQUIREMENT
