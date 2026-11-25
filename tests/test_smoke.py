@@ -158,7 +158,7 @@ def test_calls_log_has_every_model_call(fake_run: tuple[DocKind, Path, int]) -> 
     lines = (out.parent / "run" / "calls.jsonl").read_text(encoding="utf-8").splitlines()
     records = [CallRecord.model_validate(json.loads(line)) for line in lines]
 
-    assert [r.call_id for r in records] == ["search.1", "search.2", "search.3", "questions.1"]
+    assert [r.call_id for r in records] == ["segment.1", "search.1", "search.2", "search.3", "questions.1"]
 
 
 def test_missing_input_gives_diagnostic_report(tmp_path: Path) -> None:

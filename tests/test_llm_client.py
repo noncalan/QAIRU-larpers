@@ -13,7 +13,7 @@ from typing import Any
 
 import pytest
 
-from conftest import REQUIREMENTS
+from conftest import FIXTURES_LLM, REQUIREMENTS
 from validator.config import load_config
 from validator.errors import LLMError
 from validator.llm import (
@@ -569,7 +569,12 @@ def _fake_claude(tmp_path: Path, mode: str = "ok") -> tuple[str, Path]:
         "          'usage': {'input_tokens': 100, 'output_tokens': 10},\n"
         "          'modelUsage': {args[args.index('--model') + 1]:\n"
         "                         {'inputTokens': 100, 'outputTokens': 10}}}\n"
-        "if '--json-schema' in args:\n    answer['structured_output'] = {'findings': []}\n"
+        # нарезка отвечает записанным живым ответом, остальные шаги пустым списком находок
+        f"segment = json.load(open({str(FIXTURES_LLM / 'segment' / '1.json')!r}, encoding='utf-8'))\n"
+        "if '--json-schema' in args:\n"
+        "    schema = json.loads(args[args.index('--json-schema') + 1])\n"
+        "    is_segment = 'requirements' in schema.get('properties', {})\n"
+        "    answer['structured_output'] = segment['structured_output'] if is_segment else {'findings': []}\n"
         "print(json.dumps(answer))\n",
         encoding="utf-8",
     )
