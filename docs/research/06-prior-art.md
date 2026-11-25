@@ -1,0 +1,198 @@
+# 06. Существующие решения для проверки качества требований (prior art)
+
+2026-11-25 · исследование для кейса «AI Requirements Validator» (BCC-HUB x MNU). Опирается на `case-analysis.md`, не повторяет его.
+
+Пометки: **[пров.]** — прочитано в источнике сегодня; **[заголовок]** — видел только заголовок или описание в поиске; **[память]** — по памяти, не перепроверено.
+
+## TL;DR
+
+1. **Коммерческие инструменты проверяют одно требование за раз и почти только язык.** Это IBM RQA, QVscribe, Visure, Jama Connect Advisor, Innoslate. Они ищут слабые слова, модальные глаголы, лишние условия и соответствие INCOSE/EARS. Противоречия между требованиями и полнота набора (29148 п. 5.2.6) у них почти не покрыты. QVscribe прямо пишет: «проверяет, как требование написано, а не корректно ли его содержание» [пров.].
+2. **Скоринг везде однотипный, со «светофором».** QVscribe ставит 1–5 каждому требованию плюс Average Score документа по 11 индикаторам. Jama показывает процент по каждому правилу INCOSE (зелёный 81–100 %, жёлтый 61–80 %, красный 0–60 %). IBM AI Hub считает 100 баллов минус штрафы, объединяет дубли в 10 категорий и приводит итог к шкале 0–10. Innoslate проверяет 8 атрибутов, но автоматически только 6, поэтому максимум равен 75 % [пров.]. Из этих решений стоит взять прозрачную формулу оценки и статус «нужно уточнение» вместо выдуманной оценки.
+3. **IBM RQA на LLM (май 2026) устроен почти так же, как наш план D.** Специализированные промпты идут параллельно, temperature 0, фиксированный seed, ответ проверяется по JSON-схеме и при ошибке генерируется заново, в каждом промпте 3–4 примера (few-shot), качество меряют precision/recall на размеченном корпусе [пров., самоотчёт IBM, цифр нет]. Это подтверждает выбор архитектуры. Выделиться можно тем, что мы публикуем свои цифры.
+4. **Исследования 2026 года: LLM «из коробки» пропускают большую часть дефектов.** У Claude Opus 4.7 медианный recall 0,33 при FPR 0,11. Хуже всего модели находят нарушения «Необходимость», «Корректность» и «Полнота», а temperature 0 не убирает разброс между прогонами (Shefa et al., arXiv 2609.03230) [пров.]. Отсюда два вывода: нужны сценарии и чек-листы, а не «спроси модель», и recall надо мерить честно.
+5. **LLM-подсказки могут ухудшить ручную инспекцию.** В эксперименте с 34 студентами F1 обнаружения с ChatGPT оказался примерно на 8 % ниже (Broccia et al., arXiv 2608.21298) [пров.]. Агента надо подавать как первый проход с доказательствами, который QA перепроверяет, а не как замену ревью.
+6. **Open-source классика (NASA ARM, QuARS, Smella, NALABS, Paska) построена на словарях и разборе частей речи и работает только с английским.** Заявленная precision 59–89 %. Из неё стоит взять таксономию индикаторов (weak phrases, optionality, implicity, multiplicity) и метрики уровня документа (defect rate, структура). Русских словарей нет, так что свой RU-линтер будет отличием.
+7. **LLM-проекты на GitHub 2025–2026 годов мелкие (0–56★).** В основном это Claude-скиллы для PRD с оценкой «Score /100». Ни один не проверяет цитаты программно, не публикует eval на эталоне и не описывает работу с битыми файлами. Интересные идеи: symspec доказывает противоречия солвером Z3, reqlite разделяет детерминированный анализ и изолированное LLM-ревью, requirements-intelligence-assistant считает ответ LLM недоверенным до валидации.
+8. **Форки кейса на 25.11:** найден 1 публичный форк (`azekowka/ai-requirements-validator-task`) и 1 репозиторий с похожим именем без README (`I-am-King-of-the-World/ai-requirements-validator`). Конкуренты только стартуют, готовых решений нет.
+
+## Таблица решений
+
+### Коммерческие
+
+| Решение | Ссылка | Ключевые фичи | Отчёт / UX | Метрики и основа правил |
+|---|---|---|---|---|
+| IBM Engineering RQA / агент RQA в IBM Engineering AI Hub | https://community.ibm.com/community/user/blogs/bhawana-gupta/2026/05/13/ai-hub-delivers-trustworthy-reqmts-quality-scores | LLM-агент: параллельные промпты (LangChain RunnableParallel), temperature 0, top_k 1, seed, проверка по JSON-схеме и повторная генерация; двухшаговая цепочка: рекомендации по улучшению прогоняются через ту же оценку. Работает внутри DOORS Next | Оценка привязана к находкам: флаг нарушения, обоснование, подсвеченные токены. Если оценить нельзя, ставит статус «needs clarification» | 100 минус настраиваемые штрафы, дубли схлопываются в 10 категорий, итог нормализуется в 0–10. Проверяет неоднозначность, атомарность, верифицируемость. Precision/recall на размеченном бенчмарке заявлены без чисел [пров.] |
+| QVscribe (QRA Corp) | https://edu.qracorp.com/knowledge/quality-analysis-scoring-guide-3 | 11 индикаторов: ровно один императив, без отрицательных императивов, без расплывчатых слов, без лазеек вроде «при необходимости», без открытых перечней, без лишних инфинитивов, без местоимений-ссылок, без неизмеримых количеств, без размытых временных слов, не больше двух продолжений («ниже», «следующее»), правильные директивы. Ещё 4 предупреждения не влияют на оценку: кванторы всеобщности, обоснования, неполные предложения, пассив | Оценка 1–5 с цветом: красный 1 «остановись и исправь», жёлтый 2–4, зелёный 5. По документу Average Score, у каждой находки рекомендация по исправлению. Набор правил настраивается | Сам продукт оговаривает, что проверяет форму, а не содержание. На странице скоринга INCOSE и EARS не упомянуты [пров.]. Индикаторы похожи на NASA ARM (императивы, продолжения, директивы); это наше наблюдение, а не заявление вендора. NASA SMA публиковала статью о применении (02.2026) [заголовок] |
+| Visure Requirements ALM, Quality Analyzer | https://visuresolutions.com/tool-suite/quality-analyzer | Построен на технологии QVscribe. Своя NLP-модель ищет неоднозначность, пользователь сохраняет свои триггеры и фразы. Отдельно есть ИИ-ассистент Vivia | Интерактивная карточка с оценками (scorecard), проблемные слова подсвечены в тексте. Проверка идёт во время написания | 8 индикаторов (названия на странице не приведены) и рейтинг 1–5 звёзд [пров.] |
+| Jama Connect Advisor | https://help.jamasoftware.com/ah/en/jama-connect-advisor-/interpreting-the-results.html | NLP-анализ по правилам INCOSE и по нотации EARS, предлагает изменения | Две таблицы: «INCOSE Rules Analysis» (процент и совет по каждому правилу, светофор 81–100 / 61–80 / 0–60 %) и «EARS Notation Analysis» (синтаксис и советы) | Правила INCOSE Guide to Writing Requirements и EARS. Сколько правил INCOSE проверяется, не установлено [пров.] |
+| Innoslate (SPEC Innovations), Quality Check | https://help.specinnovations.com/quality-check-requirements | NLP проверяет 8 атрибутов: Clear, Complete, Consistent, Design (что, а не как), Traceable, Verifiable проверяются автоматически; Correct и Feasible отмечает человек | Колонка Quality Score 0–75 %. В боковой панели атрибуты со значением «No» и подсказками, решение можно переопределить вручную | Максимум 75 % без ручной оценки; Correct/Feasible ИИ не оценивает (позиция вендора) [пров.] |
+| Altium 365 Requirements Portal (бывший Valispace), Valiassistant: Quality Assessment и «Agentic requirements engineering» | https://www.altium.com/documentation/altium-365/requirements-systems-portal/valiassistant/quality-assessment?version=7.2 | ИИ-оценка качества требований, есть документация на русском | Не прочитано | [заголовок] |
+| Copilot4DevOps / Modern Requirements (Azure DevOps) | https://www.modernrequirements.com/ai/ | Функция Analyze оценивает и приоритизирует work items по INVEST, SWOT и MoSCoW; есть Impact Assessment, Elicit, Transform | Шкала и формат не описаны | Проверку по «6C/IEEE» подтвердить не удалось [пров.: на странице её нет] |
+| Atlassian Rovo, агент «Product Requirements Expert» | https://www.atlassian.com/software/rovo/use-cases/agent-product-requirements-expert | Пример запроса «Review my PRD», читает Confluence и Jira, пишет комментарии и страницы | Формат ревью не описан | Нет [пров.] |
+| AWS Kiro, «deep spec analysis» | https://kiro.dev/blog/deep-spec-analysis/ | Статья «Requirements analysis: catching requirement bugs before they become code» | Не прочитано (лимит WebFetch) | [заголовок]. Предположительно формальная проверка EARS-спеки на противоречия [память, не проверено] |
+| ReqView | — | ИИ-проверку качества требований найти не удалось | — | Не найдено |
+| СНГ: AInalyst (open-source, ветка `ru`) | https://github.com/chaussky/ainalyst | ИИ-аналитик по BABOK v3 на Claude Code: 21 скилл, 22 MCP-сервера, трассировка, анализ влияния изменений | Артефакты в файлах | 51★, AGPL, бета. Это не валидатор, а ассистент аналитика [пров.] |
+| СНГ: обзоры | https://www.sostav.ru/blogs/286486/85809 , https://infostart.ru/public/2721564/ | Обзор российских систем управления требованиями (2026) и статья «Проверка требований с помощью ИИ» | Не прочитано: habr, infostart и sostav недоступны из среды | [заголовок]. Готового российского аналога QVscribe/RQA с публичным описанием не нашёл |
+
+### Open-source и исследовательские (без LLM)
+
+| Решение | Ссылка | Что делает | Отчёт / UX | Метрики |
+|---|---|---|---|---|
+| NASA ARM (Automated Requirements Measurement, 1990-е) | https://www.csc.kth.se/utbildning/kth/kurser/DD1363/NASARequirements.html | Индикаторы уровня строки: императивы (shall, must, will, should), продолжения (below, as follows), директивы (figure, table, note), опции (can, may, optionally), слабые фразы (adequate, as appropriate, TBD, be able to, timely). Индикаторы уровня документа: размер, структура текста («пирамида»), глубина спецификации, читабельность | Три отчёта: сводный по документу, детальный по императивам, детальный по слабым фразам; у каждой строки её идентификатор | Метрики-счётчики без оценки качества [пров.] |
+| QuARS (SEI, 2005) | https://www.sei.cmu.edu/documents/754/2005_005_001_14603.pdf | Лексические индикаторы: расплывчатость, субъективность, опциональность, читабельность (Coleman-Liau). Синтаксические: неявность (this, it, above), слабость (could, may), недоопределённость (access → какой доступ?), множественность (несколько подлежащих или глаголов = скрытые требования). «Views» группируют предложения по теме (безопасность, UI) по словарю и помогают проверить согласованность и полноту | Список дефектных предложений со словом-триггером, клик подсвечивает текст, ложные срабатывания можно скрыть, по разделам выводится таблица и диаграмма | Defect rate = доля дефектных предложений на каждый вид анализа [пров.] |
+| Smella (Femmer et al., 2016/17) | https://arxiv.org/abs/1611.08847 | 8 «запахов» по критериям языка требований ISO/IEC/IEEE 29148: субъективный язык, неоднозначные наречия и прилагательные, лазейки, открытые непроверяемые термины, превосходная и сравнительная степень, отрицания, неясные местоимения. Вход Word/Excel/PDF/CSV | Подсветка прямо в тексте, как в проверке орфографии: наведение показывает обоснование и совет. Находку можно принять, отклонить или занести в чёрный список; есть treemap «горячих точек» | Precision ≈ 59 %, recall ≈ 82 % с большим разбросом [пров.] |
+| NALABS (Mälardalen University) | https://github.com/eduardenoiu/NALABS | Запахи в требованиях и тест-спецификациях: расплывчатые слова, союзы, опциональность, субъективность, слабость, читабельность (ARI), императивы. Вход и выход в Excel, есть GUI на Streamlit | Excel-таблица находок | 1★, C# и Python, последний push 2025-06-18 [пров.] |
+| Paska (SnT, Люксембург, 2023) | https://github.com/SNTSVV/Paska , https://arxiv.org/abs/2305.07097 | NLP и контролируемый язык Rimay: находит запахи и рекомендует шаблон переписывания. Исследование на **финансовом** домене: 13 систем, 2725 требований | CSV на входе, файлы с находками на выходе | Запахи: P/R 89/89 %, рекомендации: P/R 96/94 %. 2★, Java 8 и allennlp, последний push 2024-02-05 [пров.] |
+| RETA (Arora et al., SnT) | https://orbilu.uni.lu/bitstream/10993/28922/1/thesis_final.pdf | Проверяет соответствие требований шаблонам Rupp и EARS (на GATE) | — | [память], детали не перепроверены |
+| AQUSA (Utrecht University) | https://github.com/gglucass/AQUSA | Качество user stories по фреймворку QUS | Backend API с эндпоинтом отчёта | 34★, архив, последний push 2023-09 [пров.]; recall/precision из статьи [память] |
+| ReqCheck | — | Не нашёл однозначного инструмента с таким именем | — | Не найдено |
+
+### LLM-исследования 2024–2026
+
+| Работа | Ссылка | Главное |
+|---|---|---|
+| Shefa, Salado, Wach, Topcu (2026), «Two Truths and A Lie?» | https://arxiv.org/pdf/2609.03230 | 10 моделей (Claude Opus 4.1…4.7, GPT-4o…5.5), zero-shot, 9 критериев INCOSE, по 100 прогонов. Opus 4.7: медианы recall 0,33, precision 0,48, FPR 0,11. «Необходимость» пропущена во всех прогонах. Новые модели не всегда лучше старых, temperature не помогает. Вывод авторов: «пока не автономный оценщик» [пров.] |
+| Levy et al. (04.2026), «AI-Assisted RE… Relative to Expert Judgment» | https://arxiv.org/pdf/2604.15222 | 7 характеристик INCOSE в терминах 29148. Claude Sonnet 3.5 совпадает с инженерами в 85 % случаев, при этом сами инженеры согласны между собой лишь в 10–84 %. ИИ силён в единичности, однозначности и измеримости, слаб в необходимости и выполнимости [пров.] |
+| Broccia, Frattini, Arora, ter Beek, Fantechi, Vogelsang, Ferrari (2026) | https://arxiv.org/pdf/2608.21298 | С поддержкой LLM F1 обнаружения примерно на 8 % ниже, по времени разницы нет; у тех, кто начинал с LLM, ниже эффект обучения [пров.] |
+| Lubos et al. (2024), «Leveraging LLMs for the QA of Software Requirements» | https://arxiv.org/abs/2408.10886 | LLM оценивает характеристики ISO 29148, объясняет решение и предлагает улучшение [заголовок + память] |
+
+### LLM-проекты на GitHub (звёзды и даты на 2026-11-25, через GitHub search API)
+
+| Репозиторий | ★ | Последний push | Стек | Что делает | Зрелость |
+|---|---|---|---|---|---|
+| [chaussky/ainalyst](https://github.com/chaussky/ainalyst) | 51 | 2026-08-31 | Python, Claude Code, MCP | ИИ-аналитик по BABOK v3, есть RU-версия | Бета, есть CI с тестами |
+| [Agile-V/agile_v_skills](https://github.com/Agile-V/agile_v_skills) | 56 | 2026-10-05 | Python, скиллы | Трассируемые требования, независимая верификация, ручные согласования | Только описание [заголовок] |
+| [orangebread/speclinter-mcp](https://github.com/orangebread/speclinter-mcp) | 35 | 2026-06-03 | TypeScript, MCP | Спека → задачи, сверка кода со спекой | Больше не поддерживается |
+| [GodModeAI2025/specforge-ai-skill](https://github.com/GodModeAI2025/specforge-ai-skill) | 34 | 2026-10-09 | Python, Claude-скилл | Требования с EARS, Gherkin, STRIDE для KRITIS, NIS2, **DORA** (регулирование финсектора ЕС) | [заголовок] |
+| [agent-ix/quoin](https://github.com/agent-ix/quoin) | 20 | 2026-11-25 | Rust, AGPL | Написание и валидация спек по 29148 для Claude Code | Активный, но про написание спек, а не ревью чужого документа |
+| [duonghvu/automotive-syseng](https://github.com/duonghvu/automotive-syseng) | 8 | 2026-04-21 | скилл | Анализ требований по INCOSE/EARS в автомобильном домене | [заголовок] |
+| [major-solutions/reqlite](https://github.com/major-solutions/reqlite) | 5 | 2026-10-31 | Python, Claude Code plugin | Граф Markdown-требований: детерминированный анализ (целостность, покрытие, риск допущений) плюс LLM-ревью каждого элемента в изолированном процессе без инструментов | v0.1, «early» |
+| [dimospapadopoulos/multi-agent-prd-reviewer](https://github.com/dimospapadopoulos/multi-agent-prd-reviewer) | 4 | 2026-08-31 | Python, Anthropic API, Slack | 4 агента: валидатор правил (12 разделов, оценка 0–100), «скептичный техлид», UX (состояния loading/error/empty), юрист (GDPR, **PCI DSS**, SCA). Вход MD/PDF/DOCX, выход JSON и консоль, токены по каждому агенту | Портфолио-версия. Заявлено «30 мин ручного ревью → ~60 с» без методики |
+| [laithalsaadoon/symspec](https://github.com/laithalsaadoon/symspec) | 2 | 2026-10-09 | TypeScript, Z3 (WASM) | EARS-требования → логика → Z3 **доказывает** противоречие и называет оба требования. Честно оговаривает, что «чисто» не значит «согласовано». JSON-ответ и 4 кода возврата | Работающий CLI. Связный текст не принимает |
+| [iamalimaybe/requirements-intelligence-assistant](https://github.com/iamalimaybe/requirements-intelligence-assistant) | 2 | 2026-06-12 | Python, Ollama qwen3 | Ответ LLM недоверенный до проверки: починка JSON, нормализация, JSON-схема, семантическая сверка с контекстом, позитивные и негативные регрессии, схема отчёта о прогоне | Учебный, но архитектура хорошая |
+| [yzy2916970964-commits/prd-diagnoser-skill](https://github.com/yzy2916970964-commits/prd-diagnoser-skill) | 2 | 2026-07-24 | Python (только stdlib) | Детерминированные проверки, привязанные к стандартам: 29148 (однозначность, верифицируемость, единичность), EARS, слабые слова INCOSE, Gherkin, полнота НФТ по ISO 25010. Выход `health_score` 0–100 и оценка A–E в JSON | Маленький, один коммит |
+| [amodiahs/claude-requirements-reviewer](https://github.com/amodiahs/claude-requirements-reviewer) | 1 | 2026-06-17 | Markdown-скилл | 5 измерений с весами: ясность 25, полнота 25, критерии приёмки 20, согласованность 15, границы и зависимости 15; итог «Score /100» и топ находок | Только промпт |
+| [Hulupeep/adversarial-prd-reviewer](https://github.com/Hulupeep/adversarial-prd-reviewer) | 1 | 2026-06-11 | Markdown-скилл | Цикл «автор ↔ атакующий», 7 обязательных проходов, «тест двух инженеров» (построят ли двое одно и то же), поиск запрещённых слов, вердикт | Только промпт |
+| [Srikalyan116/incose-requirement-assessor](https://github.com/Srikalyan116/incose-requirement-assessor) | 1 | 2026-05-07 | Python, FastAPI, Weaviate, MLflow | Оценка по INCOSE и 29148 с поиском по базе | README почти пустой |
+| [krisnakumar-star/AI-Software-Requirement-Validator](https://github.com/krisnakumar-star/AI-Software-Requirement-Validator) | 0 | 2026-11-20 | CSS/веб | «Платформа анализа SRS» | [заголовок] |
+| [jam01/SRS-Template](https://github.com/jam01/SRS-Template) | 493 | 2025-11-03 | Markdown | Шаблон SRS по IEEE 830 и 29148:2011 | Пригодится для своих тестовых документов |
+
+### Хакатоны и форки кейса
+
+- **Хакатоны (только идеи, [заголовок]):** на commudle (02.2026) есть BRDGenie, BRDify, DocuMind («multi-source requirements intelligence with traceability & conflict detection»), ReqMind AI, Requisight, InsightBRD. На lablab.ai: Spec2Test (требования → тест-кейсы), SpecCheck (трассировка требований), CodeProof (сверка требований с кодом). Повторяющиеся идеи: противоречия, трассировка и генерация тестов из требований.
+- **Форки BCC-HUB/ai-requirements-validator-task:** у оригинала 3★ на 25.11. Найден публичный форк `azekowka/ai-requirements-validator-task` (создан 25.11, по описанию не менялся) и отдельный репозиторий `I-am-King-of-the-World/ai-requirements-validator` (создан 25.11, README нет). Эндпоинт списка форков из среды недоступен (403), поиск мог пропустить часть форков. Код не изучал.
+
+## Фичи, которые стоит взять
+
+| # | Фича | Откуда | Приоритет | Чем ценна для жюри-QA |
+|---|---|---|---|---|
+| 1 | Каждая находка несёт цитату, якорь (раздел или строка) и подсвеченный токен, а код проверяет, что цитата есть в исходнике | IBM (highlighted tokens), Smella, QuARS | must | ТЗ требует ссылку на место. QA проверит любую находку за секунды, а выдуманные находки отсекаются до отчёта |
+| 2 | Важность находок (критично / средне / низко) и вердикт-гейт «можно ли начинать разработку и тестирование» | Jama и QVscribe (светофор), adversarial-prd (вердикт) | must | QA мыслит категориями severity и Definition of Ready. Вердикт закрывает раздел «Итог» из ТЗ |
+| 3 | Прозрачный скоринг: 100 минус штрафы по важности, дубли одной причины не штрафуются дважды; оценка по требованию и средняя по документу | IBM AI Hub, QVscribe Average Score | must | Число, которое можно объяснить формулой. Защищает от вопроса «откуда 78/100?» |
+| 4 | Матрица «требование × критерий 29148/830» с процентом выполнения по каждому критерию | Jama (% по правилу INCOSE) | must | Показывает покрытие стандарта, который назван в ТЗ, и сразу видно, какой критерий проседает |
+| 5 | Статусы «нужно уточнение» и «требует эксперта» вместо выдуманной оценки (корректность и выполнимость в домене) | IBM «needs clarification», Innoslate (Correct/Feasible ставит человек) | must | Честность: меньше ложных срабатываний, а QA видит границы автоматизации |
+| 6 | Детерминированный линтер на русском: слабые слова («быстро», «удобно», «и т. д.», «при необходимости»), опциональность («может», «по возможности»), неявные ссылки («он», «это», «выше»), множественность («и», «а также» в одном требовании), TBD и «—» | ARM, QuARS, Smella, NALABS | must | Нулевые галлюцинации и объяснимость. Готовых русских словарей нет, так что это наше отличие |
+| 7 | Предложенная исправленная формулировка для каждого критичного дефекта, по возможности по шаблону EARS («Когда <триггер>, система должна <отклик>») | QVscribe (guidance), Paska (рекомендации), Jama (EARS) | must | Отчёт сразу превращается в задачу на исправление |
+| 8 | Проверка набора: пары противоречий, дубли, глоссарий синонимов, тематические «срезы» (деньги, время, уведомления, API) | QuARS Views, reqlite | must | Коммерческие инструменты этого почти не делают, а самые ценные дефекты эталона (1, 2, 3, 34) сидят именно там |
+| 9 | Детерминизм: temperature 0, seed, JSON-схема с повторной генерацией, стабильный порядок находок | IBM, requirements-intelligence-assistant | must | Повторный прогон у жюри даст тот же отчёт |
+| 10 | Метрики уровня документа: число требований, defect rate (доля требований с дефектом), доля требований без ID, без критерия приёмки, слабых слов на требование | ARM, QuARS | must | «Паспорт качества» документа в цифрах, это и есть измеримая ценность |
+| 11 | Раздел «Качество агента»: precision/recall по критериям на нашем эталоне, разброс на 3–5 прогонах | IBM (P/R на корпусе), Shefa et al. | must | Ни один найденный open-source проект этого не публикует. QA-лид оценит, что качество измерено |
+| 12 | Доказательство противоречия сценарием: конкретный вход и два разных ожидаемых результата; формально через SMT как опция | symspec (Z3), Kiro [заголовок] | nice (сильный) | Находка с доказательством, а не мнение. Это язык тест-дизайна |
+| 13 | Черновики тест-кейсов и граничных значений к требованиям; «непроверяемо», если ожидаемый результат нельзя вывести из текста | Spec2Test (хакатон), «тест двух инженеров» | nice | Прямо бьёт в верифицируемость и в вопрос «можно ли начинать тестирование» |
+| 14 | HTML-отчёт с подсветкой дефектов в тексте документа и тепловой картой по разделам | Smella (подсветка как в проверке орфографии, treemap) | nice | Визуально проще всего проверить отчёт |
+| 15 | 2–3 роли ревьюеров: ИБ/PCI DSS, API-контракт (HTTP-семантика, коды ответа), состояния UI (loading/error/empty) | multi-agent-prd-reviewer | nice | Финтех-специфика, которую жюри из банка точно оценит |
+| 16 | Настраиваемый набор правил (YAML: включить или выключить, задать важность) и подавление ложных срабатываний | QVscribe (configuration), Smella (blacklist) | nice | Показывает, что агент применим не к одному документу |
+| 17 | Отчёт о прогоне: время, число вызовов и токенов, стоимость по этапам | multi-agent-prd-reviewer (токены по агентам) | nice | Критерий «измеримая бизнес-ценность» |
+
+## Чем мы можем выделиться (пробелы существующих решений)
+
+1. **Согласованность набора с доказательством.** Коммерческие инструменты оценивают требования поштучно. QVscribe прямо отказывается от оценки содержания, Innoslate оставляет корректность человеку. Противоречие, показанное на сценарии («покупка 31.01 в 23:58: Ф-2 даёт январь, критерий приёмки ждёт февраль»), есть только у формальных инструментов вроде symspec, и те не работают со связным текстом.
+2. **Русский язык.** Все словарные инструменты (ARM, QuARS, Smella, NALABS, Paska) англоязычные, в найденных LLM-скиллах нет русских правил. Русский линтер плюс промпты с определениями 29148 и 830 на русском — заметное отличие.
+3. **Измеренное качество агента.** Вендоры не публикуют precision/recall (у IBM только «оценивали»), open-source проекты тоже. Исследования показывают recall LLM около 0,33–0,47. Наш eval на эталоне из 45 дефектов с цифрами по критериям в README даёт то, чего нет ни у кого.
+4. **Ответ на главный вопрос QA.** Существующие оценки (5 звёзд, 78/100) не отвечают на «можно ли начинать разработку и тестирование». Нужен вердикт-гейт с критериями: 0 критичных противоречий, у каждого функционального требования есть критерий приёмки, нет TBD.
+5. **Документ из бизнес-требований и API-контракта в одном файле.** Инструменты требований не проверяют HTTP-семантику, коды ответа, типы полей и трассировку «Ф-требование ↔ эндпоинт». В кейсе это блок B с несколькими критичными дефектами (6, 8, 9).
+6. **Доменный финтех-чек-лист:** авторизация или клиринг, часовые пояса, денежные единицы (тиын и тенге), PCI DSS, идемпотентность. Частично это есть только у multi-agent-prd-reviewer (PCI DSS, GDPR, SCA), и там чек-лист жёстко зашит в промпт.
+7. **Устойчивость ко входу.** Никто из найденных не описывает поведение на битом PDF, скане или пустом файле, а жюри это проверит.
+8. **Явные ссылки на пункты стандартов из ТЗ** (29148 п. 5.2.5/5.2.6, 830 п. 4.3.x), а не на INCOSE или собственный набор правил. Жюри будет сверять именно с этими пунктами.
+
+## Как выглядит профессиональный отчёт (что в нём есть)
+
+Сводный образ из QVscribe, Jama, IBM, Smella, ARM и QuARS. Порядок разделов привязан к ТЗ.
+
+1. **Паспорт прогона:** документ, SHA-256 входа, дата, модель и её версия, версия агента (`git describe`), время прогона, число вызовов и токенов, стоимость. Если вход проблемный, здесь же раздел «Диагностика входа».
+2. **Резюме для руководителя (1 экран):** вердикт-гейт (Go / Go с условиями / No-Go), 3–5 блокеров с цитатой, счётчики по важности (критично / средне / низко), средняя оценка и распределение по светофору (как Average Score у QVscribe).
+3. **Матрица соответствия стандарту:** строки — требования, столбцы — свойства 29148 п. 5.2.5 и IEEE 830 п. 4.3, ячейки ✓ / ✗ / «?» (требует эксперта). Внизу процент по каждому критерию, как у Jama.
+4. **Таблица нарезки:** ID в отчёте, ID в документе, тип, краткая формулировка, якорь.
+5. **Карточка требования:** цитата с подсвеченным фрагментом, оценка, список нарушений (критерий + пункт стандарта + важность + объяснение в 1–2 предложения), предложенная формулировка, тестовый вопрос или граничный случай.
+6. **Проверка набора (29148 п. 5.2.6):** противоречия парами со сценарием-доказательством, дубли, трассировочная матрица (Ф ↔ критерии приёмки ↔ API ↔ данные), расхождения в терминах (глоссарий), пропуски по чек-листу (ошибки, ИБ, откат, НФТ).
+7. **Метрики документа (по образцу ARM и QuARS):** число требований, defect rate, доля без ID и без критериев приёмки, слабых слов на требование, плотность находок по разделам (тепловая карта).
+8. **Ограничения:** что не оценено и почему (корректность и выполнимость в домене требуют эксперта), известная точность агента.
+9. **План исправлений:** приоритизированный список «что исправить первым», связанный с ID находок.
+10. **Приложения:** `report.json` для машин, использованная конфигурация правил, лог.
+
+Форматы: Markdown (основной, читается на GitHub) + PDF (просили на kick-off) + JSON. Как опция HTML с подсветкой в тексте, как у Smella. Цвета светофора дублируются текстом (✓, ✗, «?»), чтобы отчёт читался в ч/б печати и PDF.
+
+## Риски и что не удалось проверить
+
+- **Лимит WebFetch исчерпан** (100 запросов в час на всех агентов), а habr, infostart, sostav, kiro.dev, altium.com и qracorp.com через curl недоступны (CONNECT 403). Поэтому не прочитаны: Kiro deep spec analysis, Altium Valiassistant, обзор российских систем управления требованиями (sostav), статья Infostart, хакатонные проекты на commudle и lablab, демо в aclanthology (2026.aacl-demo.10). Всё это помечено [заголовок].
+- **Российские и СНГ-аналоги:** найден только open-source AInalyst (ассистент аналитика, а не валидатор). Есть ли ИИ-проверка качества в российских системах управления требованиями, не установлено.
+- **Детали вендоров:** точный список правил INCOSE у Jama и названия 8 индикаторов Visure не найдены. Проверку по «6C» у Copilot4DevOps подтвердить не удалось. ReqView без ИИ-проверки (по поиску). Утверждения IBM взяты из блога самого вендора, без независимой проверки.
+- **INCOSE GtWR v4** (15 характеристик C1–C15, 42 правила R1–R42) — по памяти. Сводная таблица: https://www.incose.org/docs/default-source/working-groups/requirements-wg/guidetowritingrequirements/incose_rwg_gtwr_v4_summary_sheet.pdf (не открывал).
+- **Числа исследований** получены на малых выборках (13–20 требований, 34 студента). В статье Shefa et al. recall 0,33 в таблице расходится с 47 % в аннотации.
+- **GitHub:** звёзды и даты на 25.11 через search API. Список форков неполный: эндпоинт форков закрыт, поиск форков ненадёжен.
+- **Риск для нас: скоринг без калибровки.** Оценка «/100», как у PRD-скиллов, без объяснимой формулы вызовет у QA-лида вопрос «откуда число». Скоринг давать только с формулой и разбивкой.
+- **Риск для нас: переобещание.** Исследования показывают, что LLM пропускают дефекты и могут снижать качество человеческой инспекции. В README формулировать «первый проход + доказательства + измеренный recall», а не «заменяет ревью».
+
+## Источники
+
+- https://community.ibm.com/community/user/blogs/bhawana-gupta/2026/05/13/ai-hub-delivers-trustworthy-reqmts-quality-scores
+- https://www.ibm.com/docs/SS3UPN/com.ibm.help.rm.assist.doc/topics/c_rqa_architecture.html
+- https://edu.qracorp.com/knowledge/quality-analysis-scoring-guide-3
+- https://qracorp.com/qvscribe/
+- https://sma.nasa.gov/news/articles/newsitem/2026/02/12/the-critical-role-of-software-requirements-analysis-and-how-qvscribe-can-help
+- https://visuresolutions.com/tool-suite/quality-analyzer
+- https://help.jamasoftware.com/ah/en/jama-connect-advisor-/interpreting-the-results.html
+- https://www.jamasoftware.com/platform/jama-connect/jama-connect-advisor/
+- https://help.specinnovations.com/quality-check-requirements
+- https://www.altium.com/documentation/altium-365/requirements-systems-portal/valiassistant/quality-assessment?version=7.2
+- https://www.modernrequirements.com/ai/
+- https://www.atlassian.com/software/rovo/use-cases/agent-product-requirements-expert
+- https://kiro.dev/blog/deep-spec-analysis/
+- https://thenextweb.com/news/best-ai-requirements-management-software-2026
+- https://www.sostav.ru/blogs/286486/85809
+- https://infostart.ru/public/2721564/
+- https://www.csc.kth.se/utbildning/kth/kurser/DD1363/NASARequirements.html
+- https://www.sei.cmu.edu/documents/754/2005_005_001_14603.pdf
+- https://arxiv.org/abs/1611.08847
+- https://arxiv.org/abs/2305.07097
+- https://arxiv.org/abs/2202.05641
+- https://orbilu.uni.lu/bitstream/10993/28922/1/thesis_final.pdf
+- https://arxiv.org/pdf/2609.03230
+- https://arxiv.org/pdf/2604.15222
+- https://arxiv.org/pdf/2608.21298
+- https://arxiv.org/abs/2408.10886
+- https://www.incose.org/docs/default-source/working-groups/requirements-wg/guidetowritingrequirements/incose_rwg_gtwr_v4_summary_sheet.pdf
+- https://github.com/SNTSVV/Paska
+- https://github.com/gglucass/AQUSA
+- https://github.com/eduardenoiu/NALABS
+- https://github.com/chaussky/ainalyst
+- https://github.com/Agile-V/agile_v_skills
+- https://github.com/orangebread/speclinter-mcp
+- https://github.com/GodModeAI2025/specforge-ai-skill
+- https://github.com/agent-ix/quoin
+- https://github.com/duonghvu/automotive-syseng
+- https://github.com/major-solutions/reqlite
+- https://github.com/dimospapadopoulos/multi-agent-prd-reviewer
+- https://github.com/laithalsaadoon/symspec
+- https://github.com/iamalimaybe/requirements-intelligence-assistant
+- https://github.com/yzy2916970964-commits/prd-diagnoser-skill
+- https://github.com/amodiahs/claude-requirements-reviewer
+- https://github.com/Hulupeep/adversarial-prd-reviewer
+- https://github.com/Srikalyan116/incose-requirement-assessor
+- https://github.com/krisnakumar-star/AI-Software-Requirement-Validator
+- https://github.com/jam01/SRS-Template
+- https://github.com/azekowka/ai-requirements-validator-task
+- https://github.com/I-am-King-of-the-World/ai-requirements-validator
+- https://www.commudle.com/builds/documind-ai-powered-multi-source-requirements-intelligence-with-traceability-conflict-detection
+- https://lablab.ai/submissions/t2lasz6qjugxbft2stsoavuw
+- https://lablab.ai/submissions/o8fv799zxvoc7uo58m38lb8i
