@@ -24,3 +24,7 @@
 |---|---|---|
 | Конвейер D из разбора кейса | разбор 25.11 | `docs/case/case-analysis.md`, раздел «Варианты архитектуры» |
 | «Ревью с доказательствами» (v2 после критики) | Claude | [`claude-evidence-review.md`](claude-evidence-review.md), критика: [`claude-evidence-review-critique.md`](claude-evidence-review-critique.md) |
+
+## Итог
+
+На сессии 25.11 выбрали «Ревью с доказательствами» с поправками по замеру базовой линии: [`final-idea.md`](final-idea.md), решение D-009 в [`docs/decisions.md`](../decisions.md).
