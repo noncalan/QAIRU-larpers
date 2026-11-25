@@ -22,7 +22,6 @@ import logging
 import re
 from collections.abc import Sequence
 from dataclasses import dataclass, field
-from pathlib import Path
 
 from pydantic import Field, ValidationError, ValidationInfo, field_validator
 
@@ -47,13 +46,13 @@ from validator.models import (
     RunConfig,
     WithdrawnQuestion,
 )
+from validator.prompting import PROMPTS_DIR, fill, load_prompt
 from validator.questions.editor import _Lenient, extract_json
 from validator.questions.quotes import span, verify_quote
 from validator.text import MIN_FUZZY_CHARS, locate_quote, normalize
 
 logger = logging.getLogger("validator")
 
-PROMPTS_DIR = Path(__file__).resolve().parents[1] / "prompts"
 SYSTEM_PROMPT = PROMPTS_DIR / "questions_critic_system.md"
 USER_PROMPT = PROMPTS_DIR / "questions_critic_user.md"
 CALL_INDEX = 1
@@ -76,7 +75,6 @@ FORMULATION_ERRORS = {
 """Ошибки формулировки п. 4.4 исследования 17 в нумерации промпта критика (без «ответ есть в документе»:
 это проверяет сам самоответ)."""
 
-_PLACEHOLDER = re.compile(r"\{(document|questions)\}")
 _QUESTION_ID = re.compile(r"Q\s*-?\s*0*(\d+)", re.IGNORECASE)
 
 
@@ -159,17 +157,17 @@ def render_question(q: Question) -> str:
 
 def build_request(questions: Sequence[Question], doc: ParsedDocument, cfg: RunConfig) -> LLMRequest:
     model = cfg.model_for(LLMStep.QUESTIONS_CRITIC)
-    values = {
-        "document": render_for_model(doc).rstrip("\n"),
-        "questions": "\n\n".join(render_question(q) for q in questions),
-    }
-    prompt = _PLACEHOLDER.sub(lambda m: values[m.group(1)], USER_PROMPT.read_text(encoding="utf-8"))
+    prompt = fill(
+        load_prompt(USER_PROMPT.name),
+        document=render_for_model(doc).rstrip("\n"),
+        questions="\n\n".join(render_question(q) for q in questions),
+    )
     return LLMRequest(
         step=LLMStep.QUESTIONS_CRITIC,
         call_index=CALL_INDEX,
         model=model.model,
         effort=model.effort,
-        system=SYSTEM_PROMPT.read_text(encoding="utf-8").strip(),
+        system=load_prompt(SYSTEM_PROMPT.name).strip(),
         prompt=prompt,
         json_schema=None,
         timeout_s=cfg.call_timeout_s,
