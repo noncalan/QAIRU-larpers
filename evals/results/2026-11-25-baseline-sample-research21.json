@@ -1,0 +1,171 @@
+{
+ "schema_version": "1",
+ "name": "baseline-sample-research21",
+ "created_at": "2026-11-25T23:10:11.308788+05:00",
+ "settings": {
+  "judge_model": "claude-opus-5-5",
+  "judge_effort": "high",
+  "judge_mode": "cli",
+  "judge_format": "research21",
+  "gold_version": "2026-11-25.1",
+  "gold_sha256": "4735b0b50db1add41dc077bb65fd0443ad07223ebd7acc3d6a36287cdf10f22b",
+  "gold_total": 45,
+  "gold_critical": [
+   1,
+   2,
+   3,
+   4,
+   6,
+   8,
+   14,
+   25,
+   34
+  ],
+  "document": "data/input/requirements.md",
+  "document_sha256": "e7dae55e5453a250d93e335f5ff9c7f775f4457ccddd333f4a67e47b20d74381"
+ },
+ "config": {
+  "runs": 1,
+  "recall": 0.9333333333333333,
+  "recall_strict": 0.8666666666666667,
+  "critical_recall": 1.0,
+  "critical_recall_strict": 1.0,
+  "findings": 45.0,
+  "noise_share": 0.0,
+  "quotes_exact": 0.7073170731707317,
+  "quotes_verified": 0.8048780487804879,
+  "quotes_final_verified": 0.8048780487804879,
+  "wall_s": 120.222,
+  "cost_usd": 0.311332,
+  "union_recall": 0.9333333333333333,
+  "union_recall_strict": 0.8666666666666667,
+  "critical_pass_all": 1.0,
+  "critical_pass_any": 1.0,
+  "gold_jaccard": null,
+  "key_jaccard": null,
+  "judge_cost_usd": 0.201068
+ },
+ "runs": [
+  {
+   "label": "tests/fixtures/eval/baseline-run",
+   "source": "baseline",
+   "findings": 45,
+   "gold": {
+    "1": "found",
+    "2": "found",
+    "3": "found",
+    "4": "found",
+    "5": "found",
+    "6": "found",
+    "7": "found",
+    "8": "found",
+    "9": "found",
+    "10": "partial",
+    "11": "found",
+    "12": "found",
+    "13": "found",
+    "14": "found",
+    "15": "found",
+    "16": "missed",
+    "17": "found",
+    "18": "found",
+    "19": "found",
+    "20": "found",
+    "21": "found",
+    "22": "found",
+    "23": "found",
+    "24": "found",
+    "25": "found",
+    "26": "found",
+    "27": "found",
+    "28": "found",
+    "29": "found",
+    "30": "found",
+    "31": "found",
+    "32": "found",
+    "33": "missed",
+    "34": "found",
+    "35": "found",
+    "36": "partial",
+    "37": "found",
+    "38": "found",
+    "39": "missed",
+    "40": "found",
+    "41": "found",
+    "42": "found",
+    "43": "found",
+    "44": "found",
+    "45": "partial"
+   },
+   "recall": 0.9333333333333333,
+   "recall_strict": 0.8666666666666667,
+   "critical_recall": 1.0,
+   "critical_recall_strict": 1.0,
+   "recall_by_severity": {
+    "critical": 1.0,
+    "medium": 0.9047619047619048,
+    "low": 0.9333333333333333
+   },
+   "extra_real": 3,
+   "extra_noise": 0,
+   "unmatched_unjudged": 0,
+   "noise_share": 0.0,
+   "quotes": {
+    "total": 82,
+    "exact": 58,
+    "fuzzy": 8,
+    "not_found": 16
+   },
+   "quotes_final": {
+    "total": 82,
+    "exact": 58,
+    "fuzzy": 8,
+    "not_found": 16
+   },
+   "calls": {
+    "calls": 1,
+    "failed": 0,
+    "cost_usd": 0.311332,
+    "cost_missing": 0,
+    "model_s": 120.222,
+    "wall_s": 120.222
+   },
+   "judge": {
+    "key": "86a7391ef9de1c60961cff1bccbbad25cdb012db179d6701230a93add3e7e02d",
+    "source": "cli",
+    "model": "claude-opus-5-5",
+    "cost_usd": 0.201068,
+    "duration_ms": 29618,
+    "cache_path": "evals/cache/judge/86a7391ef9de1c60961cff1bccbbad25cdb012db179d6701230a93add3e7e02d.json"
+   },
+   "keys": null,
+   "unmatched": [
+    {
+     "id": 32,
+     "fingerprint": "10d6cc2ef8c3",
+     "verdict": "real",
+     "quote": "400: `{\"message\":\"Некорректный запрос\"}` при таблице ответа с полем `result`"
+    },
+    {
+     "id": 39,
+     "fingerprint": "cc15f1fed008",
+     "verdict": "real",
+     "quote": "Описания 401/403/500 расположены внутри блока примеров 200"
+    },
+    {
+     "id": 45,
+     "fingerprint": "0b79eff771a5",
+     "verdict": "real",
+     "quote": "Ф‑3: «На карту приходится…»"
+    }
+   ],
+   "overrides": [],
+   "warnings": [],
+   "notes": [],
+   "agent_version": null,
+   "layout": "table",
+   "document": "data/input/requirements.md"
+  }
+ ],
+ "notes": []
+}

@@ -1,0 +1,260 @@
+{
+ "type": "result",
+ "subtype": "success",
+ "is_error": false,
+ "duration_ms": 1000,
+ "num_turns": 1,
+ "result": "",
+ "structured_output": {
+  "gold": [
+   {
+    "id": 1,
+    "status": "found",
+    "finding_ids": [
+     1
+    ]
+   },
+   {
+    "id": 2,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 3,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 4,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 5,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 6,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 7,
+    "status": "found",
+    "finding_ids": [
+     5
+    ]
+   },
+   {
+    "id": 8,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 9,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 10,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 11,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 12,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 13,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 14,
+    "status": "partial",
+    "finding_ids": [
+     2
+    ]
+   },
+   {
+    "id": 15,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 16,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 17,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 18,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 19,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 20,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 21,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 22,
+    "status": "partial",
+    "finding_ids": [
+     3
+    ]
+   },
+   {
+    "id": 23,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 24,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 25,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 26,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 27,
+    "status": "found",
+    "finding_ids": [
+     4
+    ]
+   },
+   {
+    "id": 28,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 29,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 30,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 31,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 32,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 33,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 34,
+    "status": "found",
+    "finding_ids": [
+     2
+    ]
+   },
+   {
+    "id": 35,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 36,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 37,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 38,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 39,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 40,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 41,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 42,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 43,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 44,
+    "status": "missed",
+    "finding_ids": []
+   },
+   {
+    "id": 45,
+    "status": "missed",
+    "finding_ids": []
+   }
+  ],
+  "extra": []
+ },
+ "total_cost_usd": 0.0,
+ "usage": {
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "cache_creation_input_tokens": 0,
+  "cache_read_input_tokens": 0
+ },
+ "modelUsage": {
+  "claude-opus-5-5": {}
+ }
+}

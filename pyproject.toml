@@ -73,7 +73,7 @@ default-groups = ["dev"]
 [tool.ruff]
 line-length = 110
 target-version = "py311"
-src = ["src", "tests"]
+src = ["src", "tests", "."]
 extend-exclude = ["experiments", "docs", ".claude", "*.md"]  # ruff 0.17 форматирует и код в Markdown: документацию не трогаем
 
 [tool.ruff.lint]
@@ -116,3 +116,4 @@ warn_required_dynamic_aliases = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"
+pythonpath = ["."]  # пакет evals/ (eval по эталону, #24) лежит в корне репозитория
