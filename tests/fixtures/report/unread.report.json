@@ -1,0 +1,79 @@
+{
+  "schema_version": "1",
+  "status": "not_performed",
+  "passport": {
+    "document_name": "broken.pdf",
+    "document_kind": "pdf",
+    "document_sha256": null,
+    "document_size_bytes": 0,
+    "document_pages": null,
+    "started_at": "2026-01-15T09:30:00Z",
+    "finished_at": "2026-01-15T09:34:00Z",
+    "duration_s": 0.1,
+    "agent_version": "v0.9.0",
+    "agent_version_source": "git",
+    "agent_dirty": false,
+    "prompts_sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+    "os": "Linux 6.1 (x86_64)",
+    "python": "3.12.0",
+    "backend_requested": "cli",
+    "backend_used": null,
+    "profile": "standard",
+    "passes": 3,
+    "models": {},
+    "models_actual": [],
+    "calls_total": 0,
+    "calls_failed": 0,
+    "tokens": {
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0
+    },
+    "cost_usd": null,
+    "exit_code": 4
+  },
+  "document": null,
+  "input_diagnostics": [
+    {
+      "code": "IN-011",
+      "level": "error",
+      "message": "Файл пустой: 0 байт",
+      "action": "Остановил проверку",
+      "hint": "Пришлите исходный файл заново",
+      "location": "весь файл",
+      "step": null
+    }
+  ],
+  "diagnostics": [],
+  "segmentation": null,
+  "verification": null,
+  "questions": [],
+  "conclusion": {
+    "traffic_light": "red",
+    "headline": "Проверка не выполнена: Файл пустой: 0 байт",
+    "performed": false,
+    "fix_first": [],
+    "ask_first": []
+  },
+  "metrics": {
+    "duration_s": null,
+    "calls_total": 0,
+    "calls_failed": 0,
+    "calls_cached": 0,
+    "tokens": {
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0
+    },
+    "cost_usd": null,
+    "candidates_total": 0,
+    "merged_total": 0,
+    "findings_total": 0,
+    "discarded_total": 0,
+    "quotes_total": 0,
+    "quotes_verified": 0,
+    "verified_quote_share": null
+  }
+}

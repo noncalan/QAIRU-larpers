@@ -42,13 +42,18 @@ def _split(diagnostics: Sequence[Diagnostic]) -> tuple[list[Diagnostic], list[Di
 
 
 def _fix_first(ver: Verification) -> list[str]:
-    violations = [f for f in ver.findings if f.verdict is Verdict.VIOLATION]
-    violations.sort(key=lambda f: (f.severity.rank, f.id))
-    return [f.id for f in violations[:FIRST_PAGE_ITEMS]]
+    """Первая страница: нарушения со сверенной цитатой по важности, затем в порядке верификатора."""
+    candidates = [
+        f for f in ver.findings if f.verdict is Verdict.VIOLATION and any(q.verified for q in f.quotes)
+    ]
+    candidates.sort(key=lambda f: f.severity.rank)  # сортировка устойчивая: порядок верификатора сохраняется
+    return [f.id for f in candidates[:FIRST_PAGE_ITEMS]]
 
 
 def _ask_first(questions: Sequence[Question]) -> list[str]:
+    """Вопросы, блокирующие работу (P0, затем P1), по порядку в списке вопросов."""
     blocking = [q for q in questions if q.priority in (QuestionPriority.P0, QuestionPriority.P1)]
+    blocking.sort(key=lambda q: q.priority.value)  # P0 раньше P1, порядок внутри приоритета сохраняется
     return [q.id for q in blocking[:FIRST_PAGE_ITEMS]]
 
 

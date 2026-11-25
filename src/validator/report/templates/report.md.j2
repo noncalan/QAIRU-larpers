@@ -1,33 +1,44 @@
 {#- Отчёт агента. Разделы ТЗ п. 6 по порядку плюс первая страница, вопросы автору и метрики.
-    Минимальная версия каркаса (#15): полноту и красоту делает #23. Текстов проверяемого документа
-    здесь нет и быть не должно: всё конкретное приходит из Report. -#}
+    Текстов проверяемого документа здесь нет и быть не должно: всё конкретное приходит из Report.
+    Подсчёты делает код (``render_md.py``, верификатор), шаблон только раскладывает данные. -#}
 {% set r = report %}
 {% set p = r.passport %}
 {% set c = r.conclusion %}
 {% set v = r.verification %}
 {% set seg = r.segmentation %}
+{% macro quote_line(q, section) %}
+{% if q.verified %}
+«{{ q | quote_text }}» ({{ q.anchor | where(section) }}; сверено: {{ q.match.label }}{% if q.match.value == "fuzzy" %}, {{ "%.0f" | format(q.score) }} %{% endif %})
+{% else %}
+цитата не найдена в документе: «{{ q.text | cell(200) }}»
+{% endif %}
+{% endmacro %}
 {% macro finding_card(f) %}
-#### {{ f.id }} · {{ f.severity.label }} · {{ f.property.label }} ({{ f.property.value }})
+### {{ f.id }} · {{ f.severity.label }} · {{ f.verdict.label }} · {{ f.property.label }}
 
 {% if f.scope.value == "set" %}
-- **Уровень:** весь набор требований{% if f.section_path %}, {{ f.section_path | join(" › ") }}{% endif %}
+- **Уровень:** весь набор требований{% if f.requirement_ids %}, затронуты {{ f.requirement_ids | join(", ") }}{% endif %}
 
-{% endif %}
-{% if f.requirement_ids %}
-- **Требования:** {{ f.requirement_ids | join(", ") }}
+{% else %}
+- **Требования:** {{ f.requirement_ids | join(", ") if f.requirement_ids else "не определены" }}
 {% endif %}
 {% for q in f.quotes %}
-{% if q.verified %}
-- **Цитата:** «{{ q | quote_text }}» ({{ q.anchor | where(f.section_path) }}; сверено: {{ q.match.label }}{% if q.match.value == "fuzzy" %}, {{ "%.0f" | format(q.score) }} %{% endif %})
-{% else %}
-- **Цитата не найдена в документе:** «{{ q.text | cell(200) }}»
-{% endif %}
+- **Цитата {{ loop.index }}:** {{ quote_line(q, section_of(q, finding_sections[f.id])) | trim }}
 {% endfor %}
 - **Нарушено:** {{ f.property.refs | join("; ") }}
-- **Вердикт:** {{ f.verdict.label }} · **тип дефекта:** {{ f.defect_type.label }} · **мешает написать тест-кейс:** {{ "да" if f.blocks_testing else "нет" }}
+- **Тип дефекта:** {{ f.defect_type.label }} · **мешает написать тест-кейс:** {{ "да" if f.blocks_testing else "нет" }}
+{% if f.verdict.value == "unclear" %}
+- **Вердикт «неясно»:** в число нарушений не входит, это повод уточнить у автора.
+{% endif %}
+{% if f.title %}
+- **Суть:** {{ f.title | cell }}
+{% endif %}
 - **Почему это проблема:** {{ f.explanation | cell }}
 {% if f.suggestion %}
-- **Как исправить:** {{ f.suggestion | cell }}
+- **Предложенная формулировка:** {{ f.suggestion | cell }}
+{% endif %}
+{% if questions_by_finding.get(f.id) %}
+- **Вопрос автору:** {{ questions_by_finding[f.id] | join(", ") }}
 {% endif %}
 - **Найдено:** в {{ f.found_in }} из {{ f.of }} проходов{% if f.sources %} ({{ f.sources | map(attribute="label") | join(", ") }}){% endif %}
 
@@ -61,8 +72,16 @@
 {% for fid in c.fix_first %}
 {% set f = findings_by_id[fid] %}
 {% set q0 = (f.quotes | selectattr("verified") | first) if f.quotes else none %}
-{{ loop.index }}. **{{ f.id }}** · {{ f.severity.label }} · {{ f.property.label }}: {{ (f.title or f.explanation) | short(220) }}{% if q0 %} Цитата: «{{ q0 | quote_text(160) }}» ({{ q0.anchor | where }}).{% endif %}
-
+{{ loop.index }}. **{{ f.id }}** · {{ f.severity.label }} · {{ f.property.label }}: {{ (f.title or f.explanation) | short(220) }}
+{% if q0 %}
+   - Цитата: «{{ q0 | quote_text(160) }}» ({{ q0.anchor | where(section_of(q0, finding_sections[f.id])) }})
+{% endif %}
+{% if f.suggestion %}
+   - Предложенная формулировка: {{ f.suggestion | short(220) }}
+{% endif %}
+{% if questions_by_finding.get(f.id) %}
+   - Вопрос автору: {{ questions_by_finding[f.id] | join(", ") }}
+{% endif %}
 {% else %}
 Нарушений, которые нужно исправить до начала работ, не найдено.
 {% endfor %}
@@ -71,7 +90,11 @@
 
 {% for qid in c.ask_first %}
 {% set q = questions_by_id[qid] %}
-{{ loop.index }}. **{{ q.id }}** · {{ q.priority.value }} ({{ q.priority.label }}): {{ q.question | short(220) }}
+{{ loop.index }}. **{{ q.id }}** · {{ q.priority.value }} ({{ q.priority.label }}){% if q.addressee %} · кому: {{ q.addressee | map(attribute="label") | join(", ") }}{% endif %}: {{ q.question | short(260) }}
+{% if q.options %}
+   - Варианты: {% for o in q.options %}{{ o.label }}. {{ o.text | short(200) }}{% if not loop.last %}; {% endif %}{% endfor %}
+
+{% endif %}
 {% else %}
 Вопросов, блокирующих разработку или тестирование, нет.
 {% endfor %}
@@ -87,8 +110,8 @@
 | Длительность | {{ p.duration_s if p.duration_s is not none else "—" }} с |
 | Версия агента | {{ p.agent_version }} (источник: {{ p.agent_version_source }}){% if p.agent_dirty %}, есть незакоммиченные правки{% endif %} |
 | Хеш промптов | {{ p.prompts_sha256[:12] }} |
-| Способ вызова модели | {{ (p.backend_used or p.backend_requested).label }} |
-| Модели по шагам | {% for step, label in p.models.items() %}{{ step }}: {{ label }}{% if not loop.last %}; {% endif %}{% endfor %} |
+| Способ вызова модели | {% if p.calls_total == 0 %}модель не вызывалась (запрошено: {{ p.backend_requested.label }}){% else %}{{ (p.backend_used or p.backend_requested).label }}{% endif %} |
+| Модели по шагам | {% for step, label in p.models.items() %}{{ step }}: {{ label }}{% if not loop.last %}; {% endif %}{% else %}—{% endfor %} |
 | Фактические модели | {{ p.models_actual | join(", ") if p.models_actual else "—" }} |
 | Профиль | {{ p.profile.value }}, проходов поиска: {{ p.passes }} |
 | Вызовов модели | {{ p.calls_total }} (с ошибкой: {{ p.calls_failed }}) |
@@ -96,12 +119,26 @@
 | Цена по тарифу API | {{ p.cost_usd | money }} |
 | Окружение | {{ p.os | cell }}, Python {{ p.python }} |
 | Код завершения | {{ p.exit_code.value }}: {{ p.exit_code.meaning }} |
-{% if r.document and r.document.extraction %}
-| Извлечение текста | {{ r.document.extraction | cell }} |
-{% endif %}
+| Состояние проверки | {{ r.status | status_label }} |
 
 ## 2. Диагностика входа
 
+{% if r.document %}
+{% set d = r.document %}
+| Параметр | Значение |
+|---|---|
+| Файл | {{ d.name | cell }} ({{ d.size_bytes if d.size_bytes is not none else "размер неизвестен" }} байт, SHA-256: {{ d.sha256 or "—" }}) |
+| Тип по содержимому | {{ d.kind.value }} |
+{% if d.pages %}
+| Страниц | {{ d.pages }} |
+{% endif %}
+{% if d.extraction %}
+| Способ извлечения текста | {{ d.extraction | cell }} |
+{% endif %}
+| Символов извлечено, блоков | {{ d.chars }}, {{ d.blocks }} |
+| Статус входа | {{ input_status }} |
+
+{% endif %}
 {% if r.input_diagnostics %}
 {{ diag_table(r.input_diagnostics) }}
 {% else %}
@@ -127,10 +164,12 @@
 | ID в отчёте | ID в документе | Краткая формулировка | Тип | Цитата | Где |
 |---|---|---|---|---|---|
 {% for req in seg.requirements %}
-| {{ req.id }} | {{ req.source_id | cell if req.source_id else "нет номера (" ~ (req.source_locator | cell) ~ ")" }} | {{ req.summary | cell(160) }} | {{ req.type.label }} | «{{ req.quote | cell(300) }}» | {{ req.anchor | where }} |
+| {{ req.id }} | {{ req.source_id | cell if req.source_id else "нет номера (" ~ (req.source_locator | cell) ~ ")" }} | {{ req.summary | cell(160) }} | {{ req.type.label }} | «{{ req.quote | cell(300) }}» | {{ req.anchor | where(req.section_path) | cell }} |
+{% else %}
+| — | — | требований в документе не найдено | — | — | — |
 {% endfor %}
 
-Не вошли в требования: {{ seg.excluded | length }} блоков{% if seg.excluded %} ({% for label, group in seg.excluded | groupby("label") %}{{ label.label }}: {{ group | length }}{% if not loop.last %}, {% endif %}{% endfor %}){% endif %}.
+Требований: {{ seg.requirements | length }}. Не вошли в требования: {{ seg.excluded | length }} блоков{% if seg.excluded %} ({% for label, group in seg.excluded | groupby("label") %}{{ label.label }}: {{ group | length }}{% if not loop.last %}, {% endif %}{% endfor %}){% endif %}.
 {% else %}
 Нарезка не выполнена, смотрите диагностику прогона.
 {% endif %}
@@ -138,11 +177,12 @@
 ## 4. Проверка каждого требования
 
 {% if v and seg %}
-| Требование | Статус |
-|---|---|
-{% for req in seg.requirements %}
-{% set ids = v.requirement_status.get(req.id, []) %}
-| {{ req.id }} | {{ ids | join(", ") if ids else "нарушений нет" }} |
+Статус есть у каждого требования из таблицы нарезки. Подробности по каждой находке ниже. Требований без нарушений: {{ requirement_rows | selectattr("finding_ids", "equalto", ()) | list | length }} из {{ requirement_rows | length }}.
+
+| Требование | ID в документе | Статус |
+|---|---|---|
+{% for row in requirement_rows %}
+| {{ row.requirement.id }} | {{ row.requirement.source_id | cell if row.requirement.source_id else "нет номера" }} | {{ row.status }} |
 {% endfor %}
 
 {% for f in req_findings %}
@@ -172,7 +212,7 @@
 | ID | Приоритет | Адресат | Вопрос | Закрывает находки |
 |---|---|---|---|---|
 {% for q in r.questions %}
-| {{ q.id }} | {{ q.priority.value }} {{ q.priority.label }} | {{ q.addressee | map(attribute="label") | join(", ") }} | {{ q.question | cell(200) }} | {{ q.related_findings | join(", ") }} |
+| {{ q.id }} | {{ q.priority.value }} {{ q.priority.label }} | {{ q.addressee | map(attribute="label") | join(", ") }} | {{ q.question | cell(200) }} | {{ q.related_findings | join(", ") if q.related_findings else "—" }} |
 {% endfor %}
 
 {% for q in r.questions %}
@@ -183,7 +223,7 @@
 {% if q.quotes %}
 **Где в документе.**
 {% for qq in q.quotes %}
-- «{{ qq | quote_text(200) }}» ({{ qq.anchor | where }})
+- «{{ qq | quote_text(200) }}» ({{ qq.anchor | where(section_of(qq)) }})
 {% endfor %}
 
 {% endif %}
@@ -191,6 +231,7 @@
 **Почему важно.** {{ q.why | cell }}
 
 {% endif %}
+{% if q.options %}
 | Вариант | Правило | Что поменять |
 |---|---|---|
 {% for o in q.options %}
@@ -198,25 +239,33 @@
 {% endfor %}
 | Другое | ___ | |
 
+{% endif %}
 {% if q.if_unanswered %}
 **Если не ответить.** {{ q.if_unanswered | cell }}
-{% endif %}
 
+{% endif %}
 {% endfor %}
 Ответы можно вписать в `questions.yaml` рядом с отчётом.
+{% elif r.diagnostics | selectattr("step", "equalto", "questions") | list %}
+Вопросы не сформированы: шаг вопросов завершился с ошибкой, смотрите диагностику прогона.
+{% elif v and v.findings %}
+Вопросов нет: агент не нашёл находок, исправление которых требует выбора автора между вариантами.
+{% elif v %}
+Вопросов нет: нарушений и неясностей не найдено.
 {% else %}
-Вопросов к автору нет.
+Вопросы не сформированы: проверка выполнена не полностью, смотрите диагностику прогона.
 {% endif %}
 
 ## 7. Сводка
 
 {% if v %}
 {% set s = v.summary %}
-- Требований: **{{ s.requirements_total }}**, из них с нарушениями: **{{ s.requirements_with_findings }}**.
+- Требований: **{{ s.requirements_total }}**, из них с нарушениями или неясностями: **{{ s.requirements_with_findings }}**.
 - Находок: **{{ s.findings_total }}** (нарушений {{ s.violations }}, «неясно» {{ s.unclear }}, уровня набора {{ s.set_level }}).
 - По важности: {% for sev, n in s.by_severity.items() %}{{ sev.label }} {{ n }}{% if not loop.last %}, {% endif %}{% else %}нет находок{% endfor %}.
 - Критичных: **{{ s.critical }}**{% if s.critical_ids %} ({{ s.critical_ids | join(", ") }}){% endif %}.
 - Критичные классы по ТЗ (непроверяемые, противоречивые, неполные): {% for f in critical_classes %}{{ f.id }} {{ f.defect_type.label }}{% if not loop.last %}, {% endif %}{% else %}не найдены{% endfor %}.
+- Вопросов автору: {{ r.questions | length }}.
 - Отброшено кодом: {{ s.discarded_total }}{% if s.discarded_by_reason %} ({% for reason, n in s.discarded_by_reason.items() %}{{ reason.label }}: {{ n }}{% if not loop.last %}; {% endif %}{% endfor %}){% endif %}.
 - Цитаты: сверено {{ s.quotes_exact + s.quotes_fuzzy }} из {{ s.quotes_total }} (точно {{ s.quotes_exact }}, нечётко {{ s.quotes_fuzzy }}).
 {% else %}
@@ -227,14 +276,26 @@
 
 **{{ c.traffic_light.icon }} {{ c.headline }}**
 
+{% if blocks_development %}
+- **Открытые вопросы, блокирующие разработку (P0):** {{ blocks_development | join(", ") }}.
+{% endif %}
+{% if blocks_testing %}
+- **Открытые вопросы, блокирующие тестирование (P1):** {{ blocks_testing | join(", ") }}.
+{% endif %}
 {% if c.fix_first %}
-Исправить в первую очередь: {{ c.fix_first | join(", ") }}.
+- **Что исправить первым:**
+{% for fid in c.fix_first %}
+{% set f = findings_by_id[fid] %}
+{% set q0 = (f.quotes | selectattr("verified") | first) if f.quotes else none %}
+{% set place = " (" ~ (q0.anchor | where(section_of(q0, finding_sections[f.id]))) ~ ")" if q0 else "" %}
+  {{ loop.index }}. {{ f.id }} · {{ f.severity.label }} · {{ f.property.label }}{{ place }}
+{% endfor %}
 {% endif %}
 {% if c.ask_first %}
-Спросить автора в первую очередь: {{ c.ask_first | join(", ") }}.
+- **Спросить автора в первую очередь:** {{ c.ask_first | join(", ") }}.
 {% endif %}
 
-Светофор считает код по сверенным находкам, а не модель.
+Светофор и важность считает код по сверенным находкам, а не модель.
 
 ## 9. Метрики прогона
 
@@ -246,6 +307,7 @@
 | Находок после верификатора | {{ r.metrics.findings_total }} |
 | Отброшено верификатором | {{ r.metrics.discarded_total }} |
 | Вызовов модели | {{ r.metrics.calls_total }} (с ошибкой {{ r.metrics.calls_failed }}, из кеша {{ r.metrics.calls_cached }}) |
+| Токены | вход {{ r.metrics.tokens.input_tokens }}, выход {{ r.metrics.tokens.output_tokens }}, запись в кеш {{ r.metrics.tokens.cache_creation_input_tokens }}, чтение из кеша {{ r.metrics.tokens.cache_read_input_tokens }} |
 | Время прогона | {{ r.metrics.duration_s if r.metrics.duration_s is not none else "—" }} с |
 | Цена по тарифу API | {{ r.metrics.cost_usd | money }} |
 {% endif %}

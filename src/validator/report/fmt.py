@@ -6,21 +6,41 @@ import re
 from collections.abc import Sequence
 from datetime import datetime
 
-from validator.models import Anchor, Quote
+from validator.models import Anchor, Extraction, Quote, ReportStatus
 
 _SPACES = re.compile(r"\s+")
+_MD_SPECIAL = re.compile(r"[*`<]|(?<!\w)_|_(?!\w)")
+"""Знаки, которые Markdown превращает в разметку: цитата должна выглядеть, как в документе."""
 
 
 def cell(text: object, limit: int | None = None) -> str:
-    """Текст для ячейки Markdown-таблицы: одна строка, ``|`` экранирован, по желанию обрезан."""
-    value = _SPACES.sub(" ", str(text or "")).strip().replace("|", "\\|")
+    """Текст для ячейки Markdown-таблицы: одна строка, ``|`` и разметка экранированы, по желанию обрезан."""
+    value = _SPACES.sub(" ", str(text or "")).strip()
     if limit is not None and len(value) > limit:
         value = value[: limit - 1].rstrip() + "…"
-    return value
+    value = value.replace("|", "\\|")
+    return _MD_SPECIAL.sub(lambda m: "\\" + m.group(0), value)
 
 
 def short(text: object, limit: int = 160) -> str:
     return cell(text, limit)
+
+
+_EXTRACTION_NOTES = {
+    Extraction.OCR: "текст распознан (OCR)",
+    Extraction.REPAIRED: "текст восстановлен после ремонта файла",
+}
+"""Пометки у мест, текст которых получен не прямым чтением (исследование 04, раздел 4)."""
+
+_STATUS_LABELS = {
+    ReportStatus.COMPLETE: "проверка выполнена полностью",
+    ReportStatus.PARTIAL: "проверка выполнена частично, смотрите диагностику",
+    ReportStatus.NOT_PERFORMED: "проверка не выполнена",
+}
+
+
+def status_label(status: ReportStatus) -> str:
+    return _STATUS_LABELS[status]
 
 
 def where(anchor: Anchor | None, section: Sequence[str] | None = None) -> str:
@@ -44,7 +64,9 @@ def where(anchor: Anchor | None, section: Sequence[str] | None = None) -> str:
         parts.append(
             f"строка {anchor.line_start}" if same else f"строки {anchor.line_start}–{anchor.line_end}"
         )
-    return ", ".join(parts) or "место не определено"
+    place = ", ".join(parts) or "место не определено"
+    note = _EXTRACTION_NOTES.get(anchor.extraction)
+    return f"{place}, {note}" if note else place
 
 
 def quote_text(quote: Quote, limit: int = 300) -> str:
@@ -72,4 +94,5 @@ FILTERS = {
     "pct": pct,
     "money": money,
     "when": when,
+    "status_label": status_label,
 }
