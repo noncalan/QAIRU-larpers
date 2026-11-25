@@ -71,7 +71,7 @@ from validator.questions import ask, write_questions_yaml
 from validator.report import build_report, render_md
 from validator.search import search
 from validator.segment import fallback_segmentation, segment
-from validator.verify import verify
+from validator.verify import light_with_questions, verify
 
 logger = logging.getLogger("validator")
 T = TypeVar("T")
@@ -285,13 +285,15 @@ def _execute(state: _State) -> None:
     ver = state.verification
     if ver is not None:
         state.diagnostics.extend(ver.diagnostics)
-        state.questions = _step(
+        asked = _step(
             state,
             "questions",
             lambda: ask(ver, doc, seg, llm, cfg),
-            list,
+            lambda: None,
             action="Раздел вопросов собран без них",
         )
+        state.questions = asked or []
+        state.verification = light_with_questions(ver, asked)
 
 
 # ---------------------------------------------------------------- выходы

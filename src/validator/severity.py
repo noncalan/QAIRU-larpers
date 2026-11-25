@@ -3,11 +3,13 @@
 Модель даёт только подсказку важности (``severity_hint``), окончательную важность считает код:
 
 1. ``SEVERITY_TABLE``: важность по типу дефекта и тому, мешает ли он написать тест-кейс;
-2. ограничения: «неясно» не выше «важно»; противоречие, у которого сверено одно место, не выше «важно»;
+2. ограничения: «критично» по таблице без подтверждения подсказкой модели не выше «важно»; «неясно»
+   не выше «важно»; противоречие, у которого сверено одно место, не выше «важно»;
 3. решение критика (шаг 6) «понизить»: важность только снижается.
 
-Повысить важность может только таблица. Если подсказка модели расходится с таблицей больше чем на
-уровень, находка получает пометку (``severity_disputed``): по ней критик выбирает, что перепроверить.
+Повысить важность может только таблица: подсказка модели её только подтверждает или ограничивает.
+Если подсказка расходится с таблицей больше чем на уровень, находка получает пометку
+(``severity_disputed``): по ней критик выбирает, что перепроверить.
 """
 
 from __future__ import annotations
@@ -55,6 +57,15 @@ SEVERITY_TABLE: Final[Mapping[DefectType, tuple[Severity, Severity]]] = MappingP
     }
 )
 """Важность по типу дефекта и тому, мешает ли он написать тест-кейс (``blocks_testing``)."""
+
+UNCONFIRMED_CRITICAL_MAX_SEVERITY: Final = Severity.MAJOR
+"""Потолок для «критично» по таблице, если модель дала подсказку ниже «критично».
+
+Таблица отвечает на вопрос «мешает ли тесту», а «критично» по шкале промпта поиска это только основной
+сценарий, деньги, безопасность и персональные данные. Промпт ставит «Тест: мешает» большинству находок
+(эксперимент 22: 31–38 из 47–52 за прогон), поэтому одна таблица дала бы десятки «критично». Подсказка
+модели здесь не повышает, а только не даёт «критично» без её согласия. Нет подсказки: решает таблица.
+"""
 
 UNCLEAR_MAX_SEVERITY: Final = Severity.MAJOR
 """«Неясно» это вопрос автору, а не подтверждённое нарушение: не выше «важно» и в красный свет не идёт."""
@@ -110,6 +121,15 @@ _Step = tuple[Severity, str | None, str | None]
 """Шаг расчёта важности: новая важность, строка для ``severity_basis``, пометка для отчёта."""
 
 
+def _hint_cap(m: MergedFinding, verified: Sequence[Quote], severity: Severity) -> _Step:
+    del verified
+    hint = m.severity_hint
+    if severity is not Severity.CRITICAL or hint is None or hint is Severity.CRITICAL:
+        return severity, None, None
+    capped = UNCONFIRMED_CRITICAL_MAX_SEVERITY
+    return capped, f"подсказка модели «{hint.label}»: не выше «{capped.label}»", None
+
+
 def _unclear_cap(m: MergedFinding, verified: Sequence[Quote], severity: Severity) -> _Step:
     del verified
     if m.verdict is not Verdict.UNCLEAR or severity.rank >= UNCLEAR_MAX_SEVERITY.rank:
@@ -142,7 +162,7 @@ def _critic_downgrade(m: MergedFinding, verified: Sequence[Quote], severity: Sev
     return lowered, f"критик понизил до «{lowered.label}»", note
 
 
-_SEVERITY_STEPS = (_unclear_cap, _contradiction_cap, _critic_downgrade)
+_SEVERITY_STEPS = (_hint_cap, _unclear_cap, _contradiction_cap, _critic_downgrade)
 """Порядок важен: ограничения кода, затем критик. Повысить важность может только таблица."""
 
 
@@ -186,6 +206,7 @@ __all__ = [
     "SEVERITY_DISPUTE_GAP",
     "SEVERITY_TABLE",
     "UNCLEAR_MAX_SEVERITY",
+    "UNCONFIRMED_CRITICAL_MAX_SEVERITY",
     "SeverityResult",
     "distinct_places",
     "severity_disputed",

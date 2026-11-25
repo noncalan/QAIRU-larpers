@@ -26,6 +26,8 @@ from validator.models import (
     MergedFinding,
     ParsedDocument,
     Property,
+    Question,
+    QuestionPriority,
     QuoteMatch,
     Requirement,
     Scope,
@@ -33,10 +35,11 @@ from validator.models import (
     Severity,
     TrafficLight,
     Verdict,
+    Verification,
 )
 from validator.segment import fallback_segmentation
 from validator.severity import SEVERITY_TABLE, severity_disputed, table_severity
-from validator.verify import TRAFFIC_RULE, traffic_light, verify
+from validator.verify import TRAFFIC_RULE, light_with_questions, traffic_light, verify
 
 LIBRARY = """# Библиотека
 
@@ -324,6 +327,40 @@ def test_dispute_note_names_table_value_and_final_severity(doc: ParsedDocument, 
     assert "дала «критично», итог после правил кода «важно»" in result.notes[0]
 
 
+@pytest.mark.parametrize(
+    ("hint", "expected"),
+    [
+        (None, Severity.CRITICAL),
+        (Severity.CRITICAL, Severity.CRITICAL),
+        (Severity.MAJOR, Severity.MAJOR),
+        (Severity.MINOR, Severity.MAJOR),
+    ],
+    ids=["no_hint", "hint_critical", "hint_major", "hint_minor"],
+)
+def test_table_critical_needs_model_hint_to_agree(
+    doc: ParsedDocument, seg: Segmentation, hint: Severity | None, expected: Severity
+) -> None:
+    finding = merged(
+        LIMIT_FIVE, defect=DefectType.UNVERIFIABLE, prop=Property.VERIFIABLE, blocks_testing=True, hint=hint
+    )
+
+    result = only(verify([finding], doc, seg).findings)
+
+    assert result.severity is expected
+    assert ("подсказка модели" in result.severity_basis) is (expected is not Severity.CRITICAL)
+
+
+def test_model_hint_never_raises_severity(doc: ParsedDocument, seg: Segmentation) -> None:
+    form = merged(
+        LIMIT_FIVE, defect=DefectType.REDUNDANCY, prop=Property.SET_MODIFIABLE, hint=Severity.CRITICAL
+    )
+    meaning = merged(SAME_DAY, mid="M-002", hint=Severity.CRITICAL)
+
+    ver = verify([form, meaning], doc, seg)
+
+    assert [f.severity for f in ver.findings] == [Severity.MAJOR, Severity.MINOR]
+
+
 def test_one_level_difference_is_not_disputed() -> None:
     assert not severity_disputed(Severity.MAJOR, Severity.MINOR)
     assert not severity_disputed(None, Severity.CRITICAL)
@@ -544,6 +581,101 @@ def test_summary_counters_match_tables(doc: ParsedDocument, seg: Segmentation) -
     assert s.quotes_not_found == 2
     assert s.anchors_corrected == sum(f.anchor_corrected for f in findings) == 1
     assert list(s.by_severity) == sorted(s.by_severity, key=lambda sev: sev.rank)
+
+
+def question(qid: str, priority: QuestionPriority) -> Question:
+    return Question(id=qid, priority=priority, question="Какое значение верное?")
+
+
+def test_blocking_question_turns_green_light_yellow(doc: ParsedDocument, seg: Segmentation) -> None:
+    ver = verify([merged(LIMIT_FIVE, defect=DefectType.TRACEABILITY)], doc, seg)
+    assert ver.traffic_light is TrafficLight.GREEN
+
+    asked = light_with_questions(
+        ver, [question("Q-01", QuestionPriority.P2), question("Q-02", QuestionPriority.P0)]
+    )
+
+    assert asked.traffic_light is TrafficLight.YELLOW
+    assert asked.traffic_reason == (
+        f"{ver.traffic_reason}; открыт 1 вопрос автору, который блокирует разработку или тестирование (Q-02)"
+    )
+    assert asked.findings == ver.findings and asked.summary == ver.summary
+
+
+def test_blocking_questions_listed_p0_first(doc: ParsedDocument, seg: Segmentation) -> None:
+    ver = verify([], doc, seg)
+    asks = [question("Q-01", QuestionPriority.P1), question("Q-02", QuestionPriority.P0)]
+
+    asked = light_with_questions(ver, asks)
+
+    assert asked.traffic_reason.endswith(
+        "открыты 2 вопроса автору, которые блокируют разработку или тестирование (Q-02, Q-01)"
+    )
+
+
+def test_failed_questions_step_keeps_light_off_green(doc: ParsedDocument, seg: Segmentation) -> None:
+    green = verify([], doc, seg)
+    yellow = verify([merged(LIMIT_FIVE)], doc, seg)
+
+    asked = light_with_questions(green, None)
+
+    assert asked.traffic_light is TrafficLight.YELLOW
+    assert "вопросы автору не собраны" in asked.traffic_reason
+    assert light_with_questions(yellow, None) == yellow
+
+
+@pytest.mark.parametrize("priority", [QuestionPriority.P1, QuestionPriority.P0])
+def test_questions_never_make_light_greener_or_redder(
+    doc: ParsedDocument, seg: Segmentation, priority: QuestionPriority
+) -> None:
+    red = verify([merged(LIMIT_FIVE, blocks_testing=True)], doc, seg)
+    yellow = verify([merged(LIMIT_FIVE)], doc, seg)
+    asks = [question("Q-01", priority)]
+
+    assert light_with_questions(red, asks) == red
+    assert light_with_questions(yellow, asks) == yellow
+
+
+def test_only_p2_questions_keep_green(doc: ParsedDocument, seg: Segmentation) -> None:
+    ver = verify([], doc, seg)
+
+    assert light_with_questions(ver, [question("Q-01", QuestionPriority.P2)]) == ver
+
+
+def test_pipeline_applies_blocking_questions_to_light(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    green = Verification(traffic_light=TrafficLight.GREEN, traffic_reason="нарушений не найдено")
+    monkeypatch.setattr(pipeline, "verify", lambda found, doc, seg: green)
+    monkeypatch.setattr(
+        pipeline, "ask", lambda ver, doc, seg, llm, cfg: [question("Q-01", QuestionPriority.P0)]
+    )
+    cfg = load_config(REQUIREMENTS[DocKind.MD], tmp_path / "out" / "report.md", backend=Backend.FAKE)
+
+    outcome = pipeline.run(cfg)
+
+    assert outcome.report is not None and outcome.report.verification is not None
+    assert outcome.report.verification.traffic_light is TrafficLight.YELLOW
+    assert outcome.report.conclusion.traffic_light is TrafficLight.YELLOW
+    assert "Q-01" in outcome.report.conclusion.headline
+
+
+def test_pipeline_failed_questions_step_is_not_green(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    green = Verification(traffic_light=TrafficLight.GREEN, traffic_reason="нарушений не найдено")
+
+    def broken_ask(*_: object) -> list[Question]:
+        raise RuntimeError("сбой шага вопросов")
+
+    monkeypatch.setattr(pipeline, "verify", lambda found, doc, seg: green)
+    monkeypatch.setattr(pipeline, "ask", broken_ask)
+    cfg = load_config(REQUIREMENTS[DocKind.MD], tmp_path / "out" / "report.md", backend=Backend.FAKE)
+
+    outcome = pipeline.run(cfg)
+
+    assert outcome.report is not None and outcome.report.verification is not None
+    assert outcome.report.verification.traffic_light is TrafficLight.YELLOW
+    assert outcome.report.questions == []
+    assert any(d.step == "questions" for d in outcome.report.diagnostics)
 
 
 def test_report_shows_ids_severity_light_and_rule(tmp_path: Path) -> None:
