@@ -10,7 +10,7 @@ dependencies = []
 [dependency-groups]
 # Для экспериментов фазы исследования: uv sync --group experiments
 experiments = [
-  "google-genai",
+  "anthropic",
   "python-dotenv",
   "pymupdf4llm",
   "pdfplumber",
@@ -20,4 +20,10 @@ experiments = [
   "filetype",
   "charset-normalizer",
   "rapidfuzz",
+  # Нужны генератору битых файлов и проверке на своей ОС (experiments/04-parsing-lab, 12-parsers-on-my-os)
+  "pikepdf",
+  "pypdfium2",
+  "msoffcrypto-tool",
+  "olefile",
+  "psutil",
 ]

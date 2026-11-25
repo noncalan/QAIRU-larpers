@@ -1,6 +1,8 @@
 # Кейс AI Requirements Validator: разбор и план
 
 > Перенесено из Claude Doc «Кейс AI Requirements Validator: разбор и план» (25.11.2026). Живая версия: https://claude.ai/artifact/Cc8XP68SFyqtJ5fH3avVAq. Эталон дефектов вынесен в `docs/gold/defects.md`.
+>
+> **Поправка 25.11 (D-006):** модель агента — Claude API. Всё, что ниже сказано про бесплатный Gemini, `google-genai` и роутинг Flash/Pro, устарело; актуальное состояние в `docs/decisions.md` и `docs/research/00-summary.md`.
 
 ## Коротко
 
