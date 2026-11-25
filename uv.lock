@@ -2135,6 +2135,7 @@ dependencies = [
     { name = "anthropic" },
     { name = "charset-normalizer" },
     { name = "filetype" },
+    { name = "httpx2" },
     { name = "jinja2" },
     { name = "lxml" },
     { name = "msoffcrypto-tool" },
@@ -2182,9 +2183,10 @@ experiments = [
 
 [package.metadata]
 requires-dist = [
-    { name = "anthropic", specifier = ">=0.40" },
+    { name = "anthropic", specifier = ">=2.14" },
     { name = "charset-normalizer", specifier = ">=3.3" },
     { name = "filetype", specifier = ">=1.2" },
+    { name = "httpx2", specifier = ">=2.16" },
     { name = "jinja2", specifier = ">=3.1" },
     { name = "lxml", specifier = ">=5" },
     { name = "msoffcrypto-tool", specifier = ">=5.4" },

@@ -14,7 +14,7 @@ from validator import pipeline
 from validator.config import load_config
 from validator.errors import LLMError
 from validator.ingest import build_blocks
-from validator.llm import UnavailableLLM, make_client, parse_cli_payload
+from validator.llm import AnthropicAPI, make_client, parse_cli_payload
 from validator.models import (
     Backend,
     CacheMode,
@@ -182,21 +182,19 @@ def test_serialization_failure_is_internal_error_not_traceback(
 # ---------------------------------------------------------------- выбор модели и параметры
 
 
-def test_auto_backend_with_key_but_no_claude_says_key_was_found(
+def test_auto_backend_with_key_uses_the_api_even_without_claude(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr("validator.llm.claude_cli.find_claude", lambda: None)
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "not-a-key-not-a-key")
     cfg = load_config(REQUIREMENTS[DocKind.MD], tmp_path / "r.md").model_copy(
         update={"backend": Backend.AUTO, "has_api_key": True}
     )
 
     client, diagnostics = make_client(cfg)
 
-    assert isinstance(client, UnavailableLLM)
-    errors = [d for d in diagnostics if d.level is DiagLevel.ERROR]
-    assert len(errors) == 1
-    assert "ANTHROPIC_API_KEY найден" in errors[0].message
-    assert any(d.level is DiagLevel.INFO for d in diagnostics)
+    assert isinstance(client, AnthropicAPI)
+    assert not any(d.level is DiagLevel.ERROR for d in diagnostics)
 
 
 def test_unimplemented_options_are_reported(tmp_path: Path) -> None:

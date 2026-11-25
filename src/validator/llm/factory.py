@@ -3,9 +3,9 @@
 - ``fake``: фикстуры тестов;
 - ``cli``: подписка ``claude -p``;
 - ``replay``: записанные ответы из ``--replay ПАПКА`` (папка ``run/`` прошлого прогона);
-- ``auto``: ключ API есть, идём через SDK (#32, пока откат на подписку с пометкой); иначе подписка,
-  если ``claude`` установлен и вошёл в аккаунт; иначе replay из ``--replay``; иначе отчёт с ``LLM-001``;
-- ``api``: SDK ``anthropic`` делает #32, до него понятная диагностика.
+- ``auto``: подписка, если ``claude`` установлен и вошёл в аккаунт; иначе SDK, если есть ключ
+  ``ANTHROPIC_API_KEY``; иначе replay из ``--replay``; иначе отчёт с ``LLM-001``;
+- ``api``: только SDK ``anthropic`` (#32); без ключа понятная диагностика ``LLM-001`` и код 5.
 
 Если модели нет, конвейер получает ``UnavailableLLM``: каждый вызов даёт ``LLMError``, и шаги
 срабатывают по своей политике отказа, а отчёт всё равно пишется. Ключ API нигде не печатается:
@@ -23,6 +23,7 @@ from validator.errors import (
     LLM_UNAVAILABLE,
     LLMError,
 )
+from validator.llm.anthropic_api import AnthropicAPI
 from validator.llm.base import LLMClient
 from validator.llm.cache import ResponseCache
 from validator.llm.calllog import RecordingClient, clear_responses
@@ -40,7 +41,6 @@ from validator.models import (
     RunConfig,
 )
 
-_PENDING = {Backend.API: "Бэкенд api (SDK anthropic) ещё не реализован, задача #32"}
 _NO_CACHE_BACKENDS = frozenset({Backend.FAKE, Backend.REPLAY})
 MAX_PASSES = 9
 
@@ -72,6 +72,29 @@ def _subscription() -> tuple[LLMClient, list[Diagnostic]]:
         return ClaudeCLI(), []
     except LLMError as exc:
         return _unavailable(Backend.CLI, exc)
+
+
+def _api() -> tuple[LLMClient, list[Diagnostic]]:
+    try:
+        return AnthropicAPI(), []
+    except LLMError as exc:
+        return _unavailable(Backend.API, exc)
+
+
+def _replay_unused(cfg: RunConfig, via: str) -> list[Diagnostic]:
+    """``--replay`` в ``auto`` не понадобился: модель доступна. Говорим, как пересобрать из записи."""
+    if cfg.replay_dir is None:
+        return []
+    return [
+        Diagnostic(
+            code=LLM_REPLAYED,
+            level=DiagLevel.INFO,
+            message=f"Модель доступна, поэтому запись {cfg.replay_dir} не использована",
+            action=f"Модель вызывается через {via}",
+            hint="Чтобы пересобрать отчёт из записи без модели, добавьте --backend replay",
+            step="llm",
+        )
+    ]
 
 
 def _replay(cfg: RunConfig) -> tuple[LLMClient, list[Diagnostic]]:
@@ -113,68 +136,45 @@ def _subscription_notes(cfg: RunConfig, *, logged_in: bool | None) -> list[Diagn
                 step="llm",
             )
         )
-    if cfg.replay_dir is not None:
-        notes.append(
-            Diagnostic(
-                code=LLM_REPLAYED,
-                level=DiagLevel.INFO,
-                message=f"Модель доступна, поэтому запись {cfg.replay_dir} не использована",
-                action="Модель вызывается через подписку claude -p",
-                hint="Чтобы пересобрать отчёт из записи без модели, добавьте --backend replay",
-                step="llm",
-            )
-        )
-    return notes
+    return notes + _replay_unused(cfg, "подписку claude -p")
 
 
 def _auto(cfg: RunConfig) -> tuple[LLMClient, list[Diagnostic]]:
-    diagnostics: list[Diagnostic] = []
-    if cfg.has_api_key:
-        diagnostics.append(
-            Diagnostic(
-                code=CFG_NOT_IMPLEMENTED,
-                level=DiagLevel.INFO,
-                message="Найден ANTHROPIC_API_KEY, но бэкенд api ещё не реализован (#32)",
-                action="Модель вызывается через подписку claude -p",
-                step="llm",
-            )
-        )
+    """Подписка, если ``claude`` вошёл в аккаунт; иначе ключ API; иначе ``--replay``; иначе ``LLM-001``.
+
+    Подписка раньше ключа: она не списывает деньги, а ключ в ``.env`` может быть без средств (D-009).
+    Ключ при этом не теряется: для API есть ``--backend api``.
+    """
     client, missing = _subscription()
     logged_in = login_status(client.executable) if isinstance(client, ClaudeCLI) else None
-    if cfg.replay_dir is not None and (isinstance(client, UnavailableLLM) or logged_in is False):
+    if isinstance(client, ClaudeCLI) and logged_in is not False:
+        return client, _subscription_notes(cfg, logged_in=logged_in)
+    if cfg.has_api_key:
+        api, _ = _api()
+        if isinstance(api, AnthropicAPI):
+            return api, _replay_unused(cfg, "Claude API (ключ ANTHROPIC_API_KEY)")
+    if cfg.replay_dir is not None:
         replayed, replay_diags = _replay(cfg)
         if not isinstance(replayed, UnavailableLLM):
-            return replayed, diagnostics + replay_diags
+            return replayed, replay_diags
     if isinstance(client, ClaudeCLI):
-        return client, diagnostics + _subscription_notes(cfg, logged_in=logged_in)
+        return client, _subscription_notes(cfg, logged_in=logged_in)
     reason = missing[0].message if missing else "Команда claude не найдена"
     reason = reason[:1].lower() + reason[1:]
-    if cfg.has_api_key:
-        message = (
-            f"Нет доступа к модели: ANTHROPIC_API_KEY найден, но бэкенд api ещё не готов (#32), а {reason}"
-        )
-        hint = "Установите Claude Code и выполните вход (claude, затем /login)"
-    else:
-        message = f"Нет доступа к модели: нет ключа ANTHROPIC_API_KEY, а {reason}"
-        hint = (
-            "Установите Claude Code и выполните вход, задайте ANTHROPIC_API_KEY в .env (см. README) "
-            "или пересоберите отчёт из записи: --backend replay --replay ПАПКА"
-        )
-    unavailable, diags = _unavailable(Backend.AUTO, LLMError(message, code=LLM_UNAVAILABLE, hint=hint))
-    return unavailable, diagnostics + diags
+    message = f"Нет доступа к модели: нет ключа ANTHROPIC_API_KEY, а {reason}"
+    hint = (
+        "Установите Claude Code и выполните вход, задайте ANTHROPIC_API_KEY в .env (см. README) "
+        "или пересоберите отчёт из записи: --backend replay --replay ПАПКА"
+    )
+    return _unavailable(Backend.AUTO, LLMError(message, code=LLM_UNAVAILABLE, hint=hint))
 
 
 def make_client(cfg: RunConfig) -> tuple[LLMClient, list[Diagnostic]]:
     """Клиент модели для прогона и диагностика выбора (что выбрано и почему)."""
     if cfg.backend is Backend.FAKE:
         return FakeLLM(cfg.fake_fixtures), []
-    if cfg.backend in _PENDING:
-        error = LLMError(
-            _PENDING[cfg.backend],
-            code=CFG_NOT_IMPLEMENTED,
-            hint="Запустите с --backend cli (подписка Claude) или --backend auto",
-        )
-        return _unavailable(cfg.backend, error)
+    if cfg.backend is Backend.API:
+        return _api()
     if cfg.backend is Backend.REPLAY:
         return _replay(cfg)
     if cfg.backend is Backend.CLI:

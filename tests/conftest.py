@@ -24,6 +24,17 @@ def _fake_fixtures_env(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("VALIDATOR_FAKE_FIXTURES", str(FIXTURES_LLM))
 
 
+@pytest.fixture(autouse=True)
+def _no_real_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Тесты не видят ключ разработчика: ни из окружения, ни из ``.env`` (иначе бэкенд api пошёл бы в сеть).
+
+    Тест, которому нужен ключ, задаёт выдуманный сам: ``monkeypatch.setenv("ANTHROPIC_API_KEY", ...)``.
+    """
+    for name in ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN"):
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setattr("validator.config.load_env", lambda env_file=None: None)
+
+
 @pytest.fixture(scope="session")
 def requirements_docs() -> dict[DocKind, ParsedDocument]:
     """Проверяемый документ в трёх форматах, разобранный один раз на сессию."""

@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
-from validator.models import DiagLevel, Diagnostic, ExitCode
+from validator.models import DiagLevel, Diagnostic, ExitCode, LLMResponse
 
 # ---------------------------------------------------------------- каталог кодов
 
@@ -146,9 +146,13 @@ class LLMError(ValidatorError):
         hint: str = "",
         location: str | None = None,
         retryable: bool = False,
+        spent: LLMResponse | None = None,
     ) -> None:
         super().__init__(message, code=code, hint=hint, location=location)
         self.retryable = retryable
+        self.spent = spent
+        """Оплаченный ответ, который стал ошибкой (обрезан, отказ, не по схеме): его токены идут в лог и
+        лимит цены. None, если модель ничего не вернула."""
 
 
 class ConfigError(ValidatorError):

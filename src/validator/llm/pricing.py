@@ -15,6 +15,9 @@ Claude API в Claude Code 2.1.332, таблица моделей от 03.11.2026
 Запись в кеш: 1,25 × вход на 5 минут, 2 × вход на 1 час (``claude -p`` пишет часовой кеш). У Haiku 5.5
 запрос длиннее 100 тыс. токенов идёт по тарифу $0,50 / $2,50; множители кеша для него берём те же
 (не проверено). Сверено с ``total_cost_usd`` живого ответа ``claude -p`` 25.11.2026: совпало до цента.
+
+Opus 5 и Opus 4.8 ($5 / $25, справка SDK от 03.11.2026; чтение кеша 0,1 × вход, отдельно не проверено)
+нужны только для ответа запасной модели после отказа Opus 5.5 через API (#32).
 """
 
 from __future__ import annotations
@@ -53,6 +56,8 @@ class Tariff:
 
 TARIFFS: dict[str, Tariff] = {
     "claude-opus-5-5": Tariff(input=4.0, output=20.0, cache_read=0.20),
+    "claude-opus-5": Tariff(input=5.0, output=25.0, cache_read=0.50),
+    "claude-opus-4-8": Tariff(input=5.0, output=25.0, cache_read=0.50),
     "claude-sonnet-5-5": Tariff(input=2.0, output=10.0, cache_read=0.10),
     "claude-haiku-5-5": Tariff(
         input=0.10, output=0.50, cache_read=0.01, long_threshold=100_000, long_input=0.50, long_output=2.50
@@ -80,9 +85,10 @@ def tariff_for(model: str | None) -> Tariff | None:
     if not model:
         return None
     name = model.split("[", 1)[0].strip()
-    for known, tariff in TARIFFS.items():
+    # Длинное имя раньше короткого: claude-opus-5-5 не должен получить тариф claude-opus-5.
+    for known in sorted(TARIFFS, key=len, reverse=True):
         if name == known or name.startswith(known + "-"):
-            return tariff
+            return TARIFFS[known]
     return None
 
 
