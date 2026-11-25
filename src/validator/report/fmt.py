@@ -13,12 +13,17 @@ _MD_SPECIAL = re.compile(r"[*`<]|(?<!\w)_|_(?!\w)")
 """Знаки, которые Markdown превращает в разметку: цитата должна выглядеть, как в документе."""
 
 
-def cell(text: object, limit: int | None = None) -> str:
-    """Текст для ячейки Markdown-таблицы: одна строка, ``|`` и разметка экранированы, по желанию обрезан."""
+def plain(text: object, limit: int | None = None) -> str:
+    """Одна строка без переносов, по желанию обрезанная: общий вид текста для MD и PDF, без разметки."""
     value = _SPACES.sub(" ", str(text or "")).strip()
     if limit is not None and len(value) > limit:
         value = value[: limit - 1].rstrip() + "…"
-    value = value.replace("|", "\\|")
+    return value
+
+
+def cell(text: object, limit: int | None = None) -> str:
+    """Текст для ячейки Markdown-таблицы: одна строка, ``|`` и разметка экранированы, по желанию обрезан."""
+    value = plain(text, limit).replace("|", "\\|")
     return _MD_SPECIAL.sub(lambda m: "\\" + m.group(0), value)
 
 
@@ -74,6 +79,11 @@ def where(anchor: Anchor | None, section: Sequence[str] | None = None) -> str:
 def quote_text(quote: Quote, limit: int = 300) -> str:
     """Цитата для отчёта: дословный фрагмент документа, если найден, иначе как дала модель."""
     return cell(quote.located or quote.text, limit)
+
+
+def quote_plain(quote: Quote, limit: int = 300) -> str:
+    """То же, что ``quote_text``, но без экранирования Markdown (для PDF)."""
+    return plain(quote.located or quote.text, limit)
 
 
 def pct(value: float | None) -> str:

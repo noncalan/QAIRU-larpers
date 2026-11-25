@@ -147,7 +147,7 @@ src/validator/
   verify.py         # шаг 7: цитаты, привязка к R-NN, важность, счётчики
   questions.py      # шаг 8: вопросы автору
   clarify.py        # answers.yaml, --answers, --ask
-  report/           # build.py, render_md.py + шаблоны, render_pdf.py + report.typ, selfcheck.py
+  report/           # build.py, render_md.py + шаблоны, render_pdf.py + report.typ + fonts/, selfcheck.py
   llm/              # base.py (протокол), fake.py, claude_cli.py, anthropic_api.py, replay.py, cache.py, calllog.py, pricing.py
   prompts/          # тексты промптов (*.md), хеш папки идёт в паспорт
   checklists/       # общие доменные чек-листы (*.yaml)
@@ -217,7 +217,7 @@ uv run validator ВХОД ВЫХОД [--profile quick|standard|submit] [--passes
                  [--answers answers.yaml] [--ask] [--max-budget-usd X]
 ```
 
-- `ВЫХОД` с расширением `.md` или `.pdf`. Для `out/report.md` рядом пишутся `out/report.json`, `out/questions.yaml`, `out/report.log` и папка `out/run/` с `calls.jsonl` и ответами модели для replay. Кеш ответов лежит отдельно, в `.cache/validator/` (в `.gitignore`). Ключ кеша: хеш модели, effort, системного промпта, промпта и схемы. Replay ищет ответ по ключу, а если промпт поменялся, по паре «шаг, номер вызова».
+- `ВЫХОД` с расширением `.md` или `.pdf`. Для `out/report.pdf` пишутся и PDF, и `out/report.md` (PDF собирает Typst из того же `Report`, шрифты Liberation с кириллицей лежат в `src/validator/report/fonts/`, лицензия OFL). Если Typst упал, Markdown всё равно записан, в отчёте диагностика `INT-002`, код возврата не меняется. Для `out/report.md` рядом пишутся `out/report.json`, `out/questions.yaml`, `out/report.log` и папка `out/run/` с `calls.jsonl` и ответами модели для replay. Кеш ответов лежит отдельно, в `.cache/validator/` (в `.gitignore`). Ключ кеша: хеш модели, effort, системного промпта, промпта и схемы. Replay ищет ответ по ключу, а если промпт поменялся, по паре «шаг, номер вызова».
 - Профили: `quick` (1 проход `medium`), `standard` (3 прохода `medium`), `submit` (3 прохода `xhigh`). Число проходов по умолчанию задаёт D-011.
 - Бэкенд `auto`: есть `ANTHROPIC_API_KEY`, идём через SDK; нет ключа, но есть `claude` с входом, идём через подписку; нет ни того ни другого, пересобираем из лога или пишем отчёт-диагностику `LLM-001`. Бэкенд `fake` отвечает из фикстур, на нём работают smoke-тест и CI.
 - Коды возврата (исследование 04, раздел 4): 0 вход прочитан и проверка сделана (найденные дефекты код не меняют); 1 внутренняя ошибка; 2 ошибка аргументов; 3 вход прочитан частично; 4 вход не обработать; 5 сбой модели или конфигурации. Отчёт пишется во всех случаях, когда доступен путь отчёта.
