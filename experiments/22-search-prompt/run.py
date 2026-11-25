@@ -249,7 +249,12 @@ def search(name: str, mode: str) -> dict:
         SEARCH_TIMEOUT_S,
         meta,
     )
-    if rec.get("meta", {}).get("prompt_sha") != meta["prompt_sha"]:
+    cached_meta = rec.get("meta", {})
+    if cached_meta.get("mode") != mode:
+        raise ValueError(
+            f"search-{name}: cached answer has mode {cached_meta.get('mode')}"
+        )
+    if cached_meta.get("prompt_sha") != meta["prompt_sha"]:
         print(
             f"[warn] search-{name}: cached answer was made with another prompt",
             flush=True,
@@ -275,20 +280,29 @@ class Finding:
 
     @property
     def quotes(self) -> list[str]:
-        return [unquote(v) for v in self.fields.get("цитата", []) if unquote(v)]
+        return [q for v in self.fields.get("цитата", []) for q in quotes_in(v)]
 
     @property
     def blocks(self) -> list[str]:
         return BLOCK_ID.findall(" ".join(self.fields.get("блоки", [])))
 
 
-def unquote(value: str) -> str:
-    """Содержимое между первой « и последней » (внутри цитаты бывают свои ёлочки)."""
-    value = value.strip().rstrip(".;").strip()
-    start, end = value.find("«"), value.rfind("»")
-    if start != -1 and end > start:
-        return value[start + 1 : end].strip()
-    return value.strip("\"'“”` ")
+def quotes_in(value: str) -> list[str]:
+    """Цитаты в «ёлочках» верхнего уровня: «A» и «B» дают две, вложенные «…» остаются внутри."""
+    found, depth, start = [], 0, 0
+    for i, ch in enumerate(value):
+        if ch == "«":
+            depth += 1
+            if depth == 1:
+                start = i + 1
+        elif ch == "»" and depth:
+            depth -= 1
+            if depth == 0:
+                found.append(value[start:i].strip())
+    if found:
+        return [q for q in found if q]
+    bare = value.strip().rstrip(".;").strip().strip("\"'“”` ")
+    return [bare] if bare else []
 
 
 def findings_part(answer: str) -> str:
@@ -306,8 +320,9 @@ def parse_findings(answer: str) -> list[Finding]:
     for k, m in enumerate(heads):
         end = heads[k + 1].start() if k + 1 < len(heads) else len(part)
         chunk = part[m.start() : end].strip()
-        # Подзаголовки «### Набор требований» между находками в находку не входят.
-        chunk = re.sub(r"\n#{1,3}\s[^\n]*$", "", chunk).strip()
+        # Подзаголовок «### Набор требований» и текст под ним в находку не входят.
+        sub = re.search(r"\n#{1,3}\s", chunk)
+        chunk = chunk[: sub.start()].strip() if sub else chunk
         f = Finding(num=int(m.group(1)), text=chunk)
         for line in chunk.splitlines()[1:]:
             fm = FIELD.match(line)
@@ -350,7 +365,14 @@ def judge(name: str, search_rec: dict) -> dict | None:
     meta = {
         "findings": len(findings) or None,
         "search_sha": search_rec.get("meta", {}).get("prompt_sha"),
+        "answer_sha": hashlib.sha256(block.encode("utf-8")).hexdigest()[:12],
     }
+    cached = load(f"judge-{name}")
+    cached_sha = (cached or {}).get("meta", {}).get("answer_sha")
+    if cached_sha and cached_sha != meta["answer_sha"]:
+        # Оценка другого ответа (например, после повтора упавшего прохода): не переиспользуем.
+        print(f"[warn] judge-{name}: cached verdict is for another answer", flush=True)
+        (OUT / f"judge-{name}.json").replace(OUT / f"judge-{name}.stale.json")
     rec = claude(
         f"judge-{name}",
         JUDGE_MODEL,
@@ -370,8 +392,11 @@ def judge(name: str, search_rec: dict) -> dict | None:
 def pipeline(name: str, mode: str) -> None:
     try:
         rec = search(name, mode)
-        if (rec.get("parsed") or {}).get("result"):
-            judge(name, rec)
+        parsed = rec.get("parsed") or {}
+        if parsed.get("is_error") or not (OUT / f"search-{name}.json").exists():
+            print(f"[search] {name}: failed, judge skipped", flush=True)
+            return
+        judge(name, rec)
     except (OSError, ValueError, KeyError, TypeError, RuntimeError) as exc:
         print(
             f"[error] {name}: {exc!r}", flush=True
@@ -405,16 +430,11 @@ def quote_verdict(doc: str, quote: str) -> tuple[str, int | None]:
     return ("fuzzy" if "fuzzy" in kinds else "exact"), start
 
 
-def block_lines() -> dict[str, tuple[int, int]]:
-    blocks = render.parse(DOCUMENT.read_text(encoding="utf-8"))
-    return {b.bid: (b.line_start, b.line_end) for b in blocks}
-
-
 def anchor_metrics(findings: list[Finding], doc: str) -> dict:
-    lines, valid_ids = (
-        block_lines(),
-        render.block_ids(render.parse(DOCUMENT.read_text(encoding="utf-8"))),
-    )
+    """ID блоков и цитаты сверяются с тем документом, который видела модель."""
+    blocks = render.parse(doc)
+    lines = {b.bid: (b.line_start, b.line_end) for b in blocks}
+    valid_ids = render.block_ids(blocks)
     ids = [i for f in findings for i in f.blocks]
     located = inside = 0
     for f in findings:
@@ -474,6 +494,8 @@ def run_metrics(name: str, gold: dict[int, dict[str, str]]) -> dict | None:
     if not s or not j:
         return None
     doc = DOCUMENT.read_text(encoding="utf-8")
+    if s.get("meta", {}).get("mode") == "inject":
+        doc = with_injection(doc)
     p, judged = s["parsed"], j["parsed"]["structured_output"]
     status = {
         g["id"]: g["status"] for g in judged["gold"] if 1 <= g["id"] <= GOLD_TOTAL
@@ -616,9 +638,12 @@ def words(text: str) -> list[str]:
 
 
 def leak() -> int:
-    """Грубая копия будущего tests/test_prompt_leak.py: 6 слов подряд из документа и слова правила 3."""
-    doc = words(DOCUMENT.read_text(encoding="utf-8"))
-    shingles = {tuple(doc[i : i + SHINGLE]) for i in range(len(doc) - SHINGLE + 1)}
+    """Грубая копия будущего tests/test_prompt_leak.py: 6 слов подряд из документа или эталона
+    и слова правила 3 CLAUDE.md."""
+    shingles: set[tuple[str, ...]] = set()
+    for source in (DOCUMENT, GOLD):
+        w = words(source.read_text(encoding="utf-8"))
+        shingles |= {tuple(w[i : i + SHINGLE]) for i in range(len(w) - SHINGLE + 1)}
     problems = 0
     for path in sorted(PROMPTS.glob("*.md")):
         text = path.read_text(encoding="utf-8")

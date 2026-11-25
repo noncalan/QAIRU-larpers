@@ -72,6 +72,7 @@ def _plain_title(title: str) -> str:
 
 def _serialize_row(header: list[str], cells: list[str]) -> str:
     values = [_clean_cell(c) or EMPTY_CELL for c in cells]
+    values += [EMPTY_CELL] * (len(header) - len(values))  # строка короче заголовка
     if len(header) == 2 and header[0].lower() in KEY_VALUE_HEADERS:
         return f"{values[0]}: {values[1] if len(values) > 1 else EMPTY_CELL}"
     names = header + [f"колонка {k + 1}" for k in range(len(header), len(values))]
@@ -140,6 +141,7 @@ class _Parser:
                 and not TABLE_ROW.match(lines[j])
                 and not LIST_ITEM.match(lines[j])
                 and not FENCE.match(lines[j])
+                and not HR.match(lines[j])
             ):
                 j += 1
             blk = self.add("paragraph", i, j - 1, "\n".join(lines[i:j]))
