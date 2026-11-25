@@ -15,6 +15,7 @@ import docx
 from docx.opc.exceptions import PackageNotFoundError
 from docx.table import Table
 from docx.text.paragraph import Paragraph
+from lxml import etree
 
 from validator.errors import IN_DOCX_BROKEN, InputError
 from validator.ingest.blocks import ParsedLines
@@ -59,15 +60,8 @@ def _table_lines(table: Table, number: int) -> list[SourceLine]:
     return out
 
 
-def parse_docx(path: Path) -> ParsedLines:
-    try:
-        document = docx.Document(str(path))
-    except (PackageNotFoundError, zipfile.BadZipFile, KeyError, ValueError) as exc:
-        raise InputError(
-            f"DOCX не открывается: {type(exc).__name__}",
-            code=IN_DOCX_BROKEN,
-            hint="Пересохраните документ в Word или пришлите PDF",
-        ) from exc
+def _read_lines(path: Path) -> list[SourceLine]:
+    document = docx.Document(str(path))
     lines: list[SourceLine] = []
     paragraphs = tables = 0
     for item in document.iter_inner_content():
@@ -82,4 +76,17 @@ def parse_docx(path: Path) -> ParsedLines:
         if lines:
             lines.append(SourceLine(text=""))
         lines.extend(group)
+    return lines
+
+
+def parse_docx(path: Path) -> ParsedLines:
+    """Абзацы и таблицы по порядку. Битый архив или XML внутри дают ``InputError`` IN-032."""
+    try:
+        lines = _read_lines(path)
+    except (PackageNotFoundError, zipfile.BadZipFile, KeyError, ValueError, etree.XMLSyntaxError) as exc:
+        raise InputError(
+            f"DOCX не открывается: {type(exc).__name__}",
+            code=IN_DOCX_BROKEN,
+            hint="Пересохраните документ в Word или пришлите PDF",
+        ) from exc
     return ParsedLines(lines=lines, extraction="python-docx: абзацы и таблицы по порядку")

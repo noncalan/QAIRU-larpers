@@ -55,13 +55,20 @@ def _requirement_ids(quotes: Sequence[Quote], seg: Segmentation) -> list[str]:
     return out
 
 
-def _check(m: MergedFinding, doc: ParsedDocument, seg: Segmentation) -> Finding | DiscardedFinding:
+def _check(
+    m: MergedFinding, doc: ParsedDocument, seg: Segmentation
+) -> tuple[Finding | DiscardedFinding, list[Quote]]:
+    """Находка с найденными цитатами или отказ, плюс все сверенные цитаты (для доли сверенных).
+
+    Каждая находка с цитатой (CLAUDE.md, правило 4): без единой найденной цитаты находку отбрасываем
+    при любом уровне, а ненайденные цитаты в находку не попадают, их считает только сводка.
+    """
     located = [_locate(doc, q, m.block_ids) for q in m.quotes]
     quotes = [q for q, _ in located]
     verified = [q for q in quotes if q.verified]
-    if not verified and (m.quotes or m.scope is Scope.REQUIREMENT):
+    if not verified:
         reason = "ни одна цитата не найдена" if m.quotes else "у находки нет цитаты"
-        return DiscardedFinding(finding=m, reason=DiscardReason.QUOTE_NOT_FOUND, detail=reason)
+        return DiscardedFinding(finding=m, reason=DiscardReason.QUOTE_NOT_FOUND, detail=reason), quotes
     first = verified[0].anchor if verified else None
     block = doc.block(first.block_ids[0]) if first and first.block_ids else None
     return Finding(
@@ -74,7 +81,7 @@ def _check(m: MergedFinding, doc: ParsedDocument, seg: Segmentation) -> Finding 
         severity=m.severity_hint or DEFAULT_SEVERITY,
         severity_hint=m.severity_hint,
         blocks_testing=m.blocks_testing,
-        quotes=quotes,
+        quotes=verified,
         requirement_ids=_requirement_ids(verified, seg),
         section_path=list(block.section) if block else [],
         explanation=m.explanation,
@@ -86,7 +93,7 @@ def _check(m: MergedFinding, doc: ParsedDocument, seg: Segmentation) -> Finding 
         test_draft=m.test_draft,
         critic=m.critic,
         anchor_corrected=any(fixed for _, fixed in located),
-    )
+    ), quotes
 
 
 def _position(f: Finding) -> int:
@@ -95,9 +102,16 @@ def _position(f: Finding) -> int:
 
 
 def summarize(
-    findings: Sequence[Finding], discarded: Sequence[DiscardedFinding], seg: Segmentation
+    findings: Sequence[Finding],
+    discarded: Sequence[DiscardedFinding],
+    seg: Segmentation,
+    quotes: Sequence[Quote] | None = None,
 ) -> Summary:
-    quotes = [q for f in findings for q in f.quotes]
+    """Сводка по находкам.
+
+    ``quotes``: все цитаты кандидатов, включая отброшенные (для доли сверенных); по умолчанию цитаты находок.
+    """
+    quotes = list(quotes) if quotes is not None else [q for f in findings for q in f.quotes]
     critical = [f.id for f in findings if f.severity is Severity.CRITICAL and f.verdict is Verdict.VIOLATION]
     with_findings = {r for f in findings for r in f.requirement_ids}
     return Summary(
@@ -131,12 +145,14 @@ def traffic_light(summary: Summary) -> tuple[TrafficLight, str]:
 
 
 def verify(found: Sequence[MergedFinding], doc: ParsedDocument, seg: Segmentation) -> Verification:
-    checked = [_check(m, doc, seg) for m in found]
+    results = [_check(m, doc, seg) for m in found]
+    checked = [c for c, _ in results]
+    all_quotes = [q for _, quotes in results for q in quotes]
     kept = [c for c in checked if isinstance(c, Finding)]
     discarded = [c for c in checked if isinstance(c, DiscardedFinding)]
     kept.sort(key=lambda f: (f.severity.rank, _position(f)))
     findings = [f.model_copy(update={"id": f"F-{n:02d}"}) for n, f in enumerate(kept, start=1)]
-    summary = summarize(findings, discarded, seg)
+    summary = summarize(findings, discarded, seg, all_quotes)
     light, reason = traffic_light(summary)
     status = {r.id: [f.id for f in findings if r.id in f.requirement_ids] for r in seg.requirements}
     return Verification(

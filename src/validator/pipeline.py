@@ -19,6 +19,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import logging
 import time
 from collections.abc import Callable
@@ -30,10 +31,12 @@ from typing import TypeVar
 from validator.errors import (
     CFG_NOT_IMPLEMENTED,
     IN_NO_TEXT,
+    IN_PARSE_FAILED,
     INT_STEP_DEGRADED,
     INT_STEP_FAILED,
     LLM_ALL_PASSES_FAILED,
     OUT_FORMAT_FALLBACK,
+    OUT_OVERWRITES_INPUT,
     OUT_WRITE_FAILED,
     InputError,
     ValidatorError,
@@ -46,6 +49,7 @@ from validator.llm import RecordingClient, make_client, write_calls_jsonl
 from validator.merge import merge
 from validator.models import (
     Backend,
+    CacheMode,
     CandidateFinding,
     DiagLevel,
     Diagnostic,
@@ -142,6 +146,23 @@ def _read_input(state: _State) -> ParsedDocument | None:
             exc.to_diagnostic(action="Проверка не выполнялась: документ не прочитан", step="parse")
         )
         return None
+    except Exception as exc:  # битый файл может уронить чужой парсер чем угодно: это ошибка входа
+        logger.exception("Разбор входа упал")
+        state.diagnostics.append(
+            Diagnostic(
+                code=IN_PARSE_FAILED,
+                level=DiagLevel.ERROR,
+                message=f"Документ повреждён или не разбирается: {type(exc).__name__}",
+                action="Проверка не выполнялась: документ не прочитан",
+                hint=(
+                    "Пересохраните документ (Word: «Сохранить как», PDF: «Печать в PDF») "
+                    "или пришлите другой формат"
+                ),
+                location=cfg.input_path.name,
+                step="parse",
+            )
+        )
+        return None
     state.diagnostics.extend(doc.diagnostics)
     if any(d.level is DiagLevel.ERROR for d in doc.diagnostics):
         return None
@@ -171,6 +192,25 @@ def _check_requests(state: _State) -> None:
                 message="Цикл уточнения (--answers, --ask) в этой версии агента ещё не работает",
                 action="Ответы автора не учтены, проверка выполнена по документу",
                 step="clarify",
+            )
+        )
+    ignored = [
+        name
+        for name, used in (
+            ("--max-budget-usd", cfg.max_budget_usd is not None),
+            ("--cache", cfg.cache is not CacheMode.USE),
+            ("--replay", cfg.replay_dir is not None and cfg.backend is not Backend.REPLAY),
+        )
+        if used
+    ]
+    if ignored:
+        state.diagnostics.append(
+            Diagnostic(
+                code=CFG_NOT_IMPLEMENTED,
+                level=DiagLevel.WARNING,
+                message=f"Параметры {', '.join(ignored)} в этой версии агента ещё не работают",
+                action="Прогон выполнен без них: без лимита цены и без кеша ответов модели",
+                step="config",
             )
         )
     if cfg.output_path.suffix.lower() == ".pdf":
@@ -297,36 +337,36 @@ def _context(state: _State, finished: datetime, code: ExitCode) -> RunContext:
     )
 
 
-def _emergency_md(ctx: RunContext) -> str:
-    """Отчёт без шаблона, если сборка отчёта сама упала: паспорт и диагностика."""
-    p = ctx.passport
+def _emergency_md(state: _State, code: ExitCode) -> str:
+    """Отчёт без шаблона и без паспорта, если сборка отчёта сама упала: что известно и диагностика."""
+    cfg, g = state.cfg, state.guard
     lines = [
-        f"# Отчёт о проверке требований: {p.document_name}",
+        f"# Отчёт о проверке требований: {cfg.input_path.name}",
         "",
         "Отчёт собран в аварийном режиме: основной шаблон отчёта не сработал.",
         "",
         "## Паспорт прогона",
         "",
-        f"- Документ: {p.document_name}, SHA-256: {p.document_sha256 or '—'}",
-        f"- Дата прогона: {p.started_at.isoformat()}",
-        f"- Версия агента: {p.agent_version}",
-        f"- Код завершения: {ctx.exit_code.value}: {ctx.exit_code.meaning}",
+        f"- Документ: {cfg.input_path.name}, SHA-256: {(g.sha256 if g else None) or '—'}",
+        f"- Дата прогона: {state.started.isoformat()}",
+        f"- Код завершения: {code.value}: {code.meaning}",
         "",
         "## Диагностика",
         "",
     ]
     lines += [
-        f"- {d.code} {d.level.label}: {d.message}. {d.action} {d.hint}".rstrip() for d in ctx.diagnostics
+        f"- {d.code} {d.level.label}: {d.message}. {d.action} {d.hint}".rstrip() for d in state.diagnostics
     ]
     return "\n".join(lines) + "\n"
 
 
-def _render(state: _State) -> tuple[RunContext, Report | None, str]:
+def _render(state: _State) -> tuple[ExitCode, Report | None, str]:
+    """Код возврата, отчёт и Markdown. Не падает: при любом сбое сборки пишет аварийный Markdown."""
     finished = datetime.now(UTC)
-    ctx = _context(state, finished, exit_code(state.diagnostics))
     try:
+        ctx = _context(state, finished, exit_code(state.diagnostics))
         report = build_report(ctx)
-        return ctx, report, render_md(report)
+        return ctx.exit_code, report, render_md(report)
     except Exception as exc:  # отчёт пишется всегда: при сбое шаблона аварийный Markdown
         logger.exception("Сборка отчёта упала")
         state.diagnostics.append(
@@ -339,8 +379,8 @@ def _render(state: _State) -> tuple[RunContext, Report | None, str]:
                 step="report",
             )
         )
-        ctx = _context(state, finished, exit_code(state.diagnostics))
-        return ctx, None, _emergency_md(ctx)
+        code = exit_code(state.diagnostics)
+        return code, None, _emergency_md(state, code)
 
 
 def _write(state: _State, report: Report | None, markdown: str) -> dict[str, Path]:
@@ -382,6 +422,18 @@ def _message(code: ExitCode, report: Report | None, path: Path | None) -> str:
     )
 
 
+def _same_file(a: Path, b: Path) -> bool:
+    if a.exists() and b.exists():
+        with contextlib.suppress(OSError):
+            return a.samefile(b)
+    return a.resolve() == b.resolve()
+
+
+def _overwrites_input(cfg: RunConfig) -> Path | None:
+    """Файл выхода, который совпал бы со входом (``validator x.md x.md``, ``x.md x.pdf``), или None."""
+    return next((p for p in cfg.output_files if _same_file(p, cfg.input_path)), None)
+
+
 def _attach_log(path: Path) -> logging.Handler:
     handler = logging.FileHandler(path, mode="w", encoding="utf-8")
     handler.setFormatter(logging.Formatter(LOG_FORMAT))
@@ -393,6 +445,16 @@ def _attach_log(path: Path) -> logging.Handler:
 def run(cfg: RunConfig) -> RunOutcome:
     """Один прогон агента. Исключений наружу не выпускает."""
     state = _State(cfg=cfg, started=datetime.now(UTC))
+    clash = _overwrites_input(cfg)
+    if clash is not None:
+        diag = Diagnostic(
+            code=OUT_OVERWRITES_INPUT,
+            level=DiagLevel.ERROR,
+            message=f"Выход {clash} совпадает с проверяемым документом и затёр бы его",
+            action="Проверка не выполнялась, ничего не записано",
+            hint="Укажите отчёт с другим именем, например out/report.md",
+        )
+        return RunOutcome(exit_code=ExitCode.USAGE, message=f"Код 2: {diag.message}", diagnostics=[diag])
     try:
         cfg.out_dir.mkdir(parents=True, exist_ok=True)
         cfg.run_dir.mkdir(parents=True, exist_ok=True)
@@ -421,7 +483,7 @@ def run(cfg: RunConfig) -> RunOutcome:
                     hint=f"Подробности в {cfg.log_path.name}; сообщите команде",
                 )
             )
-        ctx, report, markdown = _render(state)
+        code, report, markdown = _render(state)
         try:
             outputs = _write(state, report, markdown)
         except OSError as exc:
@@ -431,14 +493,23 @@ def run(cfg: RunConfig) -> RunOutcome:
                 message=f"Код 2: не удалось записать отчёт ({exc.strerror})",
                 diagnostics=list(state.diagnostics),
             )
-        logger.info("Готово: код %s", ctx.exit_code.value)
+        except Exception as exc:  # сериализация отчёта: трассировку только в лог
+            logger.exception("Запись отчёта не удалась")
+            return RunOutcome(
+                exit_code=ExitCode.INTERNAL,
+                message=(
+                    f"Код 1: внутренняя ошибка при записи отчёта ({type(exc).__name__}), см. {cfg.log_path}"
+                ),
+                diagnostics=list(state.diagnostics),
+            )
+        logger.info("Готово: код %s", code.value)
         return RunOutcome(
-            exit_code=ctx.exit_code,
-            message=_message(ctx.exit_code, report, cfg.report_md_path),
+            exit_code=code,
+            message=_message(code, report, cfg.report_md_path),
             report_path=cfg.report_md_path,
             outputs=outputs,
             report=report,
-            diagnostics=list(ctx.diagnostics),
+            diagnostics=list(state.diagnostics),
         )
     finally:
         if handler is not None:

@@ -1093,6 +1093,17 @@ class RunConfig(Contract):
     def run_dir(self) -> Path:
         return self.out_dir / "run"
 
+    @property
+    def output_files(self) -> tuple[Path, ...]:
+        """Все файлы, которые пишет прогон: ни один не должен совпасть со входом."""
+        return (
+            self.report_md_path,
+            self.report_json_path,
+            self.log_path,
+            self.questions_path,
+            self.run_dir / "calls.jsonl",
+        )
+
     def model_for(self, step: LLMStep) -> StepModel:
         return self.step_models[step]
 

@@ -190,8 +190,14 @@ def span_anchor(doc: ParsedDocument, start: int, end: int) -> Anchor:
     )
 
 
-def _spans_within(doc: ParsedDocument, within: Sequence[str], index: Sequence[int]) -> list[tuple[int, int]]:
-    """Диапазоны нормализованного текста для указанных блоков и предложений, слитые и по порядку."""
+def _spans_within(
+    doc: ParsedDocument, within: Sequence[str], norm: str, index: Sequence[int]
+) -> list[tuple[int, int]]:
+    """Диапазоны нормализованного текста для указанных блоков и предложений, слитые и по порядку.
+
+    Соседние диапазоны, между которыми только пробел (перевод строки между блоками), сливаем:
+    цитата через границу двух названных блоков должна находиться внутри ``within``.
+    """
     raw: list[tuple[int, int]] = []
     for ref in within:
         sentence = doc.sentence(ref) if "." in ref else None
@@ -204,7 +210,7 @@ def _spans_within(doc: ParsedDocument, within: Sequence[str], index: Sequence[in
     spans: list[tuple[int, int]] = []
     for start, end in sorted(raw):
         ns, ne = bisect_left(index, start), bisect_left(index, end)
-        if spans and ns <= spans[-1][1]:
+        if spans and not norm[spans[-1][1] : ns].strip():
             spans[-1] = (spans[-1][0], max(spans[-1][1], ne))
         else:
             spans.append((ns, ne))
@@ -243,7 +249,9 @@ def locate_quote(
     not_found = Quote(text=quote, match=QuoteMatch.NOT_FOUND, score=0.0)
     if not norm_quote or not norm_doc:
         return not_found
-    spans = _spans_within(doc, within, index) if isinstance(doc, ParsedDocument) and within else None
+    spans = (
+        _spans_within(doc, within, norm_doc, index) if isinstance(doc, ParsedDocument) and within else None
+    )
     if spans is None:
         spans = [(0, len(norm_doc))]
 

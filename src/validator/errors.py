@@ -54,6 +54,7 @@ INT_STEP_DEGRADED = "INT-002"
 # Запись отчёта.
 OUT_WRITE_FAILED = "OUT-001"
 OUT_FORMAT_FALLBACK = "OUT-002"
+OUT_OVERWRITES_INPUT = "OUT-003"
 
 
 # ---------------------------------------------------------------- исключения

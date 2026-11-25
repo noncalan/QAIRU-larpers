@@ -79,10 +79,22 @@ def make_client(cfg: RunConfig) -> tuple[LLMClient, list[Diagnostic]]:
             ),
         )
     if isinstance(client, UnavailableLLM):
-        error = LLMError(
-            "Нет доступа к модели: нет ключа ANTHROPIC_API_KEY и не найден вход в Claude Code",
-            code=LLM_UNAVAILABLE,
-            hint="Задайте ANTHROPIC_API_KEY в .env (см. README) или установите Claude Code и выполните вход",
-        )
-        return _unavailable(Backend.AUTO, error)
+        if cfg.has_api_key:
+            error = LLMError(
+                "Нет доступа к модели: ANTHROPIC_API_KEY найден, но бэкенд api ещё не готов (#32), "
+                "а команда claude не найдена",
+                code=LLM_UNAVAILABLE,
+                hint="Установите Claude Code и выполните вход (claude, затем /login)",
+            )
+        else:
+            error = LLMError(
+                "Нет доступа к модели: нет ключа ANTHROPIC_API_KEY и не найден вход в Claude Code",
+                code=LLM_UNAVAILABLE,
+                hint=(
+                    "Установите Claude Code и выполните вход, "
+                    "или задайте ANTHROPIC_API_KEY в .env (см. README)"
+                ),
+            )
+        unavailable, missing = _unavailable(Backend.AUTO, error)
+        return unavailable, [d for d in diagnostics if d.level is DiagLevel.INFO] + missing
     return client, diagnostics

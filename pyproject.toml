@@ -24,6 +24,7 @@ dependencies = [
   "pyyaml>=6.0",
   "jinja2>=3.1",
   "typst>=0.12",
+  "lxml>=5",
 ]
 
 [project.scripts]
@@ -99,7 +100,7 @@ packages = ["validator"]
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["razdel.*", "fitz.*", "pymupdf.*", "docx.*", "rapidfuzz.*", "typst.*", "filetype.*"]
+module = ["razdel.*", "fitz.*", "pymupdf.*", "docx.*", "lxml.*", "rapidfuzz.*", "typst.*", "filetype.*"]
 ignore_missing_imports = true
 
 # У PyMuPDF типы частичные (Document не итерируемый, get_text без аннотаций): считаем модуль Any.

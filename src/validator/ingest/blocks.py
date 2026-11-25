@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import hashlib
 import re
+from bisect import bisect_right
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -42,10 +43,12 @@ LIST_ITEM = re.compile(r"^\s*(?:[*+•-]|\d+[.)])\s+")
 ORDINAL = re.compile(r"^\s*(\d+)[.)]\s+")
 FENCE = re.compile(r"^\s*(```|~~~)")
 HR = re.compile(r"^\s*(-{3,}|\*{3,}|_{3,})\s*$")
-# Метка требования в начале пункта: «**ABC-1.**», «REQ-12:», «FR.3», «ТР-2.1)». Буквы 1–6, разделитель, номер.
+# Метка требования в начале пункта: «**ABC-1.**», «REQ-12:», «FR.3», «ТР-2.1)», «FR12». С заглавной буквы,
+# 1–6 букв, затем дефис, точка или подчёркивание и номер; без разделителя только заглавные (FR12). Пробел
+# разделителем не считаем: «В 2025 году», «До 10 попыток» это обычный текст, а не метка.
 SOURCE_ID = re.compile(
     r"^\s*(?:[*+-]\s+|\d+[.)]\s+)?(?:\*\*|__)?\s*"
-    r"(?P<id>[A-Za-zА-Яа-яЁё]{1,6}[-‑.‐_ ]?\d+(?:\.\d+)*)"
+    r"(?P<id>(?:[A-ZА-ЯЁ][A-Za-zА-Яа-яЁё]{0,5}[-‑.‐_]|[A-ZА-ЯЁ]{1,6})\d+(?:\.\d+)*)"
     r"\s*[.:)]?\s*(?:\*\*|__)?[.:)]?\s+"
 )
 # Жирная числовая метка «**200.**» — номер пункта или код статуса, а не ID требования.
@@ -216,26 +219,27 @@ class _Builder:
         )
 
     def sentences(self, bid: str, first: int, last: int, kind: BlockKind) -> list[Sentence]:
+        """Предложения по всему тексту блока: перенос строки внутри абзаца (PDF, ширина строки в MD)
+        предложение не режет, разделяет только razdel."""
+        start = self.starts[first]
+        if kind is BlockKind.LIST_ITEM:
+            m = LIST_ITEM.match(self.text(first))
+            start += m.end() if m else 0
+        end = self.starts[last] + len(self.text(last))
         out: list[Sentence] = []
-        for i in range(first, last + 1):
-            raw = self.text(i)
-            shift = 0
-            if i == first and kind is BlockKind.LIST_ITEM:
-                m = LIST_ITEM.match(raw)
-                shift = m.end() if m else 0
-            for piece in sentenize(raw[shift:]):
-                if not piece.text.strip():
-                    continue
-                start = self.starts[i] + shift + piece.start
-                out.append(
-                    Sentence(
-                        id=f"{bid}.{len(out) + 1}",
-                        text=piece.text,
-                        char_start=start,
-                        char_end=start + len(piece.text),
-                        line=i + 1,
-                    )
+        for piece in sentenize(self.full[start:end]):
+            if not piece.text.strip():
+                continue
+            begin = start + piece.start
+            out.append(
+                Sentence(
+                    id=f"{bid}.{len(out) + 1}",
+                    text=piece.text,
+                    char_start=begin,
+                    char_end=begin + len(piece.text),
+                    line=bisect_right(self.starts, begin),
                 )
+            )
         return out
 
     # ---------------------------------------------------------------- проход по строкам
@@ -419,6 +423,10 @@ def _heading_title(text: str) -> str:
     return _plain(m.group(2) if m else text)
 
 
+def _one_line(text: str) -> str:
+    return " ".join(text.split())
+
+
 def render_for_model(doc: ParsedDocument) -> str:
     """Документ с ID блоков и предложений для модели (исследование 18, п. 3.2).
 
@@ -433,7 +441,7 @@ def render_for_model(doc: ParsedDocument) -> str:
         elif block.kind is BlockKind.TABLE_ROW:
             out.append(f"  {block.serialized}")
         elif block.sentences:
-            out.extend(f"  [{s.id}] {s.text}" for s in block.sentences)
+            out.extend(f"  [{s.id}] {_one_line(s.text)}" for s in block.sentences)
         else:
             out.extend(f"  {line}" for line in block.text.splitlines() if line.strip())
     return "\n".join(out) + "\n"

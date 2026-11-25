@@ -31,16 +31,17 @@ class LLMClient(Protocol):
 
 
 _FENCED_JSON = re.compile(r"^\s*```(?:json)?\s*(.*?)\s*```\s*$", re.IGNORECASE | re.DOTALL)
-_LIMIT_MARKERS = ("usage limit", "rate limit", "rate_limit", "limit reached", "overloaded", "529", "429")
-_AUTH_MARKERS = ("not logged in", "/login", "authentication", "invalid api key", "unauthorized", "401")
+# Коды HTTP только отдельным числом: «14290 tokens» не лимит и не ошибка входа.
+_LIMIT_MARKERS = re.compile(r"usage limit|rate[ _]limit|limit reached|overloaded|\b(?:429|529)\b")
+_AUTH_MARKERS = re.compile(r"not logged in|/login|authentication|invalid api key|unauthorized|\b401\b")
 
 
 def _classify(message: str) -> tuple[str, bool, str]:
     """Код диагностики, можно ли повторить и подсказку человеку по тексту ошибки."""
     low = message.lower()
-    if any(m in low for m in _LIMIT_MARKERS):
+    if _LIMIT_MARKERS.search(low):
         return LLM_LIMIT, True, "Подождите восстановления лимита подписки или задайте ANTHROPIC_API_KEY"
-    if any(m in low for m in _AUTH_MARKERS):
+    if _AUTH_MARKERS.search(low):
         return (
             LLM_UNAVAILABLE,
             False,
