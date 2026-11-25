@@ -12,6 +12,7 @@ from typing import Any
 import pytest
 
 from conftest import FIXTURES_LLM, REQUIREMENTS
+from validator import search as search_module
 from validator.config import load_config
 from validator.errors import LLMError
 from validator.llm import FakeLLM
@@ -241,18 +242,26 @@ def test_empty_answer_fails_the_pass(library: ParsedDocument) -> None:
     assert "пустой ответ" in passes[0].diagnostics[-1].message
 
 
-def test_unexpected_bug_is_not_hidden_as_failed_pass(
-    library: ParsedDocument, monkeypatch: pytest.MonkeyPatch
+def test_bug_on_one_answer_loses_only_that_pass(
+    requirements_md: ParsedDocument, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
 ) -> None:
-    """Ошибка в коде шага не маскируется под упавший проход: конвейер покажет её как INT-диагностику."""
+    """Ошибка кода разбора на одном ответе: проход упал с INT-002, остальные целы, трассировка в лог."""
+    real = search_module.split_findings
 
-    def broken(*_: object) -> None:
-        raise ZeroDivisionError
+    def broken_on_second(text: str) -> object:
+        if "Описание метода называет и сохранение, и чтение" in text and "**Блоки:**" in text:
+            raise ZeroDivisionError
+        return real(text)
 
-    monkeypatch.setattr("validator.search.split_findings", broken)
+    monkeypatch.setattr(search_module, "split_findings", broken_on_second)
 
-    with pytest.raises(ZeroDivisionError):
-        run_search(library, {(LLMStep.SEARCH, 1): envelope(answer())})
+    passes = search(requirements_md, FakeLLM(FIXTURES_LLM), config(3))
+
+    assert [p.ok for p in passes] == [True, False, True]
+    diag = passes[1].diagnostics[-1]
+    assert diag.code == "INT-002" and diag.level is DiagLevel.WARNING
+    assert "ZeroDivisionError" in diag.message and diag.action == "Находки собраны по 2 из 3 проходов"
+    assert "ZeroDivisionError" in caplog.text
 
 
 # ---------------------------------------------------------------- параллельность

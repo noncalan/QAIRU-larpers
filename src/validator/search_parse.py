@@ -35,8 +35,10 @@ FIELD = re.compile(
 )
 """Строка поля «- Поле: значение», в том числе «- **Поле:** значение» и без маркера списка."""
 
-BLOCK_ID = re.compile(r"(?<![\w.])[BВ](\d{3,}(?:\.\d+)?)(?![\w])")
-"""ID блока или предложения: B012, B012.3. Кириллическая «В» вместо латинской B тоже принимается."""
+BLOCK_ID = re.compile(r"(?<![\w.])[BВ](\d{3,}(?:\.\d+)?)(?:\s*[–—-]\s*[BВ]?(\d{3,}(?:\.\d+)?))?(?![\w])")
+"""ID блока или предложения: B012, B012.3, диапазон B012–B015. Кириллическая «В» вместо B тоже годится."""
+MAX_BLOCK_RANGE = 30
+"""Диапазон «B075–B083» раскрывается в блоки, если в нём не больше 30 блоков; иначе берутся концы."""
 
 
 class Key:
@@ -261,9 +263,21 @@ def quotes_in(value: str) -> list[str]:
     return [bare] if bare else []
 
 
+def _expand(start: str, end: str | None) -> list[str]:
+    """«B075–B083» → B075, B076, …, B083. Предложения и слишком длинные диапазоны не раскрываются."""
+    ids = [start] + ([end] if end else [])
+    if end is None or "." in start or "." in end:
+        return ids
+    first, last = int(start), int(end)
+    if not 0 < last - first <= MAX_BLOCK_RANGE:
+        return ids
+    return [f"{n:0{len(start)}d}" for n in range(first, last + 1)]
+
+
 def block_ids_in(value: str) -> list[str]:
     """ID блоков в порядке появления, без повторов; кириллическая «В» заменяется на латинскую B."""
-    return list(dict.fromkeys(f"B{m.group(1)}" for m in BLOCK_ID.finditer(value)))
+    found = (n for m in BLOCK_ID.finditer(value) for n in _expand(m.group(1), m.group(2)))
+    return list(dict.fromkeys(f"B{n}" for n in found))
 
 
 def _first_match(

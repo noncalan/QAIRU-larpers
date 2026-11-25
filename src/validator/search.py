@@ -13,25 +13,29 @@
   (рекомендация интегратора в #18).
 - ID блоков, которых нет в документе, отбрасываются с диагностикой; ID несуществующего предложения
   заменяется ID его блока. Цитаты здесь не сверяются: это делает верификатор (шаг 7).
-- Упавший проход это ``PassResult(ok=False)`` с диагностикой ``LLM-030`` «Проход k из K не удался»,
-  остальные идут дальше («K−1 из K»). Если упали все, шаг возвращает упавшие проходы без находок,
-  а конвейер собирает отчёт без находок модели (``LLM-031``).
+- Упавший проход это ``PassResult(ok=False)`` с диагностикой ``LLM-030`` «Проход k из K не удался»
+  (``INT-002``, если упал код разбора), остальные идут дальше («K−1 из K»). Если упали все, шаг
+  возвращает упавшие проходы без находок, а конвейер собирает отчёт без находок модели (``LLM-031``).
 """
 
 from __future__ import annotations
 
+import logging
 from collections import Counter
 from collections.abc import Sequence
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 
 from validator.errors import (
+    INT_STEP_DEGRADED,
     LLM_BAD_RESPONSE,
     LLM_PASS_FAILED,
     LLM_PASS_TRANSFERRED,
     LLM_TRANSFER_FAILED,
     LLM_UNKNOWN_BLOCKS,
+    InternalError,
     LLMError,
+    ValidatorError,
 )
 from validator.ingest.blocks import render_for_model
 from validator.llm.base import LLMClient
@@ -56,6 +60,8 @@ from validator.search_transfer import (
     transfer_request,
     transferred,
 )
+
+logger = logging.getLogger(__name__)
 
 SEARCH_SYSTEM = "search_system.md"
 SEARCH_USER = "search_user.md"
@@ -99,7 +105,7 @@ class _Outcome:
     candidates: list[CandidateFinding] = field(default_factory=list)
     call_ids: list[str] = field(default_factory=list)
     diagnostics: list[Diagnostic] = field(default_factory=list)
-    error: LLMError | None = None
+    error: ValidatorError | None = None
 
 
 def _transfer(
@@ -118,7 +124,7 @@ def _transfer(
 
 
 def _reasons(counter: Counter[str]) -> str:
-    """«нет поля цитата: 2, одна находка на фрагмент: 1»."""
+    """«нет цитаты: 2, свойство: не распознано: 1»."""
     return ", ".join(f"{reason}: {count}" for reason, count in counter.most_common())
 
 
@@ -274,6 +280,25 @@ def run_pass(ctx: _Context, index: int) -> _Outcome:
     return out
 
 
+def _isolated_pass(ctx: _Context, index: int) -> _Outcome:
+    """Проход в своём потоке. Ошибка в коде разбора роняет только этот проход, а не все K.
+
+    Трассировка идёт в ``report.log``, в отчёт попадает диагностика ``INT-002``: ошибка видна,
+    а находки остальных проходов не теряются.
+    """
+    try:
+        return run_pass(ctx, index)
+    except Exception as exc:  # граница прохода: сбой кода на одном ответе не должен ронять остальные
+        logger.exception("Проход %s: внутренняя ошибка", index)
+        error = InternalError(
+            f"внутренняя ошибка агента при разборе ответа ({type(exc).__name__})",
+            code=INT_STEP_DEGRADED,
+            hint="Подробности в report.log; сообщите команде",
+            location=f"search.{index}",
+        )
+        return _Outcome(index=index, call_ids=[f"search.{index}"], error=error)
+
+
 # ---------------------------------------------------------------- шаг целиком
 
 
@@ -296,7 +321,7 @@ def _result(o: _Outcome, ok: int, total: int) -> PassResult:
         )
     exc = o.error
     failed = Diagnostic(
-        code=LLM_PASS_FAILED,
+        code=LLM_PASS_FAILED if isinstance(exc, LLMError) else exc.code,
         level=DiagLevel.WARNING,
         message=f"Проход {o.index} из {total} не удался: {_lower_first(exc.message)}",
         action=f"Находки собраны по {ok} из {total} проходов" if ok else "Находок модели в отчёте нет",
@@ -323,7 +348,7 @@ def search(doc: ParsedDocument, llm: LLMClient, cfg: RunConfig) -> list[PassResu
     with ThreadPoolExecutor(
         max_workers=min(MAX_PARALLEL_PASSES, cfg.passes), thread_name_prefix="search"
     ) as pool:
-        outcomes = list(pool.map(lambda k: run_pass(ctx, k), indexes))
+        outcomes = list(pool.map(lambda k: _isolated_pass(ctx, k), indexes))
     ok = sum(o.error is None for o in outcomes)
     return [_result(o, ok, cfg.passes) for o in outcomes]
 

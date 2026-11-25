@@ -347,6 +347,20 @@ def test_block_ids_latin_cyrillic_and_sentences() -> None:
     assert block_ids_in("B014.2, В031 (кириллица), B014.2 повтор, раздел 3.1, AB123") == ["B014.2", "B031"]
 
 
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("B075–B078", ["B075", "B076", "B077", "B078"]),
+        ("B009-011, B020", ["B009", "B010", "B011", "B020"]),
+        ("B014.2–B014.4", ["B014.2", "B014.4"]),
+        ("B001 — B999", ["B001", "B999"]),
+        ("B015–B012", ["B015", "B012"]),
+    ],
+)
+def test_block_ranges(value: str, expected: list[str]) -> None:
+    assert block_ids_in(value) == expected
+
+
 def test_unwrap_only_single_quote() -> None:
     assert unwrap("«Текст [уточнить: N]»") == "Текст [уточнить: N]"
     assert unwrap("«А» или «Б»") == "«А» или «Б»"
