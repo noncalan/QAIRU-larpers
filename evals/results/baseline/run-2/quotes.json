@@ -1,0 +1,28 @@
+{
+  "total": {
+    "total": 80,
+    "exact": 61,
+    "fuzzy": 7,
+    "not_found": 12,
+    "share_exact": 0.7625,
+    "share_verified": 0.85
+  },
+  "by_kind": {
+    "backtick": {
+      "total": 4,
+      "exact": 3,
+      "fuzzy": 0,
+      "not_found": 1,
+      "share_exact": 0.75,
+      "share_verified": 0.75
+    },
+    "guillemet": {
+      "total": 76,
+      "exact": 58,
+      "fuzzy": 7,
+      "not_found": 11,
+      "share_exact": 0.7632,
+      "share_verified": 0.8553
+    }
+  }
+}

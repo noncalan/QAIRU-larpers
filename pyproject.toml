@@ -115,5 +115,6 @@ warn_required_dynamic_aliases = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]  # пакет evals лежит в корне репозитория
 addopts = "-ra"
 pythonpath = ["."]  # пакет evals/ (eval по эталону, #24) лежит в корне репозитория
