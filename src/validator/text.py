@@ -228,6 +228,31 @@ def _anchor(doc: ParsedDocument | str, start: int, end: int) -> Anchor:
     )
 
 
+def _is_word_char(ch: str) -> bool:
+    return ch.isalnum() or ch == "_" or unicodedata.category(ch).startswith("M")
+
+
+def snap_to_words(text: str, start: int, end: int) -> tuple[int, int]:
+    """Границы фрагмента ``text[start:end]`` по целым словам (исследование 03, ``snap_to_words``).
+
+    Нечёткое выравнивание может откусить начало или конец слова («ервис расходов», «одновремен»)
+    и захватить пробел по краю. Убираем пробелы по краям и дотягиваем края до границ слов; внутрь
+    фрагмента не режем. Если от фрагмента ничего не осталось, возвращаем исходные границы.
+    """
+    s, e = start, end
+    while s < e and text[s].isspace():
+        s += 1
+    while e > s and text[e - 1].isspace():
+        e -= 1
+    if s == e:
+        return start, end
+    while s > 0 and _is_word_char(text[s - 1]) and _is_word_char(text[s]):
+        s -= 1
+    while e < len(text) and _is_word_char(text[e - 1]) and _is_word_char(text[e]):
+        e += 1
+    return s, e
+
+
 def locate_quote(
     doc: ParsedDocument | str,
     quote: str,
@@ -281,7 +306,8 @@ def locate_quote(
     if best is None:
         return not_found.model_copy(update={"score": round(best_score, 1)})
     score, nstart, nend = best
-    start, end = index[nstart], index[nend - 1] + 1
+    # Балл остаётся от выравнивания, а показываем и якорим целые слова исходного текста.
+    start, end = snap_to_words(text, index[nstart], index[nend - 1] + 1)
     return Quote(
         text=quote,
         match=QuoteMatch.FUZZY,
@@ -297,6 +323,7 @@ __all__ = [
     "line_of",
     "locate_quote",
     "normalize",
+    "snap_to_words",
     "span_anchor",
     "stable_key",
 ]
