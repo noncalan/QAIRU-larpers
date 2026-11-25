@@ -22,6 +22,7 @@ from validator.models import (
     QuestionOption,
     Segmentation,
     Verification,
+    WithdrawnQuestion,
 )
 
 _ID = r"B\d{3,}(?:\.\d+)?"
@@ -36,6 +37,7 @@ MAX_IDS_SHOWN = 3
 FINDING_TEXT_FIELDS = ("title", "explanation", "suggestion", "scenario", "test_gap")
 QUESTION_TEXT_FIELDS = ("topic", "question", "why", "if_unanswered")
 OPTION_TEXT_FIELDS = ("text", "change", "grounded_in")
+WITHDRAWN_TEXT_FIELDS = ("reason",)
 
 
 class RefNamer:
@@ -95,7 +97,7 @@ def _place(block: Block) -> str:
 
 
 def _replace(
-    model: Finding | Question | QuestionOption, fields: Sequence[str], namer: RefNamer
+    model: Finding | Question | QuestionOption | WithdrawnQuestion, fields: Sequence[str], namer: RefNamer
 ) -> dict[str, object]:
     changes: dict[str, object] = {}
     for name in fields:
@@ -120,14 +122,31 @@ def humanize_question(question: Question, namer: RefNamer) -> Question:
     return question.model_copy(update=changes) if changes else question
 
 
+def humanize_withdrawn(withdrawn: WithdrawnQuestion, namer: RefNamer) -> WithdrawnQuestion:
+    """Снятый вопрос: текст карточки и ответ критика; цитата-ответ остаётся дословной."""
+    changes = _replace(withdrawn, WITHDRAWN_TEXT_FIELDS, namer)
+    question = humanize_question(withdrawn.question, namer)
+    if question is not withdrawn.question:
+        changes["question"] = question
+    return withdrawn.model_copy(update=changes) if changes else withdrawn
+
+
 def humanize(
-    ver: Verification | None, questions: Sequence[Question], doc: ParsedDocument, seg: Segmentation | None
-) -> tuple[Verification | None, list[Question]]:
-    """Находки и вопросы без ID блоков в текстах: R-NN или место в документе вместо B012."""
+    ver: Verification | None,
+    questions: Sequence[Question],
+    withdrawn: Sequence[WithdrawnQuestion],
+    doc: ParsedDocument,
+    seg: Segmentation | None,
+) -> tuple[Verification | None, list[Question], list[WithdrawnQuestion]]:
+    """Находки, вопросы и снятые вопросы без ID блоков в текстах: R-NN или место в документе вместо B012."""
     namer = RefNamer(doc, seg)
     if ver is not None:
         ver = ver.model_copy(update={"findings": [humanize_finding(f, namer) for f in ver.findings]})
-    return ver, [humanize_question(q, namer) for q in questions]
+    return (
+        ver,
+        [humanize_question(q, namer) for q in questions],
+        [humanize_withdrawn(w, namer) for w in withdrawn],
+    )
 
 
-__all__ = ["BLOCK_REF", "RefNamer", "humanize", "humanize_finding", "humanize_question"]
+__all__ = ["BLOCK_REF", "RefNamer", "humanize", "humanize_finding", "humanize_question", "humanize_withdrawn"]

@@ -7,13 +7,13 @@
     "document_sha256": "7fd7c1d145b0c4e01ac8a502856b08eaf0cdbddc896069271687f6a2a16022d5",
     "document_size_bytes": 16072,
     "document_pages": null,
-    "started_at": "2026-11-25T22:10:59.627650Z",
-    "finished_at": "2026-11-25T22:10:59.849361Z",
+    "started_at": "2026-11-25T22:20:48.532233Z",
+    "finished_at": "2026-11-25T22:20:48.748872Z",
     "duration_s": 0.22,
-    "agent_version": "e7420e0-dirty",
+    "agent_version": "7847302-dirty",
     "agent_version_source": "git",
     "agent_dirty": true,
-    "prompts_sha256": "fbd62c523224f9e32423782159229c1e485b391720dfbe9bb1aef04f6889f4b7",
+    "prompts_sha256": "52bad12278cec466d777949f2289670997fddbe7dc21ee3cd740cabddfd517ac",
     "os": "Linux 6.18.44-fc-v880 (x86_64)",
     "python": "3.13.18",
     "backend_requested": "replay",
@@ -34,8 +34,8 @@
       "claude-opus-5-5",
       "claude-sonnet-5-5"
     ],
-    "calls_total": 5,
-    "calls_failed": 0,
+    "calls_total": 6,
+    "calls_failed": 1,
     "tokens": {
       "input_tokens": 10,
       "output_tokens": 104211,
@@ -64,6 +64,24 @@
       "message": "Ответы модели взяты из записи прогона tests/fixtures/e2e/docx/run (5 шт.)",
       "action": "Модель не вызывалась, отчёт пересобран из записанных ответов",
       "hint": "",
+      "location": null,
+      "step": "llm"
+    },
+    {
+      "code": "LLM-052",
+      "level": "warning",
+      "message": "Самопроверка вопросов не сработала: В записанном прогоне нет ответа для шага questions_critic, вызов 1",
+      "action": "Вопросы вошли в отчёт без самопроверки: на часть из них ответ может быть в документе",
+      "hint": "Пересоберите прогон с моделью: в записи нет этого вызова",
+      "location": null,
+      "step": "questions"
+    },
+    {
+      "code": "LLM-015",
+      "level": "warning",
+      "message": "Вызовов модели не удалось: 1 (questions_critic.1). Причина: В записанном прогоне нет ответа для шага questions_critic, вызов 1",
+      "action": "Шаги с этими вызовами сработали по своей политике отказа (см. диагностику шагов)",
+      "hint": "Пересоберите прогон с моделью: в записи нет этого вызова",
       "location": null,
       "step": "llm"
     }
@@ -9528,7 +9546,8 @@
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Complete)",
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
         "IEEE 830-1998, п. 4.3.4"
-      ]
+      ],
+      "review": null
     },
     {
       "id": "Q-02",
@@ -9653,7 +9672,8 @@
         "IEEE 830-1998, п. 4.3.3",
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
         "IEEE 830-1998, п. 4.3.4"
-      ]
+      ],
+      "review": null
     },
     {
       "id": "Q-03",
@@ -9752,7 +9772,8 @@
       "standard": [
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Complete)",
         "IEEE 830-1998, п. 4.3.3"
-      ]
+      ],
+      "review": null
     },
     {
       "id": "Q-04",
@@ -9871,7 +9892,8 @@
         "IEEE 830-1998, п. 4.3.4",
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Unambiguous)",
         "IEEE 830-1998, п. 4.3.2"
-      ]
+      ],
+      "review": null
     },
     {
       "id": "Q-05",
@@ -9965,7 +9987,8 @@
         "IEEE 830-1998, п. 4.3.4",
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Unambiguous)",
         "IEEE 830-1998, п. 4.3.2"
-      ]
+      ],
+      "review": null
     },
     {
       "id": "Q-06",
@@ -10058,7 +10081,8 @@
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Feasible)",
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Unambiguous)",
         "IEEE 830-1998, п. 4.3.2"
-      ]
+      ],
+      "review": null
     },
     {
       "id": "Q-07",
@@ -10176,7 +10200,8 @@
         "IEEE 830-1998, п. 4.3.1",
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
         "IEEE 830-1998, п. 4.3.4"
-      ]
+      ],
+      "review": null
     },
     {
       "id": "Q-08",
@@ -10265,7 +10290,8 @@
       "standard": [
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
         "IEEE 830-1998, п. 4.3.4"
-      ]
+      ],
+      "review": null
     },
     {
       "id": "Q-09",
@@ -10357,7 +10383,8 @@
       "standard": [
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Complete)",
         "IEEE 830-1998, п. 4.3.3"
-      ]
+      ],
+      "review": null
     },
     {
       "id": "Q-10",
@@ -10454,7 +10481,8 @@
       "standard": [
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Complete)",
         "IEEE 830-1998, п. 4.3.3"
-      ]
+      ],
+      "review": null
     },
     {
       "id": "Q-11",
@@ -10543,7 +10571,8 @@
       "standard": [
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Complete)",
         "IEEE 830-1998, п. 4.3.3"
-      ]
+      ],
+      "review": null
     },
     {
       "id": "Q-12",
@@ -10638,7 +10667,8 @@
       "origin": "uncertain_verdict",
       "standard": [
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Comprehensible)"
-      ]
+      ],
+      "review": null
     },
     {
       "id": "Q-13",
@@ -10737,7 +10767,8 @@
         "IEEE 830-1998, п. 4.3.3",
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Unambiguous)",
         "IEEE 830-1998, п. 4.3.2"
-      ]
+      ],
+      "review": null
     },
     {
       "id": "Q-14",
@@ -10810,7 +10841,8 @@
         "IEEE 830-1998, п. 4.3.3",
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Unambiguous)",
         "IEEE 830-1998, п. 4.3.2"
-      ]
+      ],
+      "review": null
     },
     {
       "id": "Q-15",
@@ -10896,9 +10928,11 @@
       "standard": [
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
         "IEEE 830-1998, п. 4.3.4"
-      ]
+      ],
+      "review": null
     }
   ],
+  "questions_withdrawn": [],
   "conclusion": {
     "traffic_light": "red",
     "headline": "Начинать разработку и тестирование нельзя: 10 критичных нарушений мешают написать тест-кейсы (F-01, F-02, F-03, F-04, F-05 и ещё 5)",
@@ -10920,8 +10954,8 @@
   },
   "metrics": {
     "duration_s": 0.22,
-    "calls_total": 5,
-    "calls_failed": 0,
+    "calls_total": 6,
+    "calls_failed": 1,
     "calls_cached": 0,
     "tokens": {
       "input_tokens": 10,
@@ -10936,6 +10970,28 @@
     "discarded_total": 0,
     "quotes_total": 98,
     "quotes_verified": 98,
-    "verified_quote_share": 1.0
+    "verified_quote_share": 1.0,
+    "questions": {
+      "total": 15,
+      "before_critic": 15,
+      "withdrawn": 0,
+      "withdrawn_share": null,
+      "reviewed": 0,
+      "with_scenario": null,
+      "closed": 1.0,
+      "without_errors": null,
+      "obvious_fix": 0,
+      "common_sense": 0,
+      "duplicate_pairs": 0,
+      "by_priority": {
+        "P0": 11,
+        "P1": 4
+      },
+      "by_addressee": {
+        "architect": 5,
+        "business": 9,
+        "security": 3
+      }
+    }
   }
 }

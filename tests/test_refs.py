@@ -23,6 +23,7 @@ from validator.models import (
     Severity,
     Verdict,
     Verification,
+    WithdrawnQuestion,
 )
 from validator.refs import RefNamer, humanize
 from validator.segment.build import Draft, build_requirements
@@ -97,7 +98,7 @@ def test_humanize_rewrites_findings_and_questions_but_not_quotes(
         options=[QuestionOption(label="A", text="Статус", change="Исправить B002.2")],
     )
 
-    new_ver, (new_q,) = humanize(ver, [question], doc, seg)
+    new_ver, (new_q,), withdrawn = humanize(ver, [question], [], doc, seg)
 
     assert new_ver is not None
     finding = new_ver.findings[0]
@@ -106,6 +107,21 @@ def test_humanize_rewrites_findings_and_questions_but_not_quotes(
     assert finding.quotes[0].text == "B002 сохраняет"
     assert new_q.question == "Что показывать в R-01.2?"
     assert new_q.options[0].change == "Исправить R-01.2"
+    assert withdrawn == []
+
+
+def test_withdrawn_question_reason_is_rewritten_but_answer_quote_stays(
+    doc: ParsedDocument, seg: Segmentation
+) -> None:
+    answer = Quote(text="B002 сохраняет", match=QuoteMatch.EXACT, score=100.0, located="B002 сохраняет")
+    question = Question(id="Q-02", priority=QuestionPriority.P2, question="Где статус из B002.2?")
+    withdrawn = WithdrawnQuestion(question=question, reason="Ответ в B002.2 и B004", answer=answer)
+
+    _, _, (new_w,) = humanize(None, [], [withdrawn], doc, seg)
+
+    assert new_w.reason == "Ответ в R-01.2 и фрагмент в разделе «Заказы › Справка» (строка 7)"
+    assert new_w.question.question == "Где статус из R-01.2?"
+    assert new_w.answer == answer
 
 
 def test_range_of_ids_is_rewritten_and_document_codes_stay(

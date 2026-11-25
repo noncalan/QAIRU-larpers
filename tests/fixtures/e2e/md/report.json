@@ -7,13 +7,13 @@
     "document_sha256": "e7dae55e5453a250d93e335f5ff9c7f775f4457ccddd333f4a67e47b20d74381",
     "document_size_bytes": 13507,
     "document_pages": null,
-    "started_at": "2026-11-25T21:59:13.105345Z",
-    "finished_at": "2026-11-25T21:59:13.296186Z",
-    "duration_s": 0.19,
-    "agent_version": "6cafce6-dirty",
+    "started_at": "2026-11-25T22:20:44.000905Z",
+    "finished_at": "2026-11-25T22:20:44.206048Z",
+    "duration_s": 0.21,
+    "agent_version": "7847302-dirty",
     "agent_version_source": "git",
     "agent_dirty": true,
-    "prompts_sha256": "fbd62c523224f9e32423782159229c1e485b391720dfbe9bb1aef04f6889f4b7",
+    "prompts_sha256": "52bad12278cec466d777949f2289670997fddbe7dc21ee3cd740cabddfd517ac",
     "os": "Linux 6.18.44-fc-v880 (x86_64)",
     "python": "3.13.18",
     "backend_requested": "replay",
@@ -34,15 +34,15 @@
       "claude-opus-5-5",
       "claude-sonnet-5-5"
     ],
-    "calls_total": 5,
+    "calls_total": 6,
     "calls_failed": 0,
     "tokens": {
-      "input_tokens": 10,
-      "output_tokens": 117856,
-      "cache_creation_input_tokens": 85295,
-      "cache_read_input_tokens": 2946
+      "input_tokens": 12,
+      "output_tokens": 124090,
+      "cache_creation_input_tokens": 100028,
+      "cache_read_input_tokens": 4759
     },
-    "cost_usd": 2.9099,
+    "cost_usd": 3.1528,
     "exit_code": 0
   },
   "document": {
@@ -61,11 +61,20 @@
     {
       "code": "LLM-005",
       "level": "info",
-      "message": "Ответы модели взяты из записи прогона tests/fixtures/e2e/md/run (5 шт.)",
+      "message": "Ответы модели взяты из записи прогона tests/fixtures/e2e/md/run (6 шт.)",
       "action": "Модель не вызывалась, отчёт пересобран из записанных ответов",
       "hint": "",
       "location": null,
       "step": "llm"
+    },
+    {
+      "code": "LLM-053",
+      "level": "info",
+      "message": "Самопроверка вопросов: снято вопросов: 1 (ответ есть в документе, цитату-ответ код сверил)",
+      "action": "В отчёте осталось вопросов: 14; ответ критика без сверенной цитаты, вопрос оставлен: 1; критик сослался на то самое неясное место, вопрос оставлен: 3",
+      "hint": "",
+      "location": null,
+      "step": "questions"
     }
   ],
   "segmentation": {
@@ -10089,7 +10098,18 @@
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
         "IEEE 830-1998, п. 4.3.4",
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Complete)"
-      ]
+      ],
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": [
+          2
+        ]
+      }
     },
     {
       "id": "Q-02",
@@ -10188,7 +10208,16 @@
       "standard": [
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Complete)",
         "IEEE 830-1998, п. 4.3.3"
-      ]
+      ],
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
     },
     {
       "id": "Q-03",
@@ -10311,7 +10340,18 @@
         "IEEE 830-1998, п. 4.3.4",
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Complete)",
         "IEEE 830-1998, п. 4.3.3"
-      ]
+      ],
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": [
+          7
+        ]
+      }
     },
     {
       "id": "Q-04",
@@ -10429,37 +10469,26 @@
         "IEEE 830-1998, п. 4.3.1",
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
         "IEEE 830-1998, п. 4.3.4"
-      ]
-    },
-    {
-      "id": "Q-05",
-      "priority": "P0",
-      "blocks": [
-        "development",
-        "testing"
       ],
-      "addressee": [
-        "business",
-        "architect"
-      ],
-      "topic": "событие учёта покупки",
-      "quotes": [
-        {
-          "text": "Дать клиенту возможность узнать о достижении личного бюджета в момент покупки.",
+      "review": {
+        "answered": true,
+        "answer": "Методом GET, параметры передаются в строке запроса, тело не используется",
+        "answer_quote": {
+          "text": "Тело не используется.",
           "match": "exact",
           "score": 100.0,
-          "located": "Дать клиенту возможность узнать о достижении личного бюджета в момент покупки.",
+          "located": "Тело не используется.",
           "anchor": {
-            "char_start": 777,
-            "char_end": 855,
+            "char_start": 7072,
+            "char_end": 7093,
             "block_ids": [
-              "B013"
+              "B095"
             ],
             "sentence_ids": [
-              "B013.1"
+              "B095.1"
             ],
-            "line_start": 23,
-            "line_end": 23,
+            "line_start": 148,
+            "line_end": 148,
             "page": null,
             "page_line": null,
             "paragraph": null,
@@ -10470,61 +10499,11 @@
             "extraction": "text"
           }
         },
-        {
-          "text": "В расходы входят проведённые покупки.",
-          "match": "exact",
-          "score": 100.0,
-          "located": "В расходы входят проведённые покупки.",
-          "anchor": {
-            "char_start": 1551,
-            "char_end": 1588,
-            "block_ids": [
-              "B023"
-            ],
-            "sentence_ids": [
-              "B023.2"
-            ],
-            "line_start": 38,
-            "line_end": 38,
-            "page": null,
-            "page_line": null,
-            "paragraph": null,
-            "table": null,
-            "row": null,
-            "cell": null,
-            "column": null,
-            "extraction": "text"
-          }
-        }
-      ],
-      "question": "Клиент оплатил покупку 5 марта, процессинг провёл её 7 марта: расходы растут и порог проверяется 5 или 7 марта?",
-      "why": "Событие процессинга не выбрано, а от него зависят момент push и месяц покупки. От того же выбора зависит сумма для покупки в валюте: в тенге при авторизации или при проведении.",
-      "options": [
-        {
-          "label": "A",
-          "text": "При авторизации, в момент оплаты",
-          "change": "Указать событие авторизации и описать отмену авторизации и расхождение с суммой проведения",
-          "grounded_in": "Дать клиенту возможность узнать о достижении личного бюджета в момент покупки."
-        },
-        {
-          "label": "B",
-          "text": "При проведении операции процессингом",
-          "change": "Указать событие проведения и переформулировать цель без слов «в момент покупки»",
-          "grounded_in": "В расходы входят проведённые покупки."
-        }
-      ],
-      "if_unanswered": "Команда будет учитывать проведение по Ф-2. Push будет приходить через дни после покупки, и цель не выполнится.",
-      "related_findings": [
-        "F-03",
-        "F-18"
-      ],
-      "origin": "finding",
-      "standard": [
-        "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Unambiguous)",
-        "IEEE 830-1998, п. 4.3.2",
-        "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Complete)",
-        "IEEE 830-1998, п. 4.3.3"
-      ]
+        "common_sense": false,
+        "obvious_fix": true,
+        "scenario": false,
+        "errors": []
+      }
     },
     {
       "id": "Q-06",
@@ -10648,7 +10627,43 @@
       "standard": [
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Complete)",
         "IEEE 830-1998, п. 4.3.3"
-      ]
+      ],
+      "review": {
+        "answered": true,
+        "answer": "В марте push не придёт: расходы уже не ниже порога, перехода через порог не будет",
+        "answer_quote": {
+          "text": "Когда расходы переходят от суммы ниже порога к сумме, равной порогу или выше, клиент получает push.",
+          "match": "exact",
+          "score": 100.0,
+          "located": "Когда расходы переходят от суммы ниже порога к сумме, равной порогу или выше, клиент получает push.",
+          "anchor": {
+            "char_start": 1691,
+            "char_end": 1790,
+            "block_ids": [
+              "B024"
+            ],
+            "sentence_ids": [
+              "B024.1"
+            ],
+            "line_start": 39,
+            "line_end": 39,
+            "page": null,
+            "page_line": null,
+            "paragraph": null,
+            "table": null,
+            "row": null,
+            "cell": null,
+            "column": null,
+            "extraction": "text"
+          }
+        },
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": [
+          2
+        ]
+      }
     },
     {
       "id": "Q-07",
@@ -10737,7 +10752,16 @@
       "standard": [
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
         "IEEE 830-1998, п. 4.3.4"
-      ]
+      ],
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
     },
     {
       "id": "Q-08",
@@ -10828,7 +10852,16 @@
       "standard": [
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
         "IEEE 830-1998, п. 4.3.4"
-      ]
+      ],
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
     },
     {
       "id": "Q-09",
@@ -10920,7 +10953,18 @@
       "standard": [
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Complete)",
         "IEEE 830-1998, п. 4.3.3"
-      ]
+      ],
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": false,
+        "errors": [
+          2
+        ]
+      }
     },
     {
       "id": "Q-10",
@@ -10985,7 +11029,16 @@
       "standard": [
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Complete)",
         "IEEE 830-1998, п. 4.3.3"
-      ]
+      ],
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": false,
+        "errors": []
+      }
     },
     {
       "id": "Q-11",
@@ -11097,7 +11150,16 @@
       "standard": [
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
         "IEEE 830-1998, п. 4.3.4"
-      ]
+      ],
+      "review": {
+        "answered": true,
+        "answer": "Строками, как в таблице ответа и примере 200",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
     },
     {
       "id": "Q-12",
@@ -11191,7 +11253,43 @@
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Able to be validated)",
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Verifiable)",
         "IEEE 830-1998, п. 4.3.6"
-      ]
+      ],
+      "review": {
+        "answered": true,
+        "answer": "От получения события сервисом, в течение минуты",
+        "answer_quote": {
+          "text": "Сервис передаёт push на отправку в течение минуты после получения события.",
+          "match": "exact",
+          "score": 100.0,
+          "located": "Сервис передаёт push на отправку в течение минуты после получения события.",
+          "anchor": {
+            "char_start": 2277,
+            "char_end": 2351,
+            "block_ids": [
+              "B029"
+            ],
+            "sentence_ids": [
+              "B029.1"
+            ],
+            "line_start": 46,
+            "line_end": 46,
+            "page": null,
+            "page_line": null,
+            "paragraph": null,
+            "table": null,
+            "row": null,
+            "cell": null,
+            "column": null,
+            "extraction": "text"
+          }
+        },
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": [
+          2
+        ]
+      }
     },
     {
       "id": "Q-13",
@@ -11285,7 +11383,16 @@
       "origin": "uncertain_verdict",
       "standard": [
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Comprehensible)"
-      ]
+      ],
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
     },
     {
       "id": "Q-14",
@@ -11358,7 +11465,16 @@
         "IEEE 830-1998, п. 4.3.3",
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Unambiguous)",
         "IEEE 830-1998, п. 4.3.2"
-      ]
+      ],
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
     },
     {
       "id": "Q-15",
@@ -11423,7 +11539,176 @@
       "standard": [
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
         "IEEE 830-1998, п. 4.3.4"
-      ]
+      ],
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": true,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
+    }
+  ],
+  "questions_withdrawn": [
+    {
+      "question": {
+        "id": "Q-05",
+        "priority": "P0",
+        "blocks": [
+          "development",
+          "testing"
+        ],
+        "addressee": [
+          "business",
+          "architect"
+        ],
+        "topic": "событие учёта покупки",
+        "quotes": [
+          {
+            "text": "Дать клиенту возможность узнать о достижении личного бюджета в момент покупки.",
+            "match": "exact",
+            "score": 100.0,
+            "located": "Дать клиенту возможность узнать о достижении личного бюджета в момент покупки.",
+            "anchor": {
+              "char_start": 777,
+              "char_end": 855,
+              "block_ids": [
+                "B013"
+              ],
+              "sentence_ids": [
+                "B013.1"
+              ],
+              "line_start": 23,
+              "line_end": 23,
+              "page": null,
+              "page_line": null,
+              "paragraph": null,
+              "table": null,
+              "row": null,
+              "cell": null,
+              "column": null,
+              "extraction": "text"
+            }
+          },
+          {
+            "text": "В расходы входят проведённые покупки.",
+            "match": "exact",
+            "score": 100.0,
+            "located": "В расходы входят проведённые покупки.",
+            "anchor": {
+              "char_start": 1551,
+              "char_end": 1588,
+              "block_ids": [
+                "B023"
+              ],
+              "sentence_ids": [
+                "B023.2"
+              ],
+              "line_start": 38,
+              "line_end": 38,
+              "page": null,
+              "page_line": null,
+              "paragraph": null,
+              "table": null,
+              "row": null,
+              "cell": null,
+              "column": null,
+              "extraction": "text"
+            }
+          }
+        ],
+        "question": "Клиент оплатил покупку 5 марта, процессинг провёл её 7 марта: расходы растут и порог проверяется 5 или 7 марта?",
+        "why": "Событие процессинга не выбрано, а от него зависят момент push и месяц покупки. От того же выбора зависит сумма для покупки в валюте: в тенге при авторизации или при проведении.",
+        "options": [
+          {
+            "label": "A",
+            "text": "При авторизации, в момент оплаты",
+            "change": "Указать событие авторизации и описать отмену авторизации и расхождение с суммой проведения",
+            "grounded_in": "Дать клиенту возможность узнать о достижении личного бюджета в момент покупки."
+          },
+          {
+            "label": "B",
+            "text": "При проведении операции процессингом",
+            "change": "Указать событие проведения и переформулировать цель без слов «в момент покупки»",
+            "grounded_in": "В расходы входят проведённые покупки."
+          }
+        ],
+        "if_unanswered": "Команда будет учитывать проведение по Ф-2. Push будет приходить через дни после покупки, и цель не выполнится.",
+        "related_findings": [
+          "F-03",
+          "F-18"
+        ],
+        "origin": "finding",
+        "standard": [
+          "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Unambiguous)",
+          "IEEE 830-1998, п. 4.3.2",
+          "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Complete)",
+          "IEEE 830-1998, п. 4.3.3"
+        ],
+        "review": {
+          "answered": true,
+          "answer": "7 марта: расходы пересчитываются и порог проверяется при проведении покупки",
+          "answer_quote": {
+            "text": "Проведение покупки → пересчёт расходов → проверка порога → при достижении отправка push → завершение.",
+            "match": "exact",
+            "score": 100.0,
+            "located": "Проведение покупки → пересчёт расходов → проверка порога → при достижении отправка push → завершение.",
+            "anchor": {
+              "char_start": 1217,
+              "char_end": 1318,
+              "block_ids": [
+                "B020"
+              ],
+              "sentence_ids": [
+                "B020.1"
+              ],
+              "line_start": 34,
+              "line_end": 34,
+              "page": null,
+              "page_line": null,
+              "paragraph": null,
+              "table": null,
+              "row": null,
+              "cell": null,
+              "column": null,
+              "extraction": "text"
+            }
+          },
+          "common_sense": false,
+          "obvious_fix": false,
+          "scenario": true,
+          "errors": []
+        }
+      },
+      "reason": "7 марта: расходы пересчитываются и порог проверяется при проведении покупки",
+      "answer": {
+        "text": "Проведение покупки → пересчёт расходов → проверка порога → при достижении отправка push → завершение.",
+        "match": "exact",
+        "score": 100.0,
+        "located": "Проведение покупки → пересчёт расходов → проверка порога → при достижении отправка push → завершение.",
+        "anchor": {
+          "char_start": 1217,
+          "char_end": 1318,
+          "block_ids": [
+            "B020"
+          ],
+          "sentence_ids": [
+            "B020.1"
+          ],
+          "line_start": 34,
+          "line_end": 34,
+          "page": null,
+          "page_line": null,
+          "paragraph": null,
+          "table": null,
+          "row": null,
+          "cell": null,
+          "column": null,
+          "extraction": "text"
+        }
+      }
     }
   ],
   "conclusion": {
@@ -11442,27 +11727,49 @@
       "Q-02",
       "Q-03",
       "Q-04",
-      "Q-05"
+      "Q-06"
     ]
   },
   "metrics": {
-    "duration_s": 0.19,
-    "calls_total": 5,
+    "duration_s": 0.21,
+    "calls_total": 6,
     "calls_failed": 0,
     "calls_cached": 0,
     "tokens": {
-      "input_tokens": 10,
-      "output_tokens": 117856,
-      "cache_creation_input_tokens": 85295,
-      "cache_read_input_tokens": 2946
+      "input_tokens": 12,
+      "output_tokens": 124090,
+      "cache_creation_input_tokens": 100028,
+      "cache_read_input_tokens": 4759
     },
-    "cost_usd": 2.9099,
+    "cost_usd": 3.1528,
     "candidates_total": 156,
     "merged_total": 75,
     "findings_total": 75,
     "discarded_total": 0,
     "quotes_total": 114,
     "quotes_verified": 114,
-    "verified_quote_share": 1.0
+    "verified_quote_share": 1.0,
+    "questions": {
+      "total": 14,
+      "before_critic": 15,
+      "withdrawn": 1,
+      "withdrawn_share": 0.0667,
+      "reviewed": 15,
+      "with_scenario": 0.7857,
+      "closed": 1.0,
+      "without_errors": 0.6429,
+      "obvious_fix": 1,
+      "common_sense": 1,
+      "duplicate_pairs": 0,
+      "by_priority": {
+        "P0": 9,
+        "P1": 5
+      },
+      "by_addressee": {
+        "architect": 7,
+        "business": 7,
+        "security": 1
+      }
+    }
   }
 }

@@ -298,11 +298,11 @@ def _execute(state: _State) -> None:
             state.questions_withdrawn = list(asked.withdrawn)
             state.diagnostics.extend(asked.diagnostics)
         state.verification = light_with_questions(ver, state.questions if asked is not None else None)
-    before = (state.verification, state.questions)
-    state.verification, state.questions = _step(
+    before = (state.verification, state.questions, state.questions_withdrawn)
+    state.verification, state.questions, state.questions_withdrawn = _step(
         state,
         "refs",
-        lambda: humanize(before[0], before[1], doc, seg),
+        lambda: humanize(*before, doc, seg),
         lambda: before,
         action="ID блоков в текстах моделей оставлены как есть",
     )
