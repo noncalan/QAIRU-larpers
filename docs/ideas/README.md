@@ -23,4 +23,4 @@
 | Кандидат | Автор | Файл |
 |---|---|---|
 | Конвейер D из разбора кейса | разбор 25.11 | `docs/case/case-analysis.md`, раздел «Варианты архитектуры» |
-| «Ревью с доказательствами» | Claude | [`claude-evidence-review.md`](claude-evidence-review.md) |
+| «Ревью с доказательствами» (v2 после критики) | Claude | [`claude-evidence-review.md`](claude-evidence-review.md), критика: [`claude-evidence-review-critique.md`](claude-evidence-review-critique.md) |
