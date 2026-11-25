@@ -7,10 +7,10 @@
     "document_sha256": "7fd7c1d145b0c4e01ac8a502856b08eaf0cdbddc896069271687f6a2a16022d5",
     "document_size_bytes": 16072,
     "document_pages": null,
-    "started_at": "2026-11-25T22:20:48.532233Z",
-    "finished_at": "2026-11-25T22:20:48.748872Z",
-    "duration_s": 0.22,
-    "agent_version": "7847302-dirty",
+    "started_at": "2026-11-25T23:14:47.601166Z",
+    "finished_at": "2026-11-25T23:14:47.808613Z",
+    "duration_s": 0.21,
+    "agent_version": "90fd51a-dirty",
     "agent_version_source": "git",
     "agent_dirty": true,
     "prompts_sha256": "52bad12278cec466d777949f2289670997fddbe7dc21ee3cd740cabddfd517ac",
@@ -35,14 +35,14 @@
       "claude-sonnet-5-5"
     ],
     "calls_total": 6,
-    "calls_failed": 1,
+    "calls_failed": 0,
     "tokens": {
-      "input_tokens": 10,
-      "output_tokens": 104211,
-      "cache_creation_input_tokens": 62216,
-      "cache_read_input_tokens": 26941
+      "input_tokens": 12,
+      "output_tokens": 109571,
+      "cache_creation_input_tokens": 77368,
+      "cache_read_input_tokens": 28754
     },
-    "cost_usd": 2.4775,
+    "cost_usd": 2.7063,
     "exit_code": 0
   },
   "document": {
@@ -61,29 +61,20 @@
     {
       "code": "LLM-005",
       "level": "info",
-      "message": "Ответы модели взяты из записи прогона tests/fixtures/e2e/docx/run (5 шт.)",
+      "message": "Ответы модели взяты из записи прогона tests/fixtures/e2e/docx/run (6 шт.)",
       "action": "Модель не вызывалась, отчёт пересобран из записанных ответов",
       "hint": "",
       "location": null,
       "step": "llm"
     },
     {
-      "code": "LLM-052",
-      "level": "warning",
-      "message": "Самопроверка вопросов не сработала: В записанном прогоне нет ответа для шага questions_critic, вызов 1",
-      "action": "Вопросы вошли в отчёт без самопроверки: на часть из них ответ может быть в документе",
-      "hint": "Пересоберите прогон с моделью: в записи нет этого вызова",
+      "code": "LLM-053",
+      "level": "info",
+      "message": "Самопроверка вопросов: снято вопросов: 0 (ответ есть в документе, цитату-ответ код сверил)",
+      "action": "В отчёте осталось вопросов: 15; ответ критика без сверенной цитаты, вопрос оставлен: 2; критик сослался на то самое неясное место, вопрос оставлен: 3",
+      "hint": "",
       "location": null,
       "step": "questions"
-    },
-    {
-      "code": "LLM-015",
-      "level": "warning",
-      "message": "Вызовов модели не удалось: 1 (questions_critic.1). Причина: В записанном прогоне нет ответа для шага questions_critic, вызов 1",
-      "action": "Шаги с этими вызовами сработали по своей политике отказа (см. диагностику шагов)",
-      "hint": "Пересоберите прогон с моделью: в записи нет этого вызова",
-      "location": null,
-      "step": "llm"
     }
   ],
   "segmentation": {
@@ -9547,7 +9538,40 @@
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
         "IEEE 830-1998, п. 4.3.4"
       ],
-      "review": null
+      "review": {
+        "answered": true,
+        "answer": "Для чужой карты возвращается 404, как для отсутствующей",
+        "answer_quote": {
+          "text": "Для чужой карты возвращается 404, как и для отсутствующей карты.",
+          "match": "exact",
+          "score": 100.0,
+          "located": "Для чужой карты возвращается 404, как и для отсутствующей карты.",
+          "anchor": {
+            "char_start": 7523,
+            "char_end": 7587,
+            "block_ids": [
+              "B117"
+            ],
+            "sentence_ids": [
+              "B117.1"
+            ],
+            "line_start": 201,
+            "line_end": 201,
+            "page": null,
+            "page_line": null,
+            "paragraph": 72,
+            "table": null,
+            "row": null,
+            "cell": null,
+            "column": null,
+            "extraction": "text"
+          }
+        },
+        "common_sense": false,
+        "obvious_fix": true,
+        "scenario": true,
+        "errors": []
+      }
     },
     {
       "id": "Q-02",
@@ -9673,7 +9697,15 @@
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
         "IEEE 830-1998, п. 4.3.4"
       ],
-      "review": null
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
     },
     {
       "id": "Q-03",
@@ -9773,7 +9805,15 @@
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Complete)",
         "IEEE 830-1998, п. 4.3.3"
       ],
-      "review": null
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
     },
     {
       "id": "Q-04",
@@ -9893,7 +9933,15 @@
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Unambiguous)",
         "IEEE 830-1998, п. 4.3.2"
       ],
-      "review": null
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
     },
     {
       "id": "Q-05",
@@ -9988,7 +10036,15 @@
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Unambiguous)",
         "IEEE 830-1998, п. 4.3.2"
       ],
-      "review": null
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
     },
     {
       "id": "Q-06",
@@ -10082,7 +10138,40 @@
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Unambiguous)",
         "IEEE 830-1998, п. 4.3.2"
       ],
-      "review": null
+      "review": {
+        "answered": true,
+        "answer": "Сумма учитывается в момент проведения покупки",
+        "answer_quote": {
+          "text": "В расходы входят проведённые покупки.",
+          "match": "exact",
+          "score": 100.0,
+          "located": "В расходы входят проведённые покупки.",
+          "anchor": {
+            "char_start": 1431,
+            "char_end": 1468,
+            "block_ids": [
+              "B023"
+            ],
+            "sentence_ids": [
+              "B023.3"
+            ],
+            "line_start": 41,
+            "line_end": 41,
+            "page": null,
+            "page_line": null,
+            "paragraph": 17,
+            "table": null,
+            "row": null,
+            "cell": null,
+            "column": null,
+            "extraction": "text"
+          }
+        },
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
     },
     {
       "id": "Q-07",
@@ -10201,7 +10290,15 @@
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
         "IEEE 830-1998, п. 4.3.4"
       ],
-      "review": null
+      "review": {
+        "answered": true,
+        "answer": "GET с параметрами в строке запроса, тело не используется",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": true,
+        "scenario": true,
+        "errors": []
+      }
     },
     {
       "id": "Q-08",
@@ -10291,7 +10388,15 @@
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
         "IEEE 830-1998, п. 4.3.4"
       ],
-      "review": null
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
     },
     {
       "id": "Q-09",
@@ -10384,7 +10489,15 @@
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Complete)",
         "IEEE 830-1998, п. 4.3.3"
       ],
-      "review": null
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": false,
+        "errors": []
+      }
     },
     {
       "id": "Q-10",
@@ -10482,7 +10595,17 @@
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Complete)",
         "IEEE 830-1998, п. 4.3.3"
       ],
-      "review": null
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": [
+          2
+        ]
+      }
     },
     {
       "id": "Q-11",
@@ -10572,7 +10695,40 @@
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Complete)",
         "IEEE 830-1998, п. 4.3.3"
       ],
-      "review": null
+      "review": {
+        "answered": true,
+        "answer": "Не проходит: amount обязателен и проверяется на диапазон 1 000–1 000 000 при любом значении переключателя",
+        "answer_quote": {
+          "text": "Проверить сумму и переключатель.",
+          "match": "exact",
+          "score": 100.0,
+          "located": "Проверить сумму и переключатель.",
+          "anchor": {
+            "char_start": 5681,
+            "char_end": 5713,
+            "block_ids": [
+              "B077"
+            ],
+            "sentence_ids": [
+              "B077.1"
+            ],
+            "line_start": 127,
+            "line_end": 127,
+            "page": null,
+            "page_line": null,
+            "paragraph": 42,
+            "table": null,
+            "row": null,
+            "cell": null,
+            "column": null,
+            "extraction": "text"
+          }
+        },
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
     },
     {
       "id": "Q-12",
@@ -10668,7 +10824,15 @@
       "standard": [
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Comprehensible)"
       ],
-      "review": null
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
     },
     {
       "id": "Q-13",
@@ -10768,7 +10932,15 @@
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Unambiguous)",
         "IEEE 830-1998, п. 4.3.2"
       ],
-      "review": null
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
     },
     {
       "id": "Q-14",
@@ -10842,7 +11014,15 @@
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Unambiguous)",
         "IEEE 830-1998, п. 4.3.2"
       ],
-      "review": null
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
     },
     {
       "id": "Q-15",
@@ -10929,7 +11109,15 @@
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
         "IEEE 830-1998, п. 4.3.4"
       ],
-      "review": null
+      "review": {
+        "answered": true,
+        "answer": "Строкой «50000»",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
     }
   ],
   "questions_withdrawn": [],
@@ -10953,17 +11141,17 @@
     ]
   },
   "metrics": {
-    "duration_s": 0.22,
+    "duration_s": 0.21,
     "calls_total": 6,
-    "calls_failed": 1,
+    "calls_failed": 0,
     "calls_cached": 0,
     "tokens": {
-      "input_tokens": 10,
-      "output_tokens": 104211,
-      "cache_creation_input_tokens": 62216,
-      "cache_read_input_tokens": 26941
+      "input_tokens": 12,
+      "output_tokens": 109571,
+      "cache_creation_input_tokens": 77368,
+      "cache_read_input_tokens": 28754
     },
-    "cost_usd": 2.4775,
+    "cost_usd": 2.7063,
     "candidates_total": 149,
     "merged_total": 72,
     "findings_total": 72,
@@ -10975,12 +11163,12 @@
       "total": 15,
       "before_critic": 15,
       "withdrawn": 0,
-      "withdrawn_share": null,
-      "reviewed": 0,
-      "with_scenario": null,
+      "withdrawn_share": 0.0,
+      "reviewed": 15,
+      "with_scenario": 0.9333,
       "closed": 1.0,
-      "without_errors": null,
-      "obvious_fix": 0,
+      "without_errors": 0.9333,
+      "obvious_fix": 2,
       "common_sense": 0,
       "duplicate_pairs": 0,
       "by_priority": {
