@@ -44,6 +44,7 @@ from validator.errors import (
 )
 from validator.evidence import evidence
 from validator.ingest import guard, parse
+from validator.ingest.quality import review
 from validator.lint import lint
 from validator.llm import RecordingClient, align_config, instrument, make_client, write_calls_jsonl
 from validator.merge import merge
@@ -134,12 +135,13 @@ def _step(
 
 def _read_input(state: _State) -> ParsedDocument | None:
     cfg = state.cfg
-    state.guard = guard(cfg.input_path)
-    state.diagnostics.extend(state.guard.diagnostics)
-    if state.guard.fatal:
+    state.guard = g = guard(cfg.input_path, workdir=cfg.run_dir)
+    state.diagnostics.extend(g.diagnostics)
+    if g.fatal:
         return None
+    source = Path(g.read_path) if g.read_path else cfg.input_path
     try:
-        doc = parse(cfg.input_path, state.guard.kind, pdf_backend=cfg.pdf_backend)
+        doc = parse(source, g.kind, pdf_backend=cfg.pdf_backend)
     except InputError as exc:
         state.diagnostics.append(
             exc.to_diagnostic(action="Проверка не выполнялась: документ не прочитан", step="parse")
@@ -162,6 +164,11 @@ def _read_input(state: _State) -> ParsedDocument | None:
             )
         )
         return None
+    if source != cfg.input_path:  # прочитана восстановленная копия: в паспорт идёт исходный файл
+        doc = doc.model_copy(
+            update={"path": g.path, "name": g.name, "sha256": g.sha256, "size_bytes": g.size_bytes}
+        )
+    doc = review(doc)
     state.diagnostics.extend(doc.diagnostics)
     if any(d.level is DiagLevel.ERROR for d in doc.diagnostics):
         return None
