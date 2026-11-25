@@ -38,8 +38,9 @@ from validator.ingest.pdf_layout import (
 )
 from validator.models import DiagLevel, Diagnostic, SourceLine, TextSignals
 
-MIN_PAGE_GLYPHS = 20
-"""Меньше стольких символов на странице: текстового слоя нет (скан с одиноким номером страницы тоже)."""
+MIN_PAGE_GLYPHS = 5
+"""Меньше стольких символов на странице: текстового слоя нет (скан с одиноким номером страницы тоже).
+Короткая, но настоящая страница («Система должна работать.») остаётся текстовой."""
 
 _GARBAGE_CATEGORIES = frozenset({"Cc", "Co", "Cn", "Cs"})
 _CYRILLIC = range(0x0400, 0x0530)

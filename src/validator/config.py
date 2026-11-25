@@ -8,12 +8,22 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from pathlib import Path
+from typing import cast
 
 from dotenv import find_dotenv, load_dotenv
 
 from validator.ingest.pdf_backends import BACKEND_NAMES, DEFAULT_BACKEND
 from validator.llm.fake import default_fixtures_dir
-from validator.models import Backend, CacheMode, Effort, LLMStep, Profile, RunConfig, StepModel
+from validator.models import (
+    Backend,
+    CacheMode,
+    Effort,
+    LLMStep,
+    PdfBackendName,
+    Profile,
+    RunConfig,
+    StepModel,
+)
 
 # Полные имена моделей, а не алиасы: алиас «opus» переедет на новую модель (D-010).
 OPUS = "claude-opus-5-5"
@@ -109,7 +119,7 @@ def load_config(
         answers_path=answers_path,
         ask=ask,
         max_budget_usd=max_budget_usd,
-        pdf_backend=pdf_engine,
+        pdf_backend=cast(PdfBackendName, pdf_engine),
         step_models=step_models(profile),
         fake_fixtures=default_fixtures_dir() if backend is Backend.FAKE else None,
         call_timeout_s=CALL_TIMEOUT_S,

@@ -21,7 +21,7 @@ from datetime import datetime
 from enum import IntEnum, StrEnum
 from functools import cached_property
 from pathlib import Path
-from typing import Any, NamedTuple
+from typing import Any, Literal, NamedTuple
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -1120,6 +1120,9 @@ class CallRecord(Contract):
 # ---------------------------------------------------------------- прогон
 
 
+PdfBackendName = Literal["mupdf", "pdfium"]
+
+
 class RunConfig(Contract):
     """Настройки одного прогона. Собирает ``config.load_config``; модели шагов по D-010."""
 
@@ -1136,7 +1139,7 @@ class RunConfig(Contract):
     max_budget_usd: float | None = Field(default=None, gt=0)
     step_models: dict[LLMStep, StepModel] = Field(default_factory=dict)
     fake_fixtures: Path | None = Field(default=None, description="Папка фикстур для бэкенда fake")
-    pdf_backend: str = Field(default="mupdf", description="mupdf или pdfium (#26)")
+    pdf_backend: PdfBackendName = Field(default="mupdf", description="Движок PDF (#26)")
     call_timeout_s: int = Field(default=1200, ge=1)
     has_api_key: bool = Field(default=False, description="Есть ли ANTHROPIC_API_KEY (сам ключ не храним)")
 

@@ -49,6 +49,10 @@ PARAGRAPH_GAP = 1.3
 INDENT_EM = 0.8
 """Красная строка: отступ от левого поля страницы больше стольких кеглей."""
 
+WRAPPED_HEADING_STEP = 1.25
+"""Две строки заголовка одного стиля ближе стольких кеглей это один заголовок в две строки; у двух разных
+заголовков зазор больше, а подпункт с номером («1.1 …») всегда начинает новый заголовок."""
+
 MAX_HEADING_CHARS = 120
 MAX_PLAIN_HEADING_CHARS = 80
 MAX_HEADING_LEVEL = 6
@@ -78,6 +82,10 @@ _PAGE_NUMBER = re.compile(
 _NUMBERED = re.compile(r"(?:\d+(?:\.\d+)*\.?)\s+\S")
 _DIGITS = re.compile(r"\d+")
 _SPACES = re.compile(r"\s+")
+
+MAX_SHORT_HEAD = 2
+PARTICLES = frozenset({"то", "либо", "нибудь", "таки", "ка", "за"})
+"""Хвосты, после которых дефис значим: «что-то», «кто-либо», «из-за». Короткое начало: «по-русски»."""
 
 COMPOUND_PREFIXES = frozenset(
     {
@@ -125,7 +133,9 @@ def _cluster(glyphs: list[Glyph]) -> list[list[Glyph]]:
     centers: list[float] = []
     for glyph in sorted(glyphs, key=lambda g: (g.top + g.bottom) / 2):
         center = (glyph.top + glyph.bottom) / 2
-        if rows and abs(center - centers[-1]) <= LINE_TOLERANCE_EM * min(glyph.size, rows[-1][0].size or 1):
+        if rows and abs(center - centers[-1]) <= LINE_TOLERANCE_EM * min(
+            glyph.size or 10.0, rows[-1][0].size or 10.0
+        ):
             rows[-1].append(glyph)
             centers[-1] += (center - centers[-1]) / len(rows[-1])
         else:
@@ -138,8 +148,8 @@ def _line_text(row: list[Glyph], gap_em: float) -> str:
     out: list[str] = []
     prev: Glyph | None = None
     for glyph in sorted(row, key=lambda g: g.x0):
-        if unicodedata.category(glyph.char[0]) == "Cf":
-            continue
+        if unicodedata.category(glyph.char[0]) == "Cf" and glyph.char != SOFT_HYPHEN:
+            continue  # невидимые знаки форматирования; мягкий перенос нужен склейке слов
         if prev is not None:
             size = (prev.size + glyph.size) / 2 or 10.0
             if prev.char == glyph.char and 0 <= glyph.x0 - prev.x0 < DUPLICATE_SHIFT_EM * size:
@@ -314,7 +324,8 @@ def _merge_wrapped_headings(lines: list[Line]) -> list[Line]:
             and prev.heading_level == line.heading_level
             and prev.page == line.page
             and abs(prev.size - line.size) < 0.5
-            and line.center - prev.center < 1.4 * line.size
+            and line.center - prev.center < WRAPPED_HEADING_STEP * line.size
+            and not _NUMBERED.match(line.text)
         ):
             out[-1] = replace(
                 prev, text=f"{prev.text} {line.text}", x1=max(prev.x1, line.x1), bottom=line.bottom
@@ -346,19 +357,35 @@ def _breaks(prev: Line, cur: Line, first: Line, stats: LayoutStats) -> bool:
     return indented and _ends_sentence(prev.text) and not _starts_item(first.text)
 
 
+def _script(text: str) -> str:
+    """Письмо слова: ``cyr``, ``lat`` или ``other`` (смешанное, цифры, заглавные)."""
+    letters = [ch for ch in text if ch.isalpha()]
+    if not letters or text != text.lower() or any(ch.isdigit() for ch in text):
+        return "other"
+    if all("\u0400" <= ch < "\u0530" for ch in letters):
+        return "cyr"
+    return "lat" if all(ch.isascii() for ch in letters) else "other"
+
+
 def join_hyphenation(prev: str, cur: str) -> str | None:
     """«перено-» + «сами» → «переносами»; None, если переноса нет.
 
-    У составного слова дефис остаётся: «бизнес-» + «процесс» → «бизнес-процесс».
+    Дефис остаётся, если это скорее составное слово: короткое начало («по-», «из-»), общий префикс
+    («бизнес-»), частица («-то», «-либо»), смена письма («SMS-сообщение») или аббревиатура («API-ключ»).
     """
     if prev.endswith(SOFT_HYPHEN):
         return prev[:-1] + cur
     if len(prev) < 2 or prev[-1] not in HYPHENS or not prev[-2].isalpha() or not cur[0].islower():
         return None
-    head = re.split(r"[\s(«\"]", prev[:-1])[-1].casefold()
-    if head in COMPOUND_PREFIXES or len(head) < 2:
-        return prev + cur
-    return prev[:-1] + cur
+    head = re.split(r"[\s(«\"]", prev[:-1])[-1]
+    tail = re.split(r"\W", cur)[0]
+    keep = (
+        (len(head) <= MAX_SHORT_HEAD and _script(head.casefold()) == "cyr")
+        or head.casefold() in COMPOUND_PREFIXES
+        or tail in PARTICLES
+        or _script(head) != _script(tail)
+    )
+    return prev + cur if keep else prev[:-1] + cur
 
 
 @dataclass(frozen=True)

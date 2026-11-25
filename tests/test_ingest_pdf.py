@@ -14,15 +14,16 @@ from pathlib import Path
 import pikepdf
 import pymupdf
 import pytest
+from pydantic import ValidationError
 
 from conftest import REQUIREMENTS
 from test_smoke import run_cli
 from validator.config import load_config
 from validator.errors import IN_FURNITURE_REMOVED, IN_PDF_BROKEN, IN_PDF_ENCRYPTED, InputError
 from validator.ingest import parse
-from validator.ingest.pdf_backends import BACKEND_NAMES, get_backend
+from validator.ingest.pdf_backends import BACKEND_NAMES, _combine_surrogates, get_backend
 from validator.ingest.pdf_layout import join_hyphenation
-from validator.models import BlockKind, DiagLevel, DocKind, ParsedDocument
+from validator.models import BlockKind, DiagLevel, DocKind, ParsedDocument, RunConfig
 from validator.text import locate_quote
 
 PDF = REQUIREMENTS[DocKind.PDF]
@@ -244,6 +245,11 @@ def test_numbered_list_item_wrapped_over_lines_stays_one_block(tmp_path: Path) -
         ("Ф-", "1. текст", None),
         ("обычная строка", "продолжение", None),
         ("диапазон 1-", "10", None),
+        ("по-", "другому", "по-другому"),
+        ("из-", "за ошибки", "из-за ошибки"),
+        ("что-", "то", "что-то"),
+        ("Введите SMS-", "сообщение", "Введите SMS-сообщение"),
+        ("ключ API-", "ключ", "ключ API-ключ"),
     ],
 )
 def test_hyphenation_join(prev: str, cur: str, expected: str | None) -> None:
@@ -382,3 +388,104 @@ def test_cli_has_pdf_backend_flag(tmp_path: Path) -> None:
 
     assert ok.returncode == 0 and "стр. 2" in out.read_text(encoding="utf-8")
     assert bad.returncode == 2 and "Неизвестный движок" in bad.stderr
+
+
+# ---------------------------------------------------------------- правки по ревью кода
+
+
+@pytest.mark.parametrize("backend", BACKEND_NAMES)
+@pytest.mark.parametrize("rotation", [0, 90, 180, 270])
+def test_rotated_page_is_read_as_displayed(tmp_path: Path, backend: str, rotation: int) -> None:
+    """Текст нарисован повёрнутым, страница повёрнута так же: на экране он прямой, читаем как человек."""
+    path = tmp_path / "rot.pdf"
+    with pymupdf.open() as doc:
+        page = doc.new_page()
+        page.set_rotation(rotation)
+        for y, text in ((120, "The first line of the page."), (134, "The second line follows it.")):
+            at = (
+                pymupdf.Point(72, y) * page.derotation_matrix
+            )  # точка на экране → точка в страницы без поворота
+            page.insert_text(at, text, fontsize=11, fontname="helv", rotate=rotation)
+        doc.save(path)
+
+    parsed = parse(path, DocKind.PDF, pdf_backend=backend)
+
+    assert parsed.text == "The first line of the page.\nThe second line follows it."
+
+
+@pytest.mark.parametrize("backend", BACKEND_NAMES)
+def test_soft_hyphen_at_line_end_joins_the_word(tmp_path: Path, backend: str) -> None:
+    path = make_pdf(
+        tmp_path / "soft.pdf",
+        [
+            [
+                body(120, "The gateway shall retransmit per\u00ad"),
+                body(134, "sistent messages after a timeout."),
+            ]
+        ],
+    )
+
+    parsed = parse(path, DocKind.PDF, pdf_backend=backend)
+
+    assert "retransmit persistent\nmessages after" in parsed.text
+
+
+def test_adjacent_headings_with_numbers_are_not_merged(tmp_path: Path) -> None:
+    path = make_pdf(
+        tmp_path / "adj.pdf",
+        [
+            [
+                (125, "1. General provisions", 14, "hebo"),
+                (141, "1.1 Purpose of the document", 14, "hebo"),
+                *[
+                    body(180 + 14 * k, f"The system shall support operation number {k} for the customer.")
+                    for k in range(6)
+                ],
+            ]
+        ],
+    )
+
+    headings = [b.text for b in parse(path, DocKind.PDF).blocks if b.kind is BlockKind.HEADING]
+
+    assert headings == ["1. General provisions", "1.1 Purpose of the document"]
+
+
+def test_wrapped_heading_in_two_lines_is_one_heading(tmp_path: Path) -> None:
+    path = make_pdf(
+        tmp_path / "wrap.pdf",
+        [
+            [
+                (125, "Requirements for the interaction of", 14, "hebo"),
+                (140, "services and external systems", 14, "hebo"),
+                *[
+                    body(180 + 14 * k, f"The system shall support operation number {k} for the customer.")
+                    for k in range(6)
+                ],
+            ]
+        ],
+    )
+
+    headings = [b.text for b in parse(path, DocKind.PDF).blocks if b.kind is BlockKind.HEADING]
+
+    assert headings == ["Requirements for the interaction of services and external systems"]
+
+
+@pytest.mark.parametrize("backend", BACKEND_NAMES)
+def test_short_real_page_is_not_reported_as_scan(tmp_path: Path, backend: str) -> None:
+    path = make_pdf(tmp_path / "short.pdf", [[body(120, "The system shall work.")]])
+
+    parsed = parse(path, DocKind.PDF, pdf_backend=backend)
+
+    assert parsed.signals is not None and parsed.signals.pages_without_text == 0
+    assert not parsed.diagnostics
+
+
+def test_pdfium_surrogate_halves_become_one_character() -> None:
+    codes = [ord("a"), 0xD83D, 0xDE00, 0xD83D, ord("b")]
+
+    assert [char for _, char in _combine_surrogates(codes)] == ["a", "\U0001f600", "\ufffd", "b"]
+
+
+def test_run_config_rejects_unknown_pdf_backend() -> None:
+    with pytest.raises(ValidationError):
+        RunConfig(input_path=PDF, output_path=Path("out/r.md"), pdf_backend="tika")  # type: ignore[arg-type]
