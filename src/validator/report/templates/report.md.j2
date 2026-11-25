@@ -264,7 +264,7 @@
 Перед отчётом агент попытался сам ответить на каждый вопрос по документу. Эти вопросы сняты: ответ нашёлся, и код сверил цитату-ответ с документом.
 
 {% for w in r.questions_withdrawn %}
-- **{{ w.question.question | cell(200) }}** Ответ: {{ w.reason | cell(200) }}. Документ: «{{ w.answer | quote_text(200) }}» ({{ w.answer.anchor | where(section_of(w.answer)) }}).
+- **{{ w.question.id }}.** {{ w.question.question | cell(200) }} Ответ: {{ w.reason | cell(200) }}. Документ: «{{ w.answer | quote_text(200) }}» ({{ w.answer.anchor | where(section_of(w.answer)) }}).
 {% endfor %}
 {% endif %}
 

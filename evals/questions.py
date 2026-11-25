@@ -30,6 +30,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from evals.judge import EvalError, display_path, read_utf8
 from validator.models import Question, QuestionMetrics, Report
 from validator.questions.metrics import question_metrics
+from validator.report.fmt import cell
 
 EVALS_DIR = Path(__file__).resolve().parent
 DEFAULT_RESULTS = EVALS_DIR / "results"
@@ -89,7 +90,7 @@ def score_questions(report: Report, label: str) -> QuestionScore | None:
         after=question_metrics(report.questions, report.questions_withdrawn),
         places=_places(report.questions),
         withdrawn=[
-            f"{w.question.question} → «{w.answer.located or w.answer.text}»"
+            f"{w.question.id} {cell(w.question.question)} → «{cell(w.answer.located or w.answer.text)}»"
             for w in report.questions_withdrawn
         ],
     )

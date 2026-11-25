@@ -4,12 +4,14 @@
 пытается ответить на вопрос по документу, а заодно проверяет формулировку по списку ошибок п. 4.4.
 Решает код, а не модель:
 
-- вопрос снимается, только если критик дал цитату-ответ, ``locate_quote`` нашёл её в документе и это
-  не одно из мест, о которых спрашивает сам вопрос (иначе критик «отвечает» неясным местом);
+- вопрос снимается, только если критик дал цитату-ответ не короче трёх слов, ``locate_quote`` нашёл её
+  в документе и она не из тех блоков, о которых спрашивает сам вопрос (иначе критик «отвечает» неясным
+  местом); номер снятого вопроса не переиспользуется, отчёт показывает его в «Снятых вопросах»;
 - цитата-ответ не найдена → вопрос остаётся (CLAUDE.md, правило 4: без сверенной цитаты нет вывода);
 - «здравый смысл», «правка однозначна», сценарий и ошибки формулировки не снимают вопрос: код не может
   их проверить, поэтому они идут в метрики вопросов (``metrics.py``) и в ``Question.review``;
-- критик не ответил или ответ без JSON → вопросы остаются как были, диагностика ``LLM-052``.
+- критик не ответил, ответ без JSON или ни одного отзыва на вопросы прогона → вопросы остаются как были,
+  диагностика ``LLM-052``.
 
 Формат ответа как у редактора: рассуждение текстом, затем один блок ```json со списком ``reviews``.
 """
@@ -22,7 +24,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from pydantic import Field, ValidationError, field_validator
+from pydantic import Field, ValidationError, ValidationInfo, field_validator
 
 from validator.errors import (
     LLM_BAD_RESPONSE,
@@ -46,7 +48,8 @@ from validator.models import (
     WithdrawnQuestion,
 )
 from validator.questions.editor import _Lenient, extract_json
-from validator.questions.quotes import verify_quote
+from validator.questions.quotes import span, verify_quote
+from validator.text import MIN_FUZZY_CHARS, locate_quote, normalize
 
 logger = logging.getLogger("validator")
 
@@ -57,6 +60,8 @@ CALL_INDEX = 1
 """Критик вызывается один раз за прогон, пакетно на все вопросы."""
 STEP = "questions"
 REPLY_KEY = "reviews"
+MIN_ANSWER_WORDS = 3
+"""Цитата-ответ короче трёх слов (или ``MIN_FUZZY_CHARS`` символов) не снимает вопрос: найдётся где угодно."""
 
 FORMULATION_ERRORS = {
     1: "общий, без привязки к месту документа",
@@ -89,6 +94,20 @@ class CriticReview(_Lenient):
     obvious_fix: bool = False
     scenario: bool | None = None
     errors: list[int] = Field(default_factory=list)
+
+    @field_validator("id", mode="before")
+    @classmethod
+    def _id_as_text(cls, raw: object) -> object:
+        """``1`` числом вместо ``"Q-01"``: номер вопроса."""
+        return f"Q-{raw:02d}" if isinstance(raw, int) and not isinstance(raw, bool) else raw
+
+    @field_validator("answered", "common_sense", "obvious_fix", "answer", mode="before")
+    @classmethod
+    def _null_is_default(cls, raw: object, info: ValidationInfo) -> object:
+        """``null`` вместо пустого значения («оставь пустыми» модель читает и так)."""
+        if raw is not None:
+            return raw
+        return "" if info.field_name == "answer" else False
 
     @field_validator("errors", mode="before")
     @classmethod
@@ -203,7 +222,7 @@ class CriticLog:
 
 @dataclass(frozen=True)
 class CriticOutcome:
-    """Итог критика: оставленные вопросы (перенумерованы), снятые с цитатой-ответом, диагностика."""
+    """Итог критика: оставленные вопросы, снятые с цитатой-ответом, диагностика."""
 
     questions: list[Question] = field(default_factory=list)
     withdrawn: list[WithdrawnQuestion] = field(default_factory=list)
@@ -211,16 +230,35 @@ class CriticOutcome:
     reviewed: bool = False
 
 
-def _span(q: Quote) -> tuple[int, int] | None:
-    return (q.anchor.char_start, q.anchor.char_end) if q.anchor else None
+def _blocks(quotes: Sequence[Quote]) -> list[str]:
+    """Блоки верхнего уровня (``B012``, без номера предложения), где лежат цитаты."""
+    ids = (b.split(".")[0] for x in quotes if x.anchor for b in x.anchor.block_ids)
+    return list(dict.fromkeys(ids))
 
 
 def _overlaps(answer: Quote, own: Sequence[Quote]) -> bool:
-    """Цитата-ответ пересекается с одним из мест, о которых спрашивает сам вопрос."""
-    a = _span(answer)
-    if a is None:
-        return False
-    return any(s is not None and a[0] < s[1] and s[0] < a[1] for s in map(_span, own))
+    """Цитата-ответ задевает место, о котором спрашивает сам вопрос: тот же блок или пересечение."""
+    a = span(answer)
+    if a is not None and any(s is not None and a[0] < s[1] and s[0] < a[1] for s in map(span, own)):
+        return True
+    return bool(set(_blocks([answer])) & set(_blocks(own)))
+
+
+def _too_short(raw: str) -> bool:
+    """«да», «30», «API» найдутся почти в любом документе: такая цитата ничего не доказывает."""
+    text = normalize(raw)[0]
+    return len(text) < MIN_FUZZY_CHARS or len(text.split()) < MIN_ANSWER_WORDS
+
+
+def _locate_answer(raw: str, q: Question, doc: ParsedDocument) -> Quote | None:
+    """Цитата-ответ в документе. Если тот же текст есть в местах самого вопроса, берём его там:
+    тогда ``_overlaps`` увидит самоподтверждение, даже когда текст повторяется в документе."""
+    own = _blocks(q.quotes)
+    if own:
+        inside = locate_quote(doc, raw, within=own)
+        if inside.verified:
+            return inside
+    return verify_quote(doc, raw, ())
 
 
 def _review(r: CriticReview, answer: Quote | None) -> QuestionReview:
@@ -240,7 +278,7 @@ def _judge(q: Question, r: CriticReview, doc: ParsedDocument, log: CriticLog) ->
     raw = (r.answer_quote or "").strip()
     if not r.answered:
         return q.model_copy(update={"review": _review(r, None)})
-    found = verify_quote(doc, raw, ()) if raw else None
+    found = None if not raw or _too_short(raw) else _locate_answer(raw, q, doc)
     if found is None:
         log.unverified += 1
         return q.model_copy(update={"review": _review(r, None)})
@@ -249,12 +287,8 @@ def _judge(q: Question, r: CriticReview, doc: ParsedDocument, log: CriticLog) ->
         return q.model_copy(update={"review": _review(r, found)})
     log.withdrawn += 1
     reviewed = q.model_copy(update={"review": _review(r, found)})
-    reason = _one_line(r.answer) or "Ответ есть в документе"
+    reason = _one_line(r.answer).rstrip(".") or "Ответ есть в документе"
     return WithdrawnQuestion(question=reviewed, reason=reason, answer=found)
-
-
-def _renumber(questions: Sequence[Question]) -> list[Question]:
-    return [q.model_copy(update={"id": f"Q-{n:02d}"}) for n, q in enumerate(questions, start=1)]
 
 
 def _note(log: CriticLog, kept: int) -> list[Diagnostic]:
@@ -278,7 +312,10 @@ def _note(log: CriticLog, kept: int) -> list[Diagnostic]:
 def apply_reviews(
     questions: Sequence[Question], reviews: Sequence[CriticReview], doc: ParsedDocument
 ) -> CriticOutcome:
-    """Решение кода по отзывам критика: снять подтверждённые, остальным приписать отзыв, перенумеровать."""
+    """Решение кода по отзывам критика: снять подтверждённые, остальным приписать отзыв.
+
+    Номера не меняются: у снятого вопроса свой ``Q-NN``, и в отчёте видно, какой номер снят и почему.
+    """
     by_id: dict[str, CriticReview] = {}
     for r in reviews:
         qid = normalize_question_id(r.id)
@@ -305,7 +342,6 @@ def apply_reviews(
         log.unverified,
         log.missing,
     )
-    kept = _renumber(kept)
     return CriticOutcome(
         questions=kept, withdrawn=withdrawn, diagnostics=_note(log, len(kept)), reviewed=True
     )
@@ -336,14 +372,16 @@ def review(
         return CriticOutcome()
     try:
         reviews = parse_reply(llm.call(build_request(questions, doc, cfg)))
+        known = {normalize_question_id(r.id) for r in reviews} & {q.id for q in questions}
+        if not known:
+            return _failed(questions, "ни одного отзыва на вопросы прогона", "")
+        return apply_reviews(questions, reviews, doc)
     except LLMError as exc:
         return _failed(questions, exc.message, exc.hint)
-    try:
-        return apply_reviews(questions, reviews, doc)
-    except Exception as exc:  # граница критика: ответ модели внешний, вопросы терять нельзя
-        logger.exception("Критик вопросов: сбой при обработке ответа")
+    except Exception as exc:  # граница критика: шаг необязательный, вопросы редактора терять нельзя
+        logger.exception("Критик вопросов: внутренняя ошибка")
         return _failed(
             questions,
-            f"внутренняя ошибка при обработке ответа: {type(exc).__name__}",
+            f"внутренняя ошибка: {type(exc).__name__}",
             "Подробности в report.log; сообщите команде",
         )

@@ -103,7 +103,7 @@ def question(doc: ParsedDocument, qid: str, text: str, quote: str) -> Question:
 # ---------------------------------------------------------------- решение кода
 
 
-def test_question_answered_by_document_is_withdrawn_and_rest_renumbered(
+def test_question_answered_by_document_is_withdrawn_and_numbers_are_kept(
     doc: ParsedDocument, tmp_path: Path
 ) -> None:
     critic = critic_text(
@@ -116,13 +116,14 @@ def test_question_answered_by_document_is_withdrawn_and_rest_renumbered(
 
     outcome = run(doc, tmp_path, critic)
 
-    assert [q.id for q in outcome.questions] == ["Q-01", "Q-02"]
+    assert [q.id for q in outcome.questions] == ["Q-02", "Q-03"]  # номер снятого не переиспользуется
     assert [q.question for q in outcome.questions] == [
         "Книгу вернули на пятнадцатый день: штраф есть?",
         "Штраф за выходной день тоже начисляется?",
     ]
     assert len(outcome.withdrawn) == 1
     gone = outcome.withdrawn[0]
+    assert gone.question.id == "Q-01"
     assert gone.question.question == "Продление заняло десять секунд: это быстро?"
     assert gone.answer.verified and gone.answer.located == QUEUE
     assert gone.reason == "Только без очереди"
@@ -162,6 +163,45 @@ def test_answer_from_the_unclear_place_itself_keeps_question(doc: ParsedDocument
     assert [x.id for x in outcome.questions] == ["Q-01"] and outcome.withdrawn == []
     assert outcome.questions[0].review is not None and outcome.questions[0].review.answer_quote is not None
     assert "неясное место" in outcome.diagnostics[0].action
+
+
+def test_same_block_answer_keeps_question(tmp_path: Path) -> None:
+    """Ответ из того же абзаца, что и неясное место, даже не пересекаясь с цитатой вопроса."""
+    doc = make_doc(
+        tmp_path, "# Правила\n\nПродление выполняется быстро. Продление занимает не больше пяти секунд.\n"
+    )
+    q = question(doc, "Q-01", "Продление заняло десять секунд: это быстро?", EXTEND)
+    answer = "Продление занимает не больше пяти секунд."
+
+    outcome = apply_reviews([q], [CriticReview(id="Q-01", answered=True, answer_quote=answer)], doc)
+
+    assert outcome.withdrawn == [] and len(outcome.questions) == 1
+
+
+def test_repeated_text_is_looked_up_in_the_question_places_first(tmp_path: Path) -> None:
+    text = "# Глоссарий\n\nСрок выдачи считается в днях.\n\n# Функции\n\nСрок выдачи считается в днях.\n"
+    doc = make_doc(tmp_path, text)
+    second = text.rindex("Срок выдачи")
+    q = question(
+        doc, "Q-01", "Срок считается в рабочих или календарных днях?", "Срок выдачи считается в днях."
+    )
+    q = q.model_copy(update={"quotes": [locate_quote(doc, "Срок выдачи считается в днях.", within=["B004"])]})
+    assert q.quotes[0].anchor is not None and q.quotes[0].anchor.char_start == second
+
+    outcome = apply_reviews(
+        [q], [CriticReview(id="Q-01", answered=True, answer_quote="Срок выдачи считается в днях.")], doc
+    )
+
+    assert outcome.withdrawn == []
+
+
+@pytest.mark.parametrize("quote", ["да", "Срок выдачи", "четырнадцать"])
+def test_too_short_answer_quote_does_not_remove_question(doc: ParsedDocument, quote: str) -> None:
+    q = question(doc, "Q-01", "Продление заняло десять секунд: это быстро?", EXTEND)
+
+    outcome = apply_reviews([q], [CriticReview(id="Q-01", answered=True, answer_quote=quote)], doc)
+
+    assert outcome.withdrawn == [] and "без сверенной цитаты" in outcome.diagnostics[0].action
 
 
 def test_common_sense_and_obvious_fix_do_not_remove_question(doc: ParsedDocument) -> None:
@@ -213,6 +253,45 @@ def test_reply_without_reviews_is_failure_not_withdrawal(
 
     assert len(outcome.questions) == 3 and outcome.withdrawn == []
     assert LLM_QUESTIONS_CRITIC_FAILED in [d.code for d in outcome.diagnostics]
+
+
+def test_reviews_for_other_questions_only_is_failure(doc: ParsedDocument, tmp_path: Path) -> None:
+    outcome = run(doc, tmp_path, critic_text([review("Q-07"), review("Q-08")]))
+
+    assert len(outcome.questions) == 3 and all(q.review is None for q in outcome.questions)
+    assert LLM_QUESTIONS_CRITIC_FAILED in [d.code for d in outcome.diagnostics]
+
+
+def test_unexpected_error_in_critic_keeps_questions(
+    doc: ParsedDocument, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def boom(*_: object) -> None:
+        raise AttributeError("render")
+
+    monkeypatch.setattr("validator.questions.critic.render_question", boom)
+
+    outcome = run(doc, tmp_path, critic_text([review("Q-01")]))
+
+    assert len(outcome.questions) == 3
+    warning = next(d for d in outcome.diagnostics if d.code == LLM_QUESTIONS_CRITIC_FAILED)
+    assert "AttributeError" in warning.message
+
+
+def test_null_fields_and_numeric_id_are_read() -> None:
+    raw = {
+        "id": 1,
+        "answered": None,
+        "answer": None,
+        "answer_quote": None,
+        "common_sense": None,
+        "errors": None,
+    }
+    text = critic_text([raw])
+    resp = LLMResponse(call_id="questions_critic.1", text=text, backend=Backend.FAKE)
+
+    [r] = parse_reply(resp)
+
+    assert (r.id, r.answered, r.answer, r.common_sense, r.errors) == ("Q-01", False, "", False, [])
 
 
 def test_no_questions_means_no_critic_call(doc: ParsedDocument, tmp_path: Path) -> None:
