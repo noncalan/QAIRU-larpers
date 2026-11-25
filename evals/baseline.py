@@ -4,12 +4,12 @@
 ``data/input/requirements.md``, вызов через клиент модели агента (``ClaudeCLI``) и тот же лог вызовов
 ``calls.jsonl``. Три прогона; сырые ответы лежат в ``evals/results/baseline/run-1..3/``:
 
-- ``answer.md``: текст ответа модели без правок;
-- ``response.json``: метаданные ответа (модель, токены, цена, время);
+- ``responses/``: ответ модели целиком в формате агента (то же, что ``run/responses/``, годится для replay);
+- ``answer.md``: текст ответа модели без правок (его же читают судья и сверка цитат);
 - ``calls.jsonl``: лог вызовов в формате агента;
 - ``quotes.json``: сверка цитат из сырого текста (``evals.quotes``).
 
-Не менять: промпт, модель, effort. Повторный запуск не вызывает модель там, где ``answer.md`` уже есть.
+Не менять: промпт, модель, effort. Повторный запуск не вызывает модель там, где ответ в ``responses/`` уже есть.
 
 Запуск: ``uv run python -m evals.baseline [--runs 3] [--out evals/results/baseline]``.
 """
@@ -23,11 +23,12 @@ from pathlib import Path
 from statistics import mean
 
 from evals.quotes import QuoteStats, score_quotes
-from validator.errors import LLMError
-from validator.llm.base import LLMClient
-from validator.llm.calllog import RecordingClient, write_calls_jsonl
+from validator.errors import LLM_REPLAY_MISSING, LLMError
+from validator.llm.base import parse_cli_payload
+from validator.llm.cache import ResponseCache, read_envelope
+from validator.llm.calllog import RecordingClient, read_calls_jsonl, response_file_name, write_calls_jsonl
 from validator.llm.claude_cli import ClaudeCLI
-from validator.models import Effort, LLMRequest, LLMResponse, LLMStep
+from validator.models import Backend, CacheMode, CallStatus, Effort, LLMRequest, LLMStep
 
 ROOT = Path(__file__).resolve().parents[1]
 DOCUMENT = ROOT / "data" / "input" / "requirements.md"
@@ -43,6 +44,7 @@ USER_PROMPT = (
     "насколько критично."
 )
 RUNS = 3
+RESPONSES_DIR = "responses"
 
 
 def build_request(document: str, run: int) -> LLMRequest:
@@ -61,34 +63,44 @@ def _write_json(path: Path, data: object) -> None:
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
-def _meta(resp: LLMResponse) -> dict[str, object]:
-    return {
-        "model": resp.model,
-        "backend": resp.backend.value,
-        "usage": resp.usage.model_dump(),
-        "cost_usd": resp.cost_usd,
-        "duration_ms": resp.duration_ms,
-        "answer_chars": len(resp.text),
-    }
-
-
-def run_once(client: LLMClient, document: str, run: int, out: Path) -> dict[str, object]:
-    """Один прогон: вызов модели (если ответа ещё нет), сверка цитат, файлы прогона."""
-    run_dir = out / f"run-{run}"
-    run_dir.mkdir(parents=True, exist_ok=True)
-    answer_path = run_dir / "answer.md"
-    meta_path = run_dir / "response.json"
-    if not (answer_path.exists() and meta_path.exists()):
-        recorder = RecordingClient(client)
-        resp = recorder.call(build_request(document, run))
-        answer_path.write_text(resp.text, encoding="utf-8")
-        _write_json(meta_path, _meta(resp))
+def _live_call(req: LLMRequest, run_dir: Path) -> None:
+    """Живой вызов через клиент агента: кеш, ответ в ``responses/``, ``calls.jsonl`` (#72)."""
+    recorder = RecordingClient(
+        ClaudeCLI(),
+        cache=ResponseCache(ROOT / ".cache" / "validator", CacheMode.USE),
+        responses_dir=run_dir / RESPONSES_DIR,
+    )
+    try:
+        recorder.call(req)
+    finally:
         write_calls_jsonl(run_dir / "calls.jsonl", recorder.records)
-    meta = json.loads(meta_path.read_text(encoding="utf-8"))
-    stats, by_kind = score_quotes(document, answer_path.read_text(encoding="utf-8"))
+
+
+def run_once(document: str, run: int, out: Path) -> dict[str, object]:
+    """Один прогон: ответ из ``responses/`` (если его нет, живой вызов), сверка цитат, файлы прогона."""
+    run_dir = out / f"run-{run}"
+    req = build_request(document, run)
+    response_path = run_dir / RESPONSES_DIR / response_file_name(req)
+    if not response_path.is_file():
+        _live_call(req, run_dir)
+    envelope = read_envelope(response_path)
+    if envelope is None:
+        raise LLMError(f"Нет ответа базовой линии: {response_path}", code=LLM_REPLAY_MISSING)
+    resp = parse_cli_payload(envelope["payload"], req, Backend.CLI)
+    (run_dir / "answer.md").write_text(resp.text, encoding="utf-8")
+    call = next(r for r in reversed(read_calls_jsonl(run_dir / "calls.jsonl")) if r.status is CallStatus.OK)
+    stats, by_kind = score_quotes(document, resp.text)
     quotes = {"total": stats.as_dict(), "by_kind": {k: v.as_dict() for k, v in sorted(by_kind.items())}}
     _write_json(run_dir / "quotes.json", quotes)
-    return {"run": run, **meta, "quotes": quotes["total"]}
+    return {
+        "run": run,
+        "model": call.model_actual,
+        "usage": call.usage.model_dump(),
+        "cost_usd": call.cost_usd,
+        "duration_ms": call.duration_ms,
+        "answer_chars": len(resp.text),
+        "quotes": quotes["total"],
+    }
 
 
 def summarize(rows: list[dict[str, object]]) -> dict[str, object]:
@@ -119,8 +131,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     document = DOCUMENT.read_text(encoding="utf-8")
     try:
-        client: LLMClient = ClaudeCLI()
-        rows = [run_once(client, document, n, args.out) for n in range(1, args.runs + 1)]
+        rows = [run_once(document, n, args.out) for n in range(1, args.runs + 1)]
     except LLMError as exc:
         print(f"{exc.code}: {exc.message}", file=sys.stderr)
         return 1
