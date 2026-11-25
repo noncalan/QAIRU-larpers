@@ -3,7 +3,7 @@
 import os, re, sys, zipfile
 from dataclasses import dataclass, field
 
-MAX_BYTES = 50 * 1024 * 1024          # лимит входа (как у Gemini для PDF)
+MAX_BYTES = 50 * 1024 * 1024          # лимит входа; у Claude PDF-вход до 32 МБ на запрос, уточнить в плане
 MAX_PAGES = 300
 MAX_UNZIPPED = 200 * 1024 * 1024      # zip-бомба: сумма распакованных размеров
 MAX_RATIO = 100                       # zip-бомба: коэффициент сжатия

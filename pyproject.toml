@@ -10,7 +10,7 @@ dependencies = []
 [dependency-groups]
 # Для экспериментов фазы исследования: uv sync --group experiments
 experiments = [
-  "google-genai",
+  "anthropic",
   "python-dotenv",
   "pymupdf4llm",
   "pdfplumber",
