@@ -36,11 +36,16 @@ def _is_confident(match: CharsetMatch, text: str) -> bool:
 
 
 def decode_text(data: bytes) -> tuple[str, list[Diagnostic]]:
-    """UTF-8 (с BOM и без), иначе кодировку угадывает charset-normalizer."""
-    try:
-        return data.decode("utf-8-sig"), []
-    except UnicodeDecodeError:
-        pass
+    """UTF-8 (с BOM и без), иначе кодировку угадывает charset-normalizer.
+
+    Нулевые байты бывают только в UTF-16 и UTF-32: такой текст (кириллица в UTF-16LE без BOM) формально
+    проходит как UTF-8 и даёт мусор, поэтому его сразу отдаём charset-normalizer.
+    """
+    if b"\x00" not in data:
+        try:
+            return data.decode("utf-8-sig"), []
+        except UnicodeDecodeError:
+            pass
     best = from_bytes(data).best()
     if best is None:
         raise InputError(

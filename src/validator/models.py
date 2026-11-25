@@ -711,6 +711,10 @@ class GuardResult(Contract):
     sha256: str | None = None
     fatal: bool = False
     diagnostics: list[Diagnostic] = Field(default_factory=list)
+    read_path: str | None = Field(
+        default=None,
+        description="Откуда читать текст, если не из path: восстановленная копия обрезанного PDF (IN-043)",
+    )
 
 
 class ParsedDocument(Contract):
