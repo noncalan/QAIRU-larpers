@@ -30,8 +30,8 @@ from validator.ingest.blocks import render_for_model  # noqa: E402
 from validator.llm import ClaudeCLI, FakeLLM, parse_cli_payload  # noqa: E402
 from validator.models import Backend, DocKind, LLMRequest, LLMResponse, Profile  # noqa: E402
 from validator.search import search  # noqa: E402
-from validator.search_transfer import transfer_request, transferred  # noqa: E402
 from validator.search_parse import Draft, draft_from_raw, split_findings  # noqa: E402
+from validator.search_transfer import Fragment, render_fragments, transfer_request, transferred  # noqa: E402
 from validator.text import locate_quote, normalize  # noqa: E402
 
 DOCUMENT = ROOT / "data" / "input" / "requirements.md"
@@ -69,7 +69,9 @@ class SavingClient:
     def call(self, req: LLMRequest) -> LLMResponse:
         path = self.root / req.step.value / f"{req.call_index}.json"
         if path.is_file():
-            resp = parse_cli_payload(json.loads(path.read_text(encoding="utf-8")), req, Backend.CLI, cached=True)
+            resp = parse_cli_payload(
+                json.loads(path.read_text(encoding="utf-8")), req, Backend.CLI, cached=True
+            )
         else:
             self.live = self.live or ClaudeCLI()
             started = time.perf_counter()
@@ -130,12 +132,14 @@ def main() -> int:
     quotes = [q for c in result.candidates for q in c.quotes]
     verified = [q for q in quotes if locate_quote(doc, q).verified]
 
-    # Принудительный перенос всех находок прохода: сравнение кода и Haiku.
-    findings = "\n\n".join(raw.text for raw in split.findings)
+    # Принудительный перенос всех находок прохода: сравнение кода и Haiku. Каждая находка в своём
+    # фрагменте, запись возвращается на место по номеру фрагмента (как в шаге).
+    fragments = [Fragment.of(raw) for raw in split.findings]
     forced = SavingClient(OUT / "forced")
-    req = transfer_request(render_for_model(doc), findings, cfg, 1, 0)
+    req = transfer_request(render_for_model(doc), render_fragments(fragments), cfg, 1, 0)
     resp = forced.call(req)
-    moved, invalid = transferred(resp.structured, split.findings, req.call_id)
+    result_moved = transferred(resp.structured, fragments, req.call_id)
+    moved, invalid = result_moved.drafts, result_moved.invalid
     number_at = {raw.position: raw.number for raw in split.findings}
     by_number: dict[int | None, Draft] = {}
     for position, draft in moved:
@@ -173,13 +177,16 @@ def main() -> int:
         "haiku_transfer": {
             "records": len(moved),
             "invalid": invalid,
+            "lost": result_moved.lost,
             "quotes": len(moved_quotes),
             "quotes_verified": len(moved_verified),
             "compared_with_code": compared,
             "agree": agree,
         },
     }
-    (OUT / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (OUT / "summary.json").write_text(
+        json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
     print(json.dumps(summary, ensure_ascii=False, indent=2))
 
     # Тот же проход через FakeLLM: сохранённые ответы читаются как фикстуры без потерь.

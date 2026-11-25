@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from dataclasses import dataclass, field
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
@@ -16,7 +17,8 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_valida
 from validator.errors import LLM_BAD_RESPONSE, LLMError
 from validator.models import DefectType, LLMRequest, LLMStep, Property, RunConfig, Scope, Severity, Verdict
 from validator.prompting import fill, load_prompt
-from validator.search_parse import Draft, RawFinding, block_ids_in, parse_defect_type, parse_severity, unwrap
+from validator.search_parse import Draft, RawFinding
+from validator.search_values import block_ids_in, parse_defect_type, parse_severity, unwrap
 
 TRANSFER_SYSTEM = "search_transfer_system.md"
 TRANSFER_USER = "search_transfer_user.md"
@@ -27,7 +29,29 @@ TRANSFER_TIMEOUT_S = 600
 SEVERITY_LABELS = ("критично", "средне", "низко")
 """Подсказки важности в промпте поиска (#14); ``Severity.from_label`` переводит их в ``Severity``."""
 _UNMATCHED = 1_000_000
-"""Позиция записи, которую не удалось сопоставить с номером «Н-k»: после разобранных кодом."""
+"""Позиция записи без своего фрагмента: после разобранных кодом, в порядке ответа модели."""
+
+
+@dataclass(frozen=True)
+class Fragment:
+    """Кусок ответа прохода, который переносит модель: находка, не разобранная кодом, или весь ответ."""
+
+    position: float
+    """Место в ответе прохода: перенесённые записи встают на место фрагмента среди разобранных кодом."""
+    section: Scope | None
+    """Подраздел ответа («Отдельные требования» или «Набор требований»), если он есть."""
+    text: str
+    number: int | None = None
+    """Номер «Н-k»: такой фрагмент точно находка, и если модель не вернула по нему записи, она потеряна."""
+
+    @classmethod
+    def of(cls, raw: RawFinding) -> Fragment:
+        return cls(position=raw.position, section=raw.section, text=raw.text, number=raw.number)
+
+
+def render_fragments(fragments: Sequence[Fragment]) -> str:
+    """Фрагменты под номерами для модели: запись переноса указывает номер, по нему код вернёт её на место."""
+    return "\n\n".join(f'<фрагмент номер="{k}">\n{f.text}\n</фрагмент>' for k, f in enumerate(fragments, 1))
 
 
 def transfer_request(rendered: str, findings: str, cfg: RunConfig, index: int, attempt: int) -> LLMRequest:
@@ -54,7 +78,7 @@ TRANSFER_SCHEMA: dict[str, Any] = {
             "items": {
                 "type": "object",
                 "properties": {
-                    "number": {"type": "integer"},
+                    "fragment": {"type": "integer"},
                     "title": _TEXT,
                     "block_ids": {"type": "array", "items": _TEXT},
                     "quotes": {"type": "array", "items": _TEXT},
@@ -68,7 +92,15 @@ TRANSFER_SCHEMA: dict[str, Any] = {
                     "severity": {"type": "string", "enum": list(SEVERITY_LABELS)},
                     "suggestion": _TEXT,
                 },
-                "required": ["quotes", "property", "defect_type", "verdict", "explanation", "blocks_testing"],
+                "required": [
+                    "fragment",
+                    "quotes",
+                    "property",
+                    "defect_type",
+                    "verdict",
+                    "explanation",
+                    "blocks_testing",
+                ],
                 "additionalProperties": False,
             },
         }
@@ -84,7 +116,7 @@ class TransferItem(BaseModel):
 
     model_config = ConfigDict(extra="ignore")
 
-    number: int | None = None
+    fragment: int | None = None
     title: str = ""
     block_ids: list[str] = Field(default_factory=list)
     quotes: list[str]
@@ -142,25 +174,35 @@ class TransferItem(BaseModel):
         )
 
 
-def transferred(
-    structured: object, chunks: Sequence[RawFinding], call_id: str
-) -> tuple[list[tuple[float, Draft]], int]:
-    """Черновики из ответа переноса с позицией в ответе прохода и число записей не по схеме.
+@dataclass(frozen=True)
+class Transferred:
+    """Итог переноса: черновики с местом в ответе прохода, число записей не по схеме, потерянные «Н-k»."""
 
-    Позиция берётся по номеру «Н-k» фрагмента, который переносили; запись без такого номера идёт
-    после разобранных кодом в порядке ответа модели. Ответ без списка ``findings`` или где ни одна
-    запись не прошла схему, это ``LLMError``: перенос повторяют.
+    drafts: list[tuple[float, Draft]]
+    invalid: int = 0
+    lost: list[int] = field(default_factory=list)
+    """Номера «Н-k» фрагментов, по которым модель не вернула ни одной записи по схеме."""
+
+
+def _retry(message: str, call_id: str) -> LLMError:
+    return LLMError(message, code=LLM_BAD_RESPONSE, location=call_id, retryable=True)
+
+
+def transferred(structured: object, fragments: Sequence[Fragment], call_id: str) -> Transferred:
+    """Черновики из ответа переноса; каждая запись встаёт на место своего фрагмента.
+
+    Запись без верного номера фрагмента (а фрагментов несколько) идёт после разобранных кодом в порядке
+    ответа модели. ``LLMError`` с ``retryable``, и перенос повторяют, если в ответе нет списка ``findings``,
+    ни одна запись не прошла схему или список пуст, хотя среди фрагментов есть находки «Н-k».
     """
     items = structured.get("findings") if isinstance(structured, dict) else None
     if not isinstance(items, list):
-        raise LLMError(
-            "В ответе переноса в JSON нет списка findings",
-            code=LLM_BAD_RESPONSE,
-            location=call_id,
-            retryable=True,
-        )
-    by_number = {c.number: c for c in chunks if c.number is not None}
+        raise _retry("В ответе переноса в JSON нет списка findings", call_id)
+    numbered = [f.number for f in fragments if f.number is not None]
+    if not items and numbered:
+        raise _retry(f"Перенос в JSON вернул пустой список, а находок во фрагментах {len(numbered)}", call_id)
     drafts: list[tuple[float, Draft]] = []
+    covered: set[int] = set()
     invalid = 0
     for j, raw in enumerate(items):
         try:
@@ -168,24 +210,27 @@ def transferred(
         except ValidationError:
             invalid += 1
             continue
-        chunk = by_number.get(item.number) if item.number is not None else None
-        position = chunk.position + j / len(items) if chunk else _UNMATCHED + j
-        drafts.append((position, item.to_draft(chunk.section if chunk else None)))
+        k = item.fragment if item.fragment is not None and 0 < item.fragment <= len(fragments) else None
+        if k is None and len(fragments) == 1:
+            k = 1
+        frag = fragments[k - 1] if k is not None else None
+        covered.add(k or 0)
+        position = frag.position + j / len(items) if frag else _UNMATCHED + j
+        drafts.append((position, item.to_draft(frag.section if frag else None)))
     if items and not drafts:
-        raise LLMError(
-            f"Перенос в JSON: ни одна из {len(items)} записей не прошла схему",
-            code=LLM_BAD_RESPONSE,
-            location=call_id,
-            retryable=True,
-        )
-    return drafts, invalid
+        raise _retry(f"Перенос в JSON: ни одна из {len(items)} записей не прошла схему", call_id)
+    lost = [f.number for k, f in enumerate(fragments, 1) if f.number is not None and k not in covered]
+    return Transferred(drafts=drafts, invalid=invalid, lost=lost)
 
 
 __all__ = [
     "SEVERITY_LABELS",
     "TRANSFER_ATTEMPTS",
     "TRANSFER_SCHEMA",
+    "Fragment",
     "TransferItem",
+    "Transferred",
+    "render_fragments",
     "transfer_request",
     "transferred",
 ]

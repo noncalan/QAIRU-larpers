@@ -7,6 +7,6 @@
 `search/live/`: записанные живые ответы (эксперимент 23, `experiments/23-search-pass/record.py`), их читают тесты `tests/test_search.py`:
 
 - `pass-opus-medium.json`: один проход Opus 5.5 `medium` по `requirements.md` с промптом #14 как есть (49 находок, 220 с, $0,66 по тарифу API);
-- `transfer-haiku-medium.json`: перенос всех 49 находок этого прохода в JSON моделью Haiku 5.5 `medium` по `prompts/search_transfer_system.md` и `TRANSFER_SCHEMA` (76 с, $0,017).
+- `transfer-haiku-medium.json`: перенос всех 49 находок этого прохода в JSON моделью Haiku 5.5 `medium` по `prompts/search_transfer_system.md` и `TRANSFER_SCHEMA` (84 с, $0,019); каждая находка в своём фрагменте `<фрагмент номер="k">`, запись возвращается на место по номеру фрагмента.
 
 `FakeLLM` эту папку не читает (ему нужны файлы `<номер>.json`), поэтому smoke-прогон от неё не зависит. Если меняется нумерация блоков или промпт поиска, живые ответы записываются заново тем же скриптом.

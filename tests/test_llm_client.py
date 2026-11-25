@@ -49,6 +49,7 @@ from validator.models import (
     TokenUsage,
 )
 from validator.pipeline import run
+from validator.search import MAX_PARALLEL_PASSES
 
 POSIX_ONLY = pytest.mark.skipif(
     sys.platform == "win32", reason="скрипт с shebang вместо claude только в POSIX"
@@ -542,7 +543,7 @@ def test_cache_is_off_for_fixtures_and_replay(tmp_path: Path) -> None:
 
 
 def _fake_claude(tmp_path: Path, mode: str = "ok") -> tuple[str, Path]:
-    """Скрипт вместо claude: ``ok`` отвечает по схеме, иначе отдаёт записанную ошибку ``claude -p``."""
+    """Скрипт вместо claude: ``ok`` отвечает по схеме, без схемы как проход поиска без находок (#18)."""
     counter = tmp_path / "calls.txt"
     errors = {
         "limit": {"is_error": True, "subtype": "success", "result": "You've hit your limit · resets 3am"},
@@ -565,7 +566,8 @@ def _fake_claude(tmp_path: Path, mode: str = "ok") -> tuple[str, Path]:
         f"errors = {errors!r}\n"
         "if mode in errors:\n    print(json.dumps(errors[mode])); sys.exit(1)\n"
         "answer = {'type': 'result', 'subtype': 'success', 'is_error': False,\n"
-        "          'result': 'Проверка выполнена. ' + str(len(system) > 0), 'duration_ms': 10,\n"
+        "          'result': '## Обзор документа\\n\\nПроверка выполнена. ' + str(len(system) > 0)\n"
+        "                    + '\\n\\n## Находки\\n\\nНаходок нет.\\n', 'duration_ms': 10,\n"
         "          'usage': {'input_tokens': 100, 'output_tokens': 10},\n"
         "          'modelUsage': {args[args.index('--model') + 1]:\n"
         "                         {'inputTokens': 100, 'outputTokens': 10}}}\n"
@@ -638,11 +640,14 @@ def test_cli_timeout_is_retried_then_reported(tmp_path: Path, monkeypatch: pytes
 def test_budget_option_stops_the_run_with_diagnostic(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     exe, counter = _fake_claude(tmp_path)
     monkeypatch.setattr("validator.llm.claude_cli.find_claude", lambda: exe)
-    cfg = _cli_run(tmp_path, "out", max_budget_usd=0.0000001).model_copy(update={"passes": 3})
+    # Проходы поиска идут параллельно (#18): первые три уже в пути, лимит останавливает четвёртый.
+    cfg = _cli_run(tmp_path, "out", max_budget_usd=0.0000001).model_copy(
+        update={"passes": MAX_PARALLEL_PASSES + 1}
+    )
 
     outcome = run(cfg)
 
-    assert len(counter.read_text()) == 1
+    assert len(counter.read_text()) == MAX_PARALLEL_PASSES
     assert any(d.code == "LLM-003" for d in outcome.diagnostics)
 
 

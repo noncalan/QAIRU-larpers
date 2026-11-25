@@ -15,12 +15,6 @@ from validator.llm.claude_cli import DROP_ENV, build_args, clean_env
 from validator.models import Backend, CallStatus, Effort, LLMRequest, LLMStep
 
 SCHEMA: dict[str, Any] = {"type": "object", "properties": {"ok": {"type": "boolean"}}, "required": ["ok"]}
-# Фикстуры поиска отвечают по схеме заглушки поиска; тестам клиента хватает её верхнего уровня.
-FINDINGS_SCHEMA: dict[str, Any] = {
-    "type": "object",
-    "properties": {"findings": {"type": "array"}},
-    "required": ["findings"],
-}
 
 
 def request(

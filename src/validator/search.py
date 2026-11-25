@@ -7,10 +7,12 @@
   (исследование 21). Проходы идут параллельно, не больше ``MAX_PARALLEL_PASSES`` одновременно.
 - Ответ прохода разбирает код (``search_parse.py``): формат ответа строгий, разбор бесплатный и
   детерминированный. Находки, которые код не разобрал (нет цитаты, свойства или типа дефекта, сбит
-  заголовок), переносит в JSON модель шага ``search_transfer`` (Haiku, D-010) по промпту
-  ``prompts/search_transfer_system.md`` и схеме из ``search_transfer.py`` с одним повтором. Это
-  отклонение от D-010, где Haiku переносит каждый проход: так дешевле и стабильнее, а Haiku остаётся
-  запасным путём (рекомендация интегратора в #18; замер в ``experiments/23-search-pass``).
+  заголовок, таблица вместо формата), переносит в JSON модель шага ``search_transfer`` (Haiku, D-010)
+  по промпту ``prompts/search_transfer_system.md`` и схеме из ``search_transfer.py``; запись встаёт на
+  место своего фрагмента. Ответ без годных записей переносится ещё раз, сбой самого вызова повторяет
+  клиент модели (``llm/calllog.py``). Это отклонение от D-010, где Haiku переносит каждый проход: так
+  дешевле и стабильнее, а Haiku остаётся запасным путём (рекомендация интегратора в #18; замер в
+  ``experiments/23-search-pass``). Находки, которые перенос потерял, видны в диагностике ``LLM-033``.
 - ID блоков, которых нет в документе, отбрасываются с диагностикой; ID несуществующего предложения
   заменяется ID его блока. Цитаты здесь не сверяются: это делает верификатор (шаг 7).
 - Упавший проход это ``PassResult(ok=False)`` с диагностикой ``LLM-030`` «Проход k из K не удался»
@@ -57,6 +59,9 @@ from validator.search_transfer import (
     TRANSFER_ATTEMPTS,
     TRANSFER_SYSTEM,
     TRANSFER_USER,
+    Fragment,
+    Transferred,
+    render_fragments,
     transfer_request,
     transferred,
 )
@@ -108,19 +113,23 @@ class _Outcome:
     error: ValidatorError | None = None
 
 
-def _transfer(
-    ctx: _Context, index: int, chunks: Sequence[RawFinding], findings: str, out: _Outcome
-) -> tuple[list[tuple[float, Draft]], int]:
-    errors: list[LLMError] = []
+def _transfer(ctx: _Context, index: int, fragments: Sequence[Fragment], out: _Outcome) -> Transferred:
+    """Перенос в JSON с одним повтором, если ответ не годится по содержанию (``transferred``).
+
+    Ошибки самого вызова не повторяются здесь: таймаут, обрыв и ответ не по схеме уже повторил клиент
+    модели (``llm/calllog.py``), а вход в подписку и исчерпанный лимит повтор не лечит.
+    """
+    findings = render_fragments(fragments)
     for attempt in range(TRANSFER_ATTEMPTS):
         req = transfer_request(ctx.rendered, findings, ctx.cfg, index, attempt)
         out.call_ids.append(req.call_id)
+        resp = ctx.llm.call(req)
         try:
-            resp = ctx.llm.call(req)
-            return transferred(resp.structured, chunks, req.call_id)
+            return transferred(resp.structured, fragments, req.call_id)
         except LLMError as exc:
-            errors.append(exc)
-    raise errors[-1]
+            if not exc.retryable or attempt == TRANSFER_ATTEMPTS - 1:
+                raise
+    raise AssertionError("недостижимо: цикл попыток всегда возвращает перенос или бросает ошибку")
 
 
 def _reasons(counter: Counter[str]) -> str:
@@ -128,68 +137,108 @@ def _reasons(counter: Counter[str]) -> str:
     return ", ".join(f"{reason}: {count}" for reason, count in counter.most_common())
 
 
-def _drafts(ctx: _Context, index: int, text: str, out: _Outcome) -> list[Draft]:
-    """Черновики находок прохода: код разбирает формат, остальное переносит модель."""
+@dataclass
+class _Parsed:
+    """Ответ прохода после разбора кодом: черновики на своих местах и находки для переноса моделью."""
+
+    drafts: list[tuple[float, Draft]] = field(default_factory=list)
+    pending: list[RawFinding] = field(default_factory=list)
+    why: Counter[str] = field(default_factory=Counter)
+    has_section: bool = False
+
+
+def _parse(text: str) -> _Parsed:
     split = split_findings(text)
-    parsed: list[tuple[float, Draft]] = []
-    pending: list[RawFinding] = []
-    why: Counter[str] = Counter()
+    parsed = _Parsed(has_section=split.has_section)
     for raw in split.findings:
         draft = draft_from_raw(raw)
         if isinstance(draft, Draft):
-            parsed.append((raw.position, draft))
+            parsed.drafts.append((raw.position, draft))
         else:
-            pending.append(raw)
-            why.update(draft)
-    if split.has_section and not pending:
-        return [d for _, d in parsed]
+            parsed.pending.append(raw)
+            parsed.why.update(draft)
+    return parsed
 
-    whole = not split.has_section
-    findings = text if whole else "\n\n".join(raw.text for raw in pending)
+
+def _numbers(numbers: Sequence[int]) -> str:
+    return ", ".join(f"Н-{n}" for n in numbers[:EXAMPLES_IN_DIAGNOSTIC]) + (
+        ", …" if len(numbers) > EXAMPLES_IN_DIAGNOSTIC else ""
+    )
+
+
+def _transfer_note(ctx: _Context, index: int, p: _Parsed, moved: Transferred, whole: bool) -> Diagnostic:
+    """INFO, если перенос взял всё; WARNING, если записи не прошли схему или находки «Н-k» потерялись."""
+    what = "ответ не в формате промпта" if whole else f"не разобраны кодом: {_reasons(p.why)}"
+    model = ctx.cfg.model_for(LLMStep.SEARCH_TRANSFER).model
+    action = f"Перенесено в JSON моделью {model}: {len(moved.drafts)} находок"
+    losses = []
+    if moved.lost:
+        losses.append(f"по находкам {_numbers(moved.lost)} перенос не вернул записей")
+    if moved.invalid:
+        losses.append(f"записей не по схеме: {moved.invalid}")
+    if not losses:
+        return Diagnostic(
+            code=LLM_PASS_TRANSFERRED,
+            level=DiagLevel.INFO,
+            message=f"Проход {index}: {what}",
+            action=action,
+            step="search",
+        )
+    return Diagnostic(
+        code=LLM_TRANSFER_FAILED,
+        level=DiagLevel.WARNING,
+        message=f"Проход {index}: {what}; " + "; ".join(losses),
+        action=f"{action}; потерянные находки в отчёт не вошли",
+        location=f"search.{index}",
+        step="search",
+    )
+
+
+def _transfer_failed(index: int, p: _Parsed, exc: LLMError) -> Diagnostic:
+    total = len(p.pending) + len(p.drafts)
+    return Diagnostic(
+        code=LLM_TRANSFER_FAILED,
+        level=DiagLevel.WARNING,
+        message=(
+            f"Проход {index}: {len(p.pending)} из {total} находок не разобраны кодом "
+            f"({_reasons(p.why)}), а перенос в JSON не удался: {exc.message}"
+        ),
+        action="Эти находки не вошли в отчёт, остальные находки прохода взяты в работу",
+        hint=exc.hint,
+        location=exc.location,
+        step="search",
+    )
+
+
+def _drafts(ctx: _Context, index: int, text: str, out: _Outcome) -> list[Draft]:
+    """Черновики находок прохода: код разбирает формат, остальное переносит модель."""
+    p = _parse(text)
+    if p.has_section and not p.pending:
+        return [d for _, d in p.drafts]
+    whole = not p.has_section
+    fragments = (
+        [Fragment(position=0, section=None, text=text)] if whole else list(map(Fragment.of, p.pending))
+    )
     try:
-        moved, invalid = _transfer(ctx, index, pending, findings, out)
+        moved = _transfer(ctx, index, fragments, out)
     except LLMError as exc:
-        if whole or not parsed:
+        if whole or not p.drafts:
             raise LLMError(
                 f"ответ не разобран кодом, а перенос в JSON не удался ({exc.message})",
                 code=exc.code,
                 hint=exc.hint,
                 location=exc.location,
             ) from exc
-        out.diagnostics.append(
-            Diagnostic(
-                code=LLM_TRANSFER_FAILED,
-                level=DiagLevel.WARNING,
-                message=(
-                    f"Проход {index}: {len(pending)} из {len(pending) + len(parsed)} находок "
-                    f"не разобраны кодом ({_reasons(why)}), а перенос в JSON не удался: {exc.message}"
-                ),
-                action="Эти находки не вошли в отчёт, остальные находки прохода взяты в работу",
-                hint=exc.hint,
-                location=exc.location,
-                step="search",
-            )
-        )
-        return [d for _, d in parsed]
-    if whole and not moved:
+        out.diagnostics.append(_transfer_failed(index, p, exc))
+        return [d for _, d in p.drafts]
+    if whole and not moved.drafts:
         raise LLMError(
             "ответ не в формате промпта, и находок в нём нет",
             code=LLM_BAD_RESPONSE,
             location=f"search.{index}",
         )
-    what = "ответ не в формате промпта" if whole else f"не разобраны кодом: {_reasons(why)}"
-    model = ctx.cfg.model_for(LLMStep.SEARCH_TRANSFER).model
-    skipped = f"; записей не по схеме: {invalid}" if invalid else ""
-    out.diagnostics.append(
-        Diagnostic(
-            code=LLM_PASS_TRANSFERRED,
-            level=DiagLevel.INFO,
-            message=f"Проход {index}: {what}{skipped}",
-            action=f"Перенесено в JSON моделью {model}: {len(moved)} находок",
-            step="search",
-        )
-    )
-    return [d for _, d in sorted(parsed + moved, key=lambda pd: pd[0])]
+    out.diagnostics.append(_transfer_note(ctx, index, p, moved, whole))
+    return [d for _, d in sorted(p.drafts + moved.drafts, key=lambda pd: pd[0])]
 
 
 def _known_blocks(
@@ -262,41 +311,41 @@ def _examples(ids: Sequence[str]) -> str:
     return shown + (", …" if len(set(ids)) > EXAMPLES_IN_DIAGNOSTIC else "")
 
 
-def run_pass(ctx: _Context, index: int) -> _Outcome:
+def _run_pass(ctx: _Context, out: _Outcome) -> None:
     """Один проход: вызов модели, разбор ответа, при нужде перенос в JSON, проверка ID блоков."""
-    out = _Outcome(index=index)
-    req = search_request(ctx.rendered, ctx.cfg, index)
+    req = search_request(ctx.rendered, ctx.cfg, out.index)
     out.call_ids.append(req.call_id)
     try:
         resp = ctx.llm.call(req)
         out.raw_text = resp.text
         if not resp.text.strip():
             raise LLMError("модель вернула пустой ответ", code=LLM_BAD_RESPONSE, location=req.call_id)
-        drafts = _drafts(ctx, index, resp.text, out)
+        drafts = _drafts(ctx, out.index, resp.text, out)
     except LLMError as exc:
         out.error = exc
-        return out
-    _candidates(ctx, index, req.call_id, drafts, out)
-    return out
+        return
+    _candidates(ctx, out.index, req.call_id, drafts, out)
 
 
 def _isolated_pass(ctx: _Context, index: int) -> _Outcome:
     """Проход в своём потоке. Ошибка в коде разбора роняет только этот проход, а не все K.
 
-    Трассировка идёт в ``report.log``, в отчёт попадает диагностика ``INT-002``: ошибка видна,
-    а находки остальных проходов не теряются.
+    Трассировка идёт в ``report.log``, в отчёт попадает диагностика ``INT-002``. Сырой ответ, номера
+    вызовов и диагностика до сбоя остаются в ``PassResult``: по ним сбой можно воспроизвести.
     """
+    out = _Outcome(index=index)
     try:
-        return run_pass(ctx, index)
+        _run_pass(ctx, out)
     except Exception as exc:  # граница прохода: сбой кода на одном ответе не должен ронять остальные
         logger.exception("Проход %s: внутренняя ошибка", index)
-        error = InternalError(
+        out.candidates.clear()
+        out.error = InternalError(
             f"внутренняя ошибка агента при разборе ответа ({type(exc).__name__})",
             code=INT_STEP_DEGRADED,
             hint="Подробности в report.log; сообщите команде",
             location=f"search.{index}",
         )
-        return _Outcome(index=index, call_ids=[f"search.{index}"], error=error)
+    return out
 
 
 # ---------------------------------------------------------------- шаг целиком

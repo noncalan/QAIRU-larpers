@@ -15,7 +15,7 @@ from conftest import FIXTURES_LLM, REQUIREMENTS
 from validator import search as search_module
 from validator.config import load_config
 from validator.errors import LLMError
-from validator.llm import FakeLLM
+from validator.llm import FakeLLM, RecordingClient, parse_cli_payload
 from validator.models import (
     Backend,
     DefectType,
@@ -39,7 +39,7 @@ from validator.pipeline import run
 from validator.prompting import PROMPTS_DIR, fill, load_prompt
 from validator.search import MAX_PARALLEL_PASSES, search
 from validator.search_parse import Draft, draft_from_raw, split_findings
-from validator.search_transfer import SEVERITY_LABELS, TRANSFER_SCHEMA, transferred
+from validator.search_transfer import SEVERITY_LABELS, TRANSFER_SCHEMA, Fragment, transferred
 from validator.text import locate_quote
 
 LIBRARY = """# Библиотека
@@ -109,10 +109,12 @@ def answer(*findings: str) -> str:
     )
 
 
-def record(n: int, *, blocks: list[str], quotes: list[str], **extra: Any) -> dict[str, Any]:
-    """Запись ответа переноса в JSON по ``TRANSFER_SCHEMA``."""
+def record(
+    n: int, *, blocks: list[str], quotes: list[str], fragment: int = 1, **extra: Any
+) -> dict[str, Any]:
+    """Запись ответа переноса в JSON по ``TRANSFER_SCHEMA``: находка ``n`` из фрагмента ``fragment``."""
     return {
-        "number": n,
+        "fragment": fragment,
         "title": f"Находка {n}",
         "block_ids": blocks,
         "quotes": quotes,
@@ -260,7 +262,9 @@ def test_bug_on_one_answer_loses_only_that_pass(
     passes = search(requirements_md, FakeLLM(FIXTURES_LLM), config(3))
 
     assert [p.ok for p in passes] == [True, False, True]
-    diag = passes[1].diagnostics[-1]
+    failed = passes[1]
+    assert "**Блоки:**" in failed.raw_text and failed.call_ids == ["search.2"], "ответ для разбора сбоя цел"
+    diag = failed.diagnostics[-1]
     assert diag.code == "INT-002" and diag.level is DiagLevel.WARNING
     assert "ZeroDivisionError" in diag.message and diag.action == "Находки собраны по 2 из 3 проходов"
     assert "ZeroDivisionError" in caplog.text
@@ -330,7 +334,7 @@ def test_unparsed_finding_is_transferred_by_model_in_place(library: ParsedDocume
         Effort.MEDIUM,
         TRANSFER_SCHEMA,
     )
-    assert "#### Н-2. Находка 2" in transfer.prompt
+    assert '<фрагмент номер="1">\n#### Н-2. Находка 2' in transfer.prompt
     assert "Н-1. Находка 1" not in transfer.prompt and "Н-3." not in transfer.prompt
     [diag] = result.diagnostics
     assert diag.code == "LLM-032" and diag.level is DiagLevel.INFO
@@ -363,11 +367,13 @@ def test_transfer_unknown_block_ids_are_dropped_too(library: ParsedDocument) -> 
     assert [d.code for d in result.diagnostics] == ["LLM-032", "LLM-034"]
 
 
-def test_invalid_transfer_json_is_retried_then_pass_fails(library: ParsedDocument) -> None:
+def test_unusable_transfer_is_retried_then_pass_fails(library: ParsedDocument) -> None:
+    """Ответ по схеме, но без годных записей: шаг повторяет перенос один раз, затем проход падает."""
+    blank = {"findings": [record(1, blocks=[], quotes=["  "])]}
     responses = {
         (LLMStep.SEARCH, 1): envelope(answer(finding(1, blocks="B003", quote=None))),
-        (LLMStep.SEARCH_TRANSFER, 1): envelope("это не JSON"),
-        (LLMStep.SEARCH_TRANSFER, 2): envelope("{обрыв"),
+        (LLMStep.SEARCH_TRANSFER, 1): envelope(structured=blank),
+        (LLMStep.SEARCH_TRANSFER, 2): envelope(structured=blank),
     }
 
     [result], _ = run_search(library, responses)
@@ -379,9 +385,10 @@ def test_invalid_transfer_json_is_retried_then_pass_fails(library: ParsedDocumen
 
 
 def test_transfer_retry_can_succeed(library: ParsedDocument) -> None:
+    """Пустой список, хотя во фрагменте находка «Н-1»: перенос повторяется, повтор её возвращает."""
     responses = {
         (LLMStep.SEARCH, 1): envelope(answer(finding(1, blocks="B003", quote=None))),
-        (LLMStep.SEARCH_TRANSFER, 1): envelope(structured={"wrong": []}),
+        (LLMStep.SEARCH_TRANSFER, 1): envelope(structured={"findings": []}),
         (LLMStep.SEARCH_TRANSFER, 2): envelope(
             structured={"findings": [record(1, blocks=[], quotes=["Книга"])]}
         ),
@@ -390,6 +397,128 @@ def test_transfer_retry_can_succeed(library: ParsedDocument) -> None:
     [result], _ = run_search(library, responses)
 
     assert result.ok and len(result.candidates) == 1
+    assert result.call_ids == ["search.1", "search_transfer.1", "search_transfer.2"]
+
+
+@pytest.mark.parametrize("bad", [envelope("это не JSON"), failure("Not logged in · Please run /login")])
+def test_failed_transfer_call_is_not_repeated_by_the_step(
+    library: ParsedDocument, bad: dict[str, Any]
+) -> None:
+    """Сбой вызова шаг не повторяет: временный повторит клиент модели, а вход и лимит повтор не лечит."""
+    responses = {
+        (LLMStep.SEARCH, 1): envelope(answer(finding(1, blocks="B003", quote=None))),
+        (LLMStep.SEARCH_TRANSFER, 1): bad,
+    }
+
+    [result], _ = run_search(library, responses)
+
+    assert not result.ok
+    assert result.call_ids == ["search.1", "search_transfer.1"]
+    assert "перенос в JSON не удался" in result.diagnostics[-1].message
+
+
+class CliStub:
+    """Живой бэкенд без сети: отдаёт записанные ответы ``claude -p`` и считает вызовы."""
+
+    backend = Backend.CLI
+
+    def __init__(self, responses: Responses) -> None:
+        self.responses = responses
+        self.calls: list[str] = []
+
+    def call(self, req: LLMRequest) -> LLMResponse:
+        self.calls.append(req.call_id)
+        return parse_cli_payload(self.responses[(req.step, req.call_index)], req, Backend.CLI)
+
+
+def test_live_transfer_with_bad_json_is_retried_once_by_the_client(library: ParsedDocument) -> None:
+    """Невалидный JSON переноса на живом бэкенде: один повтор (клиент модели), затем отказ прохода."""
+    stub = CliStub(
+        {
+            (LLMStep.SEARCH, 1): envelope(answer(finding(1, blocks="B003", quote=None))),
+            (LLMStep.SEARCH_TRANSFER, 1): envelope("{обрыв"),
+        }
+    )
+
+    [result] = search(library, RecordingClient(stub, retry_delay_s=0), config(1))
+
+    assert stub.calls == ["search.1", "search_transfer.1", "search_transfer.1"]
+    assert not result.ok and "перенос в JSON не удался" in result.diagnostics[-1].message
+
+
+def test_lost_transfer_findings_are_a_warning(library: ParsedDocument) -> None:
+    text = answer(
+        finding(1, blocks="B003", quote="Книга выдаётся"),
+        finding(2, blocks="B003", quote=None),
+        finding(3, blocks="B004", quote=None),
+    )
+    responses = {
+        (LLMStep.SEARCH, 1): envelope(text),
+        (LLMStep.SEARCH_TRANSFER, 1): envelope(
+            structured={
+                "findings": [record(2, blocks=[], quotes=["Книга"]), record(9, blocks=[], quotes=[" "])]
+            }
+        ),
+    }
+
+    [result], _ = run_search(library, responses)
+
+    assert result.ok and [c.title for c in result.candidates] == ["Находка 1", "Находка 2"]
+    [diag] = result.diagnostics
+    assert diag.code == "LLM-033" and diag.level is DiagLevel.WARNING
+    assert "по находкам Н-3 перенос не вернул записей" in diag.message
+    assert "записей не по схеме: 1" in diag.message
+
+
+def test_transfer_records_return_to_their_fragment(library: ParsedDocument) -> None:
+    """Запись встаёт на место своего фрагмента и берёт его подраздел, даже если номера «Н-k» совпали."""
+    hands = bid(library, "пяти книг")
+    text = (
+        answer(finding(3, blocks="B003", quote=None), finding(4, blocks="B003", quote="Книга выдаётся"))
+        + "\n\n### Набор требований\n\n**3) Лимит выдачи задан дважды**: «не более пяти книг» и «3 книги».\n"
+    )
+    responses = {
+        (LLMStep.SEARCH, 1): envelope(text),
+        (LLMStep.SEARCH_TRANSFER, 1): envelope(
+            structured={
+                "findings": [
+                    record(3, blocks=[hands], quotes=["не более пяти книг", "3 книги"], fragment=2),
+                    record(3, blocks=[], quotes=["Книга"], fragment=1),
+                ]
+            }
+        ),
+    }
+
+    [result], llm = run_search(library, responses)
+
+    assert [(c.title, c.scope) for c in result.candidates] == [
+        ("Находка 3", Scope.REQUIREMENT),
+        ("Находка 4", Scope.REQUIREMENT),
+        ("Находка 3", Scope.SET),
+    ]
+    assert result.candidates[2].quotes == ["не более пяти книг", "3 книги"]
+    assert '<фрагмент номер="2">\n### Набор' not in llm.requests[1].prompt
+    assert '<фрагмент номер="2">\n**3) Лимит выдачи' in llm.requests[1].prompt
+
+
+def test_table_in_findings_section_goes_to_transfer(library: ParsedDocument) -> None:
+    """Находки таблицей вместо формата промпта: код не молчит с нулём находок, таблицу переносит модель."""
+    table = (
+        "| Н | Блок | Цитата | Свойство |\n|---|---|---|---|\n"
+        "| 1 | B003 | «достаточный для прочтения» | Verifiable |\n"
+    )
+    responses = {
+        (LLMStep.SEARCH, 1): envelope("## Обзор документа\n\n- заметки\n\n## Находки\n\n" + table),
+        (LLMStep.SEARCH_TRANSFER, 1): envelope(
+            structured={"findings": [record(1, blocks=["B003"], quotes=["достаточный для прочтения"])]}
+        ),
+    }
+
+    [result], llm = run_search(library, responses)
+
+    assert result.ok and len(result.candidates) == 1
+    assert "«достаточный для прочтения»" in llm.requests[1].prompt
+    assert "не в формате находки: 1" in result.diagnostics[0].message
 
 
 def test_failed_transfer_keeps_findings_parsed_by_code(library: ParsedDocument) -> None:
@@ -452,10 +581,10 @@ def test_transfer_records_off_schema_are_skipped_and_counted() -> None:
         "не объект",
     ]
 
-    drafts, invalid = transferred({"findings": items}, [], "search_transfer.1")
+    moved = transferred({"findings": items}, [], "search_transfer.1")
 
-    assert invalid == 3
-    [(position, draft)] = drafts
+    assert moved.invalid == 3
+    [(position, draft)] = moved.drafts
     assert draft.property is Property.VERIFIABLE
     assert draft.defect_type is DefectType.UNVERIFIABLE
     assert draft.verdict is Verdict.VIOLATION
@@ -532,21 +661,24 @@ def test_live_haiku_transfer_fits_schema_and_agrees_with_code(requirements_md: P
     """Перенос всех 49 находок живого прохода Haiku: все записи по схеме, свойство и тип как у кода."""
     split = split_findings(live_payload("pass-opus-medium.json")["result"])
     code = {raw.position: draft_from_raw(raw) for raw in split.findings}
+    fragments = [Fragment.of(raw) for raw in split.findings]
 
-    moved, invalid = transferred(
-        live_payload("transfer-haiku-medium.json")["structured_output"], split.findings, "search_transfer.1"
+    moved = transferred(
+        live_payload("transfer-haiku-medium.json")["structured_output"], fragments, "search_transfer.1"
     )
 
-    assert (len(moved), invalid) == (49, 0)
-    pairs = [(code[int(pos)], d) for pos, d in moved]
+    assert (len(moved.drafts), moved.invalid, moved.lost) == (49, 0, [])
+    assert [int(pos) for pos, _ in moved.drafts] == [raw.position for raw in split.findings]
+    pairs = [(code[int(pos)], d) for pos, d in moved.drafts]
     assert all(isinstance(c, Draft) for c, _ in pairs)
     agree = {
         name: sum(getattr(c, name) == getattr(d, name) for c, d in pairs)
         for name in ("property", "defect_type", "verdict", "severity_hint", "blocks_testing")
     }
-    # Единственное расхождение: у модели в строке «Свойство» два свойства, код берёт первое.
+    # Расхождения: у Н-9 в строке «Свойство» два свойства (код берёт первое), у Н-18 «Traceable» без уровня
+    # (код берёт уровень по подразделу ответа, Haiku выбрал набор).
     assert agree == {
-        "property": 48,
+        "property": 47,
         "defect_type": 49,
         "verdict": 49,
         "severity_hint": 49,

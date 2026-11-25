@@ -3,7 +3,7 @@
 Ответ прохода размечен строго (#14): раздел «## Находки», подразделы «### Отдельные требования» и
 «### Набор требований», каждая находка начинается строкой «#### Н-k. <суть>», дальше строки
 «- Поле: значение» (Блоки, Цитата (одна или две), Свойство, Тип дефекта, Вердикт, Сценарий,
-Почему мешает, Тест, Важность, Как исправить).
+Почему мешает, Тест, Важность, Как исправить). Значения полей разбирает ``search_values.py``.
 
 Разбор детерминированный и бесплатный. Находка, в которой код не нашёл обязательных полей
 (цитата, свойство, тип дефекта), не теряется: ``search.py`` отдаёт её текст на перенос в JSON
@@ -17,16 +17,35 @@ import re
 from dataclasses import dataclass, field
 
 from validator.models import DefectType, Property, Scope, Severity, Verdict
+from validator.search_values import (
+    block_ids_in,
+    clean,
+    norm,
+    parse_defect_type,
+    parse_property,
+    parse_severity,
+    parse_test,
+    parse_verdict,
+    quotes_in,
+    unwrap,
+)
 
 # ---------------------------------------------------------------- разметка ответа
 
 FINDINGS_SECTION = re.compile(r"^\s{0,3}#{1,3}\s*\**\s*Находки", re.MULTILINE)
 """Начало раздела находок: всё выше (обзор документа) находками не считается."""
 
-FINDING_HEAD = re.compile(r"^[ \t]{0,3}(?:#{1,6}[ \t]*)?\**[ \t]*[НH][-‑–][ \t]?(\d+)\b\**[.:)]?(.*)$")
-"""Заголовок находки: «#### Н-12. Суть», «**Н-12.** Суть», латинская H и разные дефисы тоже."""
+FINDING_HEAD = re.compile(
+    r"^[ \t]{0,3}(?P<hashes>#{1,6}[ \t]*)?(?P<bold>\*+)?[ \t]*[НH][-‑–][ \t]?(?P<number>\d+)\b\**"
+    r"(?P<punct>[.:)])?(?P<rest>.*)$"
+)
+"""Заголовок находки: «#### Н-12. Суть», «**Н-12.** Суть», «Н-12. Суть»; латинская H и разные дефисы тоже."""
+_DASH_TITLE = re.compile(r"^\s+[—–-]\s")
+"""«Н-12 — Суть»: без заголовка и звёздочек номер отделён от сути тире."""
 
-HEADING = re.compile(r"^[ \t]{0,3}#{1,6}[ \t]*(.*)$")
+HEADING = re.compile(r"^[ \t]{0,3}(#{1,6})[ \t]*(.*)$")
+SECTION_LEVEL = 3
+"""Подразделы ответа («### Набор требований») не глубже третьего уровня; «####» это всегда находка."""
 RULE = re.compile(r"^[ \t]{0,3}(?:[-*_][ \t]*){3,}$")
 """Горизонтальная черта «---» после находки: дальше уже не находка."""
 
@@ -35,10 +54,13 @@ FIELD = re.compile(
 )
 """Строка поля «- Поле: значение», в том числе «- **Поле:** значение» и без маркера списка."""
 
-BLOCK_ID = re.compile(r"(?<![\w.])[BВ](\d{3,}(?:\.\d+)?)(?:\s*[–—-]\s*[BВ]?(\d{3,}(?:\.\d+)?))?(?![\w])")
-"""ID блока или предложения: B012, B012.3, диапазон B012–B015. Кириллическая «В» вместо B тоже годится."""
-MAX_BLOCK_RANGE = 30
-"""Диапазон «B075–B083» раскрывается в блоки, если в нём не больше 30 блоков; иначе берутся концы."""
+QUOTED = re.compile(r"«[^»\n]+»|“[^”\n]+”|\"[^\"\n]+\"")
+"""Цитата в тексте фрагмента: фрагмент без полей, но с цитатой (таблица, абзац) может быть находкой."""
+
+_LIST_NUMBER = re.compile(r"^(?:[-*•]\s+)?(?:\d{1,3}[.)](?!\d)\s*)?")
+"""Нумерация списка «3) » или «- 5. » перед сутью; «99.9%» и «3.5 секунды» нумерацией не считаются."""
+_LEAD = re.compile(r"^(?:[.:)]|[—–-](?=\s))\s*")
+"""Знак между номером и сутью: «. », «: », « — »; минус числа («-5 °C») остаётся."""
 
 
 class Key:
@@ -78,24 +100,45 @@ SINGLE_FIELDS = (Key.PROPERTY, Key.DEFECT_TYPE, Key.VERDICT, Key.TEST, Key.SEVER
 """Поля, которые у находки бывают только один раз (цитат и строк «Блоки» может быть несколько)."""
 
 
-def _norm(text: str) -> str:
-    """Нижний регистр, «ё» как «е», без звёздочек разметки и лишних пробелов."""
-    return " ".join(text.lower().replace("ё", "е").replace("*", " ").split())
-
-
 def _field_key(label: str) -> str | None:
     """Имя поля по подписи: «Цитата 1», «Цитата (B012)» и «**Тип дефекта**» тоже узнаются."""
-    clean = re.sub(r"\([^)]*\)|\d+", " ", _norm(label))
-    return _FIELD_NAMES.get(" ".join(clean.split()))
+    plain = re.sub(r"\([^)]*\)|\d+", " ", norm(label))
+    return _FIELD_NAMES.get(" ".join(plain.split()))
 
 
-def _section_scope(title: str) -> Scope | None:
-    low = _norm(title)
-    if low.startswith("отдельн"):
-        return Scope.REQUIREMENT
-    if low.startswith("набор"):
+def _section_scope(level: int, title: str) -> Scope | None:
+    """Подраздел ответа по заголовку второго или третьего уровня: «Набор …», «… по набору», «Отдельные …»."""
+    if level > SECTION_LEVEL:
+        return None
+    low = norm(title)
+    if "набор" in low:
         return Scope.SET
+    if "отдельн" in low or "кажд" in low:
+        return Scope.REQUIREMENT
     return None
+
+
+def _title(text: str, *, numbered: bool) -> str:
+    """Суть из строки заголовка: без звёздочек, знака после «Н-k» и (без «Н-k») нумерации списка."""
+    title = text.strip().strip("*").strip()
+    if not numbered:
+        title = _LIST_NUMBER.sub("", title, count=1).strip().strip("*").strip()
+    return _LEAD.sub("", title, count=1).strip()
+
+
+def _head(line: str, *, in_field: bool) -> tuple[int, str] | None:
+    """Номер и суть, если строка открывает находку «Н-k».
+
+    Строка без «#» и звёздочек («Н-3. Суть») открывает находку, только если за номером знак «.», «:»,
+    «)» или тире и строка не продолжает поле: «Н-3 и Н-7 описывают одно место» это текст, а не находка.
+    """
+    m = FINDING_HEAD.match(line)
+    if m is None:
+        return None
+    marked = bool(m.group("hashes") or m.group("bold"))
+    if not marked and (in_field or not (m.group("punct") or _DASH_TITLE.match(m.group("rest")))):
+        return None
+    return int(m.group("number")), _title(m.group("rest"), numbered=True)
 
 
 # ---------------------------------------------------------------- находки как текст
@@ -138,26 +181,17 @@ class RawFinding:
 @dataclass(frozen=True)
 class SplitAnswer:
     findings: list[RawFinding]
-    """Находки и фрагменты с полями находок по порядку ответа."""
+    """Находки и фрагменты с полями или цитатами по порядку ответа."""
     has_section: bool
     """Есть раздел «Находки» или хотя бы одна «Н-k»: ответ в формате промпта."""
-
-
-_NUMBERING = re.compile(r"^\s*(?:[-*•]\s*)?(?:\d{1,3}[.)]\s*)?")
-
-
-def _title(text: str) -> str:
-    """Суть из строки заголовка: без звёздочек, нумерации «5.» и знаков в начале."""
-    clean = text.strip().strip("*").strip()
-    clean = _NUMBERING.sub("", clean, count=1).strip().strip("*").strip()
-    return clean.lstrip(".:)—–- ").strip()
 
 
 class _Splitter:
     """Построчный разбор: заголовки находок, подразделы, поля и продолжения многострочных полей.
 
-    Строки вне находок с заголовком «Н-k» собираются во фрагменты: фрагмент с полями находки
-    (заголовок без «Н-», нумерованный список вместо заголовков) тоже идёт в разбор, а не теряется.
+    Строки вне находок с заголовком «Н-k» собираются во фрагменты. Фрагмент с полями находки (заголовок
+    без «Н-», нумерованный список вместо заголовков) или с цитатой (таблица, абзац) тоже идёт в разбор,
+    а не теряется; фрагмент без того и другого («Находок нет.») отбрасывается.
     """
 
     def __init__(self) -> None:
@@ -167,9 +201,12 @@ class _Splitter:
         self.last_key: str | None = None
 
     def close(self) -> None:
-        if self.current is not None and (self.current.number is not None or self.current.fields):
-            self.current.position = len(self.findings) + 1
-            self.findings.append(self.current)
+        current = self.current
+        if current is not None and (
+            current.number is not None or current.fields or QUOTED.search(current.text)
+        ):
+            current.position = len(self.findings) + 1
+            self.findings.append(current)
         self.current, self.last_key = None, None
 
     def open(self, number: int | None, heading: str, line: str | None = None) -> RawFinding:
@@ -180,18 +217,13 @@ class _Splitter:
         return self.current
 
     def feed(self, line: str) -> None:
-        head = FINDING_HEAD.match(line)
-        if head:
-            self.open(int(head.group(1)), _title(head.group(2)), line)
+        head = _head(line, in_field=self.last_key is not None)
+        if head is not None:
+            self.open(*head, line)
             return
         heading = HEADING.match(line)
         if heading:
-            scope = _section_scope(heading.group(1))
-            if scope is not None or FINDINGS_SECTION.match(line):
-                self.close()
-                self.section = scope or self.section
-            else:
-                self.open(None, _title(heading.group(1)), line)
+            self._heading(line, len(heading.group(1)), heading.group(2))
             return
         if RULE.match(line):
             self.close()
@@ -203,6 +235,14 @@ class _Splitter:
             current = self.open(None, "")
         current.lines.append(line)
         self._field(current, line)
+
+    def _heading(self, line: str, level: int, text: str) -> None:
+        scope = _section_scope(level, text)
+        if scope is not None or FINDINGS_SECTION.match(line):
+            self.close()
+            self.section = scope or self.section
+        else:
+            self.open(None, _title(text, numbered=False), line)
 
     def _field(self, current: RawFinding, line: str) -> None:
         if not line.strip():
@@ -217,7 +257,7 @@ class _Splitter:
             values = current.fields[self.last_key]
             values[-1] = f"{values[-1]} {line.strip()}".strip()
         elif current.number is None and not current.heading and not current.fields:
-            current.heading = _title(line)
+            current.heading = _title(line, numbered=False)
 
 
 def split_findings(answer: str) -> SplitAnswer:
@@ -226,244 +266,13 @@ def split_findings(answer: str) -> SplitAnswer:
     start = next((i for i, line in enumerate(lines) if FINDINGS_SECTION.match(line)), None)
     has_section = start is not None
     if start is None:
-        start = next((i for i, line in enumerate(lines) if FINDING_HEAD.match(line)), len(lines))
+        start = next((i for i, line in enumerate(lines) if _head(line, in_field=False)), len(lines))
     splitter = _Splitter()
     for line in lines[start:]:
         splitter.feed(line)
     splitter.close()
     found = splitter.findings
     return SplitAnswer(findings=found, has_section=has_section or any(f.number is not None for f in found))
-
-
-# ---------------------------------------------------------------- значения полей
-
-
-def quotes_in(value: str) -> list[str]:
-    """Цитаты в «ёлочках» верхнего уровня: «A» и «B» дают две, вложенные «…» остаются внутри.
-
-    Без ёлочек берутся пары “…” или "…", а если нет и их, значение целиком без кавычек по краям.
-    """
-    found: list[str] = []
-    depth, start = 0, 0
-    for i, ch in enumerate(value):
-        if ch == "«":
-            depth += 1
-            if depth == 1:
-                start = i + 1
-        elif ch == "»" and depth:
-            depth -= 1
-            if depth == 0:
-                found.append(value[start:i].strip())
-    if not found:
-        found = [m.group(1).strip() for m in re.finditer(r"[“„\"]([^“”„\"]+)[”“\"]", value)]
-    found = [q for q in found if q]
-    if found:
-        return found
-    bare = value.strip().rstrip(";").strip().strip("\"'“”„`«» ")
-    return [bare] if bare else []
-
-
-def _expand(start: str, end: str | None) -> list[str]:
-    """«B075–B083» → B075, B076, …, B083. Предложения и слишком длинные диапазоны не раскрываются."""
-    ids = [start] + ([end] if end else [])
-    if end is None or "." in start or "." in end:
-        return ids
-    first, last = int(start), int(end)
-    if not 0 < last - first <= MAX_BLOCK_RANGE:
-        return ids
-    return [f"{n:0{len(start)}d}" for n in range(first, last + 1)]
-
-
-def block_ids_in(value: str) -> list[str]:
-    """ID блоков в порядке появления, без повторов; кириллическая «В» заменяется на латинскую B."""
-    found = (n for m in BLOCK_ID.finditer(value) for n in _expand(m.group(1), m.group(2)))
-    return list(dict.fromkeys(f"B{n}" for n in found))
-
-
-def _first_match(
-    text: str, table: tuple[tuple[str, Property, Property | None], ...]
-) -> tuple[Property, Property | None] | None:
-    best: tuple[int, Property, Property | None] | None = None
-    for pattern, single, of_set in table:
-        m = re.search(pattern, text)
-        if m and (best is None or m.start() < best[0]):
-            best = (m.start(), single, of_set)
-    return (best[1], best[2]) if best else None
-
-
-_P = Property
-# (образец, свойство требования, свойство набора). Если свойства набора нет, свойство одно на оба уровня.
-_ENGLISH: tuple[tuple[str, Property, Property | None], ...] = (
-    (r"necessar", _P.NECESSARY, None),
-    (r"appropriat", _P.APPROPRIATE, None),
-    (r"ambigu", _P.UNAMBIGUOUS, None),
-    (r"singular", _P.SINGULAR, None),
-    (r"verifiab", _P.VERIFIABLE, None),
-    (r"conform", _P.CONFORMING, None),
-    (r"\bcomplete", _P.COMPLETE, _P.SET_COMPLETE),
-    (r"feasib", _P.FEASIBLE, _P.SET_FEASIBLE),
-    (r"\bcorrect", _P.CORRECT, None),
-    (r"consisten", _P.SET_CONSISTENT, None),
-    (r"comprehensib", _P.SET_COMPREHENSIBLE, None),
-    (r"validat", _P.SET_VALIDATABLE, None),
-    (r"modifiab", _P.SET_MODIFIABLE, None),
-    (r"traceab", _P.TRACEABLE, _P.SET_TRACEABLE),
-    (r"\brank", _P.RANKED, _P.SET_RANKED),
-)
-_RUSSIAN: tuple[tuple[str, Property, Property | None], ...] = (
-    (r"необходим", _P.NECESSARY, None),
-    (r"уместн", _P.APPROPRIATE, None),
-    (r"однозначн", _P.UNAMBIGUOUS, None),
-    (r"единичн|атомарн", _P.SINGULAR, None),
-    (r"проверяем", _P.VERIFIABLE, None),
-    (r"шаблон", _P.CONFORMING, None),
-    (r"полнот", _P.COMPLETE, _P.SET_COMPLETE),
-    (r"выполним", _P.FEASIBLE, _P.SET_FEASIBLE),
-    (r"корректн", _P.CORRECT, None),
-    (r"согласованн|непротиворечив", _P.SET_CONSISTENT, None),
-    (r"понятн", _P.SET_COMPREHENSIBLE, None),
-    (r"валидир", _P.SET_VALIDATABLE, None),
-    (r"модифицир", _P.SET_MODIFIABLE, None),
-    (r"прослежив", _P.TRACEABLE, _P.SET_TRACEABLE),
-    (r"ранжир|приоритет", _P.RANKED, _P.SET_RANKED),
-)
-_IEEE_CLAUSE: dict[str, tuple[Property, Property | None]] = {
-    "1": (_P.CORRECT, None),
-    "2": (_P.UNAMBIGUOUS, None),
-    "3": (_P.COMPLETE, _P.SET_COMPLETE),
-    "4": (_P.SET_CONSISTENT, None),
-    "5": (_P.RANKED, _P.SET_RANKED),
-    "6": (_P.VERIFIABLE, None),
-    "7": (_P.SET_MODIFIABLE, None),
-    "8": (_P.TRACEABLE, _P.SET_TRACEABLE),
-}
-
-
-def _property_level(value: str, section: Scope | None) -> Scope:
-    """Уровень свойства, которое есть и у требования, и у набора: Complete, Feasible, Traceable, Ranked."""
-    low = _norm(value)
-    if "набор" in low:
-        return Scope.SET
-    individual, of_set = "5.2.5" in low, "5.2.6" in low
-    if of_set and not individual:
-        return Scope.SET
-    if individual and not of_set:
-        return Scope.REQUIREMENT
-    return section or Scope.REQUIREMENT
-
-
-def parse_property(value: str, section: Scope | None = None) -> Property | None:
-    """Свойство из строки «Свойство: Verifiable (проверяемость), ISO/IEC/IEEE 29148:2018, п. 5.2.5».
-
-    Порядок: английское название (первое по тексту), русское, пункт IEEE 830-1998 «4.3.x».
-    Уровень (требование или набор) для общих названий берётся из пункта 5.2.5 или 5.2.6, слова
-    «набора» или подраздела ответа.
-    """
-    low = _norm(value)
-    found = _first_match(low, _ENGLISH) or _first_match(low, _RUSSIAN)
-    if found is None:
-        clause = re.search(r"4\.3\.(\d)", low)
-        found = _IEEE_CLAUSE.get(clause.group(1)) if clause else None
-    if found is None:
-        return None
-    single, of_set = found
-    if of_set is not None and _property_level(value, section) is Scope.SET:
-        return of_set
-    return single
-
-
-_DEFECT_STEMS: tuple[tuple[str, DefectType], ...] = (
-    ("противореч", DefectType.CONTRADICTION),
-    ("двусмысл", DefectType.AMBIGUOUS),
-    ("неоднознач", DefectType.AMBIGUOUS),
-    ("незаполн", DefectType.PLACEHOLDER),
-    ("неполн", DefectType.INCOMPLETE),
-    ("непровер", DefectType.UNVERIFIABLE),
-    ("невыполн", DefectType.INFEASIBLE),
-    ("некоррект", DefectType.INCORRECT),
-    ("разнобой", DefectType.TERMINOLOGY),
-    ("дублир", DefectType.REDUNDANCY),
-    ("составн", DefectType.NOT_ATOMIC),
-    ("неуместн", DefectType.DESIGN_DETAIL),
-    ("прослежив", DefectType.TRACEABILITY),
-    ("оформлен", DefectType.TRACEABILITY),
-    ("посторон", DefectType.INJECTED_INSTRUCTION),
-)
-
-
-def parse_defect_type(value: str) -> DefectType | None:
-    """Тип дефекта из закрытого списка промпта: точная метка, метка внутри строки, затем основа слова."""
-    low = _norm(value).strip(" .,;:«»\"'`")
-    exact = DefectType.from_label(low)
-    if exact is not None:
-        return exact
-    for kind in sorted(DefectType, key=lambda k: -len(k.label)):
-        if _norm(kind.label) in low:
-            return kind
-    hits = [(low.find(stem), kind) for stem, kind in _DEFECT_STEMS if stem in low]
-    return min(hits, key=lambda h: h[0])[1] if hits else None
-
-
-def parse_verdict(value: str, heading: str) -> Verdict:
-    """Вердикт; если строки нет или она не разобрана, «неясно» при заголовке «Неясно…», иначе «нарушение»."""
-    low = _norm(value)
-    if low:
-        word = Verdict.from_label(low.split()[0].strip(" .,;:"))
-        if word is not None:
-            return word
-        if "неясн" in low:
-            return Verdict.UNCLEAR
-        if "наруш" in low:
-            return Verdict.VIOLATION
-    return Verdict.UNCLEAR if _norm(heading).startswith("неясн") else Verdict.VIOLATION
-
-
-def parse_severity(value: str) -> Severity | None:
-    low = _norm(value)
-    if not low:
-        return None
-    word = Severity.from_label(low.split()[0].strip(" .,;:"))
-    if word is not None:
-        return word
-    for stem, severity in (
-        ("критич", Severity.CRITICAL),
-        ("средн", Severity.MAJOR),
-        ("низк", Severity.MINOR),
-    ):
-        if stem in low:
-            return severity
-    return None
-
-
-_BLOCKS_TEST = re.compile(r"^(?:да|мешает)\b[\s,:;.—–-]*(.*)$", re.IGNORECASE | re.DOTALL)
-
-
-def parse_test(value: str) -> tuple[bool, str | None]:
-    """«Тест: мешает, <чего не хватает>» → (True, чего не хватает); «не мешает» → (False, None)."""
-    text = value.strip().strip("*").strip()
-    low = _norm(text)
-    if not low or low.startswith("не мешает"):
-        return False, None
-    m = _BLOCKS_TEST.match(text)
-    if m:
-        return True, m.group(1).strip() or None
-    if "не мешает" in low or "мешает" not in low:
-        return False, None
-    return True, text
-
-
-def unwrap(value: str) -> str:
-    """Снимает внешние ёлочки, если значение целиком одна цитата: «Текст» → Текст."""
-    text = value.strip()
-    inner = quotes_in(text)
-    if len(inner) == 1 and text.startswith("«") and text.endswith("»") and text[1:-1].strip() == inner[0]:
-        return inner[0]
-    return text
-
-
-def _clean(value: str) -> str | None:
-    text = value.strip().strip("*").strip()
-    return text or None
 
 
 # ---------------------------------------------------------------- черновик находки
@@ -488,12 +297,18 @@ class Draft:
     suggestion: str | None = None
 
 
+NOT_A_FINDING = "не в формате находки"
+"""Причина переноса фрагмента без строк «Поле: значение» (таблица, абзац с цитатой)."""
+
+
 def draft_from_raw(raw: RawFinding) -> Draft | list[str]:
     """Черновик находки или список того, что мешает разбору кодом (тогда находку переносит модель).
 
     Обязательны цитата, свойство и тип дефекта: без них находку нельзя проверить и показать.
     Без вердикта, важности, теста и остального находка разбирается, пустые поля остаются пустыми.
     """
+    if not raw.fields:
+        return [NOT_A_FINDING]
     if raw.merged:
         return ["одна находка на фрагмент"]
     quotes = tuple(q for value in raw.fields.get(Key.QUOTE, []) for q in quotes_in(value))
@@ -506,7 +321,7 @@ def draft_from_raw(raw: RawFinding) -> Draft | list[str]:
                 problems.append(f"{label}: {'не распознано' if raw.first(key) else 'нет строки'}")
         return problems
     blocks_testing, test_gap = parse_test(raw.first(Key.TEST))
-    title = _clean(raw.heading)
+    title = clean(raw.heading)
     return Draft(
         title=title,
         block_ids=tuple(i for value in raw.fields.get(Key.BLOCKS, []) for i in block_ids_in(value)),
@@ -515,26 +330,13 @@ def draft_from_raw(raw: RawFinding) -> Draft | list[str]:
         defect_type=defect,
         verdict=parse_verdict(raw.first(Key.VERDICT), raw.heading),
         scope=raw.section or prop.scope,
-        explanation=_clean(raw.first(Key.WHY)) or title or "",
-        scenario=_clean(raw.first(Key.SCENARIO)),
+        explanation=clean(raw.first(Key.WHY)) or title or "",
+        scenario=clean(raw.first(Key.SCENARIO)),
         blocks_testing=blocks_testing,
         test_gap=test_gap,
         severity_hint=parse_severity(raw.first(Key.SEVERITY)),
-        suggestion=_clean(unwrap(raw.first(Key.FIX))),
+        suggestion=clean(unwrap(raw.first(Key.FIX))),
     )
 
 
-__all__ = [
-    "Draft",
-    "RawFinding",
-    "SplitAnswer",
-    "block_ids_in",
-    "draft_from_raw",
-    "parse_defect_type",
-    "parse_property",
-    "parse_severity",
-    "parse_test",
-    "parse_verdict",
-    "quotes_in",
-    "split_findings",
-]
+__all__ = ["NOT_A_FINDING", "Draft", "RawFinding", "SplitAnswer", "draft_from_raw", "split_findings"]

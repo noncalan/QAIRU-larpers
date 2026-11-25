@@ -5,17 +5,15 @@ from __future__ import annotations
 import pytest
 
 from validator.models import DefectType, Property, Scope, Severity, Verdict
-from validator.search_parse import (
-    Draft,
+from validator.search_parse import NOT_A_FINDING, Draft, draft_from_raw, split_findings
+from validator.search_values import (
     block_ids_in,
-    draft_from_raw,
     parse_defect_type,
     parse_property,
     parse_severity,
     parse_test,
     parse_verdict,
     quotes_in,
-    split_findings,
     unwrap,
 )
 
@@ -196,6 +194,86 @@ def test_empty_findings_section_is_valid_answer() -> None:
     assert split.has_section
 
 
+def test_text_with_quote_in_findings_section_is_kept_for_transfer() -> None:
+    """Таблица или абзац с цитатой вместо формата находки: фрагмент не теряется, его переносит модель."""
+    answer = "## Находки\n\n| Блок | Цитата |\n|---|---|\n| B014 | «Книга выдаётся» |\n"
+
+    [raw] = split_findings(answer).findings
+
+    assert raw.number is None and "«Книга выдаётся»" in raw.text
+    assert draft_from_raw(raw) == [NOT_A_FINDING]
+
+
+@pytest.mark.parametrize(
+    ("line", "expected"),
+    [
+        ("#### Н-12. 99.9% выдач без периода", "99.9% выдач без периода"),
+        ("#### Н-5. 3.5 секунды на поиск не обоснованы", "3.5 секунды на поиск не обоснованы"),
+        ("#### Н-6 — -5 °C в читальном зале", "-5 °C в читальном зале"),
+        ("**Н-7.** Срок выдачи не задан", "Срок выдачи не задан"),
+        ("Н-8. Срок выдачи не задан", "Срок выдачи не задан"),
+        ("#### 3) Дубли терминов", "Дубли терминов"),
+    ],
+)
+def test_title_keeps_leading_numbers_of_the_title(line: str, expected: str) -> None:
+    answer = (
+        f"## Находки\n\n{line}\n- Цитата: «Книга»\n- Свойство: Verifiable\n- Тип дефекта: непроверяемость\n"
+    )
+
+    [raw] = split_findings(answer).findings
+
+    assert raw.heading == expected
+
+
+def test_mention_of_other_findings_is_not_a_new_finding() -> None:
+    """«Н-3 и Н-7 …» в тексте и продолжение поля с «Н-2.» не режут находку на части."""
+    answer = CANONICAL.replace(
+        "- Почему мешает: Нельзя написать тест на возврат с конкретной датой.",
+        "- Почему мешает: Нельзя написать тест на возврат с конкретной датой;\n"
+        "Н-2. тоже об этом месте.\n\nН-3 и Н-7 описывают одно место.",
+    )
+
+    split = split_findings(answer)
+
+    assert [raw.number for raw in split.findings] == [1, 2]
+    assert split.findings[0].first("why").endswith("Н-2. тоже об этом месте.")
+    assert all(isinstance(draft_from_raw(raw), Draft) for raw in split.findings)
+
+
+@pytest.mark.parametrize(
+    ("heading", "scope"),
+    [
+        ("### Находки по набору требований", Scope.SET),
+        ("### Требования к набору", Scope.SET),
+        ("### Находки по отдельным требованиям", Scope.REQUIREMENT),
+        ("## Каждое требование", Scope.REQUIREMENT),
+    ],
+)
+def test_section_headings_in_other_words(heading: str, scope: Scope) -> None:
+    answer = (
+        f"## Находки\n\n{heading}\n\n#### Н-1. Полнота\n- Цитата: «Книга»\n"
+        "- Свойство: Complete (полнота)\n- Тип дефекта: неполнота\n"
+    )
+
+    [raw] = split_findings(answer).findings
+
+    assert raw.section is scope
+    draft = draft_from_raw(raw)
+    assert isinstance(draft, Draft) and draft.scope is scope
+
+
+def test_level_four_heading_about_the_set_is_a_finding_not_a_section() -> None:
+    answer = (
+        "## Находки\n\n### Отдельные требования\n\n#### Набор требований не задаёт срок\n"
+        "- Цитата: «Книга»\n- Свойство: Complete\n- Тип дефекта: неполнота\n"
+    )
+
+    [raw] = split_findings(answer).findings
+
+    assert raw.heading == "Набор требований не задаёт срок"
+    assert raw.section is Scope.REQUIREMENT
+
+
 @pytest.mark.parametrize(
     ("value", "section", "expected"),
     [
@@ -336,6 +414,8 @@ def test_test_line(value: str, expected: tuple[bool, str | None]) -> None:
         ("“Книга выдаётся”", ["Книга выдаётся"]),
         ('"Книга выдаётся"', ["Книга выдаётся"]),
         ("Книга выдаётся;", ["Книга выдаётся"]),
+        ('Выдаются "редкие" книги', ['Выдаются "редкие" книги']),
+        ('"А" (B014) и "Б"', ["А", "Б"]),
         ("", []),
     ],
 )
