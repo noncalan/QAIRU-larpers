@@ -181,10 +181,12 @@
       "quotes_total": 0,
       "quotes_exact": 0,
       "quotes_fuzzy": 0,
-      "quotes_not_found": 0
+      "quotes_not_found": 0,
+      "anchors_corrected": 0
     },
     "traffic_light": "green",
     "traffic_reason": "нарушений не найдено",
+    "traffic_rule": "",
     "requirement_status": {
       "R-01": [],
       "R-02": [],

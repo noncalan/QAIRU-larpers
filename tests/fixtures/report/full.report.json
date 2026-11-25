@@ -297,6 +297,8 @@
         "scope": "set",
         "severity": "critical",
         "severity_hint": null,
+        "severity_basis": "",
+        "severity_disputed": false,
         "blocks_testing": true,
         "quotes": [
           {
@@ -388,6 +390,8 @@
         "scope": "requirement",
         "severity": "major",
         "severity_hint": null,
+        "severity_basis": "",
+        "severity_disputed": false,
         "blocks_testing": true,
         "quotes": [
           {
@@ -452,6 +456,8 @@
         "scope": "requirement",
         "severity": "major",
         "severity_hint": null,
+        "severity_basis": "",
+        "severity_disputed": false,
         "blocks_testing": false,
         "quotes": [
           {
@@ -510,6 +516,8 @@
         "scope": "requirement",
         "severity": "minor",
         "severity_hint": null,
+        "severity_basis": "",
+        "severity_disputed": false,
         "blocks_testing": false,
         "quotes": [
           {
@@ -570,6 +578,8 @@
         "scope": "set",
         "severity": "major",
         "severity_hint": null,
+        "severity_basis": "",
+        "severity_disputed": false,
         "blocks_testing": false,
         "quotes": [
           {
@@ -673,18 +683,18 @@
         "minor": 1
       },
       "by_property": {
-        "SET-CONS": 1,
-        "IND-VERIF": 1,
         "IND-UNAMB": 1,
         "IND-SING": 1,
-        "SET-COMPL": 1
+        "IND-VERIF": 1,
+        "SET-COMPL": 1,
+        "SET-CONS": 1
       },
       "by_defect_type": {
         "contradiction": 1,
-        "unverifiable": 1,
         "ambiguous": 1,
-        "not_atomic": 1,
-        "incomplete": 1
+        "incomplete": 1,
+        "unverifiable": 1,
+        "not_atomic": 1
       },
       "set_level": 2,
       "discarded_total": 1,
@@ -694,10 +704,12 @@
       "quotes_total": 6,
       "quotes_exact": 5,
       "quotes_fuzzy": 1,
-      "quotes_not_found": 0
+      "quotes_not_found": 0,
+      "anchors_corrected": 0
     },
     "traffic_light": "red",
     "traffic_reason": "критичных нарушений: 1",
+    "traffic_rule": "",
     "requirement_status": {
       "R-01": [],
       "R-02": [
