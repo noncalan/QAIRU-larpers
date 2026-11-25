@@ -14,6 +14,8 @@
 разных форматов считаем одной, если их цитаты перекрываются в опорном тексте (не меньше
 ``MIN_SPAN_OVERLAP`` от более короткой) и свойства из одной группы слияния (``merge.PROPERTY_GROUPS``)
 или тип дефекта тот же. Цитаты, которых в опорном тексте нет, сравниваем по тексту (rapidfuzz).
+Пропуски на уровне набора с тем же свойством и похожей сутью («нет приоритетов») считаем одной
+находкой, даже если прогоны процитировали разные места.
 
 **Как читать.** Каждый формат это отдельный живой прогон, а модель от прогона к прогону отвечает
 по-разному. Поэтому «только в одном формате» это сумма влияния формата и разброса модели. Разброс
@@ -34,19 +36,26 @@ from rapidfuzz import fuzz
 from evals.judge import EvalError, display_path, read_utf8
 from evals.report import money, num, pct
 from evals.runs import load_document
+from validator.ingest.blocks import EMPTY_CELL
 from validator.merge import PROPERTY_GROUPS
-from validator.models import DocKind, Finding, ParsedDocument, Report
+from validator.models import Backend, CallRecord, DocKind, Finding, ParsedDocument, Quote, Report, Scope
 from validator.text import locate_quote, normalize
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_REFERENCE = REPO_ROOT / "data" / "input" / "requirements.md"
 REPORT_NAME = "report.json"
+RUN_DIR = "run"
+CALLS_NAME = "calls.jsonl"
+LIVE_BACKENDS = frozenset({Backend.CLI, Backend.API})
 
 MIN_SPAN_OVERLAP = 0.5
 """Доля более короткой цитаты, которая должна лечь на цитату другой находки в опорном тексте."""
 
 TEXT_SIMILARITY = 85.0
 """Балл rapidfuzz (0–100) для цитат, которых нет в опорном тексте, и для находок без цитат."""
+
+SET_TITLE_SIMILARITY = 80.0
+"""Балл rapidfuzz для сути двух находок уровня набора с одним свойством: тогда место цитаты не важно."""
 
 QUOTE_PREVIEW_CHARS = 90
 
@@ -60,6 +69,8 @@ class FormatRun:
     label: str
     path: Path
     report: Report
+    live_seconds: float | None = None
+    """Время живых вызовов модели по ``run/calls.jsonl``: у пересборки replay время отчёта не живое."""
 
 
 @dataclass(frozen=True)
@@ -85,21 +96,53 @@ def load_report(path: Path) -> Report:
         raise EvalError(f"Отчёт {display_path(file)} не по схеме report.json: {exc}") from exc
 
 
+def live_seconds(folder: Path) -> float | None:
+    """От начала первого до конца последнего живого вызова модели (``run/calls.jsonl`` рядом с отчётом).
+
+    Так снапшот replay (``tests/fixtures/e2e/<формат>/``) показывает время записанного живого прогона.
+    """
+    path = folder / RUN_DIR / CALLS_NAME
+    if not path.is_file():
+        return None
+    spans = []
+    for line in read_utf8(path, "Лог вызовов").splitlines():
+        if not line.strip():
+            continue
+        try:
+            rec = CallRecord.model_validate_json(line)
+        except ValueError as exc:
+            raise EvalError(f"Лог вызовов {display_path(path)}: строка не по схеме: {exc}") from exc
+        if rec.backend in LIVE_BACKENDS and rec.duration_ms is not None:
+            start = rec.started_at.timestamp()
+            spans.append((start, start + rec.duration_ms / 1000))
+    if not spans:
+        return None
+    return max(end for _, end in spans) - min(start for start, _ in spans)
+
+
 def load_runs(paths: Sequence[Path]) -> list[FormatRun]:
     runs = []
     for path in paths:
         report = load_report(path)
         kind = report.passport.document_kind
         label = kind.value.upper() if kind is not DocKind.UNKNOWN else display_path(path)
-        runs.append(FormatRun(label=label, path=path, report=report))
+        folder = path if path.is_dir() else path.parent
+        runs.append(FormatRun(label=label, path=path, report=report, live_seconds=live_seconds(folder)))
     return runs
+
+
+def _shown(quote: Quote) -> str:
+    """Фрагмент документа, а у цитаты пустых ячеек («Подпись: (пусто)») текст, как его видела модель."""
+    if quote.located and EMPTY_CELL in quote.text and EMPTY_CELL not in quote.located:
+        return quote.text
+    return quote.located or quote.text
 
 
 def _spans(finding: Finding, reference: ParsedDocument) -> tuple[tuple[Span, ...], tuple[str, ...]]:
     spans: list[Span] = []
     texts: list[str] = []
     for quote in finding.quotes:
-        text = quote.located or quote.text
+        text = _shown(quote)
         texts.append(normalize(text)[0])
         found = locate_quote(reference, text)
         if found.anchor is not None:
@@ -134,6 +177,15 @@ def same_defect(a: Item, b: Item) -> bool:
     fa, fb = a.finding, b.finding
     if a.group != b.group and fa.defect_type is not fb.defect_type:
         return False
+    title_a, title_b = fa.title or fa.explanation, fb.title or fb.explanation
+    if (
+        fa.scope is Scope.SET
+        and fb.scope is Scope.SET
+        and fa.property is fb.property
+        and fuzz.token_set_ratio(title_a, title_b) >= SET_TITLE_SIMILARITY
+    ):
+        # Пропуск на уровне набора («нет приоритетов») каждый прогон цитирует в своём месте.
+        return True
     if a.spans and b.spans:
         return _spans_overlap(a.spans, b.spans)
     if a.texts and b.texts:
@@ -141,7 +193,6 @@ def same_defect(a: Item, b: Item) -> bool:
     if a.texts or b.texts:
         return False
     # Находки набора без цитат: тот же раздел и похожая суть.
-    title_a, title_b = fa.title or fa.explanation, fb.title or fb.explanation
     return fa.section_path == fb.section_path and fuzz.token_set_ratio(title_a, title_b) >= TEXT_SIMILARITY
 
 
@@ -179,7 +230,7 @@ def _preview(text: str) -> str:
 def runs_table(runs: Sequence[FormatRun]) -> list[str]:
     lines = [
         "| Формат | Код | Требований | Находок | Нарушений | Неясно | Критичных | Отброшено | "
-        "Цитаты сверены | Вызовов | Время, с | Цена, $ |",
+        "Цитаты сверены | Вызовов | Время модели, с | Цена, $ |",
         "|---|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     for run in runs:
@@ -190,9 +241,15 @@ def runs_table(runs: Sequence[FormatRun]) -> list[str]:
             f"| {run.label} | {r.passport.exit_code.value} | {reqs} | {s.findings_total if s else 0} | "
             f"{s.violations if s else 0} | {s.unclear if s else 0} | {s.critical if s else 0} | "
             f"{s.discarded_total if s else 0} | {pct(r.metrics.verified_quote_share)} | "
-            f"{r.metrics.calls_total} | {num(r.passport.duration_s, 0)} | {money(r.metrics.cost_usd)} |"
+            f"{r.metrics.calls_total} | {num(_seconds(run), 0)} | {money(r.metrics.cost_usd)} |"
         )
     return lines
+
+
+def _seconds(run: FormatRun) -> float | None:
+    if run.live_seconds is not None:
+        return run.live_seconds
+    return None if run.report.passport.backend_used is Backend.REPLAY else run.report.passport.duration_s
 
 
 def agreement_table(
@@ -218,7 +275,7 @@ def singles_table(runs: Sequence[FormatRun], items: Sequence[Item], groups: Sequ
     lines = ["| Формат | Находка | Свойство | Важность | Суть | Цитата |", "|---|---|---|---|---|---|"]
     for item in sorted(singles, key=lambda it: (it.run, it.finding.id)):
         f = item.finding
-        quote = f.quotes[0].located or f.quotes[0].text if f.quotes else ""
+        quote = _shown(f.quotes[0]) if f.quotes else ""
         lines.append(
             f"| {runs[item.run].label} | {f.id} | {f.property.label} | {f.severity.label} | "
             f"{_cell(_preview(f.title or f.explanation))} | {_cell(_preview(quote))} |"

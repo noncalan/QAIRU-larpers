@@ -3,13 +3,25 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
 
-from evals.formats import FormatRun, clusters, items_of, main, render
+from evals.formats import FormatRun, clusters, items_of, live_seconds, main, render
 from report_factory import full_report
-from validator.models import DefectType, DocKind, ParsedDocument, Property, Report
+from validator.models import (
+    Backend,
+    CallRecord,
+    CallStatus,
+    DefectType,
+    DocKind,
+    Effort,
+    LLMStep,
+    ParsedDocument,
+    Property,
+    Report,
+)
 
 
 def _with(report: Report, kind: DocKind, keep: Callable[[str], bool] = lambda _: True) -> Report:
@@ -105,3 +117,55 @@ def test_cli_missing_report_is_an_error_not_a_traceback(
 
     assert code == 2
     assert "Ошибка" in capsys.readouterr().err
+
+
+def test_live_seconds_span_live_calls_and_skip_replay(tmp_path: Path) -> None:
+    start = datetime(2026, 11, 26, 3, 0, tzinfo=UTC)
+
+    def record(call_id: str, backend: Backend, offset_s: int, duration_ms: int) -> str:
+        return CallRecord(
+            call_id=call_id,
+            step=LLMStep.SEARCH,
+            call_index=1,
+            key="k",
+            model_requested="m",
+            effort=Effort.MEDIUM,
+            backend=backend,
+            started_at=start + timedelta(seconds=offset_s),
+            duration_ms=duration_ms,
+            status=CallStatus.OK,
+        ).model_dump_json()
+
+    run = tmp_path / "run"
+    run.mkdir()
+    lines = [record("search.1", Backend.CLI, 0, 30_000), record("search.2", Backend.CLI, 10, 50_000)]
+    (run / "calls.jsonl").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    replay = tmp_path / "replay"
+    (replay / "run").mkdir(parents=True)
+    (replay / "run" / "calls.jsonl").write_text(
+        record("search.1", Backend.REPLAY, 0, 5) + "\n", encoding="utf-8"
+    )
+
+    assert live_seconds(tmp_path) == pytest.approx(60.0)
+    assert live_seconds(replay) is None
+    assert live_seconds(tmp_path / "nope") is None
+
+
+def test_set_level_gap_with_same_property_groups_across_places(reference: ParsedDocument) -> None:
+    base = full_report()
+    other = _with(base, DocKind.PDF)
+    assert other.verification is not None and base.verification is not None
+    elsewhere = base.verification.findings[0].quotes[:1]
+    moved = [
+        f.model_copy(update={"quotes": elsewhere}) if f.id == "F-05" else f
+        for f in other.verification.findings
+    ]
+    other = other.model_copy(
+        update={"verification": other.verification.model_copy(update={"findings": moved})}
+    )
+
+    items = items_of(_runs(_with(base, DocKind.MD), other), reference)
+    groups = clusters(items)
+
+    f05 = [g for g in groups if any(items[i].finding.id == "F-05" for i in g)]
+    assert len(f05) == 1 and {items[i].run for i in f05[0]} == {0, 1}
