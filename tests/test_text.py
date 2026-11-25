@@ -5,9 +5,10 @@ from __future__ import annotations
 from collections.abc import Callable
 
 import pytest
+from rapidfuzz import fuzz
 
 from validator.models import ParsedDocument, QuoteMatch
-from validator.text import MIN_FUZZY_CHARS, line_of, locate_quote, normalize, stable_key
+from validator.text import MIN_FUZZY_CHARS, line_of, locate_quote, normalize, snap_to_words, stable_key
 
 DOC = (
     "Система сохраняет настройку пользователя.\n"
@@ -177,3 +178,66 @@ def test_line_of_counts_from_one() -> None:
     text = "a\nb\nc"
 
     assert [line_of(text, i) for i in (0, 2, 4)] == [1, 2, 3]
+
+
+BOOKS = "Правила выдачи. Читатель может держать на руках не более пяти книг одновременно. Срок две недели."
+
+
+@pytest.mark.parametrize(
+    "quote",
+    [
+        "Читатель может держать на руках не более пяти книг одновремено",  # опечатка: конец слова откушен
+        "читатель может держать на руках не более 5 книг одновременно.",  # другое число
+        "Читатель может держать на руках не более пяти книжек одновременно",  # пробел по краю
+    ],
+)
+def test_fuzzy_match_is_snapped_to_whole_words(quote: str) -> None:
+    found = locate_quote(BOOKS, quote)
+
+    assert found.match is QuoteMatch.FUZZY
+    assert found.located is not None and found.anchor is not None
+    assert found.located.startswith("Читатель")
+    assert found.located.rstrip(".").endswith("одновременно")
+    assert BOOKS[found.anchor.char_start : found.anchor.char_end] == found.located
+
+
+def test_snapping_keeps_fuzzy_score() -> None:
+    quote = "Читатель может держать на руках не более пяти книг одновремено"
+    norm_doc, norm_quote = normalize(BOOKS)[0], normalize(quote)[0]
+
+    found = locate_quote(BOOKS, quote)
+
+    assert found.score == round(fuzz.partial_ratio_alignment(norm_quote, norm_doc).score, 1)
+
+
+def test_exact_match_is_not_changed_by_snapping() -> None:
+    found = locate_quote(BOOKS, "держать на руках не более пяти книг")
+
+    assert found.match is QuoteMatch.EXACT
+    assert found.located == "держать на руках не более пяти книг"
+
+
+@pytest.mark.parametrize(
+    ("start", "end", "expected"),
+    [
+        (3, 9, "Читатель"),  # «татель» → целое слово
+        (2, 6, "Читатель"),  # середина слова
+        (0, 11, "Читатель может"),  # пробел и «м» по краям
+        (9, 13, "может"),
+        (0, 1, " "),  # от фрагмента остался бы только пробел: границы не трогаем
+    ],
+)
+def test_snap_to_words(start: int, end: int, expected: str) -> None:
+    text = " Читатель может, user_id."
+
+    s, e = snap_to_words(text, start, end)
+
+    assert text[s:e] == expected
+
+
+def test_snap_to_words_keeps_identifiers_and_stops_at_punctuation() -> None:
+    text = "Поле user_id, затем дата."
+
+    s, e = snap_to_words(text, 8, 11)
+
+    assert text[s:e] == "user_id"
