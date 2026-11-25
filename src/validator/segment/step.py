@@ -36,7 +36,7 @@ from validator.models import (
 )
 from validator.segment.answer import API_SUBTYPES, ENTITY_KEYS, EXCLUDE_LABELS, AnswerError, parse_answer
 from validator.segment.build import Draft, block_draft, build_requirements, fallback_label
-from validator.segment.checks import from_answer, no_requirements_diagnostic
+from validator.segment.checks import from_answer, no_requirements
 
 PROMPTS_DIR = Path(__file__).resolve().parents[1] / "prompts"
 SYSTEM_PROMPT = "segment_system.md"
@@ -192,12 +192,11 @@ def fallback_segmentation(doc: ParsedDocument) -> Segmentation:
         else:
             excluded.append(ExcludedBlock(block_id=block.id, label=label, reason=reason))
     requirements = build_requirements(doc, drafts)
-    diagnostics = [] if requirements else [no_requirements_diagnostic()]
     return Segmentation(
         requirements=requirements,
         excluded=excluded,
         mode=SegmentationMode.FALLBACK,
-        diagnostics=diagnostics,
+        diagnostics=[] if requirements else no_requirements(doc),
     )
 
 

@@ -326,23 +326,26 @@ def _overlap(reqs: Sequence[Requirement]) -> Diagnostic | None:
     )
 
 
-def no_requirements_diagnostic() -> Diagnostic:
-    return Diagnostic(
-        code=IN_NO_REQUIREMENTS,
-        level=DiagLevel.WARNING,
-        message="В документе не найдено ни одного требования: похоже на пустой шаблон или не на ТЗ",
-        action="Проверка выполнена, но требований для неё нет",
-        hint="Проверьте, тот ли файл передан: в документе требований должны быть обязательства к системе",
-        step="segment",
-    )
+def no_requirements(doc: ParsedDocument) -> list[Diagnostic]:
+    """``IN-081`` для нарезки без требований; если разбор уже выдал его («только заголовки»), не повторяем."""
+    if any(d.code == IN_NO_REQUIREMENTS for d in doc.diagnostics):
+        return []
+    return [
+        Diagnostic(
+            code=IN_NO_REQUIREMENTS,
+            level=DiagLevel.WARNING,
+            message="В документе не найдено ни одного требования: похоже на пустой шаблон или не на ТЗ",
+            action="Проверка выполнена, но требований для неё нет",
+            hint="Проверьте, тот ли файл передан: в документе требований должны быть обязательства к системе",
+            step="segment",
+        )
+    ]
 
 
-def diagnostics(notes: Notes, reqs: Sequence[Requirement]) -> list[Diagnostic]:
+def diagnostics(doc: ParsedDocument, notes: Notes, reqs: Sequence[Requirement]) -> list[Diagnostic]:
     found = [_bad_refs(notes), _corrections(notes), _uncovered(notes), _overlap(reqs)]
     out = [d for d in found if d is not None]
-    if not reqs:
-        out.append(no_requirements_diagnostic())
-    return out
+    return out if reqs else out + no_requirements(doc)
 
 
 # ---------------------------------------------------------------- сборка
@@ -368,5 +371,5 @@ def from_answer(doc: ParsedDocument, answer: ModelAnswer) -> Segmentation:
         requirements=requirements,
         excluded=kept,
         mode=SegmentationMode.MODEL,
-        diagnostics=diagnostics(notes, requirements),
+        diagnostics=diagnostics(doc, notes, requirements),
     )

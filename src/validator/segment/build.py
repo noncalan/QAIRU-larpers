@@ -43,7 +43,10 @@ TABLE_KEY_CHARS = 40
 KEY_HEADERS = KEY_VALUE_HEADERS | {"name", "имя", "название", "код", "code", "id", "метод", "method"}
 """Колонки, значение которых называет строку таблицы: «Параметры: amount» вместо «строка таблицы 2»."""
 
-_CONTENT_KINDS = frozenset({BlockKind.PARAGRAPH, BlockKind.LIST_ITEM, BlockKind.TABLE_ROW})
+_CONTENT_KINDS = frozenset(
+    {BlockKind.PARAGRAPH, BlockKind.LIST_ITEM, BlockKind.TABLE_ROW, BlockKind.QUOTE, BlockKind.FOOTNOTE}
+)
+"""Блоки, в которых может быть требование: цитата и сноска тоже (условие к требованию бывает в сноске)."""
 _MARKUP = re.compile(r"[*`_]+")
 _EMPHASIS = re.compile(r"\*\*|__|`")
 _LABEL_LIKE = re.compile(r"(?=.*[A-Za-zА-Яа-яЁё])(?=.*\d)")

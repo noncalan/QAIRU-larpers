@@ -385,11 +385,21 @@ def test_fallback_takes_content_blocks_and_skips_short_ones(doc: ParsedDocument)
     assert_quotes_from_document(doc, seg)
 
 
-def test_fallback_on_empty_document_gives_diagnostic(make_md: Callable[[str], ParsedDocument]) -> None:
-    seg = fallback_segmentation(make_md("# Шаблон\n\n## Раздел\n"))
+def test_fallback_without_requirements_gives_diagnostic(make_md: Callable[[str], ParsedDocument]) -> None:
+    seg = fallback_segmentation(make_md("# Шаблон\n\nЗаполнить позже.\n"))
 
     assert seg.requirements == []
     assert (IN_NO_REQUIREMENTS, DiagLevel.WARNING) in codes(seg)
+
+
+def test_headings_only_document_is_not_reported_twice(make_md: Callable[[str], ParsedDocument]) -> None:
+    doc = make_md("# Шаблон\n\n## Раздел\n")
+
+    seg = fallback_segmentation(doc)
+
+    assert seg.requirements == []
+    assert IN_NO_REQUIREMENTS in [d.code for d in doc.diagnostics]
+    assert seg.diagnostics == []
 
 
 # ---------------------------------------------------------------- записанный живой ответ
