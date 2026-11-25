@@ -25,6 +25,7 @@ from validator.models import (
     Verdict,
     Verification,
 )
+from validator.questions.metrics import question_metrics
 
 FIRST_PAGE_ITEMS = 5
 """Сколько исправлений и вопросов на первой странице (решение 1 сессии идеи: 5 и 5)."""
@@ -106,6 +107,7 @@ def _metrics(ctx: RunContext) -> RunMetrics:
         quotes_total=quotes_total,
         quotes_verified=verified,
         verified_quote_share=round(verified / quotes_total, 4) if quotes_total else None,
+        questions=question_metrics(ctx.questions, ctx.questions_withdrawn) if ver else None,
     )
 
 
@@ -148,6 +150,7 @@ def build_report(ctx: RunContext) -> Report:
         segmentation=ctx.segmentation,
         verification=ctx.verification,
         questions=list(ctx.questions),
+        questions_withdrawn=list(ctx.questions_withdrawn),
         conclusion=_conclusion(ctx, errors),
         metrics=_metrics(ctx),
     )

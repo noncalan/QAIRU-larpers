@@ -14,6 +14,8 @@
 |---|---|---|---|
 | `search_system.md`, `search_user.md` | 4, проход поиска (#14) | Opus 5.5 | свободный текст в строгом формате, его разбирает код (`search_parse.py`) |
 | `search_transfer_system.md`, `search_transfer_user.md` | 4б, перенос в JSON (#18) | Haiku 5.5 | JSON по `TRANSFER_SCHEMA` (`search_transfer.py`); вызывается, только если код не разобрал находки |
+| `questions_system.md`, `questions_user.md` | 8б, редактор вопросов (#20) | Opus 5.5 | рассуждение, затем ```json со списком `questions` (`questions/editor.py`) |
+| `questions_critic_system.md`, `questions_critic_user.md` | 8г, критик-самоответ (#41) | Opus 5.5 | рассуждение, затем ```json со списком `reviews` (`questions/critic.py`); снимает вопрос код по сверенной цитате-ответу |
 
 Слоты в пользовательских промптах (`{document}`, `{findings}`) подставляет `prompting.fill` за один проход, поэтому фигурные скобки в тексте документа не ломают шаблон.
 

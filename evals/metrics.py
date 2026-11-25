@@ -25,6 +25,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from evals.findings import JudgeItem
 from evals.gold import Gold, GoldSeverity
 from evals.judge import ExtraVerdict, GoldStatus, JudgeCall, JudgeVerdict
+from evals.questions import QuestionsConfig, QuestionScore, aggregate_questions
 from evals.runs import CallStats, QuoteStats, RunData, Source
 
 QUOTE_PREVIEW_CHARS = 80
@@ -70,6 +71,7 @@ class RunScore(BaseModel):
     agent_version: str | None = None
     layout: str | None = None
     document: str | None = None
+    questions: QuestionScore | None = None
 
     def ids_with(self, *statuses: GoldStatus) -> list[int]:
         return [g for g, s in self.gold.items() if s in statuses]
@@ -166,6 +168,7 @@ def score_run(
         agent_version=run.agent_version,
         layout=run.layout,
         document=run.document,
+        questions=run.questions,
     )
 
 
@@ -210,6 +213,7 @@ class ConfigScore(BaseModel):
     gold_jaccard: float | None = Field(description="Жаккар множеств найденных дефектов эталона")
     key_jaccard: float | None = Field(description="Жаккар множеств находок агента (stable_key и свойство)")
     judge_cost_usd: float | None = None
+    questions: QuestionsConfig | None = Field(default=None, description="Вопросы автору до и после критика")
 
 
 def _hits(run: RunScore, *, strict: bool) -> set[int]:
@@ -245,4 +249,5 @@ def aggregate(runs: Sequence[RunScore], gold: Gold) -> ConfigScore:
         gold_jaccard=mean_pairwise_jaccard(lenient),
         key_jaccard=mean_pairwise_jaccard(key_sets) if len(key_sets) == len(runs) else None,
         judge_cost_usd=round(sum(judge_costs), 6) if judge_costs else None,
+        questions=aggregate_questions([r.questions for r in runs if r.questions is not None]),
     )
