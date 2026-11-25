@@ -930,6 +930,12 @@ class Finding(Contract):
     scope: Scope
     severity: Severity
     severity_hint: Severity | None = None
+    severity_basis: str = Field(
+        default="", description="Как код посчитал важность: таблица, ограничения, критик"
+    )
+    severity_disputed: bool = Field(
+        default=False, description="Подсказка модели и таблица кода расходятся больше чем на уровень"
+    )
     blocks_testing: bool = False
     quotes: list[Quote] = Field(default_factory=list)
     requirement_ids: list[str] = Field(default_factory=list)
@@ -982,6 +988,7 @@ class Summary(Contract):
     quotes_exact: int = 0
     quotes_fuzzy: int = 0
     quotes_not_found: int = 0
+    anchors_corrected: int = Field(default=0, description="Находок, у которых место цитаты исправил код")
 
 
 class Verification(Contract):
@@ -990,6 +997,7 @@ class Verification(Contract):
     summary: Summary = Field(default_factory=Summary)
     traffic_light: TrafficLight = TrafficLight.YELLOW
     traffic_reason: str = ""
+    traffic_rule: str = Field(default="", description="Правило светофора словами, его показывает отчёт")
     requirement_status: dict[str, list[str]] = Field(
         default_factory=dict, description="R-NN → список F-NN; пустой список значит «нарушений нет»"
     )
