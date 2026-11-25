@@ -331,6 +331,61 @@ def test_recording_client_retries_once_more_after_sdk_gives_up() -> None:
     assert client.spent_usd() > 0
 
 
+def test_rejected_but_billed_answers_count_toward_the_budget() -> None:
+    rec = Recorder(lambda: stream_response(sse_body("max_tokens")))
+    client = RecordingClient(api(rec), max_budget_usd=0.5, sleep=lambda _s: None)
+
+    with pytest.raises(LLMError):
+        client.call(request())
+
+    [record] = client.records
+    assert record.status is CallStatus.ERROR
+    assert record.usage.output_tokens == 128000
+    assert record.cost_usd == pytest.approx((1840 * 4 + 128000 * 20) / 1_000_000)
+    assert client.spent_usd() == pytest.approx(record.cost_usd)
+    with pytest.raises(LLMError) as caught:
+        client.call(request())
+    assert caught.value.code == "LLM-003"  # лимит цены исчерпан оплаченным обрезанным ответом
+    assert len(rec.requests) == 1
+
+
+def test_answer_against_schema_still_carries_its_tokens() -> None:
+    err = failure(Recorder(lambda: stream_response(sse_body("structured_bad"))), request(schema=SCHEMA))
+
+    assert err.spent is not None and err.spent.usage.output_tokens == 40
+
+
+@pytest.mark.parametrize(
+    ("broken", "code"),
+    [
+        (
+            lambda: httpx2.Response(
+                200,
+                headers={"content-type": "text/event-stream"},
+                content=b"event: message_start\ndata: {not json\n\n",
+            ),
+            "LLM-011",
+        ),
+        (
+            lambda: httpx2.Response(
+                200,
+                headers={"content-type": "text/event-stream", "content-encoding": "gzip"},
+                content=b"\x00 not gzip at all",
+            ),
+            "LLM-004",  # httpx2 считает битое сжатие ошибкой транспорта: как обрыв, повторяем
+        ),
+    ],
+    ids=["bad-json-event", "bad-gzip"],
+)
+def test_garbled_stream_is_a_retryable_error_not_a_crash(
+    broken: Callable[[], httpx2.Response], code: str
+) -> None:
+    err = failure(Recorder(broken))
+
+    assert err.code == code
+    assert err.retryable
+
+
 # ---------------------------------------------------------------- ключ и выбор бэкенда
 
 
@@ -359,16 +414,45 @@ def test_blank_key_counts_as_no_key(monkeypatch: pytest.MonkeyPatch) -> None:
     assert caught.value.code == "LLM-001"
 
 
-def test_api_and_auto_with_key_use_the_sdk(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_api_backend_with_key_uses_the_sdk(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ANTHROPIC_API_KEY", FAKE_KEY)
+
+    client, diagnostics = make_client(_cfg(tmp_path, Backend.API))
+
+    assert isinstance(client, AnthropicAPI) and not diagnostics
+
+
+@pytest.mark.parametrize("claude", ["missing", "logged_out"])
+def test_auto_with_key_uses_the_sdk_when_subscription_is_not_there(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, claude: str
+) -> None:
+    monkeypatch.setenv("ANTHROPIC_API_KEY", FAKE_KEY)
+    exe = None if claude == "missing" else "/usr/bin/claude"
+    monkeypatch.setattr("validator.llm.claude_cli.find_claude", lambda: exe)
+    monkeypatch.setattr("validator.llm.factory.login_status", lambda _exe: False)
+
+    client, diagnostics = make_client(_cfg(tmp_path, Backend.AUTO).model_copy(update={"has_api_key": True}))
+
+    assert isinstance(client, AnthropicAPI)
+    assert not any(d.level is DiagLevel.ERROR for d in diagnostics)
+
+
+def test_auto_prefers_logged_in_subscription_over_the_key(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     monkeypatch.setenv("ANTHROPIC_API_KEY", FAKE_KEY)
     monkeypatch.setattr("validator.llm.claude_cli.find_claude", lambda: "/usr/bin/claude")
+    monkeypatch.setattr("validator.llm.factory.login_status", lambda _exe: True)
 
-    api_client, api_diags = make_client(_cfg(tmp_path, Backend.API))
-    auto_cfg = _cfg(tmp_path, Backend.AUTO).model_copy(update={"has_api_key": True})
-    auto_client, auto_diags = make_client(auto_cfg)
+    client, _ = make_client(_cfg(tmp_path, Backend.AUTO).model_copy(update={"has_api_key": True}))
 
-    assert isinstance(api_client, AnthropicAPI) and not api_diags
-    assert isinstance(auto_client, AnthropicAPI) and not auto_diags
+    assert client.backend is Backend.CLI
+
+
+def test_dotenv_key_with_only_spaces_is_no_key(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "  ")
+
+    assert not _cfg(tmp_path, Backend.AUTO).has_api_key
 
 
 def test_run_with_api_backend_and_no_key_gives_exit_5_and_a_report(

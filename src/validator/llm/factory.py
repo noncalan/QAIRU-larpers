@@ -3,8 +3,8 @@
 - ``fake``: фикстуры тестов;
 - ``cli``: подписка ``claude -p``;
 - ``replay``: записанные ответы из ``--replay ПАПКА`` (папка ``run/`` прошлого прогона);
-- ``auto``: ключ ``ANTHROPIC_API_KEY`` есть, идём через SDK; иначе подписка, если ``claude`` установлен
-  и вошёл в аккаунт; иначе replay из ``--replay``; иначе отчёт с ``LLM-001``;
+- ``auto``: подписка, если ``claude`` установлен и вошёл в аккаунт; иначе SDK, если есть ключ
+  ``ANTHROPIC_API_KEY``; иначе replay из ``--replay``; иначе отчёт с ``LLM-001``;
 - ``api``: только SDK ``anthropic`` (#32); без ключа понятная диагностика ``LLM-001`` и код 5.
 
 Если модели нет, конвейер получает ``UnavailableLLM``: каждый вызов даёт ``LLMError``, и шаги
@@ -140,13 +140,20 @@ def _subscription_notes(cfg: RunConfig, *, logged_in: bool | None) -> list[Diagn
 
 
 def _auto(cfg: RunConfig) -> tuple[LLMClient, list[Diagnostic]]:
+    """Подписка, если ``claude`` вошёл в аккаунт; иначе ключ API; иначе ``--replay``; иначе ``LLM-001``.
+
+    Подписка раньше ключа: она не списывает деньги, а ключ в ``.env`` может быть без средств (D-009).
+    Ключ при этом не теряется: для API есть ``--backend api``.
+    """
+    client, missing = _subscription()
+    logged_in = login_status(client.executable) if isinstance(client, ClaudeCLI) else None
+    if isinstance(client, ClaudeCLI) and logged_in is not False:
+        return client, _subscription_notes(cfg, logged_in=logged_in)
     if cfg.has_api_key:
         api, _ = _api()
         if isinstance(api, AnthropicAPI):
             return api, _replay_unused(cfg, "Claude API (ключ ANTHROPIC_API_KEY)")
-    client, missing = _subscription()
-    logged_in = login_status(client.executable) if isinstance(client, ClaudeCLI) else None
-    if cfg.replay_dir is not None and (isinstance(client, UnavailableLLM) or logged_in is False):
+    if cfg.replay_dir is not None:
         replayed, replay_diags = _replay(cfg)
         if not isinstance(replayed, UnavailableLLM):
             return replayed, replay_diags

@@ -123,7 +123,7 @@ def load_config(
         step_models=step_models(profile),
         fake_fixtures=default_fixtures_dir() if backend is Backend.FAKE else None,
         call_timeout_s=CALL_TIMEOUT_S,
-        has_api_key=bool(os.environ.get(API_KEY_ENV)),
+        has_api_key=bool(os.environ.get(API_KEY_ENV, "").strip()),
     )
 
 

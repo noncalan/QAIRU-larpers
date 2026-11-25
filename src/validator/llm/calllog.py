@@ -49,6 +49,7 @@ RETRY_DELAY_S = 20.0
 SHOWN_CALL_IDS = 10
 LIVE_BACKENDS = frozenset({Backend.CLI, Backend.API})
 """Бэкенды, которые тратят лимит: только их ответы идут в кеш и в счёт ``--max-budget-usd``."""
+_FREE_STATUSES = frozenset({CallStatus.CACHED, CallStatus.REPLAYED})
 
 
 def response_file_name(req: LLMRequest) -> str:
@@ -101,12 +102,15 @@ class RecordingClient:
         return self.notes + [_failure_diagnostic(items) for items in failures.values()] + backend_diags
 
     def spent_usd(self) -> float:
-        """Сколько стоили живые вызовы этого прогона по тарифу (кеш и replay бесплатны)."""
+        """Сколько стоили живые вызовы этого прогона по тарифу (кеш и replay бесплатны).
+
+        Считаются и упавшие попытки с ценой: ответ, который стал ошибкой, всё равно оплачен.
+        """
         with self._lock:
             return sum(
                 r.cost_usd or 0.0
                 for r in self.records
-                if r.status is CallStatus.OK and r.backend in LIVE_BACKENDS
+                if r.status not in _FREE_STATUSES and r.backend in LIVE_BACKENDS
             )
 
     # ------------------------------------------------------------ вызов
@@ -223,21 +227,23 @@ class RecordingClient:
         elapsed_ms = int((time.perf_counter() - clock) * 1000)
         status = self._status(resp, error)
         live = status is CallStatus.OK and resp is not None and resp.duration_ms is not None
-        tariff = response_cost(resp) if resp is not None else None
+        # Ответ, ставший ошибкой (обрезан, отказ, не по схеме), оплачен: считаем его токены и цену.
+        billed = resp if resp is not None else (error.spent if error is not None else None)
+        tariff = response_cost(billed) if billed is not None else None
         record = CallRecord(
             call_id=req.call_id,
             step=req.step,
             call_index=req.call_index,
             key=req.key,
             model_requested=req.model,
-            model_actual=resp.model if resp else None,
+            model_actual=billed.model if billed else None,
             effort=req.effort,
             backend=self.backend,
             started_at=started,
             duration_ms=resp.duration_ms if live and resp is not None else elapsed_ms,
-            usage=resp.usage if resp else TokenUsage(),
-            cost_usd=tariff if tariff is not None else (resp.cost_usd if resp else None),
-            cost_reported_usd=resp.cost_usd if resp else None,
+            usage=billed.usage if billed else TokenUsage(),
+            cost_usd=tariff if tariff is not None else (billed.cost_usd if billed else None),
+            cost_reported_usd=billed.cost_usd if billed else None,
             status=status,
             error=f"{error.code}: {error.message}" if error else None,
             response_path=self._save_response(req, resp) if resp is not None else None,

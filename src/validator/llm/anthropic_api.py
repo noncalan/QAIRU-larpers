@@ -41,6 +41,7 @@ from typing import TYPE_CHECKING, Any
 
 import anthropic
 import httpx2
+from anthropic.types.beta import BetaFallbackBlock
 
 from validator.errors import (
     LLM_BAD_RESPONSE,
@@ -53,7 +54,7 @@ from validator.errors import (
     LLMError,
 )
 from validator.llm.base import classify_error, parse_cli_payload
-from validator.models import Backend, LLMRequest, LLMResponse
+from validator.models import Backend, LLMRequest, LLMResponse, TokenUsage
 
 if TYPE_CHECKING:
     from anthropic.types.beta import BetaMessage
@@ -92,8 +93,16 @@ def api_key_from_env() -> str | None:
     return key or None
 
 
-def _error(message: str, code: str, req: LLMRequest, *, hint: str, retryable: bool) -> LLMError:
-    return LLMError(message, code=code, hint=hint, location=req.call_id, retryable=retryable)
+def _error(
+    message: str,
+    code: str,
+    req: LLMRequest,
+    *,
+    hint: str,
+    retryable: bool,
+    spent: LLMResponse | None = None,
+) -> LLMError:
+    return LLMError(message, code=code, hint=hint, location=req.call_id, retryable=retryable, spent=spent)
 
 
 def _status_error(exc: anthropic.APIStatusError, req: LLMRequest) -> LLMError:
@@ -141,22 +150,33 @@ def _text(blocks: Iterable[Any]) -> str:
     return "".join(block.text for block in blocks if getattr(block, "type", None) == "text")
 
 
+_ATTEMPT_TYPES = frozenset({"message", "fallback_message"})
+
+
 def _model_usage(message: BetaMessage) -> dict[str, dict[str, int]] | None:
-    """Токены по моделям, если ответила запасная модель: каждую попытку считаем по тарифу её модели."""
-    iterations = message.usage.iterations or []
-    if not any(getattr(it, "type", None) == "fallback_message" for it in iterations):
+    """Токены по моделям, если ответила запасная модель: каждую попытку считаем по тарифу её модели.
+
+    У попытки без поля ``model`` модель берём из метки ``fallback`` (``from``): ``message.model`` после
+    отказа это уже запасная модель, а отказавшая попытка шла на исходной.
+    """
+    iterations = [it for it in message.usage.iterations or [] if getattr(it, "type", None) in _ATTEMPT_TYPES]
+    if not any(it.type == "fallback_message" for it in iterations):
         return None
+    refused = next(
+        (block.from_.model for block in message.content if isinstance(block, BetaFallbackBlock)),
+        message.model,
+    )
     totals: dict[str, dict[str, int]] = {}
     for it in iterations:
-        model = getattr(it, "model", None) or message.model
+        model = getattr(it, "model", None) or refused
         row = totals.setdefault(
             str(model),
             {"inputTokens": 0, "outputTokens": 0, "cacheReadInputTokens": 0, "cacheCreationInputTokens": 0},
         )
-        row["inputTokens"] += getattr(it, "input_tokens", 0) or 0
-        row["outputTokens"] += getattr(it, "output_tokens", 0) or 0
-        row["cacheReadInputTokens"] += getattr(it, "cache_read_input_tokens", 0) or 0
-        row["cacheCreationInputTokens"] += getattr(it, "cache_creation_input_tokens", 0) or 0
+        row["inputTokens"] += it.input_tokens or 0
+        row["outputTokens"] += it.output_tokens or 0
+        row["cacheReadInputTokens"] += it.cache_read_input_tokens or 0
+        row["cacheCreationInputTokens"] += it.cache_creation_input_tokens or 0
     return totals
 
 
@@ -238,33 +258,28 @@ class AnthropicAPI:
         started = time.monotonic()
         try:
             message = self._stream(req)
-        except anthropic.APITimeoutError as exc:
-            raise _error(
-                f"Claude API не ответил за {req.timeout_s} с",
-                LLM_TIMEOUT,
-                req,
-                hint="Повторите прогон; если повторяется, возьмите профиль quick",
-                retryable=True,
-            ) from exc
-        except anthropic.APIConnectionError as exc:
-            raise _connection_error(exc, req) from exc
-        except anthropic.APIStatusError as exc:
-            raise _status_error(exc, req) from exc
-        except anthropic.APIResponseValidationError as exc:
-            raise _error(
-                f"Claude API вернул ответ, который SDK не разобрал: {exc.message[:300]}",
-                LLM_BAD_RESPONSE,
-                req,
-                hint=_HINT_RETRY,
-                retryable=True,
-            ) from exc
-        except (httpx2.TransportError, httpx2.StreamError) as exc:
-            # Поток оборвался посреди тела ответа: httpx2 бросает свою ошибку, SDK её не оборачивает.
-            raise _connection_error(exc, req) from exc
+        except Exception as exc:  # ошибки SDK и транспорта становятся LLMError, прочие летят дальше
+            raise _sdk_error(exc, req, time.monotonic() - started) from exc
         duration_ms = int((time.monotonic() - started) * 1000)
         return self._response(message, req, duration_ms)
 
     def _response(self, message: BetaMessage, req: LLMRequest, duration_ms: int) -> LLMResponse:
+        payload = to_cli_payload(message, duration_ms)
+        # Ответ, который мы превращаем в ошибку, всё равно оплачен: его токены идут в лог и лимит цены.
+        spent = LLMResponse(
+            call_id=req.call_id,
+            text=payload["result"],
+            model=message.model,
+            usage=TokenUsage(
+                input_tokens=message.usage.input_tokens,
+                output_tokens=message.usage.output_tokens,
+                cache_creation_input_tokens=message.usage.cache_creation_input_tokens or 0,
+                cache_read_input_tokens=message.usage.cache_read_input_tokens or 0,
+            ),
+            duration_ms=duration_ms,
+            backend=self.backend,
+            raw=payload,
+        )
         stop = message.stop_reason
         if stop == "refusal":
             category = message.stop_details.category if message.stop_details is not None else None
@@ -275,6 +290,7 @@ class AnthropicAPI:
                 req,
                 hint="Проверьте документ и сообщите команде; запуск через подписку: --backend cli",
                 retryable=False,
+                spent=spent,
             )
         if stop is None:
             raise _error(
@@ -291,10 +307,51 @@ class AnthropicAPI:
                 req,
                 hint=_HINT_TRUNCATED,
                 retryable=False,
+                spent=spent,
             )
         if stop not in ("end_turn", "stop_sequence"):
             logger.warning("Claude API: необычная причина остановки %s (%s)", stop, req.call_id)
-        return parse_cli_payload(to_cli_payload(message, duration_ms), req, self.backend)
+        try:
+            return parse_cli_payload(payload, req, self.backend)
+        except LLMError as exc:
+            exc.spent = spent
+            raise
+
+
+def _sdk_error(exc: Exception, req: LLMRequest, elapsed_s: float) -> LLMError:
+    """Исключение SDK или транспорта ``httpx2`` как ``LLMError`` с кодом, подсказкой и правом на повтор."""
+    if isinstance(exc, anthropic.APITimeoutError):
+        return _error(
+            f"Claude API не ответил: таймаут {req.timeout_s} с, прошло {elapsed_s:.0f} с с повторами SDK",
+            LLM_TIMEOUT,
+            req,
+            hint="Повторите прогон; если повторяется, возьмите профиль quick",
+            retryable=True,
+        )
+    if isinstance(exc, anthropic.APIStatusError):
+        return _status_error(exc, req)
+    if isinstance(exc, anthropic.APIConnectionError | httpx2.TransportError | httpx2.StreamError):
+        # Обрыв посреди тела ответа: httpx2 бросает свою ошибку, SDK её не оборачивает.
+        return _connection_error(exc, req)
+    if isinstance(exc, anthropic.APIResponseValidationError | httpx2.HTTPError | ValueError):
+        # Ответ, который SDK не разобрал: испорченный поток, битый JSON события, ошибка распаковки.
+        text = str(exc) or type(exc).__name__
+        return _error(
+            f"Claude API вернул ответ, который не удалось разобрать: {text[:300]}",
+            LLM_BAD_RESPONSE,
+            req,
+            hint=_HINT_RETRY,
+            retryable=True,
+        )
+    if isinstance(exc, anthropic.AnthropicError):
+        return _error(
+            f"Ошибка SDK anthropic: {type(exc).__name__}: {str(exc)[:300]}",
+            LLM_CALL_FAILED,
+            req,
+            hint=_HINT_RETRY,
+            retryable=False,
+        )
+    raise exc
 
 
 __all__ = ["API_KEY_ENV", "AnthropicAPI", "api_key_from_env", "to_cli_payload"]
