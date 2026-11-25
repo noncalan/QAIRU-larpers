@@ -8,7 +8,7 @@
 - Ответ прохода разбирает код (``search_parse.py``): формат ответа строгий, разбор бесплатный и
   детерминированный. Находки, которые код не разобрал (нет цитаты, свойства или типа дефекта, сбит
   заголовок), переносит в JSON модель шага ``search_transfer`` (Haiku, D-010) по промпту
-  ``prompts/search_transfer.md`` и схеме ``TRANSFER_SCHEMA`` с одним повтором. Это отклонение от D-010,
+  ``prompts/search_transfer.md`` и схеме из ``search_transfer.py`` с одним повтором. Это отклонение от D-010,
   где Haiku переносит каждый проход: так дешевле и стабильнее, а Haiku остаётся запасным путём
   (рекомендация интегратора в #18).
 - ID блоков, которых нет в документе, отбрасываются с диагностикой; ID несуществующего предложения
@@ -20,16 +20,10 @@
 
 from __future__ import annotations
 
-import functools
-import re
 from collections import Counter
 from collections.abc import Sequence
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Any
-
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 from validator.errors import (
     LLM_BAD_RESPONSE,
@@ -37,14 +31,12 @@ from validator.errors import (
     LLM_PASS_TRANSFERRED,
     LLM_TRANSFER_FAILED,
     LLM_UNKNOWN_BLOCKS,
-    InternalError,
     LLMError,
 )
 from validator.ingest.blocks import render_for_model
 from validator.llm.base import LLMClient
 from validator.models import (
     CandidateFinding,
-    DefectType,
     DiagLevel,
     Diagnostic,
     FindingSource,
@@ -52,64 +44,25 @@ from validator.models import (
     LLMStep,
     ParsedDocument,
     PassResult,
-    Property,
     RunConfig,
-    Scope,
-    Severity,
     SourceKind,
-    Verdict,
 )
-from validator.search_parse import (
-    Draft,
-    RawFinding,
-    block_ids_in,
-    draft_from_raw,
-    parse_defect_type,
-    parse_severity,
-    split_findings,
-    unwrap,
+from validator.prompting import fill, load_prompt
+from validator.search_parse import Draft, RawFinding, draft_from_raw, split_findings
+from validator.search_transfer import (
+    TRANSFER_ATTEMPTS,
+    TRANSFER_SYSTEM,
+    TRANSFER_USER,
+    transfer_request,
+    transferred,
 )
 
-PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 SEARCH_SYSTEM = "search_system.md"
 SEARCH_USER = "search_user.md"
-TRANSFER_SYSTEM = "search_transfer.md"
-TRANSFER_USER = "search_transfer_user.md"
-_SLOT = re.compile(r"\{(document|findings)\}")
-
 MAX_PARALLEL_PASSES = 3
 """Не больше трёх проходов одновременно: лимит подписки и нагрузка на машину (issue #18)."""
-TRANSFER_ATTEMPTS = 2
-"""Перенос в JSON: попытка и один повтор, затем отказ."""
-TRANSFER_TIMEOUT_S = 600
-"""Таймаут переноса: Haiku переносит проход из 47 находок за ~80 с (исследование 21), берём с запасом."""
 EXAMPLES_IN_DIAGNOSTIC = 5
 """Сколько примеров ID показать в диагностике."""
-_UNMATCHED = 1_000_000
-"""Позиция находки переноса, которую не удалось сопоставить с номером «Н-k»: после разобранных кодом."""
-
-SEVERITY_LABELS = ("критично", "средне", "низко")
-"""Подсказки важности в промпте поиска (#14); ``Severity.from_label`` переводит их в ``Severity``."""
-
-
-# ---------------------------------------------------------------- промпты
-
-
-@functools.cache
-def prompt_text(name: str) -> str:
-    """Текст промпта из ``prompts/``. Файла нет: агент собран без промптов, это ошибка установки."""
-    try:
-        return (PROMPTS_DIR / name).read_text(encoding="utf-8")
-    except OSError as exc:
-        raise InternalError(
-            f"Нет файла промпта {name}",
-            hint="Переустановите агент: промпты входят в пакет (src/validator/prompts)",
-        ) from exc
-
-
-def fill(template: str, **values: str) -> str:
-    """Подставляет ``{document}`` и ``{findings}`` за один проход: текст документа не трогается."""
-    return _SLOT.sub(lambda m: values.get(m.group(1), m.group(0)), template)
 
 
 def search_request(rendered: str, cfg: RunConfig, index: int) -> LLMRequest:
@@ -120,163 +73,10 @@ def search_request(rendered: str, cfg: RunConfig, index: int) -> LLMRequest:
         call_index=index,
         model=model.model,
         effort=model.effort,
-        system=prompt_text(SEARCH_SYSTEM),
-        prompt=fill(prompt_text(SEARCH_USER), document=rendered),
+        system=load_prompt(SEARCH_SYSTEM),
+        prompt=fill(load_prompt(SEARCH_USER), document=rendered),
         timeout_s=cfg.call_timeout_s,
     )
-
-
-def transfer_request(rendered: str, findings: str, cfg: RunConfig, index: int, attempt: int) -> LLMRequest:
-    """Запрос переноса в JSON. Номер вызова: проход k это k, повтор это k + число проходов."""
-    model = cfg.model_for(LLMStep.SEARCH_TRANSFER)
-    return LLMRequest(
-        step=LLMStep.SEARCH_TRANSFER,
-        call_index=index + attempt * cfg.passes,
-        model=model.model,
-        effort=model.effort,
-        system=prompt_text(TRANSFER_SYSTEM),
-        prompt=fill(prompt_text(TRANSFER_USER), document=rendered, findings=findings),
-        json_schema=TRANSFER_SCHEMA,
-        timeout_s=min(cfg.call_timeout_s, TRANSFER_TIMEOUT_S),
-    )
-
-
-# ---------------------------------------------------------------- схема переноса в JSON
-
-_TEXT: dict[str, Any] = {"type": "string"}
-TRANSFER_SCHEMA: dict[str, Any] = {
-    "type": "object",
-    "properties": {
-        "findings": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "number": {"type": "integer"},
-                    "title": _TEXT,
-                    "block_ids": {"type": "array", "items": _TEXT},
-                    "quotes": {"type": "array", "items": _TEXT},
-                    "property": {"type": "string", "enum": [p.value for p in Property]},
-                    "defect_type": {"type": "string", "enum": [d.label for d in DefectType]},
-                    "verdict": {"type": "string", "enum": [v.label for v in Verdict]},
-                    "scenario": _TEXT,
-                    "explanation": _TEXT,
-                    "blocks_testing": {"type": "boolean"},
-                    "test_gap": _TEXT,
-                    "severity": {"type": "string", "enum": list(SEVERITY_LABELS)},
-                    "suggestion": _TEXT,
-                },
-                "required": ["quotes", "property", "defect_type", "verdict", "explanation", "blocks_testing"],
-                "additionalProperties": False,
-            },
-        }
-    },
-    "required": ["findings"],
-    "additionalProperties": False,
-}
-"""Ответ модели переноса. Метки типа, вердикта и важности те же, что в ответе прохода (промпт #14)."""
-
-
-class TransferItem(BaseModel):
-    """Одна запись ответа переноса. Проверка схемы кодом: ответ модели не доверенный."""
-
-    model_config = ConfigDict(extra="ignore")
-
-    number: int | None = None
-    title: str = ""
-    block_ids: list[str] = Field(default_factory=list)
-    quotes: list[str]
-    property: Property
-    defect_type: DefectType
-    verdict: Verdict = Verdict.VIOLATION
-    scenario: str = ""
-    explanation: str = ""
-    blocks_testing: bool = False
-    test_gap: str = ""
-    severity: Severity | None = None
-    suggestion: str = ""
-
-    @field_validator("quotes")
-    @classmethod
-    def _quotes(cls, value: list[str]) -> list[str]:
-        quotes = [q.strip() for q in value if q.strip()]
-        if not quotes:
-            raise ValueError("нет цитаты")
-        return quotes
-
-    @field_validator("defect_type", mode="before")
-    @classmethod
-    def _defect_type(cls, value: object) -> object:
-        return (parse_defect_type(value) or value) if isinstance(value, str) else value
-
-    @field_validator("verdict", mode="before")
-    @classmethod
-    def _verdict(cls, value: object) -> object:
-        return (Verdict.from_label(value) or value) if isinstance(value, str) else value
-
-    @field_validator("severity", mode="before")
-    @classmethod
-    def _severity(cls, value: object) -> object:
-        if not isinstance(value, str):
-            return value
-        return parse_severity(value) if value.strip() else None
-
-    def to_draft(self, section: Scope | None) -> Draft:
-        title = self.title.strip() or None
-        return Draft(
-            title=title,
-            block_ids=tuple(b for value in self.block_ids for b in block_ids_in(value)),
-            quotes=tuple(self.quotes),
-            property=self.property,
-            defect_type=self.defect_type,
-            verdict=self.verdict,
-            scope=section or self.property.scope,
-            explanation=self.explanation.strip() or title or "",
-            scenario=self.scenario.strip() or None,
-            blocks_testing=self.blocks_testing,
-            test_gap=self.test_gap.strip() or None,
-            severity_hint=self.severity,
-            suggestion=unwrap(self.suggestion) or None,
-        )
-
-
-def transferred(
-    structured: object, chunks: Sequence[RawFinding], call_id: str
-) -> tuple[list[tuple[float, Draft]], int]:
-    """Черновики из ответа переноса с позицией в ответе прохода и число записей не по схеме.
-
-    Позиция берётся по номеру «Н-k» фрагмента, который переносили; запись без такого номера идёт
-    после разобранных кодом в порядке ответа модели. Ответ без списка ``findings`` или где ни одна
-    запись не прошла схему, это ``LLMError``: перенос повторяют.
-    """
-    items = structured.get("findings") if isinstance(structured, dict) else None
-    if not isinstance(items, list):
-        raise LLMError(
-            "В ответе переноса в JSON нет списка findings",
-            code=LLM_BAD_RESPONSE,
-            location=call_id,
-            retryable=True,
-        )
-    by_number = {c.number: c for c in chunks if c.number is not None}
-    drafts: list[tuple[float, Draft]] = []
-    invalid = 0
-    for j, raw in enumerate(items):
-        try:
-            item = TransferItem.model_validate(raw)
-        except ValidationError:
-            invalid += 1
-            continue
-        chunk = by_number.get(item.number) if item.number is not None else None
-        position = chunk.position + j / len(items) if chunk else _UNMATCHED + j
-        drafts.append((position, item.to_draft(chunk.section if chunk else None)))
-    if items and not drafts:
-        raise LLMError(
-            f"Перенос в JSON: ни одна из {len(items)} записей не прошла схему",
-            code=LLM_BAD_RESPONSE,
-            location=call_id,
-            retryable=True,
-        )
-    return drafts, invalid
 
 
 # ---------------------------------------------------------------- один проход
@@ -517,7 +317,7 @@ def _result(o: _Outcome, ok: int, total: int) -> PassResult:
 def search(doc: ParsedDocument, llm: LLMClient, cfg: RunConfig) -> list[PassResult]:
     """``cfg.passes`` проходов по документу. Упавший проход это ``PassResult(ok=False)``, а не исключение."""
     for name in (SEARCH_SYSTEM, SEARCH_USER, TRANSFER_SYSTEM, TRANSFER_USER):
-        prompt_text(name)
+        load_prompt(name)
     ctx = _Context(doc=doc, rendered=render_for_model(doc), llm=llm, cfg=cfg)
     indexes = range(1, cfg.passes + 1)
     with ThreadPoolExecutor(
@@ -528,4 +328,4 @@ def search(doc: ParsedDocument, llm: LLMClient, cfg: RunConfig) -> list[PassResu
     return [_result(o, ok, cfg.passes) for o in outcomes]
 
 
-__all__ = ["MAX_PARALLEL_PASSES", "TRANSFER_SCHEMA", "TransferItem", "search"]
+__all__ = ["MAX_PARALLEL_PASSES", "search", "search_request"]
