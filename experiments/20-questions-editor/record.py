@@ -22,7 +22,7 @@ from validator.evidence import evidence
 from validator.ingest import parse
 from validator.lint import lint
 from validator.llm import FakeLLM
-from validator.llm.claude_cli import build_args, clean_env, find_claude
+from validator.llm.claude_cli import SYSTEM_PROMPT_FILE, build_args, clean_env, find_claude
 from validator.merge import merge
 from validator.models import Backend, DocKind
 from validator.questions import build_questions
@@ -58,8 +58,10 @@ def main() -> int:
         print("claude не найден")
         return 1
     with tempfile.TemporaryDirectory(prefix="qairu-record-") as cwd:
+        system_file = Path(cwd) / SYSTEM_PROMPT_FILE
+        system_file.write_text(req.system, encoding="utf-8")
         result = subprocess.run(
-            build_args(exe, req),
+            build_args(exe, req, system_file),
             input=req.prompt.encode("utf-8"),
             capture_output=True,
             cwd=cwd,
