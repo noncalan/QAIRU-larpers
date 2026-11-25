@@ -240,6 +240,25 @@ def test_questions_are_linked_from_findings() -> None:
     assert "**Вопрос автору:** Q-02" in card
 
 
+def test_lint_only_finding_does_not_say_found_in_zero_passes() -> None:
+    """Живой прогон #36: слияние ставит находке только линтера «0 из 3», отчёт пишет это словами."""
+    report = load("full")
+    assert report.verification is not None
+    findings = [
+        f.model_copy(update={"found_in": 0, "of": 3}) if f.id == "F-04" else f
+        for f in report.verification.findings
+    ]
+    report = report.model_copy(
+        update={"verification": report.verification.model_copy(update={"findings": findings})}
+    )
+
+    md = render_md(report)
+    card = md[md.index("### F-04 · ") : md.index("### F-05 · ")]
+
+    assert "в 0 из 3 проходов" not in card
+    assert "**Найдено:** линтер, правило LNT-04; проходы модели этого не отметили (0 из 3)" in card
+
+
 # ---------------------------------------------------------------- места в документе
 
 
