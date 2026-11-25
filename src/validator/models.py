@@ -575,6 +575,9 @@ class LLMStep(StrEnum):
     TEST_DRAFT = "test_draft"
     QUESTIONS = "questions"
     QUESTIONS_CRITIC = "questions_critic"
+    # Судья eval (#24): его вызывает только eval через тот же клиент модели, отдельно от агента.
+    # Конвейер агента этот шаг не вызывает, модели для него в STEP_MODELS нет.
+    JUDGE = "judge"
 
 
 class CallStatus(StrEnum):

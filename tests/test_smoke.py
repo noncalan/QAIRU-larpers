@@ -13,7 +13,16 @@ import yaml
 
 from conftest import FIXTURES_LLM, FORMATS, REQUIREMENTS, ROOT
 from validator.ingest import parse
-from validator.models import CallRecord, DiscardReason, DocKind, ExitCode, QuoteMatch, Report, ReportStatus
+from validator.models import (
+    CallRecord,
+    DiscardReason,
+    DocKind,
+    ExitCode,
+    QuoteMatch,
+    Report,
+    ReportStatus,
+    SourceKind,
+)
 
 REPORT_SECTIONS = (
     "## Итог на первой странице",
@@ -112,7 +121,11 @@ def test_title_scenario_and_test_gap_reach_report(fake_run: tuple[DocKind, Path,
     _, out, _ = fake_run
     report = Report.model_validate_json(out.with_suffix(".json").read_text(encoding="utf-8"))
     assert report.verification is not None
-    titled = [f for f in report.verification.findings if f.title]
+    titled = [
+        f
+        for f in report.verification.findings
+        if f.title and any(s.kind is SourceKind.PASS for s in f.sources)  # находки линтера тоже с title
+    ]
 
     assert len(titled) == 1
     assert titled[0].scenario and titled[0].test_gap
@@ -145,7 +158,7 @@ def test_calls_log_has_every_model_call(fake_run: tuple[DocKind, Path, int]) -> 
     lines = (out.parent / "run" / "calls.jsonl").read_text(encoding="utf-8").splitlines()
     records = [CallRecord.model_validate(json.loads(line)) for line in lines]
 
-    assert [r.call_id for r in records] == ["search.1", "search.2", "search.3"]
+    assert [r.call_id for r in records] == ["segment.1", "search.1", "search.2", "search.3", "questions.1"]
 
 
 def test_missing_input_gives_diagnostic_report(tmp_path: Path) -> None:
