@@ -6,6 +6,8 @@
 
 `research-sprint` написан нами для этого проекта.
 
+Правило `.claude/rules/python.md` основано на `rules/python/*` и `rules/common/coding-style.md` из того же репозитория и той же версии (MIT), но сокращено и переписано под проект.
+
 ---
 
 MIT License
