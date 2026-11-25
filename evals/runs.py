@@ -18,6 +18,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 from evals.findings import JudgeItem, agent_items, free_items
 from evals.freetext import check_quote, extract_quotes, split_findings
 from evals.judge import EvalError, display_path, read_utf8
+from evals.questions import QuestionScore, score_questions
 from validator.errors import InputError
 from validator.ingest import parse
 from validator.models import (
@@ -136,6 +137,7 @@ class RunData(BaseModel):
     agent_version: str | None = None
     document: str | None = Field(default=None, description="Документ, по которому сверялись цитаты")
     layout: str | None = Field(default=None, description="Как нарезан свободный текст")
+    questions: QuestionScore | None = Field(default=None, description="Вопросы автору, только агент")
     notes: list[str] = Field(default_factory=list)
 
 
@@ -253,6 +255,7 @@ def _load_agent(report_path: Path, label: str, fallback_document: Path) -> RunDa
         backend=report.passport.backend_used,
         agent_version=report.passport.agent_version,
         document=run_label(doc_path),
+        questions=score_questions(report, label),
         notes=notes,
     )
 

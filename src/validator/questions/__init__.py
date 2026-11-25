@@ -11,7 +11,10 @@
 3. ``cards.py``: код сверяет цитаты и основания вариантов, проверяет 2–4 варианта с последствиями,
    отбрасывает карточки без связанных находок, сливает повторы, считает приоритет и ставит ``Q-NN``;
 4. ``fallback.py``: если редактор не ответил, карточки собираются кодом из кандидатов, без редактуры;
-5. ``export.py``: ``questions.yaml`` для ответов автора (схема в docstring модуля).
+5. ``critic.py``: второй вызов, критик-самоответ (Opus 5.5 ``high``), пытается ответить на каждый вопрос
+   по документу; вопрос снимается, только если код сверил цитату-ответ (#41);
+6. ``metrics.py``: метрики вопросов для отчёта и eval (п. 4.3 исследования 17);
+7. ``export.py``: ``questions.yaml`` для ответов автора (схема в docstring модуля).
 
 У ``QuestionOption.grounded_in`` три значения: дословный фрагмент документа (вариант опирается на
 цитату, код её сверил), ``F-NN`` (шаблонный вариант запасного пути по находке) или None (вариант
@@ -21,7 +24,7 @@
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from validator.errors import LLM_QUESTIONS_CHECKED, LLM_QUESTIONS_FAILED, LLMError
 from validator.llm.base import LLMClient
@@ -34,12 +37,15 @@ from validator.models import (
     RunConfig,
     Segmentation,
     Verification,
+    WithdrawnQuestion,
 )
+from validator.questions import critic
 from validator.questions.candidates import Candidate, collect_candidates
 from validator.questions.cards import CardDraft, CheckLog, draft_from_card, finalize
 from validator.questions.editor import EditorReply, edit, normalize_candidate_id
 from validator.questions.export import questions_payload, write_questions_yaml
 from validator.questions.fallback import draft_from_candidate
+from validator.questions.metrics import question_metrics
 from validator.questions.scoring import priority
 
 logger = logging.getLogger("validator")
@@ -54,6 +60,8 @@ class QuestionsOutcome:
     diagnostics: list[Diagnostic] = field(default_factory=list)
     candidates: int = 0
     edited: bool = False
+    withdrawn: list[WithdrawnQuestion] = field(default_factory=list)
+    reviewed: bool = False
 
 
 def _check_diagnostic(log: CheckLog, candidates: int, questions: int) -> list[Diagnostic]:
@@ -155,7 +163,25 @@ def _from_reply(
 def build_questions(
     ver: Verification, doc: ParsedDocument, seg: Segmentation, llm: LLMClient, cfg: RunConfig
 ) -> QuestionsOutcome:
-    """Вопросы автору и диагностика шага. Без кандидатов модель не вызывается."""
+    """Вопросы автору и диагностика шага: редактор (или запасной путь), затем критик-самоответ.
+
+    Без кандидатов модель не вызывается ни разу, без вопросов не вызывается критик.
+    """
+    drafted = draft_questions(ver, doc, seg, llm, cfg)
+    checked = critic.review(drafted.questions, doc, llm, cfg)
+    return replace(
+        drafted,
+        questions=checked.questions,
+        diagnostics=[*drafted.diagnostics, *checked.diagnostics],
+        withdrawn=checked.withdrawn,
+        reviewed=checked.reviewed,
+    )
+
+
+def draft_questions(
+    ver: Verification, doc: ParsedDocument, seg: Segmentation, llm: LLMClient, cfg: RunConfig
+) -> QuestionsOutcome:
+    """Карточки до критика: редактор, при его сбое запасной путь кодом (без вызова критика)."""
     cands = collect_candidates(ver)
     if not cands:
         logger.info("Вопросы: кандидатов нет, редактор не вызывался")
@@ -196,6 +222,8 @@ __all__ = [
     "QuestionsOutcome",
     "ask",
     "build_questions",
+    "draft_questions",
+    "question_metrics",
     "questions_payload",
     "write_questions_yaml",
 ]

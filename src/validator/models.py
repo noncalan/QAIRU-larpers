@@ -1039,6 +1039,31 @@ class Question(Contract):
     related_findings: list[str] = Field(default_factory=list)
     origin: QuestionOrigin = QuestionOrigin.FINDING
     standard: list[str] = Field(default_factory=list)
+    review: QuestionReview | None = Field(
+        default=None, description="Самопроверка вопроса критиком (шаг 8г); None: критик не отвечал"
+    )
+
+
+class QuestionReview(Contract):
+    """Что критик-самоответ сказал о вопросе (исследование 17, п. 4.2, шаг 4; п. 4.4)."""
+
+    answered: bool = Field(default=False, description="Критик считает, что документ отвечает на вопрос")
+    answer: str = Field(default="", description="Ответ критика одной фразой")
+    answer_quote: Quote | None = Field(default=None, description="Цитата-ответ после сверки кодом")
+    common_sense: bool = Field(default=False, description="Ответ следует из здравого смысла")
+    obvious_fix: bool = Field(default=False, description="Исправление однозначно: хватит находки")
+    scenario: bool | None = Field(default=None, description="В вопросе есть конкретная ситуация с данными")
+    errors: list[int] = Field(
+        default_factory=list, description="Номера ошибок формулировки п. 4.4 в нумерации промпта критика"
+    )
+
+
+class WithdrawnQuestion(Contract):
+    """Вопрос, который критик снял: документ на него отвечает, цитату-ответ код сверил."""
+
+    question: Question = Field(description="Карточка до снятия, с номером до перенумерации")
+    reason: str
+    answer: Quote
 
 
 # ---------------------------------------------------------------- модель: запрос, ответ, лог
@@ -1245,6 +1270,29 @@ class Passport(Contract):
     exit_code: ExitCode = ExitCode.OK
 
 
+class QuestionMetrics(Contract):
+    """Метрики вопросов автору (исследование 17, п. 4.3): считает код по карточкам и ответу критика.
+
+    Доли от 0 до 1. ``None``: не к чему делить (вопросов нет) или критик не проверял вопросы.
+    """
+
+    total: int = Field(default=0, description="Вопросов в отчёте, после критика")
+    before_critic: int = Field(default=0, description="Вопросов до критика: в отчёте и снятые")
+    withdrawn: int = Field(default=0, description="Снято критиком: ответ есть в документе")
+    withdrawn_share: float | None = None
+    reviewed: int = Field(default=0, description="Вопросов (до критика), на которые критик ответил")
+    with_scenario: float | None = Field(default=None, description="Доля со сценарием (по критику)")
+    closed: float | None = Field(default=None, description="Доля с 2–4 вариантами и последствием у каждого")
+    without_errors: float | None = Field(default=None, description="Доля без ошибок формулировки п. 4.4")
+    obvious_fix: int = Field(default=0, description="Дубли с находками: правка однозначна, вопрос лишний")
+    common_sense: int = Field(default=0, description="Ответ следует из здравого смысла (по критику)")
+    duplicate_pairs: int = Field(
+        default=0, description="Пары почти одинаковых вопросов или с теми же местами"
+    )
+    by_priority: dict[str, int] = Field(default_factory=dict)
+    by_addressee: dict[str, int] = Field(default_factory=dict, description="Разброс адресатов")
+
+
 class RunMetrics(Contract):
     duration_s: float | None = None
     calls_total: int = 0
@@ -1259,6 +1307,7 @@ class RunMetrics(Contract):
     quotes_total: int = 0
     quotes_verified: int = 0
     verified_quote_share: float | None = Field(default=None, description="Доля сверенных цитат, 0–1")
+    questions: QuestionMetrics | None = Field(default=None, description="Метрики вопросов автору")
 
 
 class Conclusion(Contract):
@@ -1297,6 +1346,9 @@ class Report(Contract):
     segmentation: Segmentation | None = None
     verification: Verification | None = None
     questions: list[Question] = Field(default_factory=list)
+    questions_withdrawn: list[WithdrawnQuestion] = Field(
+        default_factory=list, description="Вопросы, снятые критиком: ответ есть в документе"
+    )
     conclusion: Conclusion
     metrics: RunMetrics = Field(default_factory=RunMetrics)
 
@@ -1316,6 +1368,7 @@ class RunContext(Contract):
     merged: list[MergedFinding] = Field(default_factory=list)
     verification: Verification | None = None
     questions: list[Question] = Field(default_factory=list)
+    questions_withdrawn: list[WithdrawnQuestion] = Field(default_factory=list)
     diagnostics: list[Diagnostic] = Field(default_factory=list)
     calls: list[CallRecord] = Field(default_factory=list)
     passport: Passport

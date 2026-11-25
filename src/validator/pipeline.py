@@ -65,6 +65,7 @@ from validator.models import (
     RunOutcome,
     Segmentation,
     Verification,
+    WithdrawnQuestion,
 )
 from validator.passport import build_passport
 from validator.questions import build_questions, write_questions_yaml
@@ -93,6 +94,7 @@ class _State:
     merged: list[MergedFinding] = field(default_factory=list)
     verification: Verification | None = None
     questions: list[Question] = field(default_factory=list)
+    questions_withdrawn: list[WithdrawnQuestion] = field(default_factory=list)
     client: RecordingClient | None = None
     backend_used: Backend | None = None
 
@@ -294,6 +296,7 @@ def _execute(state: _State) -> None:
         )
         if asked is not None:
             state.questions = list(asked.questions)
+            state.questions_withdrawn = list(asked.withdrawn)
             state.diagnostics.extend(asked.diagnostics)
         state.verification = light_with_questions(ver, state.questions if asked is not None else None)
 
@@ -330,6 +333,7 @@ def _context(state: _State, finished: datetime, code: ExitCode) -> RunContext:
         merged=state.merged,
         verification=state.verification,
         questions=state.questions,
+        questions_withdrawn=state.questions_withdrawn,
         diagnostics=list(state.diagnostics),
         calls=list(calls),
         passport=passport,

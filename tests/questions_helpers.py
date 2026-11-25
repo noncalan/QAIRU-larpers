@@ -179,8 +179,37 @@ def cli_payload(text: str, *, is_error: bool = False) -> dict[str, Any]:
     }
 
 
-def editor_llm(text: str, *, is_error: bool = False) -> FakeLLM:
-    return FakeLLM(responses={(LLMStep.QUESTIONS, 1): cli_payload(text, is_error=is_error)})
+def review(qid: str, **fields: Any) -> dict[str, Any]:
+    """Отзыв критика на вопрос: по умолчанию ответа в документе нет, сценарий есть, ошибок нет."""
+    base: dict[str, Any] = {
+        "id": qid,
+        "answered": False,
+        "answer": "",
+        "answer_quote": "",
+        "common_sense": False,
+        "obvious_fix": False,
+        "scenario": True,
+        "errors": [],
+    }
+    return {**base, **fields}
+
+
+def critic_text(reviews: Sequence[dict[str, Any]]) -> str:
+    body = json.dumps({"reviews": list(reviews)}, ensure_ascii=False, indent=2)
+    return f"## Рассуждение\n\n- Вопросы проверены.\n\n## Ответ\n\n```json\n{body}\n```\n"
+
+
+NEUTRAL_CRITIC = critic_text([review(f"Q-{n:02d}") for n in range(1, 16)])
+"""Критик, который ни на что не нашёл ответа: тесты редактора не зависят от записанного ответа критика."""
+
+
+def editor_llm(text: str, *, is_error: bool = False, critic: str = NEUTRAL_CRITIC) -> FakeLLM:
+    return FakeLLM(
+        responses={
+            (LLMStep.QUESTIONS, 1): cli_payload(text, is_error=is_error),
+            (LLMStep.QUESTIONS_CRITIC, 1): cli_payload(critic),
+        }
+    )
 
 
 def card(

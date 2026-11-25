@@ -61,6 +61,8 @@ LLM_UNKNOWN_BLOCKS = "LLM-034"  # модель сослалась на ID бло
 LLM_EVIDENCE_FAILED = "LLM-040"
 LLM_QUESTIONS_FAILED = "LLM-050"
 LLM_QUESTIONS_CHECKED = "LLM-051"  # код поправил или отбросил карточки редактора вопросов
+LLM_QUESTIONS_CRITIC_FAILED = "LLM-052"  # критик-самоответ не сработал: вопросы не перепроверены
+LLM_QUESTIONS_WITHDRAWN = "LLM-053"  # ИНФО: критик снял вопросы, ответ на которые есть в документе
 
 # Настройки и флаги.
 CFG_BACKEND_UNAVAILABLE = "CFG-001"

@@ -49,6 +49,7 @@
   "segmentation": null,
   "verification": null,
   "questions": [],
+  "questions_withdrawn": [],
   "conclusion": {
     "traffic_light": "red",
     "headline": "Проверка не выполнена: Файл пустой: 0 байт",
@@ -74,6 +75,7 @@
     "discarded_total": 0,
     "quotes_total": 0,
     "quotes_verified": 0,
-    "verified_quote_share": null
+    "verified_quote_share": null,
+    "questions": null
   }
 }

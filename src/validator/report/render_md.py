@@ -17,6 +17,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 from validator.models import (
+    Addressee,
     DefectType,
     DiagLevel,
     Finding,
@@ -112,6 +113,14 @@ def _questions_by_finding(report: Report) -> dict[str, list[str]]:
     return dict(links)
 
 
+def _addressee_label(value: str) -> str:
+    """Адресат из метрик вопросов (``by_addressee`` хранит значения перечисления) по-русски."""
+    try:
+        return Addressee(value).label
+    except ValueError:
+        return value
+
+
 def _input_status(report: Report) -> str:
     if report.status is ReportStatus.NOT_PERFORMED:
         return "НЕ ПРОЧИТАН: проверка невозможна"
@@ -144,6 +153,7 @@ def render_md(report: Report) -> str:
         "blocks_testing": blocking[QuestionPriority.P1],
         "input_status": _input_status(report),
         "no_violations": NO_VIOLATIONS,
+        "addressee_label": _addressee_label,
     }
     text = _environment().get_template("report.md.j2").render(**context)
     text = "\n".join(line.rstrip() for line in text.splitlines()).strip()

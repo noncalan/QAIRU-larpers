@@ -798,7 +798,16 @@
         "F-01"
       ],
       "origin": "finding",
-      "standard": []
+      "standard": [],
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
     },
     {
       "id": "Q-02",
@@ -826,7 +835,8 @@
         "F-02"
       ],
       "origin": "finding",
-      "standard": []
+      "standard": [],
+      "review": null
     },
     {
       "id": "Q-03",
@@ -881,7 +891,107 @@
         "F-03"
       ],
       "origin": "finding",
-      "standard": []
+      "standard": [],
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": true,
+        "scenario": false,
+        "errors": [
+          1
+        ]
+      }
+    }
+  ],
+  "questions_withdrawn": [
+    {
+      "question": {
+        "id": "Q-04",
+        "priority": "P2",
+        "blocks": [],
+        "addressee": [
+          "business"
+        ],
+        "topic": "",
+        "quotes": [],
+        "question": "Сколько дней хранится бронь после окончания встречи?",
+        "why": "",
+        "options": [
+          {
+            "label": "A",
+            "text": "30 дней",
+            "change": "—",
+            "grounded_in": null
+          },
+          {
+            "label": "B",
+            "text": "Бессрочно",
+            "change": "—",
+            "grounded_in": null
+          }
+        ],
+        "if_unanswered": "",
+        "related_findings": [
+          "F-03"
+        ],
+        "origin": "finding",
+        "standard": [],
+        "review": {
+          "answered": true,
+          "answer": "30 дней",
+          "answer_quote": {
+            "text": "Бронь хранится 30 дней",
+            "match": "exact",
+            "score": 100.0,
+            "located": "Бронь хранится 30 дней",
+            "anchor": {
+              "char_start": 600,
+              "char_end": 622,
+              "block_ids": [],
+              "sentence_ids": [],
+              "line_start": 21,
+              "line_end": 21,
+              "page": null,
+              "page_line": null,
+              "paragraph": null,
+              "table": null,
+              "row": null,
+              "cell": null,
+              "column": null,
+              "extraction": "text"
+            }
+          },
+          "common_sense": false,
+          "obvious_fix": false,
+          "scenario": true,
+          "errors": []
+        }
+      },
+      "reason": "Бронь хранится 30 дней",
+      "answer": {
+        "text": "Бронь хранится 30 дней",
+        "match": "exact",
+        "score": 100.0,
+        "located": "Бронь хранится 30 дней",
+        "anchor": {
+          "char_start": 600,
+          "char_end": 622,
+          "block_ids": [],
+          "sentence_ids": [],
+          "line_start": 21,
+          "line_end": 21,
+          "page": null,
+          "page_line": null,
+          "paragraph": null,
+          "table": null,
+          "row": null,
+          "cell": null,
+          "column": null,
+          "extraction": "text"
+        }
+      }
     }
   ],
   "conclusion": {
@@ -917,6 +1027,29 @@
     "discarded_total": 1,
     "quotes_total": 6,
     "quotes_verified": 6,
-    "verified_quote_share": 1.0
+    "verified_quote_share": 1.0,
+    "questions": {
+      "total": 3,
+      "before_critic": 4,
+      "withdrawn": 1,
+      "withdrawn_share": 0.25,
+      "reviewed": 3,
+      "with_scenario": 0.5,
+      "closed": 0.3333,
+      "without_errors": 0.5,
+      "obvious_fix": 1,
+      "common_sense": 0,
+      "duplicate_pairs": 0,
+      "by_priority": {
+        "P0": 1,
+        "P1": 1,
+        "P2": 1
+      },
+      "by_addressee": {
+        "analyst": 2,
+        "architect": 1,
+        "business": 1
+      }
+    }
   }
 }

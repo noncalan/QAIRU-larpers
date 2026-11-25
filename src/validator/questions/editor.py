@@ -41,7 +41,7 @@ SYSTEM_PROMPT = PROMPTS_DIR / "questions_system.md"
 USER_PROMPT = PROMPTS_DIR / "questions_user.md"
 
 CALL_INDEX = 1
-"""Редактор вызывается один раз за прогон (второй вызов, критик-самоответ, это отдельная задача)."""
+"""Редактор вызывается один раз за прогон; второй вызов шага, критик-самоответ, живёт в ``critic.py``."""
 
 _PLACEHOLDER = re.compile(r"\{(document|candidates)\}")
 _FENCE = re.compile(r"```[ \t]*(?:json)?[ \t]*\r?\n(.*?)\r?\n[ \t]*```", re.DOTALL | re.IGNORECASE)
@@ -179,21 +179,22 @@ def build_request(
 # ---------------------------------------------------------------- разбор ответа
 
 
-def _has_questions(data: object) -> bool:
-    return isinstance(data, dict) and isinstance(data.get("questions"), list)
+def _has_list(data: object, key: str) -> bool:
+    return isinstance(data, dict) and isinstance(data.get(key), list)
 
 
-def extract_json(text: str) -> dict[str, Any] | None:
-    """Итоговый JSON из ответа «рассуждение, затем ```json»: последний блок со списком ``questions``.
+def extract_json(text: str, key: str = "questions") -> dict[str, Any] | None:
+    """Итоговый JSON из ответа «рассуждение, затем ```json»: последний блок со списком ``key``.
 
-    Если ограды нет, ищем последний разбираемый JSON-объект верхнего уровня с ``questions`` в тексте.
+    Если ограды нет, ищем последний разбираемый JSON-объект верхнего уровня с ``key`` в тексте.
+    Тем же разбором пользуется критик-самоответ (``critic.py``, список ``reviews``).
     """
     for block in reversed(_FENCE.findall(text)):
         try:
             data = json.loads(block)
         except ValueError:
             continue
-        if _has_questions(data):
+        if _has_list(data, key):
             return data  # type: ignore[no-any-return]
     decoder = json.JSONDecoder()
     found: dict[str, Any] | None = None
@@ -204,7 +205,7 @@ def extract_json(text: str) -> dict[str, Any] | None:
         except ValueError:
             start = text.find("{", start + 1)
             continue
-        if _has_questions(data):
+        if _has_list(data, key):
             found = data
         start = text.find("{", end)
     return found
