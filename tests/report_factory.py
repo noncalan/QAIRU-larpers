@@ -174,6 +174,7 @@ def findings() -> list[Finding]:
             blocks_testing=True,
             quotes=[_quote("быстро", 227, 6, QuoteMatch.FUZZY)],
             requirement_ids=["R-03"],
+            title="«Быстро» без измеримого порога",
             explanation="Слово «быстро» не задаёт измеримого порога: тест нельзя написать.",
             suggestion="Список комнат показывается не позднее чем через [уточнить: N] с.",
             found_in=2,
