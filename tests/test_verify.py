@@ -597,9 +597,31 @@ def test_blocking_question_turns_green_light_yellow(doc: ParsedDocument, seg: Se
 
     assert asked.traffic_light is TrafficLight.YELLOW
     assert asked.traffic_reason == (
-        f"{ver.traffic_reason}, но есть 1 вопрос автору, который блокирует разработку или тестирование (Q-02)"
+        f"{ver.traffic_reason}; открыт 1 вопрос автору, который блокирует разработку или тестирование (Q-02)"
     )
     assert asked.findings == ver.findings and asked.summary == ver.summary
+
+
+def test_blocking_questions_listed_p0_first(doc: ParsedDocument, seg: Segmentation) -> None:
+    ver = verify([], doc, seg)
+    asks = [question("Q-01", QuestionPriority.P1), question("Q-02", QuestionPriority.P0)]
+
+    asked = light_with_questions(ver, asks)
+
+    assert asked.traffic_reason.endswith(
+        "открыты 2 вопроса автору, которые блокируют разработку или тестирование (Q-02, Q-01)"
+    )
+
+
+def test_failed_questions_step_keeps_light_off_green(doc: ParsedDocument, seg: Segmentation) -> None:
+    green = verify([], doc, seg)
+    yellow = verify([merged(LIMIT_FIVE)], doc, seg)
+
+    asked = light_with_questions(green, None)
+
+    assert asked.traffic_light is TrafficLight.YELLOW
+    assert "вопросы автору не собраны" in asked.traffic_reason
+    assert light_with_questions(yellow, None) == yellow
 
 
 @pytest.mark.parametrize("priority", [QuestionPriority.P1, QuestionPriority.P0])
@@ -636,6 +658,24 @@ def test_pipeline_applies_blocking_questions_to_light(
     assert outcome.report.verification.traffic_light is TrafficLight.YELLOW
     assert outcome.report.conclusion.traffic_light is TrafficLight.YELLOW
     assert "Q-01" in outcome.report.conclusion.headline
+
+
+def test_pipeline_failed_questions_step_is_not_green(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    green = Verification(traffic_light=TrafficLight.GREEN, traffic_reason="нарушений не найдено")
+
+    def broken_ask(*_: object) -> list[Question]:
+        raise RuntimeError("сбой шага вопросов")
+
+    monkeypatch.setattr(pipeline, "verify", lambda found, doc, seg: green)
+    monkeypatch.setattr(pipeline, "ask", broken_ask)
+    cfg = load_config(REQUIREMENTS[DocKind.MD], tmp_path / "out" / "report.md", backend=Backend.FAKE)
+
+    outcome = pipeline.run(cfg)
+
+    assert outcome.report is not None and outcome.report.verification is not None
+    assert outcome.report.verification.traffic_light is TrafficLight.YELLOW
+    assert outcome.report.questions == []
+    assert any(d.step == "questions" for d in outcome.report.diagnostics)
 
 
 def test_report_shows_ids_severity_light_and_rule(tmp_path: Path) -> None:

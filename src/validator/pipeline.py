@@ -285,14 +285,15 @@ def _execute(state: _State) -> None:
     ver = state.verification
     if ver is not None:
         state.diagnostics.extend(ver.diagnostics)
-        state.questions = _step(
+        asked = _step(
             state,
             "questions",
             lambda: ask(ver, doc, seg, llm, cfg),
-            list,
+            lambda: None,
             action="Раздел вопросов собран без них",
         )
-        state.verification = light_with_questions(ver, state.questions)
+        state.questions = asked or []
+        state.verification = light_with_questions(ver, asked)
 
 
 # ---------------------------------------------------------------- выходы
