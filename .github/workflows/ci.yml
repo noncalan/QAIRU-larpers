@@ -12,18 +12,34 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # Никаких ключей и живых вызовов модели в CI: тесты идут на записанных ответах (--backend fake).
+  PYTHONUTF8: "1"
+  PYTHONIOENCODING: "utf-8"
+
 jobs:
   check:
-    name: lint, types, tests (ubuntu, Python 3.11)
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+    name: ${{ matrix.os }}, Python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    # Windows и macOS пока не блокируют слияние: после первого зелёного прогона
+    # поменять experimental на false в нужных строках матрицы.
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, python: "3.11", experimental: false }
+          - { os: ubuntu-latest, python: "3.12", experimental: false }
+          - { os: windows-latest, python: "3.12", experimental: true }
+          - { os: macos-latest, python: "3.12", experimental: true }
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # git describe для версии агента в паспорте
       - uses: astral-sh/setup-uv@v6
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python }}
           enable-cache: true
       - name: Install
         run: uv sync --locked
@@ -35,3 +51,22 @@ jobs:
         run: uv run mypy src evals
       - name: Pytest
         run: uv run pytest
+
+  secrets:
+    name: gitleaks (вся история)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GITLEAKS_VERSION: "8.28.0"
+      GITLEAKS_SHA256: a65b5253807a68ac0cafa4414031fd740aeb55f54fb7e55f386acb52e6a840eb
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # вся история: ключ, удалённый позже, остаётся в старых коммитах
+      - name: Install gitleaks
+        run: |
+          curl -sSfL -o gitleaks.tgz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  gitleaks.tgz" | sha256sum -c -
+          tar xzf gitleaks.tgz gitleaks
+      - name: Scan history
+        run: ./gitleaks git --config .gitleaks.toml --redact --verbose --exit-code 1 .

@@ -1,5 +1,7 @@
 # QAIRU larpers · AI Requirements Validator
 
+[![CI](https://github.com/noncalan/QAIRU-larpers-/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/noncalan/QAIRU-larpers-/actions/workflows/ci.yml)
+
 Команда **QAIRU larpers** на отборе **BCC-HUB x MNU AI Agent Challenge 2026**. Делаем ИИ-агента, который проверяет документ требований по ISO/IEC/IEEE 29148 и IEEE 830 и выпускает отчёт на русском. Кейс: [BCC-HUB/ai-requirements-validator-task](https://github.com/BCC-HUB/ai-requirements-validator-task).
 
 > **Статус: фаза исследования (25.11).** Агента ещё нет. Сейчас этот README для участников команды: как настроить компьютер и Claude Code. К сдаче он станет README агента: как получить ключ, куда положить, какой командой запустить, куда ляжет отчёт.
