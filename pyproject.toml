@@ -20,4 +20,10 @@ experiments = [
   "filetype",
   "charset-normalizer",
   "rapidfuzz",
+  # Нужны генератору битых файлов и проверке на своей ОС (experiments/04-parsing-lab, 12-parsers-on-my-os)
+  "pikepdf",
+  "pypdfium2",
+  "msoffcrypto-tool",
+  "olefile",
+  "psutil",
 ]
