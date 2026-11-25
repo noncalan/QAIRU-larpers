@@ -1,0 +1,28 @@
+name: Задача
+description: Задача на реализацию или настройку
+title: "[Задача] "
+labels: ["task"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: Что сделать
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Зачем (какой пункт ТЗ или критерий жюри закрывает)
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Критерии готовности
+      value: |
+        - [ ] 
+        - [ ] Тесты/eval прогнаны, цифры в PR
+        - [ ] В диффе нет ключей и .env
+  - type: input
+    id: depends
+    attributes:
+      label: Зависит от
+      placeholder: "#номер"

@@ -1,0 +1,23 @@
+[project]
+name = "qairu-validator"
+version = "0.0.1"
+description = "AI Requirements Validator: команда QAIRU larpers, BCC-HUB x MNU AI Agent Challenge 2026"
+readme = "README.md"
+requires-python = ">=3.11"
+# Зависимости самого агента добавим после выбора идеи и стека.
+dependencies = []
+
+[dependency-groups]
+# Для экспериментов фазы исследования: uv sync --group experiments
+experiments = [
+  "google-genai",
+  "python-dotenv",
+  "pymupdf4llm",
+  "pdfplumber",
+  "pypdf",
+  "python-docx",
+  "markitdown[pdf,docx]",
+  "filetype",
+  "charset-normalizer",
+  "rapidfuzz",
+]

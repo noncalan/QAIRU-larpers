@@ -1,0 +1,31 @@
+name: Исследование
+description: Тема для исследования (субагентами Claude Code или руками)
+title: "[Исследование] "
+labels: ["research"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Вопрос
+      description: На какой вопрос отвечаем и зачем это нужно для выбора идеи или реализации
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Подтемы и что НЕ делаем
+      description: Чтобы не дублировать чужую работу (сверься с docs/research/README.md)
+  - type: input
+    id: output
+    attributes:
+      label: Файл результата
+      placeholder: docs/research/NN-тема.md
+  - type: textarea
+    id: done
+    attributes:
+      label: Готово, когда
+      value: |
+        - [ ] Файл в docs/research/ по шаблону (TL;DR, находки, рекомендации, риски, источники)
+        - [ ] Цифры и имена моделей перепроверены (fact-checker)
+        - [ ] Строка в docs/research/README.md обновлена
+        - [ ] PR с Closes #этого-issue
