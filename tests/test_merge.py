@@ -325,6 +325,58 @@ def test_lint_hit_attaches_to_pass_finding_without_raising_n(doc: ParsedDocument
     assert m.property is Property.VERIFIABLE  # голосуют проходы, линтер только источник
 
 
+def test_hits_of_different_lint_rules_on_one_phrase_stay_apart(doc: ParsedDocument) -> None:
+    lint = [
+        cand("L-02", 1, Property.UNAMBIGUOUS, ["быстро подтверждать"], ["B002"]),
+        cand("L-04", 1, Property.UNAMBIGUOUS, ["быстро подтверждать бронь"], ["B002"]),
+    ]
+
+    merged = merge([], lint, doc)
+
+    assert len(merged) == 2
+    assert sorted(m.sources[0].rule_id or "" for m in merged) == ["L-02", "L-04"]
+
+
+def test_pass_finding_joins_one_lint_hit_but_does_not_chain_two_rules(doc: ParsedDocument) -> None:
+    passes = passes_of([cand(1, 1, Property.UNAMBIGUOUS, [SENTENCE], ["B002"])])
+    lint = [
+        cand("L-02", 1, Property.UNAMBIGUOUS, ["быстро подтверждать"], ["B002"]),
+        cand("L-04", 1, Property.UNAMBIGUOUS, ["быстро подтверждать бронь"], ["B002"]),
+    ]
+
+    merged = merge(passes, lint, doc)
+
+    assert len(merged) == 2
+    assert all(len({s.rule_id for s in m.sources if s.kind is SourceKind.LINT}) <= 1 for m in merged)
+    assert sum(1 for m in merged if m.found_in == 1) == 1  # находка прохода достаётся одному из двух
+
+
+@pytest.mark.parametrize("first", [True, False], ids=["L-02 первым", "L-04 первым"])
+def test_two_passes_and_two_lint_rules_keep_n_equal_to_2(doc: ParsedDocument, first: bool) -> None:
+    """Находки двух проходов сливаются в одну, срабатывания линтера не делят её надвое и не занижают N."""
+    passes = passes_of(
+        [cand(1, 1, Property.UNAMBIGUOUS, ["быстро подтверждать"], ["B002"])],
+        [cand(2, 1, Property.UNAMBIGUOUS, ["подтверждать бронь"], ["B002"])],
+    )
+    lint = [
+        cand("L-02", 1, Property.UNAMBIGUOUS, ["быстро подтверждать"], ["B002"]),
+        cand("L-04", 1, Property.UNAMBIGUOUS, ["подтверждать бронь"], ["B002"]),
+    ]
+
+    merged = merge(passes, lint if first else lint[::-1], doc)
+
+    assert sorted((m.found_in, len(m.sources)) for m in merged) == [(0, 1), (2, 3)]
+
+
+def test_two_hits_of_the_same_lint_rule_are_still_merged_when_they_overlap(doc: ParsedDocument) -> None:
+    lint = [
+        cand("L-02", 1, Property.UNAMBIGUOUS, ["быстро подтверждать"], ["B002"]),
+        cand("L-02", 2, Property.UNAMBIGUOUS, ["быстро подтверждать бронь"], ["B002"]),
+    ]
+
+    assert len(merge([], lint, doc)) == 1
+
+
 def test_lint_hint_and_test_flag_survive_when_passes_have_none(doc: ParsedDocument) -> None:
     passes = passes_of([cand(1, 1, Property.VERIFIABLE, [SENTENCE], ["B002"])])
     lint = [

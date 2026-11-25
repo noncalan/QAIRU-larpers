@@ -235,7 +235,7 @@
 | Вариант | Правило | Что поменять |
 |---|---|---|
 {% for o in q.options %}
-| {{ o.label }} | {{ o.text | cell }} | {{ o.change | cell if o.change else "—" }} |
+| {{ o.label }} | {{ o.text | cell }}{% if o.grounded_in is none %} _(вариант для обсуждения)_{% endif %} | {{ o.change | cell if o.change else "—" }} |
 {% endfor %}
 | Другое | ___ | |
 
@@ -246,7 +246,7 @@
 {% endif %}
 {% endfor %}
 Ответы можно вписать в `questions.yaml` рядом с отчётом.
-{% elif r.diagnostics | selectattr("step", "equalto", "questions") | list %}
+{% elif r.diagnostics | selectattr("step", "equalto", "questions") | rejectattr("level", "equalto", "info") | list %}
 Вопросы не сформированы: шаг вопросов завершился с ошибкой, смотрите диагностику прогона.
 {% elif v and v.findings %}
 Вопросов нет: агент не нашёл находок, исправление которых требует выбора автора между вариантами.

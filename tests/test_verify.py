@@ -37,6 +37,7 @@ from validator.models import (
     Verdict,
     Verification,
 )
+from validator.questions import QuestionsOutcome
 from validator.segment import fallback_segmentation
 from validator.severity import SEVERITY_TABLE, severity_disputed, table_severity
 from validator.verify import TRAFFIC_RULE, light_with_questions, traffic_light, verify
@@ -648,7 +649,9 @@ def test_pipeline_applies_blocking_questions_to_light(
     green = Verification(traffic_light=TrafficLight.GREEN, traffic_reason="нарушений не найдено")
     monkeypatch.setattr(pipeline, "verify", lambda found, doc, seg: green)
     monkeypatch.setattr(
-        pipeline, "ask", lambda ver, doc, seg, llm, cfg: [question("Q-01", QuestionPriority.P0)]
+        pipeline,
+        "build_questions",
+        lambda ver, doc, seg, llm, cfg: QuestionsOutcome(questions=[question("Q-01", QuestionPriority.P0)]),
     )
     cfg = load_config(REQUIREMENTS[DocKind.MD], tmp_path / "out" / "report.md", backend=Backend.FAKE)
 
@@ -663,11 +666,11 @@ def test_pipeline_applies_blocking_questions_to_light(
 def test_pipeline_failed_questions_step_is_not_green(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     green = Verification(traffic_light=TrafficLight.GREEN, traffic_reason="нарушений не найдено")
 
-    def broken_ask(*_: object) -> list[Question]:
+    def broken_ask(*_: object) -> QuestionsOutcome:
         raise RuntimeError("сбой шага вопросов")
 
     monkeypatch.setattr(pipeline, "verify", lambda found, doc, seg: green)
-    monkeypatch.setattr(pipeline, "ask", broken_ask)
+    monkeypatch.setattr(pipeline, "build_questions", broken_ask)
     cfg = load_config(REQUIREMENTS[DocKind.MD], tmp_path / "out" / "report.md", backend=Backend.FAKE)
 
     outcome = pipeline.run(cfg)

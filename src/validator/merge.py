@@ -15,9 +15,12 @@
 3. **Свойство:** то же свойство стандарта, тот же тип дефекта или свойство из одной группы
    (``PROPERTY_GROUPS``: проходы путают однозначность и проверяемость одной расплывчатой фразы).
 
-Кластеры собираем жадно по рёбрам «похожих» пар, от самой похожей к наименее похожей. Цепочки через
-третьего запрещены для двух находок одного прохода и для двух находок с несколькими цитатами
-(противоречия «A и B» и «A и C»): такие пары попадают в кластер, только если похожи сами. Порядок
+Кластеры собираем жадно по рёбрам «похожих» пар, от самой похожей к наименее похожей, но сначала рёбра
+между находками проходов: срабатывания линтера присоединяются к собранным кластерам и не мешают двум
+проходам слиться. Срабатывания разных правил линтера (разные ``rule_id``) это разные дефекты: они не
+сливаются ни напрямую, ни через третьего, а находка прохода присоединяется не больше чем к одному из них.
+Цепочки через третьего запрещены ещё для двух находок одного прохода и для двух находок с несколькими
+цитатами (противоречия «A и B» и «A и C»): такие пары попадают в кластер, только если похожи сами. Порядок
 рёбер и номера ``M-NNN`` задаёт содержимое (место в документе, свойство, цитаты), а не порядок
 проходов, поэтому результат не зависит от того, в каком порядке пришли проходы.
 
@@ -115,6 +118,11 @@ class _Prepared:
     def pass_index(self) -> int | None:
         src = self.cand.source
         return src.pass_index if src.kind is SourceKind.PASS else None
+
+    @property
+    def lint_rule(self) -> str | None:
+        src = self.cand.source
+        return src.rule_id if src.kind is SourceKind.LINT else None
 
     @property
     def longest_located(self) -> int:
@@ -255,9 +263,14 @@ def _same_place(a: _Prepared, b: _Prepared) -> bool:
     return True
 
 
+def _distinct_lint_rules(a: _Prepared, b: _Prepared) -> bool:
+    """Два срабатывания разных правил линтера: это разные дефекты, даже на одной фразе и с одним свойством."""
+    return a.lint_rule is not None and b.lint_rule is not None and a.lint_rule != b.lint_rule
+
+
 def _similarity(a: _Prepared, b: _Prepared) -> float:
     """0, если кандидаты разные; иначе похожесть цитат (не меньше ``MIN_QUOTE_OVERLAP``)."""
-    if not compatible(a.cand, b.cand) or not _same_place(a, b):
+    if _distinct_lint_rules(a, b) or not compatible(a.cand, b.cand) or not _same_place(a, b):
         return 0.0
     # Фраза внутри полной формулировки считается той же находкой, только если совпало свойство или
     # тип; для свойств из одной группы нужно взаимное перекрытие: на одной фразе бывают два дефекта.
@@ -271,10 +284,11 @@ def _similarity(a: _Prepared, b: _Prepared) -> float:
 
 
 def _needs_direct_edge(a: _Prepared, b: _Prepared) -> bool:
-    """Пары, которые нельзя склеить через третьего: находки одного прохода и две находки с несколькими
-    цитатами (противоречия «A и B» и «A и C» не сливаются через находку только про A)."""
+    """Пары, которые нельзя склеить через третьего: находки одного прохода, срабатывания разных правил
+    линтера и две находки с несколькими цитатами (противоречия «A и B» и «A и C» не сливаются через
+    находку только про A)."""
     same_pass = a.pass_index is not None and a.pass_index == b.pass_index
-    return same_pass or (len(a.norm_quotes) > 1 and len(b.norm_quotes) > 1)
+    return same_pass or _distinct_lint_rules(a, b) or (len(a.norm_quotes) > 1 and len(b.norm_quotes) > 1)
 
 
 def _cluster(items: Sequence[_Prepared]) -> list[list[_Prepared]]:
@@ -302,7 +316,12 @@ def _cluster(items: Sequence[_Prepared]) -> list[list[_Prepared]]:
             for j in y
         )
 
-    for i, j in sorted(edges, key=lambda e: (-edges[e], items[e[0]].key, items[e[1]].key)):
+    def lint_free(e: tuple[int, int]) -> bool:
+        return items[e[0]].pass_index is not None and items[e[1]].pass_index is not None
+
+    # Сначала рёбра между находками проходов: срабатывания линтера присоединяются к уже собранным
+    # кластерам и не мешают двум проходам слиться (иначе N занижается, а находка делится надвое).
+    for i, j in sorted(edges, key=lambda e: (not lint_free(e), -edges[e], items[e[0]].key, items[e[1]].key)):
         ri, rj = find(i), find(j)
         if ri == rj or not mergeable(members[ri], members[rj]):
             continue

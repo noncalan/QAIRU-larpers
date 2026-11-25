@@ -57,6 +57,7 @@ LLM_PASS_FAILED = "LLM-030"  # noqa: S105 - код диагностики, не 
 LLM_ALL_PASSES_FAILED = "LLM-031"
 LLM_EVIDENCE_FAILED = "LLM-040"
 LLM_QUESTIONS_FAILED = "LLM-050"
+LLM_QUESTIONS_CHECKED = "LLM-051"  # код поправил или отбросил карточки редактора вопросов
 
 # Настройки и флаги.
 CFG_BACKEND_UNAVAILABLE = "CFG-001"
