@@ -38,7 +38,17 @@ from evals.report import money, num, pct
 from evals.runs import load_document
 from validator.ingest.blocks import is_empty_cell_quote
 from validator.merge import PROPERTY_GROUPS
-from validator.models import Backend, CallRecord, DocKind, Finding, ParsedDocument, Quote, Report, Scope
+from validator.models import (
+    Backend,
+    CallRecord,
+    CallStatus,
+    DocKind,
+    Finding,
+    ParsedDocument,
+    Quote,
+    Report,
+    Scope,
+)
 from validator.text import locate_quote, normalize
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -47,6 +57,7 @@ REPORT_NAME = "report.json"
 RUN_DIR = "run"
 CALLS_NAME = "calls.jsonl"
 LIVE_BACKENDS = frozenset({Backend.CLI, Backend.API})
+NOT_LIVE = frozenset({CallStatus.CACHED, CallStatus.REPLAYED})
 
 MIN_SPAN_OVERLAP = 0.5
 """Доля более короткой цитаты, которая должна лечь на цитату другой находки в опорном тексте."""
@@ -97,14 +108,17 @@ def load_report(path: Path) -> Report:
 
 
 def live_seconds(folder: Path) -> float | None:
-    """От начала первого до конца последнего живого вызова модели (``run/calls.jsonl`` рядом с отчётом).
+    """Время живых вызовов модели по ``run/calls.jsonl`` рядом с отчётом: сумма по шагам.
 
-    Так снапшот replay (``tests/fixtures/e2e/<формат>/``) показывает время записанного живого прогона.
+    Шаги идут друг за другом, вызовы внутри шага (проходы поиска) параллельно, поэтому у шага берём
+    промежуток от начала первого вызова до конца последнего. Ответы из кеша и replay не считаем. Так
+    снапшот replay (``tests/fixtures/e2e/<формат>/``) показывает время записанного живого прогона, даже
+    если один шаг перезаписан отдельно.
     """
     path = folder / RUN_DIR / CALLS_NAME
     if not path.is_file():
         return None
-    spans = []
+    spans: dict[str, list[tuple[float, float]]] = {}
     for line in read_utf8(path, "Лог вызовов").splitlines():
         if not line.strip():
             continue
@@ -112,12 +126,12 @@ def live_seconds(folder: Path) -> float | None:
             rec = CallRecord.model_validate_json(line)
         except ValueError as exc:
             raise EvalError(f"Лог вызовов {display_path(path)}: строка не по схеме: {exc}") from exc
-        if rec.backend in LIVE_BACKENDS and rec.duration_ms is not None:
+        if rec.backend in LIVE_BACKENDS and rec.status not in NOT_LIVE and rec.duration_ms is not None:
             start = rec.started_at.timestamp()
-            spans.append((start, start + rec.duration_ms / 1000))
+            spans.setdefault(rec.step.value, []).append((start, start + rec.duration_ms / 1000))
     if not spans:
         return None
-    return max(end for _, end in spans) - min(start for start, _ in spans)
+    return sum(max(e for _, e in s) - min(b for b, _ in s) for s in spans.values())
 
 
 def load_runs(paths: Sequence[Path]) -> list[FormatRun]:

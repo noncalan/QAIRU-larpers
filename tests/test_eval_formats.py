@@ -122,10 +122,12 @@ def test_cli_missing_report_is_an_error_not_a_traceback(
 def test_live_seconds_span_live_calls_and_skip_replay(tmp_path: Path) -> None:
     start = datetime(2026, 11, 26, 3, 0, tzinfo=UTC)
 
-    def record(call_id: str, backend: Backend, offset_s: int, duration_ms: int) -> str:
+    def record(
+        call_id: str, backend: Backend, offset_s: int, duration_ms: int, status: CallStatus = CallStatus.OK
+    ) -> str:
         return CallRecord(
             call_id=call_id,
-            step=LLMStep.SEARCH,
+            step=LLMStep(call_id.split(".", maxsplit=1)[0]),
             call_index=1,
             key="k",
             model_requested="m",
@@ -133,12 +135,18 @@ def test_live_seconds_span_live_calls_and_skip_replay(tmp_path: Path) -> None:
             backend=backend,
             started_at=start + timedelta(seconds=offset_s),
             duration_ms=duration_ms,
-            status=CallStatus.OK,
+            status=status,
         ).model_dump_json()
 
     run = tmp_path / "run"
     run.mkdir()
-    lines = [record("search.1", Backend.CLI, 0, 30_000), record("search.2", Backend.CLI, 10, 50_000)]
+    lines = [
+        record("search.1", Backend.CLI, 0, 30_000),
+        record("search.2", Backend.CLI, 10, 50_000),
+        record("segment.1", Backend.CLI, 3600, 2, CallStatus.CACHED),
+        # Шаг перезаписан отдельно через час: промежуток между шагами не считается.
+        record("questions.1", Backend.CLI, 3600, 20_000),
+    ]
     (run / "calls.jsonl").write_text("\n".join(lines) + "\n", encoding="utf-8")
     replay = tmp_path / "replay"
     (replay / "run").mkdir(parents=True)
@@ -146,7 +154,7 @@ def test_live_seconds_span_live_calls_and_skip_replay(tmp_path: Path) -> None:
         record("search.1", Backend.REPLAY, 0, 5) + "\n", encoding="utf-8"
     )
 
-    assert live_seconds(tmp_path) == pytest.approx(60.0)
+    assert live_seconds(tmp_path) == pytest.approx(80.0)
     assert live_seconds(replay) is None
     assert live_seconds(tmp_path / "nope") is None
 
