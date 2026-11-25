@@ -128,11 +128,18 @@ def _discard(m: MergedFinding, quotes: Sequence[Quote], doc: ParsedDocument) -> 
     unknown = sorted({b for b in m.block_ids if doc.block(b) is None})
     if unknown:
         detail += f"; блоков {', '.join(unknown)} в документе нет"
-    return DiscardedFinding(finding=m, reason=DiscardReason.QUOTE_NOT_FOUND, detail=detail)
+    # Все блоки модели выдуманы: это отдельный вид ошибки модели, его видно в метриках прогона.
+    all_unknown = bool(m.block_ids) and len(unknown) == len(set(m.block_ids))
+    reason = DiscardReason.UNKNOWN_BLOCKS if all_unknown else DiscardReason.QUOTE_NOT_FOUND
+    return DiscardedFinding(finding=m, reason=reason, detail=detail)
 
 
 def _quote_notes(
-    m: MergedFinding, verified: Sequence[Quote], linked: Sequence[str], section: Sequence[str]
+    m: MergedFinding,
+    verified: Sequence[Quote],
+    linked: Sequence[str],
+    section: Sequence[str],
+    seg: Segmentation,
 ) -> list[str]:
     notes: list[str] = []
     missing = len(m.quotes) - len(verified)
@@ -141,7 +148,8 @@ def _quote_notes(
             f"Цитат модели не найдено в документе: {missing} из {len(m.quotes)}. В отчёт они не вошли, "
             "находка держится на сверенных цитатах."
         )
-    if m.scope is Scope.REQUIREMENT and not linked:
+    # Если нарезка пуста (шаг 2 упал), об этом говорит его диагностика, а не каждая находка.
+    if m.scope is Scope.REQUIREMENT and not linked and seg.requirements:
         where = f"разделу «{' › '.join(section[-2:])}»" if section else "документу в целом"
         notes.append(f"Цитата не входит ни в одно требование из таблицы нарезки: находка отнесена к {where}.")
     return notes
@@ -193,7 +201,7 @@ def check(
         test_draft=m.test_draft,
         critic=m.critic,
         anchor_corrected=any(fixed for _, fixed in located),
-        notes=_quote_notes(m, verified, linked, section) + severity.notes,
+        notes=_quote_notes(m, verified, linked, section, seg) + severity.notes,
     )
     return finding, quotes
 
@@ -252,6 +260,9 @@ def summarize(
 ) -> Summary:
     """Сводка (ТЗ п. 6). Все числа считаются из тех же списков, что видит отчёт.
 
+    Требования считаются по строкам статуса (``requirement_status``): если нарезка дала и единицу R-07,
+    и её атомы, считаются все строки, как в таблице отчёта.
+
     ``quotes``: все сверенные цитаты, включая цитаты отброшенных находок (доля сверенных); по умолчанию
     цитаты находок. ``status``: статус требований; по умолчанию считается из находок.
     """
@@ -303,6 +314,11 @@ def _violations(n: int, adjective: tuple[str, str, str]) -> str:
     return f"{n} {_plural(n, *adjective)} {word}"
 
 
+def _join(parts: Sequence[str]) -> str:
+    """«a», «a и b», «a, b и c»."""
+    return parts[0] if len(parts) == 1 else f"{', '.join(parts[:-1])} и {parts[-1]}"
+
+
 def traffic_light(findings: Sequence[Finding]) -> tuple[TrafficLight, str]:
     """Светофор «можно ли начинать разработку и тестирование» и причина одной фразой (``TRAFFIC_RULE``).
 
@@ -311,21 +327,31 @@ def traffic_light(findings: Sequence[Finding]) -> tuple[TrafficLight, str]:
     - Зелёный: только «незначительно» или находок нет.
     """
     violations = [f for f in findings if f.verdict is Verdict.VIOLATION]
-    blocking = [f for f in violations if f.severity is Severity.CRITICAL and f.blocks_testing]
+    critical = [f for f in violations if f.severity is Severity.CRITICAL]
+    blocking = [f for f in critical if f.blocks_testing]
     if blocking:
-        verb = "мешает" if len(blocking) == 1 else "мешают"
-        head = _violations(len(blocking), ("критичное", "критичных", "критичных"))
-        return TrafficLight.RED, f"{head} {verb} написать тест-кейсы ({_ids(blocking)})"
-    serious = [f for f in violations if f.severity is not Severity.MINOR]
+        n = len(blocking)
+        head = _violations(n, ("критичное", "критичных", "критичных"))
+        return (
+            TrafficLight.RED,
+            f"{head} {_plural(n, 'мешает', 'мешают', 'мешают')} написать тест-кейсы ({_ids(blocking)})",
+        )
+    major = [f for f in violations if f.severity is Severity.MAJOR]
     unclear = [f for f in findings if f.verdict is Verdict.UNCLEAR]
-    if serious or unclear:
-        parts = []
-        if serious:
-            parts.append(_violations(len(serious), ("важное", "важных", "важных")) + f" ({_ids(serious)})")
-        if unclear:
-            n = len(unclear)
-            parts.append(f"{n} {_plural(n, 'находка', 'находки', 'находок')} «неясно» ({_ids(unclear)})")
-        return TrafficLight.YELLOW, "критичных нарушений нет, но есть " + " и ".join(parts)
+    parts = []
+    if critical:
+        parts.append(
+            _violations(len(critical), ("критичное", "критичных", "критичных"))
+            + f" без влияния на тест-кейсы ({_ids(critical)})"
+        )
+    if major:
+        parts.append(_violations(len(major), ("важное", "важных", "важных")) + f" ({_ids(major)})")
+    if unclear:
+        n = len(unclear)
+        parts.append(f"{n} {_plural(n, 'находка', 'находки', 'находок')} «неясно» ({_ids(unclear)})")
+    if parts:
+        head = "нарушений, которые мешают написать тест-кейсы, нет" if critical else "критичных нарушений нет"
+        return TrafficLight.YELLOW, f"{head}, но есть {_join(parts)}"
     if violations:
         minor = _violations(len(violations), ("незначительное", "незначительных", "незначительных"))
         return TrafficLight.GREEN, f"критичных и важных нарушений нет, есть {minor}"

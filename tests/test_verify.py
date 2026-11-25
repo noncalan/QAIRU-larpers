@@ -146,10 +146,15 @@ def test_invented_quote_discards_finding_and_is_counted(doc: ParsedDocument, seg
     assert (ver.summary.quotes_total, ver.summary.quotes_not_found) == (1, 1)
 
 
-def test_unknown_blocks_are_named_in_discard_reason(doc: ParsedDocument, seg: Segmentation) -> None:
-    ver = verify([merged(INVENTED, block_ids=("B999",))], doc, seg)
+def test_invented_blocks_get_their_own_discard_reason(doc: ParsedDocument, seg: Segmentation) -> None:
+    ver = verify(
+        [merged(INVENTED, block_ids=("B999",)), merged(INVENTED, mid="M-002", block_ids=("B003", "B999"))],
+        doc,
+        seg,
+    )
 
-    assert "B999" in ver.discarded[0].detail
+    assert [d.reason for d in ver.discarded] == [DiscardReason.UNKNOWN_BLOCKS, DiscardReason.QUOTE_NOT_FOUND]
+    assert all("B999" in d.detail for d in ver.discarded)
 
 
 def test_unmatched_quote_is_dropped_with_note(doc: ParsedDocument, seg: Segmentation) -> None:
@@ -258,6 +263,15 @@ def test_requirement_finding_outside_requirements_gets_note(doc: ParsedDocument,
     assert any("не входит ни в одно требование" in note for note in finding.notes)
 
 
+def test_empty_segmentation_does_not_add_a_note_to_every_finding(doc: ParsedDocument) -> None:
+    ver = verify([merged(LIMIT_FIVE)], doc, Segmentation())
+
+    finding = only(ver.findings)
+    assert finding.requirement_ids == []
+    assert finding.notes == []
+    assert ver.requirement_status == {}
+
+
 # ---------------------------------------------------------------- важность
 
 
@@ -298,6 +312,16 @@ def test_model_hint_is_kept_but_does_not_decide(doc: ParsedDocument, seg: Segmen
     assert result.severity_disputed
     assert any("расходятся больше чем на уровень" in note for note in result.notes)
     assert "прослеживаемость" in result.severity_basis
+
+
+def test_dispute_note_names_table_value_and_final_severity(doc: ParsedDocument, seg: Segmentation) -> None:
+    unclear = merged(LIMIT_FIVE, verdict=Verdict.UNCLEAR, blocks_testing=True, hint=Severity.MINOR)
+
+    result = only(verify([unclear], doc, seg).findings)
+
+    assert result.severity is Severity.MAJOR
+    assert result.severity_disputed
+    assert "дала «критично», итог после правил кода «важно»" in result.notes[0]
 
 
 def test_one_level_difference_is_not_disputed() -> None:
@@ -424,20 +448,44 @@ def test_light_is_green_for_minor_violations_or_none(doc: ParsedDocument, seg: S
     assert _light(doc, seg) == (TrafficLight.GREEN, "нарушений не найдено")
 
 
-def test_critical_without_blocking_testing_is_not_red() -> None:
-    finding = Finding(
-        id="F-01",
-        merged_id="M-001",
+def made(number: int, severity: Severity, *, blocks_testing: bool) -> Finding:
+    return Finding(
+        id=f"F-{number:02d}",
+        merged_id=f"M-{number:03d}",
         property=Property.CORRECT,
         defect_type=DefectType.INCORRECT,
         verdict=Verdict.VIOLATION,
         scope=Scope.REQUIREMENT,
-        severity=Severity.CRITICAL,
-        blocks_testing=False,
+        severity=severity,
+        blocks_testing=blocks_testing,
         explanation="Пояснение.",
     )
 
-    assert traffic_light([finding])[0] is TrafficLight.YELLOW
+
+def test_critical_without_blocking_testing_is_yellow_and_named() -> None:
+    light, reason = traffic_light(
+        [made(1, Severity.CRITICAL, blocks_testing=False), made(2, Severity.MAJOR, blocks_testing=True)]
+    )
+
+    assert light is TrafficLight.YELLOW
+    assert reason == (
+        "нарушений, которые мешают написать тест-кейсы, нет, но есть 1 критичное нарушение без влияния "
+        "на тест-кейсы (F-01) и 1 важное нарушение (F-02)"
+    )
+
+
+@pytest.mark.parametrize(
+    ("count", "phrase"),
+    [
+        (2, "2 критичных нарушения мешают"),
+        (11, "11 критичных нарушений мешают"),
+        (21, "21 критичное нарушение мешает"),
+    ],
+)
+def test_red_reason_agrees_in_number(count: int, phrase: str) -> None:
+    findings = [made(n, Severity.CRITICAL, blocks_testing=True) for n in range(1, count + 1)]
+
+    assert traffic_light(findings)[1].startswith(phrase)
 
 
 def test_reason_lists_at_most_five_ids(doc: ParsedDocument, seg: Segmentation) -> None:
@@ -505,7 +553,7 @@ def test_report_shows_ids_severity_light_and_rule(tmp_path: Path) -> None:
 
     report = cfg.report_md_path.read_text(encoding="utf-8")
     assert outcome.exit_code is ExitCode.OK
-    assert "#### F-01 · критично" in report
+    assert "### F-01 · критично" in report
     assert "- **Требования:** R-" in report
     assert f"Правило светофора: {TRAFFIC_RULE}" in report
     assert "🔴" in report

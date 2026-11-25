@@ -161,20 +161,23 @@ def severity_for(m: MergedFinding, verified: Sequence[Quote]) -> SeverityResult:
 
     ``verified``: сверенные цитаты находки (нужны правилу о двух местах противоречия).
     """
-    severity = table_severity(m.defect_type, m.blocks_testing)
+    table = table_severity(m.defect_type, m.blocks_testing)
     test = "мешает" if m.blocks_testing else "не мешает"
-    basis = [f"тип «{m.defect_type.label}», {test} написать тест-кейс: «{severity.label}»"]
+    basis = [f"тип «{m.defect_type.label}», {test} написать тест-кейс: «{table.label}»"]
     notes: list[str] = []
-    disputed = severity_disputed(m.severity_hint, severity)
-    if disputed and m.severity_hint is not None:
-        notes.append(
-            f"Модель оценила важность как «{m.severity_hint.label}», а по таблице кода вышло "
-            f"«{severity.label}»: оценки расходятся больше чем на уровень."
-        )
+    severity = table
     for step in _SEVERITY_STEPS:
         severity, why, note = step(m, verified, severity)
         basis.extend([why] if why else [])
         notes.extend([note] if note else [])
+    disputed = severity_disputed(m.severity_hint, table)
+    if disputed and m.severity_hint is not None:
+        final = "" if severity is table else f", итог после правил кода «{severity.label}»"
+        notes.insert(
+            0,
+            f"Модель оценила важность как «{m.severity_hint.label}», а таблица кода по типу дефекта и "
+            f"влиянию на тест дала «{table.label}»{final}: оценки расходятся больше чем на уровень.",
+        )
     return SeverityResult(severity, "; ".join(basis), notes, disputed)
 
 

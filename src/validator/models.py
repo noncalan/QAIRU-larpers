@@ -972,7 +972,7 @@ class Summary(Contract):
     """Сводка (ТЗ п. 6): все числа считает код."""
 
     requirements_total: int = 0
-    requirements_with_findings: int = 0
+    requirements_with_findings: int = Field(default=0, description="Требований хотя бы с одной находкой")
     findings_total: int = 0
     violations: int = 0
     unclear: int = 0
