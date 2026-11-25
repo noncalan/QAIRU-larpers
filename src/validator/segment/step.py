@@ -18,7 +18,7 @@ from functools import cache
 from pathlib import Path
 from typing import Any
 
-from validator.errors import LLM_BAD_RESPONSE, LLM_LIMIT, LLM_SEGMENT_FALLBACK, LLMError
+from validator.errors import LLM_BAD_RESPONSE, LLM_SEGMENT_FALLBACK, LLMError
 from validator.ingest.blocks import render_for_model
 from validator.llm.base import LLMClient
 from validator.models import (
@@ -44,7 +44,10 @@ USER_PROMPT = "segment_user.md"
 DOCUMENT_SLOT = "{document}"
 
 MAX_ATTEMPTS = 2
-"""Первый вызов и один повтор, если ответ не по схеме или вызов можно повторить (план, шаг 2)."""
+"""Первый вызов и один повтор с пояснением, если по ответу нельзя собрать нарезку (план, шаг 2).
+
+Сбои самого вызова (перегрузка, ответ не по JSON-схеме, таймаут) повторяет клиент модели
+(``calllog.RecordingClient``); шаг их не повторяет, чтобы не умножать живые вызовы."""
 
 RETRY_NOTE = (
     "\n\nПредыдущий ответ не прошёл проверку: {reason}. Ответь строго по схеме: объект с полями "
@@ -151,33 +154,28 @@ def _request(cfg: RunConfig, prompt: str, index: int) -> LLMRequest:
     )
 
 
-def _can_retry(exc: LLMError) -> bool:
-    """Повтор имеет смысл при ответе не по схеме и сбое вызова, но не при исчерпанном лимите."""
-    return exc.retryable and exc.code != LLM_LIMIT
-
-
 def _ask_model(doc: ParsedDocument, llm: LLMClient, cfg: RunConfig, call_ids: list[str]) -> Segmentation:
-    """Вызов модели и сборка нарезки; ответ не по схеме даёт один повтор. Неудача — ``LLMError``."""
+    """Вызов модели и сборка нарезки; негодный по смыслу ответ даёт один повтор. Неудача — ``LLMError``.
+
+    ``LLMError`` клиента (отказ, лимит, сбой после его собственного повтора) идёт наружу сразу.
+    """
     base = build_prompt(doc)
     prompt = base
     for index in range(1, MAX_ATTEMPTS + 1):
         req = _request(cfg, prompt, index)
         call_ids.append(req.call_id)
+        resp = llm.call(req)
         try:
-            resp = llm.call(req)
             return from_answer(doc, parse_answer(resp.structured))
         except AnswerError as exc:
-            error = LLMError(
-                f"Ответ нарезки не по схеме: {exc}",
-                code=LLM_BAD_RESPONSE,
-                location=req.call_id,
-                retryable=True,
-            )
-        except LLMError as exc:
-            error = exc
-        if index == MAX_ATTEMPTS or not _can_retry(error):
-            raise error
-        prompt = base + RETRY_NOTE.format(reason=error.message)
+            if index == MAX_ATTEMPTS:
+                raise LLMError(
+                    f"Ответ нарезки не годится: {exc}",
+                    code=LLM_BAD_RESPONSE,
+                    hint="Повторите прогон; если повторяется, сообщите команде",
+                    location=req.call_id,
+                ) from exc
+            prompt = base + RETRY_NOTE.format(reason=exc)
     raise AssertionError("unreachable")  # pragma: no cover - цикл всегда возвращает или бросает
 
 

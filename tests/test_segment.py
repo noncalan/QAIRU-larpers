@@ -18,7 +18,9 @@ from validator.config import load_config
 from validator.errors import (
     IN_NO_REQUIREMENTS,
     LLM_BAD_RESPONSE,
-    LLM_CALL_FAILED,
+    LLM_LIMIT,
+    LLM_OVERLOADED,
+    LLM_REFUSED,
     LLM_SEGMENT_BAD_REFS,
     LLM_SEGMENT_FALLBACK,
     LLM_SEGMENT_OVERLAP,
@@ -395,10 +397,10 @@ def test_valid_answer_uses_one_call(doc: ParsedDocument, cfg: RunConfig) -> None
     assert llm.requests[0].json_schema == RESPONSE_SCHEMA
 
 
-def test_invalid_answer_is_retried_once(doc: ParsedDocument, cfg: RunConfig) -> None:
+def test_unusable_answer_is_retried_once_with_note(doc: ParsedDocument, cfg: RunConfig) -> None:
     llm = FakeLLM(
         responses={
-            (LLMStep.SEGMENT, 1): envelope(structured_output={"requirements": "нет"}),
+            (LLMStep.SEGMENT, 1): envelope(structured_output=answer([item("B099")])),
             (LLMStep.SEGMENT, 2): envelope(structured_output=answer(full_items())),
         }
     )
@@ -410,9 +412,9 @@ def test_invalid_answer_is_retried_once(doc: ParsedDocument, cfg: RunConfig) -> 
     assert "Предыдущий ответ не прошёл проверку" in llm.requests[1].prompt
 
 
-def test_refusal_twice_gives_fallback_with_diagnostic(doc: ParsedDocument, cfg: RunConfig) -> None:
-    refusal = envelope(result="Не могу выполнить эту задачу.")
-    llm = FakeLLM(responses={(LLMStep.SEGMENT, 1): refusal, (LLMStep.SEGMENT, 2): refusal})
+def test_unusable_answer_twice_gives_fallback_with_diagnostic(doc: ParsedDocument, cfg: RunConfig) -> None:
+    bad = envelope(structured_output=answer([item("B099")]))
+    llm = FakeLLM(responses={(LLMStep.SEGMENT, 1): bad, (LLMStep.SEGMENT, 2): bad})
 
     seg = segment(doc, llm, cfg)
 
@@ -425,23 +427,27 @@ def test_refusal_twice_gives_fallback_with_diagnostic(doc: ParsedDocument, cfg: 
     assert_quotes_from_document(doc, seg)
 
 
-def test_call_error_is_not_retried(doc: ParsedDocument, cfg: RunConfig) -> None:
-    llm = FakeLLM(responses={(LLMStep.SEGMENT, 1): envelope(is_error=True, result="API Error: 500")})
+@pytest.mark.parametrize(
+    ("payload", "code"),
+    [
+        ({"stop_reason": "refusal", "result": "Не могу помочь с этим запросом."}, LLM_REFUSED),
+        ({"result": "Не могу выполнить эту задачу."}, LLM_BAD_RESPONSE),
+        ({"is_error": True, "result": "API Error: 500"}, LLM_OVERLOADED),
+        ({"is_error": True, "result": "You've hit your usage limit"}, LLM_LIMIT),
+    ],
+)
+def test_model_failure_gives_fallback_without_step_retry(
+    doc: ParsedDocument, cfg: RunConfig, payload: dict[str, Any], code: str
+) -> None:
+    """Сбои вызова повторяет клиент модели; шаг сразу идёт запасным путём и не множит вызовы."""
+    llm = FakeLLM(responses={(LLMStep.SEGMENT, 1): envelope(**payload)})
 
     seg = segment(doc, llm, cfg)
 
     assert seg.mode is SegmentationMode.FALLBACK
     assert seg.call_ids == ["segment.1"]
-    assert LLM_CALL_FAILED in seg.diagnostics[0].message
-
-
-def test_usage_limit_is_not_retried(doc: ParsedDocument, cfg: RunConfig) -> None:
-    llm = FakeLLM(responses={(LLMStep.SEGMENT, 1): envelope(is_error=True, result="usage limit reached")})
-
-    seg = segment(doc, llm, cfg)
-
-    assert seg.mode is SegmentationMode.FALLBACK
-    assert seg.call_ids == ["segment.1"]
+    assert seg.diagnostics[0].code == LLM_SEGMENT_FALLBACK
+    assert code in seg.diagnostics[0].message
 
 
 def test_fallback_takes_content_blocks_and_skips_short_ones(doc: ParsedDocument) -> None:
