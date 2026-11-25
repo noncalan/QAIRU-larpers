@@ -128,6 +128,24 @@ def test_pdf_keeps_cyrillic_quotes_and_places_from_the_report() -> None:
     assert report.conclusion.headline in text
 
 
+def test_pdf_lint_only_finding_does_not_say_found_in_zero_passes() -> None:
+    """Как в Markdown (#36): находка только линтера без «в 0 из 3 проходов», источник назван словами."""
+    report = load("full")
+    assert report.verification is not None
+    findings = [
+        f.model_copy(update={"found_in": 0, "of": 3}) if f.id == "F-04" else f
+        for f in report.verification.findings
+    ]
+    report = report.model_copy(
+        update={"verification": report.verification.model_copy(update={"findings": findings})}
+    )
+
+    text = pdf_text(render_pdf(report))
+
+    assert "в 0 из 3 проходов" not in text
+    assert "линтер, правило LNT-04; проходы модели этого не отметили (0 из 3)" in text
+
+
 def test_pdf_shows_traffic_light_headline_on_first_page() -> None:
     report = load("full")
 

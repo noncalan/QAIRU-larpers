@@ -51,6 +51,9 @@ VOLATILE = {
 }
 """Поля, которые меняются от запуска к запуску или от машины к машине: время, версия агента, окружение."""
 
+MAX_DIFFERENCES_SHOWN = 20
+SHORT_VALUE = 300
+
 STALE_RECORDINGS: dict[DocKind, str] = {
     DocKind.PDF: (
         "Запись PDF сделана до разбора PDF-таблиц по ячейкам (#84) и до критика вопросов (#85): "
@@ -82,6 +85,32 @@ def _normalize(data: dict[str, Any], paths: list[Path]) -> dict[str, Any]:
         for key in keys:
             normalized.get(section, {}).pop(key, None)
     return normalized
+
+
+def _differences(expected: Any, actual: Any, path: str = "") -> list[str]:
+    """Где отчёты разошлись, по одной строке на место: «путь: было → стало». Без этого CI печатает оба
+    отчёта целиком (тысячи строк), и само расхождение не попадает в хвост лога."""
+    if isinstance(expected, dict) and isinstance(actual, dict):
+        out: list[str] = []
+        for key in sorted(set(expected) | set(actual)):
+            if key not in actual or key not in expected:
+                out.append(f"{path}.{key}: {'нет в прогоне' if key not in actual else 'нет в снапшоте'}")
+            else:
+                out += _differences(expected[key], actual[key], f"{path}.{key}")
+        return out[:MAX_DIFFERENCES_SHOWN]
+    if isinstance(expected, list) and isinstance(actual, list) and len(expected) == len(actual):
+        out = []
+        for i, (old, new) in enumerate(zip(expected, actual, strict=True)):
+            out += _differences(old, new, f"{path}[{i}]")
+        return out[:MAX_DIFFERENCES_SHOWN]
+    if expected == actual:
+        return []
+    return [f"{path}: {_short(expected)} → {_short(actual)}"]
+
+
+def _short(value: Any) -> str:
+    text = json.dumps(value, ensure_ascii=False)
+    return text if len(text) <= SHORT_VALUE else text[:SHORT_VALUE] + "…"
 
 
 def run_replay(kind: DocKind, out_dir: Path) -> subprocess.CompletedProcess[str]:
@@ -162,7 +191,12 @@ def test_replayed_report_matches_snapshot(replayed: tuple[DocKind, Path, int]) -
     actual = _normalize(json.loads(actual_path.read_text(encoding="utf-8")), paths)
     expected = _normalize(json.loads(snapshot_path.read_text(encoding="utf-8")), paths)
 
-    assert actual == expected, (
-        f"report.json прогона {kind.value} разошёлся со снапшотом {snapshot_path.relative_to(ROOT)}. "
-        f"Если так задумано: {UPDATE_ENV}=1 uv run pytest tests/test_e2e_replay.py"
-    )
+    differences = _differences(expected, actual)
+
+    if differences:
+        pytest.fail(
+            f"report.json прогона {kind.value} разошёлся со снапшотом {snapshot_path.relative_to(ROOT)} "
+            f"(снапшот → прогон):\n" + "\n".join(differences) + "\n"
+            f"Если так задумано: {UPDATE_ENV}=1 uv run pytest tests/test_e2e_replay.py",
+            pytrace=False,
+        )
