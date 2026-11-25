@@ -337,14 +337,15 @@ def test_label_only_sentence_is_not_reported_as_missed(make_md: Callable[[str], 
     """Живой прогон #36 на PDF и DOCX: метка пункта «Ф-1.» режется отдельным предложением, модель её не
     размечает, и это не «возможно пропущенное требование»."""
     doc = make_md("# Заказы\n\n- REQ-7. Система хранит заказ. Пользователь видит статус заказа.\n")
-    assert [s.text for s in doc.blocks[1].sentences][0] == "REQ-7."
+    assert doc.blocks[1].sentences[0].text == "REQ-7."
 
     seg = run(doc, answer([item("B002.2"), item("B002.3")], []))
 
     assert LLM_SEGMENT_UNCOVERED not in {d.code for d in seg.diagnostics}
     label = next(e for e in seg.excluded if e.block_id == "B002.1")
     assert label.label is BlockLabel.METADATA
-    assert [r.quote for r in seg.requirements] == ["Система хранит заказ.", "Пользователь видит статус заказа."]
+    quotes = [r.quote for r in seg.requirements]
+    assert quotes == ["Система хранит заказ.", "Пользователь видит статус заказа."]
 
 
 def test_furniture_is_excluded_without_missed_warning(doc: ParsedDocument) -> None:
