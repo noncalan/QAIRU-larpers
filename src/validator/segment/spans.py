@@ -62,10 +62,17 @@ def resolve(doc: ParsedDocument, raw: str) -> tuple[Piece | None, bool]:
 
 
 def _adjacent(text: str, left: Piece, right: Piece) -> bool:
-    """Между фрагментами нет текста (только пробелы и разметка): их можно цитировать одним куском."""
+    """Между фрагментами нет текста (только пробелы и разметка): их можно цитировать одним куском.
+
+    Маркер следующего пункта списка («2.», «б)») чужим текстом не считается: условие в одном пункте и
+    действие в следующем модель может объединить в одно требование.
+    """
     if right.start <= left.end:
         return True
-    return not any(ch.isalnum() for ch in text[left.end : right.start])
+    gap_end = right.start
+    if right.block.id != left.block.id and right.start == content_span(right.block)[0]:
+        gap_end = right.block.anchor.char_start
+    return not any(ch.isalnum() for ch in text[left.end : gap_end])
 
 
 def runs(text: str, pieces: Iterable[Piece]) -> list[list[Piece]]:

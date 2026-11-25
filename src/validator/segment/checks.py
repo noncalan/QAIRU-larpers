@@ -37,6 +37,7 @@ from validator.models import (
 from validator.segment.answer import EXCLUDE_LABELS, AnswerError, ModelAnswer, ModelExclusion, ModelItem
 from validator.segment.build import (
     MIN_WORDS,
+    SHORT_REASON,
     Draft,
     block_draft,
     build_requirements,
@@ -97,17 +98,19 @@ def _drafts_for(doc: ParsedDocument, item: ModelItem, notes: Notes) -> list[Draf
     out: list[Draft] = []
     for chunk in chunks:
         start, end, part = chunk[0].start, max(p.end for p in chunk), False
-        if wants_part and len(chunks) == 1:
+        if wants_part and len(chunks) > 1:  # границы части к нескольким кускам не применить
+            notes.parts_not_found.append(chunk[0].ref)
+        elif wants_part:
             bounds = narrow(doc.text, start, end, item.part_start, item.part_end)
             if bounds is None:
                 notes.parts_not_found.append(chunk[0].ref)
             else:
                 part = bounds != (start, end)
                 start, end = bounds
-        block = chunk[0].block
+        block, last = chunk[0].block, chunk[-1].block
         start, end = trim(doc, block, start, end)
         if end > start:
-            out.append(Draft(start, end, block, DecidedBy.MODEL, item=item, part=part))
+            out.append(Draft(start, end, block, DecidedBy.MODEL, item=item, part=part, last=last))
     return out
 
 
@@ -127,11 +130,15 @@ def _model_drafts(doc: ParsedDocument, items: Sequence[ModelItem], notes: Notes)
 def _exclusions(
     doc: ParsedDocument, exclusions: Sequence[ModelExclusion], notes: Notes
 ) -> dict[str, ExcludedBlock]:
-    """Исключения модели по ID блока или предложения; неизвестная метка считается пояснением."""
+    """Исключения модели по ID блока или предложения; неизвестная метка считается пояснением.
+
+    Исключение несуществующего предложения известного блока отбрасывается, а не переносится на блок:
+    иначе вместе с ним молча ушли бы остальные предложения блока, среди которых могут быть требования.
+    """
     out: dict[str, ExcludedBlock] = {}
     for ex in exclusions:
-        piece, _ = resolve(doc, ex.block)
-        if piece is None:
+        piece, corrected = resolve(doc, ex.block)
+        if piece is None or corrected:  # не исключаем целый блок за несуществующее предложение
             notes.unknown_refs.append(ex.block.strip() or "(пусто)")
             continue
         try:
@@ -198,12 +205,15 @@ def _partly_decided(
         decision = excluded.get(unit.id) or own
         if decision is not None:
             out.append(decision.model_copy(update={"block_id": unit.id}))
-        elif word_count(unit.text) >= MIN_WORDS:
-            notes.uncovered.append(unit.id)
-            if OBLIGATION.search(unit.text):
-                notes.uncovered_signals.append(unit.id)
-            start, end = trim(doc, block, unit.start, unit.end)
-            out.append(Draft(start, end, block, DecidedBy.CODE))
+            continue
+        notes.uncovered.append(unit.id)
+        if word_count(unit.text) < MIN_WORDS:
+            out.append(ExcludedBlock(block_id=unit.id, label=BlockLabel.CONTEXT, reason=SHORT_REASON))
+            continue
+        if OBLIGATION.search(unit.text):
+            notes.uncovered_signals.append(unit.id)
+        start, end = trim(doc, block, unit.start, unit.end)
+        out.append(Draft(start, end, block, DecidedBy.CODE))
     return out
 
 
@@ -214,6 +224,9 @@ def cover(
     added: list[Draft] = []
     kept: list[ExcludedBlock] = []
     for block in doc.blocks:
+        if block.kind is BlockKind.FURNITURE:  # модели колонтитулы не показываем: это не пропуск
+            kept.append(ExcludedBlock(block_id=block.id, label=BlockLabel.METADATA, reason=block.kind.label))
+            continue
         units = _units(block)
         covered = any(_is_covered(u, drafts) for u in units)
         own = excluded.get(block.id)
@@ -351,8 +364,14 @@ def diagnostics(doc: ParsedDocument, notes: Notes, reqs: Sequence[Requirement]) 
 # ---------------------------------------------------------------- сборка
 
 
+def _has_content(block: Block) -> bool:
+    return fallback_label(block)[0] is BlockLabel.REQUIREMENT
+
+
 def from_answer(doc: ParsedDocument, answer: ModelAnswer) -> Segmentation:
     """Нарезка по ответу модели: цитаты из документа, проверки кодом, номера по порядку документа."""
+    if not answer.items and not answer.exclusions and any(_has_content(b) for b in doc.blocks):
+        raise AnswerError("пустой ответ: ни требований, ни исключений")
     notes = Notes(invalid=answer.invalid)
     drafts = _model_drafts(doc, answer.items, notes)
     if answer.items and not drafts:

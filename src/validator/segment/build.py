@@ -30,6 +30,8 @@ from validator.text import span_anchor, stable_key
 MIN_WORDS = 3
 """Короче этого фрагмент без решения модели считаем пояснением, а не требованием."""
 
+SHORT_REASON = f"меньше {MIN_WORDS} слов"
+
 SUMMARY_WORDS = 15
 """Краткая формулировка в таблице нарезки: до 15 слов (исследование 18, п. 3.3)."""
 
@@ -62,6 +64,8 @@ class Draft:
     decided_by: DecidedBy
     item: ModelItem | None = None
     part: bool = False
+    last: Block | None = None
+    """Последний блок, если модель объединила в требование соседние блоки (условие и действие)."""
 
 
 def word_count(text: str) -> int:
@@ -77,7 +81,7 @@ def fallback_label(block: Block) -> tuple[BlockLabel, str]:
     if block.kind not in _CONTENT_KINDS:
         return BlockLabel.METADATA, block.kind.label
     if word_count(block.serialized or block.text) < MIN_WORDS:
-        return BlockLabel.CONTEXT, f"меньше {MIN_WORDS} слов"
+        return BlockLabel.CONTEXT, SHORT_REASON
     return BlockLabel.REQUIREMENT, ""
 
 
@@ -126,9 +130,23 @@ def _sentence_position(block: Block, start: int, end: int) -> str:
     return f"предл. {span}/{total}"
 
 
-def locator(block: Block, start: int, end: int, *, part: bool = False) -> str:
+def _block_range(first: Block, last: Block) -> str:
+    """Какие блоки охватывает требование: «строки таблицы 2–3», «до REQ-3», «пп. 1–2»."""
+    if first.anchor.row and last.anchor.row:
+        return f"строки таблицы {first.anchor.row}–{last.anchor.row}"
+    if last.source_id and last.source_id != first.source_id:
+        return f"до {last.source_id}"
+    if first.ordinal is not None and last.ordinal is not None:
+        return f"пп. {first.ordinal}–{last.ordinal}"
+    return f"блоки {first.id}–{last.id}"
+
+
+def locator(block: Block, start: int, end: int, *, part: bool = False, last: Block | None = None) -> str:
     """Где требование в документе: «REQ-2, предл. 2/4», «Раздел, п. 4», «Параметры: amount»."""
     section = block.section[-1] if block.section else "документ"
+    if last is not None and last.id != block.id:
+        where = f"{block.source_id or section}, {_block_range(block, last)}"
+        return f"{where}, часть" if part else where
     if block.kind is BlockKind.TABLE_ROW:
         first = block.cells[0] if block.cells else None
         key = _MARKUP.sub("", first.text).strip() if first else ""
@@ -242,7 +260,7 @@ def build_requirements(doc: ParsedDocument, drafts: Sequence[Draft]) -> list[Req
                 id=rid,
                 parent_id=parent,
                 source_id=source_id,
-                source_locator=locator(draft.block, draft.start, draft.end, part=draft.part),
+                source_locator=locator(draft.block, draft.start, draft.end, part=draft.part, last=draft.last),
                 section_path=list(draft.block.section),
                 type=kind,
                 subtype=subtype,

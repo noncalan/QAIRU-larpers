@@ -316,6 +316,72 @@ def test_prompt_contains_marked_document(doc: ParsedDocument) -> None:
     assert "[B004.1]" in prompt and "{document}" not in prompt
 
 
+# ---------------------------------------------------------------- регрессии по ревью кода
+
+
+def test_short_undecided_sentence_is_excluded_not_lost(make_md: Callable[[str], ParsedDocument]) -> None:
+    doc = make_md(
+        "# Заказы\n\nСистема должна сохранять заказ. Да, всегда. Пользователь видит итоговый статус заказа.\n"
+    )
+
+    seg = run(doc, answer([item("B002.1")], [exclusion("B002.3")]))
+
+    assert [e.block_id for e in seg.excluded if e.block_id.startswith("B002")] == ["B002.2", "B002.3"]
+    missed = next(d for d in seg.diagnostics if d.code == LLM_SEGMENT_UNCOVERED)
+    assert "B002.2" in missed.message
+
+
+def test_furniture_is_excluded_without_missed_warning(doc: ParsedDocument) -> None:
+    blocks = [b.model_copy(update={"kind": BlockKind.FURNITURE}) if b.id == "B002" else b for b in doc.blocks]
+    with_footer = doc.model_copy(update={"blocks": blocks})
+
+    seg = run(with_footer, answer(full_items(), []))
+
+    assert seg.diagnostics == []
+    assert any(e.block_id == "B002" and e.label is BlockLabel.METADATA for e in seg.excluded)
+
+
+def test_exclusion_of_unknown_sentence_does_not_hide_block(doc: ParsedDocument) -> None:
+    items = [it for it in full_items() if it["refs"] != ["B004.2"]]
+
+    seg = run(doc, answer(items, [exclusion("B002"), exclusion("B004.9")]))
+
+    taken = next(r for r in seg.requirements if r.quote == "Кладовщик сканирует накладную.")
+    assert taken.decided_by is DecidedBy.CODE
+    assert "B004.9" in next(d for d in seg.diagnostics if d.level is DiagLevel.WARNING).message
+    assert (LLM_SEGMENT_UNCOVERED, DiagLevel.WARNING) in codes(seg)
+
+
+def test_condition_and_action_in_numbered_items_stay_one_requirement(
+    make_md: Callable[[str], ParsedDocument],
+) -> None:
+    doc = make_md(
+        "# Доступ\n\n1. Если клиент не активен тридцать дней,\n2. система блокирует его учётную запись.\n"
+    )
+
+    seg = run(doc, answer([item("B002", "B003")], []))
+
+    assert len(seg.requirements) == 1
+    req = seg.requirements[0]
+    assert req.source_locator == "Доступ, пп. 1–2"
+    assert req.anchor.block_ids == ["B002", "B003"]
+    assert_quotes_from_document(doc, seg)
+
+
+def test_part_bounds_on_separate_pieces_are_reported(doc: ParsedDocument) -> None:
+    items = [item("B002", "B005", part_start="учёта склада"), *full_items()]
+
+    seg = run(doc, answer(items, []))
+
+    note = next(d for d in seg.diagnostics if d.code == LLM_SEGMENT_BAD_REFS)
+    assert "границы части не найдены" in note.message
+
+
+def test_empty_answer_is_an_error(doc: ParsedDocument) -> None:
+    with pytest.raises(AnswerError):
+        run(doc, {"requirements": [], "excluded": []})
+
+
 # ---------------------------------------------------------------- шаг целиком: вызовы и запасной путь
 
 
