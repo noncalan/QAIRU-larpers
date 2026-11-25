@@ -14,6 +14,7 @@
 | 5 слияние, 7 верификатор | внутренняя ошибка, код 1, отчёт из того, что есть |
 | 6 доказательства | находки без свидетеля, предупреждение |
 | 8 вопросы | редактор упал: вопросы кодом без редактуры; шаг упал: раздел без вопросов; предупреждение |
+| ID блоков в текстах | остаются как есть, предупреждение |
 | 9 отчёт | Markdown пишется всегда, в крайнем случае аварийный; PDF не собрался: INT-002, Markdown остаётся |
 """
 
@@ -69,6 +70,7 @@ from validator.models import (
 )
 from validator.passport import build_passport
 from validator.questions import build_questions, write_questions_yaml
+from validator.refs import humanize
 from validator.report import PdfRenderError, build_report, render_md, render_pdf
 from validator.search import search
 from validator.segment import fallback_segmentation, segment
@@ -296,6 +298,14 @@ def _execute(state: _State) -> None:
             state.questions_withdrawn = list(asked.withdrawn)
             state.diagnostics.extend(asked.diagnostics)
         state.verification = light_with_questions(ver, state.questions if asked is not None else None)
+    before = (state.verification, state.questions)
+    state.verification, state.questions = _step(
+        state,
+        "refs",
+        lambda: humanize(before[0], before[1], doc, seg),
+        lambda: before,
+        action="ID блоков в текстах моделей оставлены как есть",
+    )
 
 
 # ---------------------------------------------------------------- выходы
