@@ -26,4 +26,7 @@ experiments = [
   "msoffcrypto-tool",
   "olefile",
   "psutil",
+  # Стенд нарезки (experiments/18-segmentation)
+  "razdel",
+  "pyyaml",
 ]
