@@ -17,6 +17,7 @@ from validator.ingest import build_blocks
 from validator.llm import UnavailableLLM, make_client, parse_cli_payload
 from validator.models import (
     Backend,
+    CacheMode,
     DefectType,
     DiagLevel,
     DiscardReason,
@@ -199,10 +200,19 @@ def test_auto_backend_with_key_but_no_claude_says_key_was_found(
 
 
 def test_unimplemented_options_are_reported(tmp_path: Path) -> None:
-    outcome, _ = _run(REQUIREMENTS[DocKind.MD], tmp_path, max_budget_usd=1.0)
+    outcome, _ = _run(REQUIREMENTS[DocKind.MD], tmp_path, ask=True)
 
     assert outcome.exit_code is ExitCode.OK
-    assert any(d.code == "CFG-010" and "--max-budget-usd" in d.message for d in outcome.diagnostics)
+    assert any(d.code == "CFG-010" and "--ask" in d.message for d in outcome.diagnostics)
+
+
+def test_budget_and_cache_options_are_not_reported_as_unimplemented(tmp_path: Path) -> None:
+    outcome, _ = _run(REQUIREMENTS[DocKind.MD], tmp_path, max_budget_usd=1.0, cache=CacheMode.OFF)
+
+    assert outcome.exit_code is ExitCode.OK
+    assert not any(d.code == "CFG-010" and d.level is not DiagLevel.INFO for d in outcome.diagnostics)
+    # С фикстурами модель не вызывается: отчёт честно говорит, что параметры ни на что не повлияли.
+    assert any("не действуют с бэкендом fake" in d.message for d in outcome.diagnostics)
 
 
 # ---------------------------------------------------------------- каждая находка с цитатой

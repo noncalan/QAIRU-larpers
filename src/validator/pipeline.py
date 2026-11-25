@@ -45,11 +45,10 @@ from validator.errors import (
 from validator.evidence import evidence
 from validator.ingest import guard, parse
 from validator.lint import lint
-from validator.llm import RecordingClient, make_client, write_calls_jsonl
+from validator.llm import RecordingClient, align_config, instrument, make_client, write_calls_jsonl
 from validator.merge import merge
 from validator.models import (
     Backend,
-    CacheMode,
     CandidateFinding,
     DiagLevel,
     Diagnostic,
@@ -194,22 +193,15 @@ def _check_requests(state: _State) -> None:
                 step="clarify",
             )
         )
-    ignored = [
-        name
-        for name, used in (
-            ("--max-budget-usd", cfg.max_budget_usd is not None),
-            ("--cache", cfg.cache is not CacheMode.USE),
-            ("--replay", cfg.replay_dir is not None and cfg.backend is not Backend.REPLAY),
-        )
-        if used
-    ]
-    if ignored:
+    if cfg.replay_dir is not None and cfg.backend not in (Backend.REPLAY, Backend.AUTO):
         state.diagnostics.append(
             Diagnostic(
                 code=CFG_NOT_IMPLEMENTED,
                 level=DiagLevel.WARNING,
-                message=f"Параметры {', '.join(ignored)} в этой версии агента ещё не работают",
-                action="Прогон выполнен без них: без лимита цены и без кеша ответов модели",
+                message=(
+                    f"Параметр --replay работает только с --backend replay или auto, а не {cfg.backend.value}"
+                ),
+                action="Записанные ответы не использованы",
                 step="config",
             )
         )
@@ -234,7 +226,10 @@ def _execute(state: _State) -> None:
     state.doc = doc
     client, client_diags = make_client(cfg)
     state.diagnostics.extend(client_diags)
-    llm = RecordingClient(client)
+    cfg, aligned_diags = align_config(cfg, client)
+    state.cfg = cfg
+    state.diagnostics.extend(aligned_diags)
+    llm = instrument(cfg, client)
     state.client, state.backend_used = llm, client.backend
 
     seg = _step(
@@ -483,6 +478,8 @@ def run(cfg: RunConfig) -> RunOutcome:
                     hint=f"Подробности в {cfg.log_path.name}; сообщите команде",
                 )
             )
+        if state.client is not None:
+            state.diagnostics.extend(state.client.diagnostics)
         code, report, markdown = _render(state)
         try:
             outputs = _write(state, report, markdown)

@@ -15,6 +15,12 @@ from validator.llm.claude_cli import DROP_ENV, build_args, clean_env
 from validator.models import Backend, CallStatus, Effort, LLMRequest, LLMStep
 
 SCHEMA: dict[str, Any] = {"type": "object", "properties": {"ok": {"type": "boolean"}}, "required": ["ok"]}
+# Фикстуры поиска отвечают по схеме заглушки поиска; тестам клиента хватает её верхнего уровня.
+FINDINGS_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {"findings": {"type": "array"}},
+    "required": ["findings"],
+}
 
 
 def request(
@@ -85,8 +91,19 @@ def test_text_answer_without_schema_is_fine() -> None:
 @pytest.mark.parametrize(
     ("message", "code", "retryable"),
     [
-        ("Claude AI usage limit reached|1764000000", "LLM-002", True),
+        # Лимит подписки снимается через часы: повтор через 20 с только потратит время.
+        ("Claude AI usage limit reached|1764000000", "LLM-002", False),
+        ("You've hit your limit · resets 3am (UTC)", "LLM-002", False),
         ("Invalid API key · Please run /login", "LLM-001", False),
+        ("Not logged in · Please run /login", "LLM-001", False),
+        ('API Error: 529 {"type":"error","error":{"type":"overloaded_error"}}', "LLM-004", True),
+        ("API Error: Connection error.", "LLM-004", True),
+        (
+            "API Error: Claude Code is unable to respond to this request, "
+            "which appears to violate our Usage Policy",
+            "LLM-013",
+            False,
+        ),
         ("Something unexpected happened", "LLM-010", False),
     ],
 )
@@ -107,7 +124,7 @@ def test_non_object_payload_is_bad_response() -> None:
 
 
 def test_fake_llm_answers_from_fixture_files(fake_llm: FakeLLM) -> None:
-    resp = fake_llm.call(request(call_index=2))
+    resp = fake_llm.call(request(call_index=2, schema=FINDINGS_SCHEMA))
 
     assert resp.backend is Backend.FAKE
     assert isinstance(resp.structured, dict)
@@ -130,7 +147,7 @@ def test_fake_llm_accepts_inline_responses() -> None:
 def test_recording_client_logs_success_and_failure(fake_llm: FakeLLM) -> None:
     client = RecordingClient(fake_llm)
 
-    client.call(request(call_index=1))
+    client.call(request(call_index=1, schema=FINDINGS_SCHEMA))
     with pytest.raises(LLMError):
         client.call(request(call_index=99))
 
@@ -142,12 +159,14 @@ def test_recording_client_logs_success_and_failure(fake_llm: FakeLLM) -> None:
     assert "LLM-014" in client.records[1].error
 
 
-def test_cli_args_follow_safe_flags() -> None:
-    args = build_args("claude", request())
+def test_cli_args_follow_safe_flags(tmp_path: Path) -> None:
+    args = build_args("claude", request(), tmp_path / "system.md")
 
     assert args[:2] == ["claude", "-p"]
-    for flag in ("--safe-mode", "--no-session-persistence", "--system-prompt", "--json-schema"):
+    for flag in ("--safe-mode", "--no-session-persistence", "--system-prompt-file", "--json-schema"):
         assert flag in args
+    assert "--system-prompt" not in args
+    assert args[args.index("--system-prompt-file") + 1] == str(tmp_path / "system.md")
     assert args[args.index("--tools") + 1] == ""
     assert args[args.index("--output-format") + 1] == "json"
     assert args[args.index("--model") + 1] == "claude-haiku-5-5"
