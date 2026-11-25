@@ -313,25 +313,34 @@ _PROPERTY_INFO: dict[Property, PropertyInfo] = {
 
 
 class DefectType(StrEnum):
-    """Тип дефекта формулировки (ТЗ п. 1). Важность считает код по таблице «тип × мешает тесту» (#22)."""
+    """Тип дефекта формулировки (ТЗ п. 1). Важность считает код по таблице «тип × мешает тесту» (#22).
 
-    AMBIGUOUS = "ambiguous"
-    UNVERIFIABLE = "unverifiable"
+    Один к одному с закрытым списком из промпта поиска (#14, ``prompts/search_system.md``): метка
+    (``label``) это ровно то слово, которое пишет модель, ``from_label`` переводит его обратно.
+    """
+
     CONTRADICTION = "contradiction"
+    AMBIGUOUS = "ambiguous"
     INCOMPLETE = "incomplete"
-    OMISSION = "omission"
+    UNVERIFIABLE = "unverifiable"
+    INFEASIBLE = "infeasible"
+    INCORRECT = "incorrect"
+    TERMINOLOGY = "terminology"
+    REDUNDANCY = "redundancy"
     NOT_ATOMIC = "not_atomic"
     DESIGN_DETAIL = "design_detail"
-    INFEASIBLE = "infeasible"
-    REDUNDANCY = "redundancy"
-    TERMINOLOGY = "terminology"
-    TRACEABILITY = "traceability"
     PLACEHOLDER = "placeholder"
-    OTHER = "other"
+    TRACEABILITY = "traceability"
+    INJECTED_INSTRUCTION = "injected_instruction"
 
     @property
     def label(self) -> str:
         return _DEFECT_LABELS[self]
+
+    @classmethod
+    def from_label(cls, label: str) -> DefectType | None:
+        """Тип по русской метке из ответа модели: регистр, «ё» и лишние пробелы не важны."""
+        return _DEFECT_BY_LABEL.get(_label_key(label))
 
     @property
     def critical_class(self) -> bool:
@@ -340,20 +349,27 @@ class DefectType(StrEnum):
 
 
 _DEFECT_LABELS = {
-    DefectType.AMBIGUOUS: "двусмысленность",
-    DefectType.UNVERIFIABLE: "непроверяемость",
     DefectType.CONTRADICTION: "противоречие",
+    DefectType.AMBIGUOUS: "двусмысленность",
     DefectType.INCOMPLETE: "неполнота",
-    DefectType.OMISSION: "пропуск в наборе",
-    DefectType.NOT_ATOMIC: "неединичность",
-    DefectType.DESIGN_DETAIL: "проектное решение в требовании",
+    DefectType.UNVERIFIABLE: "непроверяемость",
     DefectType.INFEASIBLE: "невыполнимость",
-    DefectType.REDUNDANCY: "повтор",
-    DefectType.TERMINOLOGY: "разнобой терминов",
-    DefectType.TRACEABILITY: "прослеживаемость",
+    DefectType.INCORRECT: "некорректность",
+    DefectType.TERMINOLOGY: "разнобой терминов и единиц",
+    DefectType.REDUNDANCY: "дублирование",
+    DefectType.NOT_ATOMIC: "составное требование",
+    DefectType.DESIGN_DETAIL: "неуместная детализация",
     DefectType.PLACEHOLDER: "незаполненное место",
-    DefectType.OTHER: "прочее",
+    DefectType.TRACEABILITY: "прослеживаемость и оформление",
+    DefectType.INJECTED_INSTRUCTION: "посторонняя инструкция",
 }
+
+
+def _label_key(label: str) -> str:
+    return " ".join(label.lower().replace("ё", "е").split())
+
+
+_DEFECT_BY_LABEL = {_label_key(text): kind for kind, text in _DEFECT_LABELS.items()}
 
 
 class Verdict(StrEnum):
@@ -363,6 +379,11 @@ class Verdict(StrEnum):
     @property
     def label(self) -> str:
         return {"violation": "нарушение", "unclear": "неясно"}[self.value]
+
+    @classmethod
+    def from_label(cls, label: str) -> Verdict | None:
+        """Вердикт из ответа модели: «нарушение» или «неясно» (промпт поиска #14)."""
+        return {"нарушение": cls.VIOLATION, "неясно": cls.UNCLEAR}.get(_label_key(label))
 
 
 class Severity(StrEnum):
@@ -378,6 +399,21 @@ class Severity(StrEnum):
     def rank(self) -> int:
         """0 самая высокая важность: удобно сортировать."""
         return {"critical": 0, "major": 1, "minor": 2}[self.value]
+
+    @classmethod
+    def from_label(cls, label: str) -> Severity | None:
+        """Подсказка важности из ответа модели: «критично», «средне», «низко» (промпт поиска #14)
+        или метки отчёта «важно», «незначительно»."""
+        return _SEVERITY_BY_LABEL.get(_label_key(label))
+
+
+_SEVERITY_BY_LABEL = {
+    "критично": Severity.CRITICAL,
+    "средне": Severity.MAJOR,
+    "важно": Severity.MAJOR,
+    "низко": Severity.MINOR,
+    "незначительно": Severity.MINOR,
+}
 
 
 class TrafficLight(StrEnum):
@@ -625,7 +661,7 @@ class Sentence(Contract):
 
 class TableCell(Contract):
     index: int = Field(description="Номер ячейки в строке, с 1")
-    column: str = Field(description="Заголовок колонки или col<N>")
+    column: str = Field(description="Заголовок колонки или «колонка N»")
     text: str
     char_start: int
     char_end: int

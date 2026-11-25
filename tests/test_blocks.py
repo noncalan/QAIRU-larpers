@@ -103,7 +103,24 @@ def test_table_rows_have_cells_and_serialized_text(sample: ParsedDocument) -> No
 
     assert [(r.anchor.table, r.anchor.row) for r in rows] == [(1, 1), (1, 2)]
     assert [(c.column, c.text) for c in rows[0].cells] == [("Поле", "Имя"), ("Значение", "Значение один")]
-    assert rows[0].serialized == "Поле: Имя; Значение: Значение один"
+    assert rows[0].serialized == "Имя: Значение один"  # таблица «поле | значение» без названий колонок
+
+
+def test_table_serialization_keeps_code_marks_and_shows_empty_cells(
+    make_md: Callable[[str], ParsedDocument],
+) -> None:
+    doc = make_md(
+        "| Параметр запроса | Формат | Описание |\n|---|---|---|\n"
+        "| `user_id` | **string** | |\n| | | |\n| extra | int | x | лишняя |\n"
+    )
+    rows = [b for b in doc.blocks if b.kind is BlockKind.TABLE_ROW]
+
+    assert [r.serialized for r in rows] == [
+        "Параметр запроса: `user_id`; Формат: string; Описание: (пусто)",
+        "Параметр запроса: (пусто); Формат: (пусто); Описание: (пусто)",
+        "Параметр запроса: extra; Формат: int; Описание: x; колонка 4: лишняя",
+    ]
+    assert [r.anchor.row for r in rows] == [1, 2, 3]
 
 
 def test_source_label_and_obligation_become_hints(sample: ParsedDocument) -> None:
@@ -127,13 +144,28 @@ def test_sample_anchors_match_text(sample: ParsedDocument) -> None:
 
 
 def test_render_for_model_shows_ids_sections_and_sentences(sample: ParsedDocument) -> None:
-    shown = render_for_model(sample)
+    shown = render_for_model(sample).splitlines()
 
-    assert "[B003] §Документ › Раздел один | абзац | строка 5" in shown
+    assert "[B001] # Документ" in shown
+    assert "[B002] ## Раздел один" in shown
+    assert "[B003] § Раздел один | абзац | строка 5" in shown  # название документа в путь не идёт
     assert "  [B003.2] Второе предложение абзаца." in shown
-    assert "Поле: Имя; Значение: Значение один" in shown
-    assert "метка: REQ-7" in shown
-    assert set(re.findall(r"^\[(B\d{3})\]", shown, flags=re.MULTILINE)) == {b.id for b in sample.blocks}
+    assert "[B005] § Раздел один | пункт списка 1 | строка 8" in shown
+    assert "  Первый нумерованный пункт." in shown  # одно предложение показано без ID
+    assert "[B007] § Раздел один | строка таблицы 1 | строка 13" in shown
+    assert "  Имя: Значение один" in shown
+    assert "[B011] § Раздел один › Подраздел | абзац | строка 22 | метка: REQ-7" in shown
+    ids = {m for line in shown for m in re.findall(r"^\[(B\d{3})\]", line)}
+    assert ids == {b.id for b in sample.blocks}
+
+
+def test_render_keeps_full_path_without_common_title(make_md: Callable[[str], ParsedDocument]) -> None:
+    doc = make_md("Вступление без заголовка.\n\n# Часть один\n\nТекст части.\n")
+
+    shown = render_for_model(doc)
+
+    assert "[B001] § — | абзац | строка 1" in shown
+    assert "[B003] § Часть один | абзац | строка 5" in shown
 
 
 def test_markdown_syntax_is_plain_text_for_other_formats() -> None:
@@ -185,5 +217,6 @@ def test_docx_tables_have_cells(requirements_docs: dict[DocKind, ParsedDocument]
     rows = [b for b in requirements_docs[DocKind.DOCX].blocks if b.kind is BlockKind.TABLE_ROW]
 
     assert rows
-    assert all(b.anchor.extraction is Extraction.TABLE and b.cells for b in rows)
+    assert all(b.anchor.extraction is Extraction.TABLE for b in rows)
+    assert all(b.cells for b in rows if b.text.replace("|", "").strip())  # у пустой строки ячеек нет
     assert all(b.anchor.table is not None and b.anchor.row for b in rows)

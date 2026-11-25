@@ -85,6 +85,30 @@ def _plain(text: str) -> str:
     return _EMPHASIS.sub("", text).strip()
 
 
+EMPTY_CELL = "(пусто)"
+"""Так модель видит пустую ячейку: незаполненное поле тоже факт документа (промпт поиска #14)."""
+KEY_VALUE_HEADERS = frozenset({"поле", "field", "параметр", "parameter", "ключ", "key"})
+"""Таблица «поле | значение» показывается модели как «Поле: значение», без названий колонок."""
+
+
+def _clean_cell(cell: str) -> str:
+    """Ячейка без жирного выделения; ``_`` и обратные кавычки остаются (``user_id`` не станет ``userid``)."""
+    return cell.replace("**", "").replace("__", "").strip()
+
+
+def _column_name(header: Sequence[str], k: int) -> str:
+    return header[k] if k < len(header) and header[k] else f"колонка {k + 1}"
+
+
+def _serialize_row(header: Sequence[str], cells: Sequence[str]) -> str:
+    """Строка таблицы для модели: «Колонка: значение; …», пустые ячейки как «(пусто)»."""
+    values = [_clean_cell(c) or EMPTY_CELL for c in cells]
+    values += [EMPTY_CELL] * (len(header) - len(values))
+    if len(header) == 2 and header[0].lower() in KEY_VALUE_HEADERS:
+        return f"{values[0]}: {values[1] if len(values) > 1 else EMPTY_CELL}"
+    return "; ".join(f"{_column_name(header, k)}: {v}" for k, v in enumerate(values))
+
+
 def _md_cells(line: str) -> list[str]:
     body = line.strip()
     body = body.removeprefix("|").removesuffix("|")
@@ -323,13 +347,12 @@ class _Builder:
             self.is_md and self.header is None and i + 1 < n and bool(TABLE_SEP.match(self.text(i + 1)))
         )
         if is_header:
-            self.header = [_plain(c) for c in cells]
+            self.header = [_clean_cell(c) for c in cells]
             return i + 1
-        if not any(_plain(c) for c in cells):
-            return i + 1
+        # Пустая строка таблицы тоже блок: незаполненная форма это факт документа.
         self.table_row += 1
-        hdr = self.header or [f"col{k + 1}" for k in range(len(cells))]
-        serialized = "; ".join(f"{h}: {_plain(c)}" for h, c in zip(hdr, cells, strict=False) if _plain(c))
+        hdr = self.header or []
+        serialized = _serialize_row(hdr, cells)
         start = self.starts[i]
         table_cells = _locate_cells(line.text, cells, hdr, start)
         self.add(
@@ -356,7 +379,7 @@ def _locate_cells(text: str, cells: Sequence[str], header: Sequence[str], base: 
         if pos < 0:
             continue
         cursor = pos + len(value)
-        column = header[k] if k < len(header) else f"col{k + 1}"
+        column = _column_name(header, k)
         out.append(
             TableCell(index=k + 1, column=column, text=value, char_start=base + pos, char_end=base + cursor)
         )
@@ -400,22 +423,29 @@ def _where(block: Block) -> str:
     return ", ".join(parts)
 
 
-def _header(block: Block) -> str:
-    parts = [f"[{block.id}]"]
-    head = []
-    if block.section:
-        head.append("§" + " › ".join(block.section))
+def _header(block: Block, title: str | None) -> str:
+    """Служебная строка блока: «[B023] § Раздел › Подраздел | пункт списка 2 | строка 38 | метка: X».
+
+    Название документа (общий для всех блоков первый раздел) в путь не идёт: оно ничего не различает.
+    """
+    section = block.section[1:] if title is not None else block.section
     kind = block.kind.label
-    if block.kind is BlockKind.TABLE_ROW and block.anchor.row is not None:
-        kind = f"{kind} {block.anchor.row}"
-    head.append(kind)
+    number = block.anchor.row if block.kind is BlockKind.TABLE_ROW else block.ordinal
+    if number is not None:
+        kind = f"{kind} {number}"
+    parts = [f"§ {' › '.join(section)}" if section else "§ —", kind]
     where = _where(block)
     if where:
-        head.append(where)
+        parts.append(where)
     if block.source_id:
-        head.append(f"метка: {block.source_id}")
-    parts.append(" | ".join(head))
-    return " ".join(parts)
+        parts.append(f"метка: {block.source_id}")
+    return f"[{block.id}] " + " | ".join(parts)
+
+
+def _document_title(doc: ParsedDocument) -> str | None:
+    """Первый раздел, общий для всех блоков (заголовок-название документа), или None."""
+    firsts = {b.section[0] if b.section else None for b in doc.blocks}
+    return next(iter(firsts)) if len(firsts) == 1 else None
 
 
 def _heading_title(text: str) -> str:
@@ -432,14 +462,21 @@ def render_for_model(doc: ParsedDocument) -> str:
 
     Модель ссылается на ``B…`` и ``B….N``, а цитату по ним подставляет код. Текст документа здесь
     это данные, а не инструкции: обрамление и предупреждение об этом добавляет промпт шага.
+    Формат согласован с описанием разметки в ``prompts/search_user.md`` (#14): заголовок одной строкой,
+    у блока из одного предложения ID предложения не ставится, у строк таблиц «Колонка: значение; …».
     """
+    title = _document_title(doc)
     out: list[str] = []
     for block in doc.blocks:
-        out.append(_header(block))
         if block.kind is BlockKind.HEADING:
-            out.append(f"  {_heading_title(block.text)}")
-        elif block.kind is BlockKind.TABLE_ROW:
+            level = max(1, len(block.section))
+            out.append(f"[{block.id}] {'#' * level} {_heading_title(block.text)}")
+            continue
+        out.append(_header(block, title))
+        if block.kind is BlockKind.TABLE_ROW:
             out.append(f"  {block.serialized}")
+        elif len(block.sentences) == 1:
+            out.append(f"  {_one_line(block.sentences[0].text)}")
         elif block.sentences:
             out.extend(f"  [{s.id}] {_one_line(s.text)}" for s in block.sentences)
         else:

@@ -96,6 +96,17 @@ def test_findings_quote_the_document(fake_run: tuple[DocKind, Path, int]) -> Non
             assert quote.anchor is not None
 
 
+def test_fixture_block_ids_match_markdown_blocks(fake_run: tuple[DocKind, Path, int]) -> None:
+    """Фикстуры ссылаются на ID блоков Markdown: если нумерация блоков поменялась, обнови фикстуры."""
+    kind, out, _ = fake_run
+    if kind is not DocKind.MD:
+        pytest.skip("ID блоков в фикстурах размечены по Markdown")
+    report = Report.model_validate_json(out.with_suffix(".json").read_text(encoding="utf-8"))
+    assert report.verification is not None
+
+    assert not [f.id for f in report.verification.findings if f.anchor_corrected]
+
+
 def test_invented_quote_is_discarded(fake_run: tuple[DocKind, Path, int]) -> None:
     _, out, _ = fake_run
     report = Report.model_validate_json(out.with_suffix(".json").read_text(encoding="utf-8"))
