@@ -7,7 +7,8 @@
 - ``responses/``: ответ модели целиком в формате агента (то же, что ``run/responses/``, годится для replay);
 - ``answer.md``: текст ответа модели без правок (его же читают судья и сверка цитат);
 - ``calls.jsonl``: лог вызовов в формате агента;
-- ``quotes.json``: сверка цитат из сырого текста (``evals.quotes``).
+
+Цитаты, судейство и метрики считает ``evals.eval`` (``evals/freetext.py``, ``evals/README.md``).
 
 Не менять: промпт, модель, effort. Повторный запуск не вызывает модель там, где ответ уже лежит
 в ``responses/``.
@@ -21,15 +22,13 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from statistics import mean
 
-from evals.quotes import QuoteStats, score_quotes
 from validator.errors import LLM_REPLAY_MISSING, LLMError
 from validator.llm.base import parse_cli_payload
 from validator.llm.cache import ResponseCache, read_envelope
-from validator.llm.calllog import RecordingClient, read_calls_jsonl, response_file_name, write_calls_jsonl
+from validator.llm.calllog import RecordingClient, response_file_name, write_calls_jsonl
 from validator.llm.claude_cli import ClaudeCLI
-from validator.models import Backend, CacheMode, CallStatus, Effort, LLMRequest, LLMStep
+from validator.models import Backend, CacheMode, Effort, LLMRequest, LLMStep
 
 ROOT = Path(__file__).resolve().parents[1]
 DOCUMENT = ROOT / "data" / "input" / "requirements.md"
@@ -77,8 +76,8 @@ def _live_call(req: LLMRequest, run_dir: Path) -> None:
         write_calls_jsonl(run_dir / "calls.jsonl", recorder.records)
 
 
-def run_once(document: str, run: int, out: Path) -> dict[str, object]:
-    """Один прогон: ответ из ``responses/`` (если его нет, живой вызов), сверка цитат, файлы прогона."""
+def run_once(document: str, run: int, out: Path) -> Path:
+    """Один прогон: ответ из ``responses/`` (если его нет, живой вызов), ``answer.md`` для eval."""
     run_dir = out / f"run-{run}"
     req = build_request(document, run)
     response_path = run_dir / RESPONSES_DIR / response_file_name(req)
@@ -89,40 +88,7 @@ def run_once(document: str, run: int, out: Path) -> dict[str, object]:
         raise LLMError(f"Нет ответа базовой линии: {response_path}", code=LLM_REPLAY_MISSING)
     resp = parse_cli_payload(envelope["payload"], req, Backend.CLI)
     (run_dir / "answer.md").write_text(resp.text, encoding="utf-8")
-    call = next(r for r in reversed(read_calls_jsonl(run_dir / "calls.jsonl")) if r.status is CallStatus.OK)
-    stats, by_kind = score_quotes(document, resp.text)
-    quotes = {"total": stats.as_dict(), "by_kind": {k: v.as_dict() for k, v in sorted(by_kind.items())}}
-    _write_json(run_dir / "quotes.json", quotes)
-    return {
-        "run": run,
-        "model": call.model_actual,
-        "usage": call.usage.model_dump(),
-        "cost_usd": call.cost_usd,
-        "duration_ms": call.duration_ms,
-        "answer_chars": len(resp.text),
-        "quotes": quotes["total"],
-    }
-
-
-def summarize(rows: list[dict[str, object]]) -> dict[str, object]:
-    """Сводка по прогонам: среднее по времени, цене и сверке цитат."""
-    total = QuoteStats()
-    for row in rows:
-        q = row["quotes"]
-        assert isinstance(q, dict)  # noqa: S101
-        total.merge(
-            QuoteStats(total=q["total"], exact=q["exact"], fuzzy=q["fuzzy"], not_found=q["not_found"])
-        )
-    costs = [float(r["cost_usd"]) for r in rows if isinstance(r["cost_usd"], int | float)]
-    times = [int(r["duration_ms"]) / 1000 for r in rows if isinstance(r["duration_ms"], int | float)]
-    return {
-        "model": MODEL,
-        "effort": EFFORT.value,
-        "runs": rows,
-        "mean_cost_usd": round(mean(costs), 4) if costs else None,
-        "mean_duration_s": round(mean(times), 1) if times else None,
-        "quotes_overall": total.as_dict(),
-    }
+    return run_dir
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -132,13 +98,15 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     document = DOCUMENT.read_text(encoding="utf-8")
     try:
-        rows = [run_once(document, n, args.out) for n in range(1, args.runs + 1)]
+        dirs = [run_once(document, n, args.out) for n in range(1, args.runs + 1)]
     except LLMError as exc:
         print(f"{exc.code}: {exc.message}", file=sys.stderr)
         return 1
-    summary = summarize(rows)
-    _write_json(args.out / "summary.json", summary)
-    print(json.dumps(summary, ensure_ascii=False, indent=2))
+    print(
+        "Прогоны записаны. Подсчёт: uv run python -m evals.eval "
+        + " ".join(map(str, dirs))
+        + " --name baseline"
+    )
     return 0
 
 
