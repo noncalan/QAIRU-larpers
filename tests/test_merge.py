@@ -131,11 +131,12 @@ def test_one_finding_in_three_wordings_is_one_cluster_found_in_3_of_3(doc: Parse
     assert m.block_ids == ["B002"]
 
 
-def test_representative_has_longest_quote_and_fullest_explanation(doc: ParsedDocument) -> None:
+def test_texts_come_from_voice_matching_the_vote(doc: ParsedDocument) -> None:
     m = merge(three_wordings(), [], doc)[0]
 
     assert m.quotes == [SENTENCE]  # короткие цитаты внутри полной фразы не повторяются
-    assert m.explanation.startswith("Слово «быстро»")
+    # Объяснение от прохода со свойством-победителем и самой длинной цитатой, а не от проигравшего.
+    assert m.explanation == "Нет числа: что значит быстро."
 
 
 def test_disagreements_between_passes_are_kept_for_critic(doc: ParsedDocument) -> None:
@@ -148,7 +149,7 @@ def test_disagreements_between_passes_are_kept_for_critic(doc: ParsedDocument) -
     assert "вердикт" in text
     assert "мешает тесту" in text
     assert m.verdict is Verdict.VIOLATION  # большинство
-    assert m.blocks_testing is False  # большинство: 1 из 3
+    assert m.blocks_testing is True  # хотя бы один источник: безопасная сторона
 
 
 # ---------------------------------------------------------------- разные находки не сливаются
@@ -183,6 +184,17 @@ def test_same_quote_with_unrelated_property_stays_apart(doc: ParsedDocument) -> 
     assert {(m.found_in, m.of) for m in merged} == {(1, 2)}
 
 
+def test_fragment_with_other_property_of_same_group_stays_apart(doc: ParsedDocument) -> None:
+    passes = passes_of(
+        [cand(1, 1, Property.VERIFIABLE, [SENTENCE], ["B002"])],
+        [cand(2, 1, Property.UNAMBIGUOUS, ["подтверждать бронь"], ["B002"])],
+    )
+
+    merged = merge(passes, [], doc)
+
+    assert sorted(m.members for m in merged) == [["p1.001"], ["p2.001"]]
+
+
 def test_contradictions_sharing_one_side_are_different_findings(doc: ParsedDocument) -> None:
     a, b, c = "Бронь хранится 30 дней.", "Бронь хранится 60 дней.", "Отмена брони доступна администратору."
     passes = passes_of(
@@ -194,6 +206,32 @@ def test_contradictions_sharing_one_side_are_different_findings(doc: ParsedDocum
     merged = merge(passes, [], doc)
 
     assert sorted(m.members for m in merged) == [["p1.001", "p3.001"], ["p2.001"]]
+
+
+def test_contradictions_do_not_chain_through_one_sided_finding(doc: ParsedDocument) -> None:
+    a, b, c = "Бронь хранится 30 дней.", "Бронь хранится 60 дней.", "Отмена брони доступна администратору."
+    passes = passes_of(
+        [cand(1, 1, Property.SET_CONSISTENT, [a], ["B003"])],
+        [cand(2, 1, Property.SET_CONSISTENT, [a, c], ["B003", "B004"])],
+        [cand(3, 1, Property.SET_CONSISTENT, [a, b], ["B003"])],
+    )
+
+    merged = merge(passes, [], doc)
+
+    assert len(merged) == 2
+    assert not any({"p2.001", "p3.001"} <= set(m.members) for m in merged)
+
+
+def test_quote_outside_stated_block_with_several_occurrences_has_no_place(doc: ParsedDocument) -> None:
+    # «брони» есть и в B002, и в B004; модель указала B003, где его нет: место неизвестно.
+    passes = passes_of(
+        [cand(1, 1, Property.UNAMBIGUOUS, ["брони"], ["B003"])],
+        [cand(2, 1, Property.UNAMBIGUOUS, ["письмо с номером брони"], ["B002"])],
+    )
+
+    merged = merge(passes, [], doc)
+
+    assert len(merged) == 2
 
 
 def test_no_chaining_of_two_findings_of_one_pass_through_a_third(doc: ParsedDocument) -> None:
@@ -285,6 +323,27 @@ def test_lint_hit_attaches_to_pass_finding_without_raising_n(doc: ParsedDocument
     assert [s.kind for s in m.sources] == [SourceKind.PASS] * 3 + [SourceKind.LINT]
     assert m.sources[-1].rule_id == "L-07"
     assert m.property is Property.VERIFIABLE  # голосуют проходы, линтер только источник
+
+
+def test_lint_hint_and_test_flag_survive_when_passes_have_none(doc: ParsedDocument) -> None:
+    passes = passes_of([cand(1, 1, Property.VERIFIABLE, [SENTENCE], ["B002"])])
+    lint = [
+        cand(
+            "L-01",
+            1,
+            Property.UNAMBIGUOUS,
+            ["быстро"],
+            ["B002"],
+            severity=Severity.CRITICAL,
+            blocks_testing=True,
+        )
+    ]
+
+    m = merge(passes, lint, doc)[0]
+
+    assert m.members == ["p1.001", "lint.L-01.001"]
+    assert m.severity_hint is Severity.CRITICAL
+    assert m.blocks_testing is True
 
 
 def test_lint_only_finding_is_found_in_zero_passes(doc: ParsedDocument) -> None:

@@ -5,19 +5,25 @@
 Несколько проходов находят один дефект разными словами. Два кандидата считаем одной находкой, если
 сразу выполнены три условия:
 
-1. **Место:** у них есть общий блок (из ``block_ids`` или из якорей найденных цитат); если блоков
-   нет ни в одном из этих источников, место не мешает и решают цитаты.
-2. **Цитаты:** цитаты одного в среднем не меньше чем на ``MIN_QUOTE_OVERLAP`` лежат на цитатах другого.
-   Сравниваем по смещениям в документе после ``locate_quote``; цитату, которую не нашли, сравниваем
-   с цитатами другого по нормализованному тексту (rapidfuzz). У кандидатов без цитат сравниваем
-   суть и объяснение.
-3. **Свойство:** то же свойство стандарта, свойство из одной группы (``PROPERTY_GROUPS``: проходы
-   путают, например, однозначность и проверяемость одной расплывчатой фразы) или тот же тип дефекта.
+1. **Место:** у них есть общий блок (из ``block_ids`` или из якорей найденных цитат). Если у кого-то
+   блоков нет или цитата вне указанных блоков встречается в документе несколько раз, решают цитаты.
+2. **Цитаты** лежат друг на друге по смещениям в документе после ``locate_quote`` (цитату, которой нет
+   в документе, сравниваем по нормализованному тексту через rapidfuzz; кандидатов без цитат по сути
+   и объяснению). Доля не меньше ``MIN_QUOTE_OVERLAP``. При том же свойстве или типе дефекта хватает
+   вложенности (фраза внутри полной формулировки); при свойствах из одной группы нужно взаимное
+   перекрытие, потому что на одной фразе бывают два разных дефекта. Линтеру хватает вложенности.
+3. **Свойство:** то же свойство стандарта, тот же тип дефекта или свойство из одной группы
+   (``PROPERTY_GROUPS``: проходы путают однозначность и проверяемость одной расплывчатой фразы).
 
-Кластеры собираем жадно по рёбрам «похожих» пар, от самой похожей пары к наименее похожей, с запретом
-цепочки: две находки одного прохода попадают в один кластер, только если похожи друг на друга сами,
-а не через третью. Порядок рёбер и номера ``M-NNN`` задаёт содержимое (место в документе, свойство,
-цитаты), а не порядок проходов, поэтому результат не зависит от того, в каком порядке пришли проходы.
+Кластеры собираем жадно по рёбрам «похожих» пар, от самой похожей к наименее похожей. Цепочки через
+третьего запрещены для двух находок одного прохода и для двух находок с несколькими цитатами
+(противоречия «A и B» и «A и C»): такие пары попадают в кластер, только если похожи сами. Порядок
+рёбер и номера ``M-NNN`` задаёт содержимое (место в документе, свойство, цитаты), а не порядок
+проходов, поэтому результат не зависит от того, в каком порядке пришли проходы.
+
+Свойство, тип и вердикт решает большинство проходов (линтер голосует, только если кластер целиком
+его). Тексты (суть, объяснение, предложение) берём у одного прохода, совпавшего с итогом голосования,
+с самой длинной сверенной цитатой. «Мешает тесту» ставим, если так считает хоть один источник.
 
 Ничего не отбрасываем: находки «1 из 3» идут дальше, решают критик (шаг 6) и верификатор (шаг 7).
 Разногласия проходов по свойству, типу, вердикту и «мешает тесту» сохраняются для критика.
@@ -34,11 +40,13 @@ from rapidfuzz import fuzz
 
 from validator.models import (
     CandidateFinding,
+    DefectType,
     FindingSource,
     MergedFinding,
     ParsedDocument,
     PassResult,
     Property,
+    Severity,
     SourceKind,
 )
 from validator.text import locate_quote, normalize
@@ -114,10 +122,15 @@ class _Prepared:
 
 
 class _Locator:
-    """Сверка цитат с документом с кешем: сначала в указанных блоках, затем во всём документе."""
+    """Сверка цитат с документом с кешем: сначала в указанных блоках, затем во всём документе.
+
+    Если в указанных блоках цитаты нет, а во всём документе она встречается несколько раз, место
+    неизвестно: первое вхождение может оказаться чужим требованием и склеить разные находки.
+    """
 
     def __init__(self, doc: ParsedDocument) -> None:
         self.doc = doc
+        self._norm_doc: str | None = None
         self._cache: dict[tuple[str, tuple[str, ...]], tuple[Span | None, tuple[str, ...]]] = {}
 
     def __call__(self, quote: str, block_ids: Sequence[str]) -> tuple[Span | None, tuple[str, ...]]:
@@ -126,10 +139,18 @@ class _Locator:
             self._cache[key] = self._locate(quote, block_ids)
         return self._cache[key]
 
+    def _ambiguous(self, quote: str) -> bool:
+        if self._norm_doc is None:
+            self._norm_doc = normalize(self.doc.text)[0]
+        norm = normalize(quote)[0]
+        return bool(norm) and self._norm_doc.count(norm) > 1
+
     def _locate(self, quote: str, block_ids: Sequence[str]) -> tuple[Span | None, tuple[str, ...]]:
         found = locate_quote(self.doc, quote, within=block_ids) if block_ids else None
         if found is None or not found.verified:
             found = locate_quote(self.doc, quote)
+            if self._ambiguous(quote):
+                return None, ()
         if not found.verified or found.anchor is None:
             return None, ()
         a = found.anchor
@@ -203,23 +224,28 @@ def _gist(p: _Prepared) -> str:
     return normalize(f"{p.cand.title or ''} {p.cand.explanation}")[0]
 
 
-def _quote_score(a: _Prepared, b: _Prepared) -> float:
-    """Похожесть цитат 0–1. Кандидаты без цитат сравниваются по сути и объяснению."""
+def _quote_score(a: _Prepared, b: _Prepared, *, containment: bool) -> float:
+    """Похожесть цитат 0–1. Кандидаты без цитат сравниваются по сути и объяснению.
+
+    ``containment``: достаточно, чтобы цитаты одного легли на цитаты другого (фраза внутри полной
+    формулировки требования). Иначе нужно взаимное перекрытие: цитаты обоих лежат друг на друге.
+    """
     if not a.norm_quotes and not b.norm_quotes:
         ratio = fuzz.token_set_ratio(_gist(a), _gist(b))
         return ratio / 100 if ratio >= TEXT_SIMILARITY else 0.0
     if not a.norm_quotes or not b.norm_quotes:
         return 0.0
-    return max(_directed(a, b), _directed(b, a))
+    ab, ba = _directed(a, b), _directed(b, a)
+    return max(ab, ba) if containment else min(ab, ba)
+
+
+def _same_kind(x: CandidateFinding, y: CandidateFinding) -> bool:
+    return x.property is y.property or x.defect_type is y.defect_type
 
 
 def compatible(x: CandidateFinding, y: CandidateFinding) -> bool:
-    """Свойства совместимы: то же свойство, одна группа ``PROPERTY_GROUPS`` или тот же тип дефекта."""
-    return (
-        x.property is y.property
-        or _GROUP_OF.get(x.property, -1) == _GROUP_OF.get(y.property, -2)
-        or x.defect_type is y.defect_type
-    )
+    """Свойства совместимы: то же свойство, тот же тип дефекта или одна группа ``PROPERTY_GROUPS``."""
+    return _same_kind(x, y) or _GROUP_OF.get(x.property, -1) == _GROUP_OF.get(y.property, -2)
 
 
 def _same_place(a: _Prepared, b: _Prepared) -> bool:
@@ -233,15 +259,26 @@ def _similarity(a: _Prepared, b: _Prepared) -> float:
     """0, если кандидаты разные; иначе похожесть цитат (не меньше ``MIN_QUOTE_OVERLAP``)."""
     if not compatible(a.cand, b.cand) or not _same_place(a, b):
         return 0.0
-    score = _quote_score(a, b)
+    # Фраза внутри полной формулировки считается той же находкой, только если совпало свойство или
+    # тип; для свойств из одной группы нужно взаимное перекрытие: на одной фразе бывают два дефекта.
+    # Линтер цитирует короткое слово и N не меняет, поэтому ему хватает вложенности.
+    lint = a.pass_index is None or b.pass_index is None
+    score = _quote_score(a, b, containment=lint or _same_kind(a.cand, b.cand))
     return score if score >= MIN_QUOTE_OVERLAP else 0.0
 
 
 # ---------------------------------------------------------------- кластеризация
 
 
+def _needs_direct_edge(a: _Prepared, b: _Prepared) -> bool:
+    """Пары, которые нельзя склеить через третьего: находки одного прохода и две находки с несколькими
+    цитатами (противоречия «A и B» и «A и C» не сливаются через находку только про A)."""
+    same_pass = a.pass_index is not None and a.pass_index == b.pass_index
+    return same_pass or (len(a.norm_quotes) > 1 and len(b.norm_quotes) > 1)
+
+
 def _cluster(items: Sequence[_Prepared]) -> list[list[_Prepared]]:
-    """Жадная кластеризация по рёбрам от самых похожих, без цепочек внутри одного прохода."""
+    """Жадная кластеризация по рёбрам от самых похожих, без опасных цепочек (``_needs_direct_edge``)."""
     edges: dict[tuple[int, int], float] = {}
     for i, a in enumerate(items):
         for j in range(i + 1, len(items)):
@@ -259,12 +296,11 @@ def _cluster(items: Sequence[_Prepared]) -> list[list[_Prepared]]:
         return i
 
     def mergeable(x: list[int], y: list[int]) -> bool:
-        for i in x:
-            for j in y:
-                same_pass = items[i].pass_index is not None and items[i].pass_index == items[j].pass_index
-                if same_pass and (min(i, j), max(i, j)) not in edges:
-                    return False
-        return True
+        return all(
+            (min(i, j), max(i, j)) in edges or not _needs_direct_edge(items[i], items[j])
+            for i in x
+            for j in y
+        )
 
     for i, j in sorted(edges, key=lambda e: (-edges[e], items[e[0]].key, items[e[1]].key)):
         ri, rj = find(i), find(j)
@@ -289,11 +325,15 @@ def _vote(values: Sequence[T], prefer: T, order: Callable[[T], str] = str) -> T:
     return min(leaders, key=order)
 
 
-def _longest(values: Iterable[str | None], prefer: str | None = None) -> str | None:
+def _fill(prefer: str | None, *pools: Iterable[str | None]) -> str | None:
+    """``prefer``, если он есть; иначе самое длинное непустое значение первого пула, где оно нашлось."""
     if prefer:
         return prefer
-    present = [v for v in values if v]
-    return max(present, key=lambda v: (len(v), v), default=None)
+    for pool in pools:
+        present = [v for v in pool if v]
+        if present:
+            return max(present, key=lambda v: (len(v), v))
+    return None
 
 
 def _source_key(src: FindingSource) -> tuple[int, int, str]:
@@ -348,38 +388,56 @@ def _disagreements(cluster: Sequence[_Prepared]) -> list[str]:
     return out
 
 
-def _representative(cluster: Sequence[_Prepared]) -> _Prepared:
-    """Самая длинная сверенная цитата, затем самое полное объяснение. Проходы важнее линтера."""
+def _representative(voters: Sequence[_Prepared], prop: Property, defect: DefectType) -> _Prepared:
+    """Голос, чьи тексты идут в находку: совпадает с итогом голосования по свойству и типу, затем
+    самая длинная сверенная цитата и самое полное объяснение. Так суть, объяснение и предложение
+    не спорят со свойством находки."""
     return min(
-        cluster,
-        key=lambda p: (p.pass_index is None, -p.longest_located, -len(p.cand.explanation), p.key),
+        voters,
+        key=lambda p: (
+            p.cand.property is not prop,
+            p.cand.defect_type is not defect,
+            -p.longest_located,
+            -len(p.cand.explanation),
+            p.key,
+        ),
     )
 
 
+def _severity_hint(cluster: Sequence[_Prepared], voters: Sequence[_Prepared]) -> Severity | None:
+    """Большинство подсказок проходов (при равенстве важнее), без них подсказка линтера."""
+    hints = [p.cand.severity_hint for p in voters if p.cand.severity_hint]
+    hints = hints or [p.cand.severity_hint for p in cluster if p.cand.severity_hint]
+    if not hints:
+        return None
+    return _vote(hints, min(hints, key=lambda s: s.rank), lambda s: str(s.rank))
+
+
 def _build(cluster: Sequence[_Prepared], mid: str, of: int, block_order: dict[str, int]) -> MergedFinding:
-    head = _representative(cluster)
-    voters = [p.cand for p in cluster if p.pass_index is not None] or [p.cand for p in cluster]
-    prop = _vote([c.property for c in voters], head.cand.property)
-    hints = [c.severity_hint for c in voters if c.severity_hint]
-    sources = sorted((p.cand.source for p in cluster), key=_source_key)
+    # Голосуют проходы; линтер голосует, только если кластер целиком из линтера.
+    voters = [p for p in cluster if p.pass_index is not None] or list(cluster)
+    first = min(voters, key=lambda p: (-p.longest_located, p.key)).cand
+    prop = _vote([p.cand.property for p in voters], first.property)
+    defect = _vote([p.cand.defect_type for p in voters], first.defect_type)
+    head = _representative(voters, prop, defect).cand
+    texts = [p.cand for p in voters], [p.cand for p in cluster]
     return MergedFinding(
         mid=mid,
         property=prop,
-        defect_type=_vote([c.defect_type for c in voters], head.cand.defect_type),
-        verdict=_vote([c.verdict for c in voters], head.cand.verdict),
+        defect_type=defect,
+        verdict=_vote([p.cand.verdict for p in voters], head.verdict),
         scope=prop.scope,
         block_ids=sorted({b for p in cluster for b in p.blocks}, key=lambda b: (block_order.get(b, _FAR), b)),
         quotes=_quotes(cluster),
-        explanation=_longest(c.explanation for c in voters) or head.cand.explanation,
-        suggestion=_longest((c.suggestion for c in voters), head.cand.suggestion),
-        title=_longest((c.title for c in voters), head.cand.title),
-        scenario=_longest((c.scenario for c in voters), head.cand.scenario),
-        test_gap=_longest((c.test_gap for c in voters), head.cand.test_gap),
-        blocks_testing=_vote([c.blocks_testing for c in voters], True),
-        severity_hint=_vote(hints, min(hints, key=lambda s: s.rank), lambda s: str(s.rank))
-        if hints
-        else None,
-        sources=sources,
+        explanation=head.explanation,
+        suggestion=_fill(head.suggestion, *([c.suggestion for c in pool] for pool in texts)),
+        title=_fill(head.title, *([c.title for c in pool] for pool in texts)),
+        scenario=_fill(head.scenario, *([c.scenario for c in pool] for pool in texts)),
+        test_gap=_fill(head.test_gap, *([c.test_gap for c in pool] for pool in texts)),
+        # Мешает тесту хотя бы по одному источнику: безопасная сторона, разногласие видно критику.
+        blocks_testing=any(p.cand.blocks_testing for p in cluster),
+        severity_hint=_severity_hint(cluster, voters),
+        sources=sorted((p.cand.source for p in cluster), key=_source_key),
         members=[p.cand.cid for p in sorted(cluster, key=lambda p: (_source_key(p.cand.source), p.key))],
         found_in=len({p.pass_index for p in cluster if p.pass_index is not None}),
         of=of,
