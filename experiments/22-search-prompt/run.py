@@ -2,14 +2,17 @@
 
 Один прогон = один проход поиска: системный промпт `src/validator/prompts/search_system.md`,
 шаблон `search_user.md` и документ `data/input/requirements.md`, показанный блоками с ID
-(`render.py`) или сырым Markdown (`--raw`, то же, что B' в протоколе контрольной точки).
+(`render.py`) или сырым Markdown (`--mode raw`, то же, что B' в протоколе контрольной точки).
+Для сравнения в тот же день `--mode baseline` гоняет промпт базовой линии исследования 21
+(free-opus-medium: свободный текст, судья сам нумерует находки).
 Модель Opus 5.5 `medium`, ответ свободным текстом без схемы (D-010). Затем тот же судья, что
 в исследовании 21 (промпт, схема, Opus 5.5 `high`), вслепую сопоставляет находки с эталоном.
 Эталон попадает только в запрос судьи и никогда в запрос поиска (CLAUDE.md, правило 2).
 
 Запуск из корня репозитория (нужен вход в Claude Code по подписке):
     uv run --no-project --with rapidfuzz --with razdel python experiments/22-search-prompt/run.py run it1 --runs 2
-    uv run --no-project --with rapidfuzz --with razdel python experiments/22-search-prompt/run.py run raw --runs 2 --raw
+    uv run --no-project --with rapidfuzz --with razdel python experiments/22-search-prompt/run.py run raw --runs 2 --mode raw
+    uv run --no-project --with rapidfuzz --with razdel python experiments/22-search-prompt/run.py run base --runs 2 --mode baseline
     uv run --no-project --with rapidfuzz --with razdel python experiments/22-search-prompt/run.py score
     uv run --no-project --with rapidfuzz --with razdel python experiments/22-search-prompt/run.py leak
 
@@ -44,7 +47,10 @@ sys.path.insert(0, str(ROOT / "experiments" / "21-model-effort"))
 import render
 from quote_check import line_of, locate
 from run_matrix import DROP_ENV, JUDGE_PROMPT, JUDGE_SCHEMA, JUDGE_SYSTEM
+from run_matrix import PROMPT as BASELINE_PROMPT
+from run_matrix import SYSTEM_PROMPT as BASELINE_SYSTEM
 from score_quotes import SPLIT
+from score_quotes import extract as extract_free_quotes
 
 OUT = ROOT / "experiments" / "out" / "22"
 DOCUMENT = ROOT / "data" / "input" / "requirements.md"
@@ -203,10 +209,17 @@ def document_for_model(raw: bool) -> str:
     return md if raw else render.render(render.parse(md))
 
 
-def search(name: str, raw: bool) -> dict:
-    system, user = prompt_texts()
-    text = user.replace(PLACEHOLDER, document_for_model(raw).rstrip("\n"))
-    meta = {"prompt_sha": prompt_sha(), "mode": "raw" if raw else "blocks"}
+def search(name: str, mode: str) -> dict:
+    """mode: blocks (наш промпт, ID блоков), raw (наш промпт, сырой MD), baseline (исследование 21)."""
+    if mode == "baseline":
+        system = BASELINE_SYSTEM
+        text = BASELINE_PROMPT + "\n\n---\nДокумент:\n\n" + document_for_model(raw=True)
+        meta = {"prompt_sha": "baseline-21", "mode": mode}
+    else:
+        system, user = prompt_texts()
+        doc = document_for_model(raw=mode == "raw").rstrip("\n")
+        text = user.replace(PLACEHOLDER, doc)
+        meta = {"prompt_sha": prompt_sha(), "mode": mode}
     rec = claude(
         f"search-{name}",
         SEARCH_MODEL,
@@ -299,10 +312,13 @@ def judge_block(findings: list[Finding]) -> str:
 
 def judge(name: str, search_rec: dict) -> dict | None:
     answer = (search_rec.get("parsed") or {}).get("result") or ""
-    findings = parse_findings(answer)
-    if not findings:
+    baseline = search_rec.get("meta", {}).get("mode") == "baseline"
+    findings = [] if baseline else parse_findings(answer)
+    if not answer or not (baseline or findings):
         print(f"[judge] {name}: no findings parsed, skipped", flush=True)
         return None
+    # Базовую линию судья нумерует сам, как free-* в исследовании 21.
+    block = JUDGE_PREAMBLE + answer if baseline else judge_block(findings)
     text = (
         JUDGE_PROMPT
         + "\n\n=== (1) ДОКУМЕНТ ===\n"
@@ -310,10 +326,10 @@ def judge(name: str, search_rec: dict) -> dict | None:
         + "\n\n=== (2) ЭТАЛОН ===\n"
         + GOLD.read_text(encoding="utf-8")
         + "\n\n=== (3) НАХОДКИ ===\n"
-        + judge_block(findings)
+        + block
     )
     meta = {
-        "findings": len(findings),
+        "findings": len(findings) or None,
         "search_sha": search_rec.get("meta", {}).get("prompt_sha"),
     }
     rec = claude(
@@ -332,9 +348,9 @@ def judge(name: str, search_rec: dict) -> dict | None:
     return rec
 
 
-def pipeline(name: str, raw: bool) -> None:
+def pipeline(name: str, mode: str) -> None:
     try:
-        rec = search(name, raw)
+        rec = search(name, mode)
         if (rec.get("parsed") or {}).get("result"):
             judge(name, rec)
     except (OSError, ValueError, KeyError, TypeError, RuntimeError) as exc:
@@ -398,45 +414,22 @@ def anchor_metrics(findings: list[Finding], doc: str) -> dict:
     }
 
 
-def run_metrics(name: str, gold: dict[int, dict[str, str]]) -> dict | None:
-    s, j = load(f"search-{name}"), load(f"judge-{name}")
-    if not s or not j:
-        return None
-    doc = DOCUMENT.read_text(encoding="utf-8")
-    p, judged = s["parsed"], j["parsed"]["structured_output"]
-    status = {
-        g["id"]: g["status"] for g in judged["gold"] if 1 <= g["id"] <= GOLD_TOTAL
-    }
-    extra = Counter(e["verdict"] for e in judged["extra"])
-    findings = parse_findings(p["result"])
-    quotes = Counter(quote_verdict(doc, q)[0] for f in findings for q in f.quotes)
-    checked = sum(v for k, v in quotes.items() if k != "skip")
-    crit = [i for i, row in gold.items() if row["severity"].startswith("крит")]
-    usage = p.get("usage", {})
+def format_metrics(answer: str, judged: dict, doc: str) -> dict:
+    """Счётчики по нашему формату находок (Н-1…) или по свободному тексту базовой линии."""
+    findings = parse_findings(answer)
+    if (
+        not findings
+    ):  # базовая линия: цитаты по эвристике исследования 11, число находок по судье
+        ids = {i for g in judged["gold"] for i in g["finding_ids"]}
+        ids |= {e["finding_id"] for e in judged["extra"]}
+        quotes = Counter(
+            quote_verdict(doc, q)[0] for _, q in extract_free_quotes(answer)
+        )
+        return {"findings": max(ids, default=0), "quotes": quotes}
     verdicts = Counter(f.get("вердикт").strip(" *.").lower() for f in findings)
     return {
-        "name": name,
-        "mode": s.get("meta", {}).get("mode"),
-        "prompt_sha": s.get("meta", {}).get("prompt_sha"),
-        "models": list(p.get("modelUsage", {})),
         "findings": len(findings),
-        "judge_findings": j.get("meta", {}).get("findings"),
-        "found": sorted(i for i, v in status.items() if v == "found"),
-        "partial": sorted(i for i, v in status.items() if v == "partial"),
-        "missed": sorted(i for i, v in status.items() if v == "missed"),
-        "recall": sum(v != "missed" for v in status.values()) / GOLD_TOTAL,
-        "recall_strict": sum(v == "found" for v in status.values()) / GOLD_TOTAL,
-        "crit_recall": sum(status.get(i) not in (None, "missed") for i in crit)
-        / len(crit),
-        "crit_strict": sum(status.get(i) == "found" for i in crit) / len(crit),
-        "extra_real": extra["real"],
-        "extra_noise": extra["noise"],
-        "noise_share": extra["noise"] / len(findings) if findings else 0.0,
-        "quotes_total": checked,
-        "quotes_exact": quotes["exact"] / checked if checked else 0.0,
-        "quotes_found": (quotes["exact"] + quotes["fuzzy"]) / checked
-        if checked
-        else 0.0,
+        "quotes": Counter(quote_verdict(doc, q)[0] for f in findings for q in f.quotes),
         "findings_without_quote": sum(not f.quotes for f in findings),
         "verdict_violation": verdicts.get("нарушение", 0),
         "verdict_unclear": verdicts.get("неясно", 0),
@@ -450,9 +443,52 @@ def run_metrics(name: str, gold: dict[int, dict[str, str]]) -> dict | None:
             Counter(f.get("тип дефекта").strip(" *.").lower() for f in findings)
         ),
         **anchor_metrics(findings, doc),
+    }
+
+
+def run_metrics(name: str, gold: dict[int, dict[str, str]]) -> dict | None:
+    s, j = load(f"search-{name}"), load(f"judge-{name}")
+    if not s or not j:
+        return None
+    doc = DOCUMENT.read_text(encoding="utf-8")
+    p, judged = s["parsed"], j["parsed"]["structured_output"]
+    status = {
+        g["id"]: g["status"] for g in judged["gold"] if 1 <= g["id"] <= GOLD_TOTAL
+    }
+    extra = Counter(e["verdict"] for e in judged["extra"])
+    fm = format_metrics(p["result"], judged, doc)
+    quotes = fm.pop("quotes")
+    checked = sum(v for k, v in quotes.items() if k != "skip")
+    crit = [i for i, row in gold.items() if row["severity"].startswith("крит")]
+    n = fm["findings"]
+    return {
+        "name": name,
+        "mode": s.get("meta", {}).get("mode"),
+        "prompt_sha": s.get("meta", {}).get("prompt_sha"),
+        "models": list(p.get("modelUsage", {})),
+        "found": sorted(i for i, v in status.items() if v == "found"),
+        "partial": sorted(i for i, v in status.items() if v == "partial"),
+        "missed": sorted(i for i, v in status.items() if v == "missed"),
+        "recall": sum(v != "missed" for v in status.values()) / GOLD_TOTAL,
+        "recall_strict": sum(v == "found" for v in status.values()) / GOLD_TOTAL,
+        "crit_recall": sum(status.get(i) not in (None, "missed") for i in crit)
+        / len(crit),
+        "crit_strict": sum(status.get(i) == "found" for i in crit) / len(crit),
+        "extra_real": extra["real"],
+        "extra_noise": extra["noise"],
+        "noise_share": extra["noise"] / n if n else 0.0,
+        "quotes_total": checked,
+        "quotes_exact": quotes["exact"] / checked if checked else 0.0,
+        "quotes_found": (quotes["exact"] + quotes["fuzzy"]) / checked
+        if checked
+        else 0.0,
+        **fm,
         "wall_s": s["wall_s"],
         "cost_usd": p.get("total_cost_usd", 0.0),
-        "output_tokens": usage.get("output_tokens"),
+        "output_tokens": p.get("usage", {}).get("output_tokens"),
+        "thinking_tokens": (p.get("usage", {}).get("output_tokens_details") or {}).get(
+            "thinking_tokens"
+        ),
     }
 
 
@@ -469,6 +505,14 @@ def union(runs: list[dict], strict: bool) -> set[int]:
 
 def pct(x: float) -> str:
     return f"{100 * x:.1f}"
+
+
+def ids_cell(r: dict) -> str:
+    return f"{r['ids_invalid']} из {r['ids_total']}" if r.get("ids_total") else "—"
+
+
+def in_block_cell(r: dict) -> str:
+    return pct(r["quotes_in_cited_blocks"]) if r.get("ids_total") else "—"
 
 
 def score() -> None:
@@ -491,9 +535,9 @@ def score() -> None:
             f"| {r['name']} | {r['mode']} | {r['findings']} | {pct(r['recall'])} | "
             f"{pct(r['recall_strict'])} | {pct(r['crit_recall'])} | {pct(r['crit_strict'])} | "
             f"{r['extra_real']} / {r['extra_noise']} | {pct(r['noise_share'])} | "
-            f"{pct(r['quotes_exact'])} | {pct(r['quotes_found'])} | {r['verdict_unclear']} | "
-            f"{r['blocks_testing']} | {r['ids_invalid']} из {r['ids_total']} | "
-            f"{pct(r['quotes_in_cited_blocks'])} | {r['wall_s']:.0f} | {r['cost_usd']:.3f} |"
+            f"{pct(r['quotes_exact'])} | {pct(r['quotes_found'])} | "
+            f"{r.get('verdict_unclear', '—')} | {r.get('blocks_testing', '—')} | "
+            f"{ids_cell(r)} | {in_block_cell(r)} | {r['wall_s']:.0f} | {r['cost_usd']:.3f} |"
         )
     by_cfg: dict[str, list[dict]] = {}
     for r in runs:
@@ -576,7 +620,11 @@ def main() -> int:
     r.add_argument("tag")
     r.add_argument("--runs", type=int, default=2)
     r.add_argument(
-        "--raw", action="store_true", help="raw Markdown without block IDs (B')"
+        "--mode",
+        choices=("blocks", "raw", "baseline"),
+        default="blocks",
+        help="blocks: our prompt with block IDs; raw: without IDs (B'); "
+        "baseline: prompt of research 21 (free-opus-medium)",
     )
     sub.add_parser("score")
     sub.add_parser("leak")
@@ -587,7 +635,7 @@ def main() -> int:
         names = [f"{args.tag}-{k}" for k in range(1, args.runs + 1)]
         print(f"prompt {prompt_sha()}, runs: {', '.join(names)}", flush=True)
         with ThreadPoolExecutor(max_workers=MAX_PARALLEL) as pool:
-            list(pool.map(lambda n: pipeline(n, args.raw), names))
+            list(pool.map(lambda n: pipeline(n, args.mode), names))
         return 0
     if args.cmd == "score":
         score()
