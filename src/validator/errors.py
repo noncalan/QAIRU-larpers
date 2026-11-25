@@ -33,6 +33,7 @@ IN_ENCODING = "IN-061"
 IN_ENCODING_UNCERTAIN = "IN-062"
 IN_NO_TEXT = "IN-071"
 IN_HEADINGS_ONLY = "IN-081"
+IN_NO_REQUIREMENTS = IN_HEADINGS_ONLY  # нарезка без требований: тот же IN-081 «пустой шаблон» (исследование 04)
 IN_PARSE_FAILED = "IN-099"
 
 # Модель.
@@ -49,6 +50,9 @@ LLM_NO_FIXTURE = "LLM-014"
 LLM_REPLAY_MISSING = "LLM-015"
 LLM_REPLAY_BY_POSITION = "LLM-016"
 LLM_SEGMENT_FALLBACK = "LLM-020"
+LLM_SEGMENT_BAD_REFS = "LLM-021"  # нарезка: несуществующие ID, границы части не найдены, записи не по схеме
+LLM_SEGMENT_UNCOVERED = "LLM-022"  # нарезка: блоки без решения модели («возможно пропущено»)
+LLM_SEGMENT_OVERLAP = "LLM-023"  # нарезка: требования пересекаются
 LLM_PASS_FAILED = "LLM-030"  # noqa: S105 - код диагностики, не пароль
 LLM_ALL_PASSES_FAILED = "LLM-031"
 LLM_EVIDENCE_FAILED = "LLM-040"
