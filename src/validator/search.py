@@ -63,6 +63,9 @@ STUB_SCHEMA: dict[str, Any] = {
                     "severity_hint": {"type": "string", "enum": [s.value for s in Severity]},
                     "explanation": {"type": "string"},
                     "suggestion": {"type": "string"},
+                    "title": {"type": "string"},
+                    "scenario": {"type": "string"},
+                    "test_gap": {"type": "string"},
                 },
                 "required": ["block_ids", "quotes", "property", "defect_type", "verdict", "explanation"],
                 "additionalProperties": False,
@@ -89,6 +92,9 @@ class _StubFinding(BaseModel):
     severity_hint: Severity | None = None
     explanation: str
     suggestion: str | None = None
+    title: str | None = None
+    scenario: str | None = None
+    test_gap: str | None = None
 
 
 def _prompt(doc: ParsedDocument) -> str:

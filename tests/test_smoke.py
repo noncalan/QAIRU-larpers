@@ -107,6 +107,20 @@ def test_fixture_block_ids_match_markdown_blocks(fake_run: tuple[DocKind, Path, 
     assert not [f.id for f in report.verification.findings if f.anchor_corrected]
 
 
+def test_title_scenario_and_test_gap_reach_report(fake_run: tuple[DocKind, Path, int]) -> None:
+    """Поля из ответа поиска проходят слияние и верификатор; суть находки видна в «Что исправить первым»."""
+    _, out, _ = fake_run
+    report = Report.model_validate_json(out.with_suffix(".json").read_text(encoding="utf-8"))
+    assert report.verification is not None
+    titled = [f for f in report.verification.findings if f.title]
+
+    assert len(titled) == 1
+    assert titled[0].scenario and titled[0].test_gap
+    first_page = out.read_text(encoding="utf-8").split("## 1. Паспорт прогона")[0]
+    assert f"**{titled[0].id}**" in first_page
+    assert titled[0].title in first_page
+
+
 def test_invented_quote_is_discarded(fake_run: tuple[DocKind, Path, int]) -> None:
     _, out, _ = fake_run
     report = Report.model_validate_json(out.with_suffix(".json").read_text(encoding="utf-8"))

@@ -61,7 +61,7 @@
 {% for fid in c.fix_first %}
 {% set f = findings_by_id[fid] %}
 {% set q0 = (f.quotes | selectattr("verified") | first) if f.quotes else none %}
-{{ loop.index }}. **{{ f.id }}** · {{ f.severity.label }} · {{ f.property.label }}: {{ f.explanation | short(220) }}{% if q0 %} Цитата: «{{ q0 | quote_text(160) }}» ({{ q0.anchor | where }}).{% endif %}
+{{ loop.index }}. **{{ f.id }}** · {{ f.severity.label }} · {{ f.property.label }}: {{ (f.title or f.explanation) | short(220) }}{% if q0 %} Цитата: «{{ q0 | quote_text(160) }}» ({{ q0.anchor | where }}).{% endif %}
 
 {% else %}
 Нарушений, которые нужно исправить до начала работ, не найдено.
