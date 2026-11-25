@@ -17,7 +17,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from evals.findings import JudgeItem, agent_items, free_items
 from evals.freetext import check_quote, extract_quotes, split_findings
-from evals.judge import EvalError, display_path
+from evals.judge import EvalError, display_path, read_utf8
 from validator.errors import InputError
 from validator.ingest import parse
 from validator.models import (
@@ -77,30 +77,46 @@ class QuoteStats(BaseModel):
         return (self.exact + self.fuzzy) / self.total if self.total else None
 
 
+FAILED_STATUSES = frozenset({CallStatus.ERROR, CallStatus.RETRIED})
+REUSED_STATUSES = frozenset({CallStatus.CACHED, CallStatus.REPLAYED})
+
+
 class CallStats(BaseModel):
-    """Время и цена из ``calls.jsonl``. Цена по тарифу API, как её сообщает бэкенд."""
+    """Время и цена из ``calls.jsonl`` (одна строка на попытку вызова).
+
+    Цена это тариф API за успешные ответы, в том числе взятые из кеша или replay: так она равна цене
+    живого прогона той же конфигурации. Время таких ответов не живое, поэтому они считаются отдельно.
+    """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    calls: int = 0
-    failed: int = 0
+    calls: int = Field(default=0, description="Успешных вызовов: живых, из кеша и replay")
+    failed: int = Field(default=0, description="Неудачных попыток: ошибка или повтор после сбоя")
+    reused: int = Field(default=0, description="Ответов из кеша или replay: их время не живое")
     cost_usd: float | None = None
-    cost_missing: int = Field(default=0, description="Вызовов без цены в логе")
-    model_s: float = Field(default=0.0, description="Сумма длительностей вызовов")
+    cost_missing: int = Field(default=0, description="Успешных вызовов без цены в логе")
+    model_s: float = Field(default=0.0, description="Сумма длительностей всех попыток")
     wall_s: float | None = Field(default=None, description="Время прогона по часам")
 
     @classmethod
     def from_records(cls, records: Sequence[CallRecord], wall_s: float | None) -> CallStats:
-        costs = [r.cost_usd for r in records if r.cost_usd is not None]
+        ok = [r for r in records if r.status not in FAILED_STATUSES]
+        costs = [r.cost_usd for r in ok if r.cost_usd is not None]
         model_s = sum((r.duration_ms or 0) for r in records) / 1000
         return cls(
-            calls=len(records),
-            failed=sum(r.status is CallStatus.ERROR for r in records),
+            calls=len(ok),
+            failed=len(records) - len(ok),
+            reused=sum(r.status in REUSED_STATUSES for r in ok),
             cost_usd=round(sum(costs), 6) if costs else None,
-            cost_missing=len(records) - len(costs),
+            cost_missing=len(ok) - len(costs),
             model_s=round(model_s, 3),
             wall_s=wall_s if wall_s is not None else round(model_s, 3),
         )
+
+    def notes(self) -> list[str]:
+        if not self.reused:
+            return []
+        return [f"ответов из кеша или replay: {self.reused} из {self.calls}, время прогона не живое"]
 
 
 class RunData(BaseModel):
@@ -124,7 +140,7 @@ class RunData(BaseModel):
 
 
 def run_label(path: Path) -> str:
-    """Метка прогона для результатов и ``overrides.yaml``: путь от текущей папки, если возможно."""
+    """Метка прогона для результатов и ``overrides.yaml``: путь от корня репозитория, если возможно."""
     return display_path(path)
 
 
@@ -134,7 +150,7 @@ def _read_calls(paths: Sequence[Path], notes: list[str]) -> list[CallRecord]:
         notes.append("лог вызовов calls.jsonl не найден: время и цена неизвестны")
         return []
     records: list[CallRecord] = []
-    for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+    for n, line in enumerate(read_utf8(path, "Лог вызовов").splitlines(), start=1):
         if not line.strip():
             continue
         try:
@@ -207,7 +223,7 @@ def _set_anchor(f: Finding) -> str:
 def _load_agent(report_path: Path, label: str, fallback_document: Path) -> RunData:
     notes: list[str] = []
     try:
-        report = Report.model_validate_json(report_path.read_text(encoding="utf-8"))
+        report = Report.model_validate_json(read_utf8(report_path, "Отчёт агента"))
     except (ValidationError, ValueError) as exc:
         raise EvalError(f"{report_path} не отчёт агента (report.json): {exc.__class__.__name__}") from exc
     findings = report.verification.findings if report.verification else []
@@ -224,13 +240,15 @@ def _load_agent(report_path: Path, label: str, fallback_document: Path) -> RunDa
     doc = load_document(doc_path)
     final = QuoteStats.from_matches(locate_quote(doc, q.text).match for f in findings for q in f.quotes)
     records = _read_calls([report_path.parent / "run" / CALLS_NAME, report_path.parent / CALLS_NAME], notes)
+    calls = CallStats.from_records(records, report.passport.duration_s)
+    notes.extend(calls.notes())
     return RunData(
         label=label,
         source=Source.AGENT,
         items=agent_items(findings),
         quotes=quotes,
         quotes_final=final,
-        calls=CallStats.from_records(records, report.passport.duration_s),
+        calls=calls,
         keys=finding_keys(report),
         backend=report.passport.backend_used,
         agent_version=report.passport.agent_version,
@@ -241,7 +259,7 @@ def _load_agent(report_path: Path, label: str, fallback_document: Path) -> RunDa
 
 def _load_baseline(answer_path: Path, label: str, document: Path) -> RunData:
     notes: list[str] = []
-    text = answer_path.read_text(encoding="utf-8")
+    text = read_utf8(answer_path, "Ответ базовой линии")
     split = split_findings(text)
     notes.extend(split.notes)
     if not split.findings:
@@ -250,6 +268,8 @@ def _load_baseline(answer_path: Path, label: str, document: Path) -> RunData:
     quotes = QuoteStats.from_matches(check_quote(doc, q) for q in extract_quotes(text))
     folder = answer_path.parent
     records = _read_calls([folder / CALLS_NAME, folder / "run" / CALLS_NAME], notes)
+    calls = CallStats.from_records(records, None)
+    notes.extend(calls.notes())
     return RunData(
         label=label,
         source=Source.BASELINE,
@@ -257,7 +277,7 @@ def _load_baseline(answer_path: Path, label: str, document: Path) -> RunData:
         free_text=text,
         quotes=quotes,
         quotes_final=quotes,
-        calls=CallStats.from_records(records, None),
+        calls=calls,
         backend=records[0].backend if records else None,
         document=run_label(document),
         layout=split.layout,

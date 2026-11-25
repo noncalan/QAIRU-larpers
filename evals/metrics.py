@@ -37,9 +37,9 @@ class UnmatchedFinding(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     id: int
-    fingerprint: str
+    fingerprint: str | None = Field(description="None: находки нумеровал судья, текста находки нет")
     verdict: ExtraVerdict | None
-    quote: str
+    quote: str | None
 
 
 class RunScore(BaseModel):
@@ -84,12 +84,36 @@ def _recall(gold: dict[int, GoldStatus], ids: Sequence[int], *, strict: bool) ->
     return _share(sum(gold.get(i) in ok for i in ids), len(ids))
 
 
-def count_findings(verdict: JudgeVerdict, items: Sequence[JudgeItem]) -> int:
-    """Число находок: длина списка; если список нумеровал судья (research21), наибольший номер."""
-    if items:
+def count_findings(verdict: JudgeVerdict, items: Sequence[JudgeItem] | None) -> int:
+    """Число находок: длина списка (пустой это 0); ``None`` значит, что нумеровал судья
+    (research21, свободный текст), тогда наибольший его номер, как в ``score.py`` исследования 21.
+    """
+    if items is not None:
         return len(items)
     ids = [i for m in verdict.gold.values() for i in m.finding_ids] + list(verdict.extra)
     return max(ids, default=0)
+
+
+def _unmatched(
+    items: Sequence[JudgeItem] | None, verdict: JudgeVerdict, findings: int
+) -> list[UnmatchedFinding]:
+    matched = verdict.matched_findings
+    if items is None:  # номера судьи: текста находок нет, поправка по отпечатку невозможна
+        return [
+            UnmatchedFinding(id=i, fingerprint=None, verdict=verdict.extra.get(i), quote=None)
+            for i in range(1, findings + 1)
+            if i not in matched
+        ]
+    return [
+        UnmatchedFinding(
+            id=i.id,
+            fingerprint=i.fingerprint(),
+            verdict=verdict.extra.get(i.id),
+            quote=i.quote[:QUOTE_PREVIEW_CHARS],
+        )
+        for i in sorted(items, key=lambda x: x.id)
+        if i.id not in matched
+    ]
 
 
 def score_run(
@@ -100,21 +124,21 @@ def score_run(
     *,
     findings: int,
     applied: Sequence[str] = (),
+    judge_numbered: bool = False,
 ) -> RunScore:
+    """Метрики прогона по вердикту. ``judge_numbered``: судья сам нумеровал свободный текст
+    (research21), и номера в вердикте не совпадают с ``run.items``.
+    """
     statuses = {g: (verdict.gold[g].status if g in verdict.gold else GoldStatus.MISSED) for g in gold.ids}
     matched = verdict.matched_findings
-    by_id = {i.id: i for i in run.items}
-    unmatched = [
-        UnmatchedFinding(
-            id=i,
-            fingerprint=by_id[i].fingerprint(),
-            verdict=verdict.extra.get(i),
-            quote=by_id[i].quote[:QUOTE_PREVIEW_CHARS],
+    unmatched = _unmatched(None if judge_numbered else run.items, verdict, findings)
+    warnings = list(verdict.warnings)
+    both = sorted(set(verdict.extra) & matched)
+    if both:
+        warnings.append(
+            f"находки {both} сопоставлены с эталоном и оценены вне эталона: во «вне эталона» не считаем"
         )
-        for i in sorted(by_id)
-        if i not in matched
-    ]
-    extras = list(verdict.extra.values())
+    extras = [v for i, v in verdict.extra.items() if i not in matched]
     noise = extras.count(ExtraVerdict.NOISE)
     return RunScore(
         label=run.label,
@@ -137,7 +161,7 @@ def score_run(
         keys=run.keys,
         unmatched=unmatched,
         overrides=list(applied),
-        warnings=list(verdict.warnings),
+        warnings=warnings,
         notes=list(run.notes),
         agent_version=run.agent_version,
         layout=run.layout,

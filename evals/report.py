@@ -119,9 +119,10 @@ def _missed(runs: list[RunScore]) -> list[str]:
 
 
 def _unmatched(runs: list[RunScore]) -> list[str]:
+    judge_numbered = "— (нумеровал судья)"
     rows = [
-        f"| `{r.label}` | {u.id} | `{u.fingerprint}` | {u.verdict.value if u.verdict else '—'} "
-        f"| {_cell(u.quote)} |"
+        f"| `{r.label}` | {u.id} | {f'`{u.fingerprint}`' if u.fingerprint else '—'} "
+        f"| {u.verdict.value if u.verdict else '—'} | {_cell(u.quote) if u.quote else judge_numbered} |"
         for r in runs
         for u in r.unmatched
     ]

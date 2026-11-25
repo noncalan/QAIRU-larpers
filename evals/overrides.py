@@ -10,6 +10,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from fnmatch import fnmatch
 from pathlib import Path
 
@@ -17,7 +18,7 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from evals.findings import JudgeItem
-from evals.judge import EvalError, ExtraVerdict, GoldMatch, GoldStatus, JudgeVerdict
+from evals.judge import EvalError, ExtraVerdict, GoldMatch, GoldStatus, JudgeVerdict, read_utf8
 
 DEFAULT_OVERRIDES = Path(__file__).resolve().parent / "overrides.yaml"
 
@@ -54,16 +55,21 @@ def load_overrides(path: Path | None = DEFAULT_OVERRIDES) -> Overrides:
     if path is None or not path.is_file():
         return Overrides()
     try:
-        data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        data = yaml.safe_load(read_utf8(path, "Файл поправок")) or {}
         return Overrides.model_validate(data)
     except (yaml.YAMLError, ValidationError) as exc:
         raise EvalError(f"Файл поправок {path} не читается: {exc}") from exc
 
 
 def apply_overrides(
-    verdict: JudgeVerdict, run: str, items: list[JudgeItem], overrides: Overrides
+    verdict: JudgeVerdict, run: str, items: Sequence[JudgeItem] | None, overrides: Overrides
 ) -> tuple[JudgeVerdict, list[str]]:
-    """Вердикт с поправками и список применённых поправок (для результатов eval)."""
+    """Вердикт с поправками и список применённых поправок (для результатов eval).
+
+    ``items`` это список, который видел судья. ``None``: находки нумеровал сам судья (research21,
+    свободный текст), тогда номера находок в поправках не проверяются по списку, а поправки находок
+    по отпечатку не применяются (текстов находок нет).
+    """
     gold = dict(verdict.gold)
     extra = dict(verdict.extra)
     applied: list[str] = []
@@ -74,7 +80,7 @@ def apply_overrides(
         if g.gold not in gold:
             warnings.append(f"поправка: дефекта {g.gold} нет в эталоне, пропущена")
             continue
-        bad = [i for i in g.finding_ids if not 1 <= i <= len(items)]
+        bad = [i for i in g.finding_ids if i < 1 or (items is not None and i > len(items))]
         if bad:
             warnings.append(f"поправка дефекта {g.gold}: номера находок вне списка {bad}, убраны")
         before = gold[g.gold].status
@@ -85,6 +91,9 @@ def apply_overrides(
         )
     for f in overrides.findings:
         if f.run is not None and not fnmatch(run, f.run):
+            continue
+        if items is None:
+            warnings.append(f"поправка находки {f.finding}: находки нумеровал судья, не применена")
             continue
         for item in items:
             if item.fingerprint().startswith(f.finding):

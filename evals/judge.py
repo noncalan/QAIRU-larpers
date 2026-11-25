@@ -13,6 +13,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from collections.abc import Callable, Mapping, Sequence
 from datetime import UTC, datetime
@@ -22,6 +23,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
+from evals.gold import ROOT
 from validator.errors import LLMError
 from validator.llm.base import LLMClient
 from validator.models import Backend, Effort, LLMRequest, LLMResponse, LLMStep
@@ -92,16 +94,32 @@ DEFAULT_CACHE_DIR = Path(__file__).resolve().parent / "cache" / "judge"
 
 
 def display_path(path: Path) -> str:
-    """Путь для результатов: от текущей папки, если возможно (без путей машины автора)."""
+    """Путь для результатов и меток прогонов: от корня репозитория, иначе от текущей папки, иначе полный.
+
+    От корня, а не от текущей папки: метки в ``evals/overrides.yaml`` не зависят от того, откуда
+    запущен eval, и в результатах нет путей машины автора.
+    """
     resolved = path.resolve()
-    try:
-        return resolved.relative_to(Path.cwd().resolve()).as_posix()
-    except ValueError:
-        return resolved.as_posix()
+    for base in (ROOT, Path.cwd()):
+        try:
+            return resolved.relative_to(base.resolve()).as_posix()
+        except ValueError:
+            continue
+    return resolved.as_posix()
 
 
 class EvalError(Exception):
     """Ошибка eval с понятным сообщением по-русски (без трассировки в терминале)."""
+
+
+def read_utf8(path: Path, what: str) -> str:
+    """Текст файла; не UTF-8 или нечитаемый файл даёт ``EvalError``, а не трассировку."""
+    try:
+        return path.read_text(encoding="utf-8")
+    except UnicodeDecodeError as exc:
+        raise EvalError(f"{what} {display_path(path)}: не текст в UTF-8 (байт {exc.start})") from exc
+    except OSError as exc:
+        raise EvalError(f"{what} {display_path(path)} не читается: {exc.strerror or exc}") from exc
 
 
 class GoldStatus(StrEnum):
@@ -250,8 +268,23 @@ def parse_verdict(structured: object, gold_ids: Sequence[int], n_findings: int |
     return JudgeVerdict(gold=dict(sorted(gold.items())), extra=dict(sorted(extra.items())), warnings=warnings)
 
 
+def verdict_key(req: LLMRequest) -> str:
+    """Ключ кеша вердикта: sha256 от модели, effort, системного промпта, промпта и схемы.
+
+    Без шага и номера вызова, в отличие от ``LLMRequest.key`` агента: номер у судьи это позиция
+    прогона в вызове eval, а вердикт зависит только от документа, эталона и находок. Формула своя,
+    чтобы правка ключа кеша агента не обнуляла сохранённые вердикты.
+    """
+    material = json.dumps(
+        [req.model, req.effort.value, req.system, req.prompt, req.json_schema],
+        ensure_ascii=False,
+        sort_keys=True,
+    )
+    return hashlib.sha256(material.encode("utf-8")).hexdigest()
+
+
 class VerdictCache:
-    """Ответы судьи на диске: ``<папка>/<ключ запроса>.json``. Ни документа, ни эталона в файле нет."""
+    """Ответы судьи на диске: ``<папка>/<ключ вердикта>.json``. Ни документа, ни эталона в файле нет."""
 
     def __init__(self, root: Path = DEFAULT_CACHE_DIR) -> None:
         self.root = root
@@ -260,12 +293,15 @@ class VerdictCache:
         return self.root / f"{key}.json"
 
     def get(self, req: LLMRequest) -> LLMResponse | None:
-        path = self.path(req.key)
+        key = verdict_key(req)
+        path = self.path(key)
         if not path.is_file():
             return None
         try:
-            data = json.loads(path.read_text(encoding="utf-8"))
-            if data.get("key") != req.key:
+            data = json.loads(read_utf8(path, "Кеш судьи"))
+            if not isinstance(data, dict):
+                raise EvalError(f"Кеш судьи повреждён: в {path.name} не объект JSON")
+            if data.get("key") != key:
                 raise EvalError(f"Кеш судьи повреждён: ключ в {path.name} не совпадает с именем файла")
             resp = LLMResponse.model_validate(data["response"])
         except (ValueError, KeyError, ValidationError) as exc:
@@ -274,9 +310,10 @@ class VerdictCache:
 
     def put(self, req: LLMRequest, resp: LLMResponse, meta: Mapping[str, Any]) -> Path:
         self.root.mkdir(parents=True, exist_ok=True)
-        path = self.path(req.key)
+        key = verdict_key(req)
+        path = self.path(key)
         record = {
-            "key": req.key,
+            "key": key,
             "created_at": datetime.now(UTC).isoformat(timespec="seconds"),
             "model": req.model,
             "effort": req.effort.value,
@@ -312,20 +349,21 @@ class Judge:
 
     def ask(self, prompt: str, call_index: int, meta: Mapping[str, Any]) -> tuple[object, JudgeCall]:
         req = judge_request(prompt, call_index)
+        key = verdict_key(req)
         cached = self.cache.get(req) if self.cache is not None else None
         if cached is not None:
             return cached.structured, JudgeCall(
-                key=req.key,
+                key=key,
                 source="cache",
                 model=cached.model,
                 cost_usd=cached.cost_usd,
                 duration_ms=cached.duration_ms,
-                cache_path=display_path(self.cache.path(req.key)) if self.cache else None,
+                cache_path=display_path(self.cache.path(key)) if self.cache else None,
             )
         client = self.client
         if client is None:
             raise EvalError(
-                f"Нет вердикта судьи в кеше для {meta.get('run', 'прогона')} (ключ {req.key[:12]}…). "
+                f"Нет вердикта судьи в кеше для {meta.get('run', 'прогона')} (ключ {key[:12]}…). "
                 "Запустите с --judge cli, чтобы вызвать судью (Opus 5.5 high, несколько минут)"
             )
         try:
@@ -337,7 +375,7 @@ class Judge:
             path = display_path(self.cache.put(req, resp, meta))
         source = "fake" if resp.backend is Backend.FAKE else "cli"
         return resp.structured, JudgeCall(
-            key=req.key,
+            key=key,
             source=source,
             model=resp.model,
             cost_usd=resp.cost_usd,

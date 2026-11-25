@@ -236,12 +236,14 @@ def _by_list(lines: list[str]) -> list[FreeFinding]:
     """Пункты нумерованного списка; раздел-итог («Итог», «Что исправить») пропускается целиком.
 
     Пункт продолжается строками с отступом и строками сразу под ним; после пустой строки
-    строка без отступа (новый абзац, другой список) пункт заканчивает.
+    строка без отступа (новый абзац, другой список) пункт заканчивает. Вложенный нумерованный
+    пункт (отступ больше, чем у пунктов верхнего уровня) остаётся частью текущей находки.
     """
     out: list[FreeFinding] = []
     current: list[str] = []
     in_summary = False
     after_blank = False
+    base: int | None = None  # отступ пунктов верхнего уровня текущего списка
 
     def flush() -> None:
         chunk = "\n".join(current).strip()
@@ -253,16 +255,21 @@ def _by_list(lines: list[str]) -> list[FreeFinding]:
         heading = _HEADING.match(line)
         if heading or _ends_list(line):
             flush()
+            base = None
             if heading:
                 in_summary = bool(_SUMMARY_TITLE.search(heading.group(2)))
             continue
         if _LIST_ITEM.match(line):
-            flush()
+            indent = len(line) - len(line.lstrip())
+            if not (current and base is not None and indent > base):
+                flush()
+                base = indent
             current.append(line)
         elif current and not line.strip():
             current.append(line)
         elif current and after_blank and not line.startswith((" ", "\t")):
             flush()
+            base = None
         elif current:
             current.append(line)
         after_blank = not line.strip()

@@ -39,6 +39,7 @@ from evals.judge import (
     display_path,
     judge_prompt,
     parse_verdict,
+    read_utf8,
 )
 from evals.metrics import ConfigScore, RunScore, aggregate, count_findings, score_run
 from evals.overrides import DEFAULT_OVERRIDES, Overrides, apply_overrides, load_overrides
@@ -97,10 +98,14 @@ class EvalResult(BaseModel):
     notes: list[str] = Field(default_factory=list)
 
 
-def _block(run: RunData, fmt: JudgeFormat) -> tuple[str, list[JudgeItem]]:
-    """Блок находок для судьи и список, по которому он нумерует (пусто: нумерует сам)."""
+def _block(run: RunData, fmt: JudgeFormat) -> tuple[str, list[JudgeItem] | None]:
+    """Блок находок для судьи и список, по номерам которого он отвечает.
+
+    ``None``: судье ушёл свободный текст (research21), находки он нумерует сам. Пустой список это
+    прогон без находок: номера в ответе судьи тогда вне списка и отбрасываются.
+    """
     if fmt is JudgeFormat.RESEARCH21 and run.source is Source.BASELINE and run.free_text is not None:
-        return FREE_TEXT_PREAMBLE + run.free_text, []
+        return FREE_TEXT_PREAMBLE + run.free_text, None
     return render_items(run.items), list(run.items)
 
 
@@ -134,12 +139,19 @@ def _score(
 ) -> RunScore:
     block, items = _block(run, fmt)
     document, gold_md = prompt_parts
-    meta = {"run": run.label, "source": run.source.value, "items": len(items), "format": fmt.value}
+    n_items = None if items is None else len(items)
+    meta = {"run": run.label, "source": run.source.value, "items": n_items, "format": fmt.value}
     structured, call = judge.ask(judge_prompt(document, gold_md, block), index, meta)
-    verdict = parse_verdict(structured, gold.ids, len(items) if items else None)
+    verdict = parse_verdict(structured, gold.ids, n_items)
     verdict, applied = apply_overrides(verdict, run.label, items, overrides)
     return score_run(
-        run, verdict, gold, call, findings=count_findings(verdict, items or run.items), applied=applied
+        run,
+        verdict,
+        gold,
+        call,
+        findings=count_findings(verdict, items),
+        applied=applied,
+        judge_numbered=items is None,
     )
 
 
@@ -164,7 +176,7 @@ def evaluate(
     gold_md = read_gold_md(gold_md_path)
     if not document.is_file():
         raise EvalError(f"Документ не найден: {document}")
-    document_text = document.read_text(encoding="utf-8")
+    document_text = read_utf8(document, "Документ для судьи (нужен текст, как в эталоне: MD или TXT)")
     overrides = load_overrides(overrides_path)
     loaded = [load_run(p, document) for p in runs]
     picker = JudgePicker(judge_mode, cache_dir, fixtures)
@@ -207,6 +219,8 @@ def evaluate(
 def write_result(result: EvalResult, out_dir: Path) -> tuple[Path, Path]:
     out_dir.mkdir(parents=True, exist_ok=True)
     stem = f"{result.created_at:%Y-%m-%d}-{result.name}"
+    if (out_dir / f"{stem}.json").exists() or (out_dir / f"{stem}.md").exists():
+        stem += f"-{result.created_at:%H%M%S}"  # не затираем прошлый результат с тем же именем
     json_path = out_dir / f"{stem}.json"
     md_path = out_dir / f"{stem}.md"
     json_path.write_text(result.model_dump_json(indent=1) + "\n", encoding="utf-8")
@@ -251,6 +265,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         json_path, md_path = write_result(result, args.out_dir)
     except EvalError as exc:
         print(f"Ошибка eval: {exc}", file=sys.stderr)
+        return 1
+    except OSError as exc:
+        print(f"Ошибка eval: файл недоступен: {exc}", file=sys.stderr)
         return 1
     c = result.config
     print(

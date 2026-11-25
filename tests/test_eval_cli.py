@@ -11,13 +11,21 @@ from pathlib import Path
 import pytest
 
 from conftest import FIXTURES_LLM, ROOT
-from evals.eval import EvalResult, JudgeFormat, JudgeMode, evaluate, main
+from evals.eval import EvalResult, JudgeFormat, JudgeMode, evaluate, main, write_result
 from evals.findings import render_items
 from evals.gold import read_gold_md
-from evals.judge import EvalError, Judge, VerdictCache, judge_prompt, judge_request
-from evals.runs import load_run
+from evals.judge import (
+    EvalError,
+    Judge,
+    VerdictCache,
+    display_path,
+    judge_prompt,
+    judge_request,
+    verdict_key,
+)
+from evals.runs import CallStats, load_run
 from validator.errors import LLM_UNAVAILABLE, LLMError
-from validator.models import Backend, LLMRequest, LLMResponse
+from validator.models import Backend, CallRecord, CallStatus, LLMRequest, LLMResponse
 
 DOCUMENT = ROOT / "data" / "input" / "requirements.md"
 BASELINE_RUN = ROOT / "tests" / "fixtures" / "eval" / "baseline-run"
@@ -91,6 +99,30 @@ def test_live_verdict_is_cached_and_reused(tmp_path: Path) -> None:
     assert "ЭТАЛОН" not in json.dumps(record, ensure_ascii=False)  # в кеше нет ни эталона, ни запроса
 
 
+def test_verdict_is_reused_whatever_the_run_position_in_eval(tmp_path: Path) -> None:
+    client = StubCLI()
+    judge = Judge(lambda: client, VerdictCache(tmp_path))
+
+    judge.ask("запрос", 1, {"run": "x"})
+    _, again = judge.ask("запрос", 3, {"run": "x"})
+
+    assert client.calls == 1
+    assert again.source == "cache"
+    assert verdict_key(judge_request("запрос", 1)) == verdict_key(judge_request("запрос", 3))
+    assert verdict_key(judge_request("запрос", 1)) != verdict_key(judge_request("другой запрос", 1))
+
+
+@pytest.mark.parametrize(
+    ("fmt", "recall"), [(JudgeFormat.UNIFORM, 43 / 45), (JudgeFormat.RESEARCH21, 42 / 45)], ids=str
+)
+def test_committed_cache_answers_recorded_baseline_offline(fmt: JudgeFormat, recall: float) -> None:
+    result = evaluate([BASELINE_RUN], name="committed", judge_mode=JudgeMode.CACHE, judge_format=fmt)
+
+    [run] = result.runs
+    assert run.judge.source == "cache"
+    assert run.recall == pytest.approx(recall)
+
+
 def test_cache_mode_reads_saved_verdict_for_the_exact_input(tmp_path: Path) -> None:
     run = load_run(BASELINE_RUN, DOCUMENT)
     prompt = judge_prompt(DOCUMENT.read_text(encoding="utf-8"), read_gold_md(), render_items(run.items))
@@ -118,10 +150,66 @@ def test_cache_mode_without_verdict_fails_with_clear_message(
 
 def test_corrupted_cache_file_is_an_error(tmp_path: Path) -> None:
     req = judge_request("запрос", 1)
-    (tmp_path / f"{req.key}.json").write_text("{не json", encoding="utf-8")
+    (tmp_path / f"{verdict_key(req)}.json").write_text("{не json", encoding="utf-8")
 
     with pytest.raises(EvalError, match="Кеш судьи повреждён"):
         VerdictCache(tmp_path).get(req)
+
+
+def test_cache_file_that_is_not_an_object_is_an_error(tmp_path: Path) -> None:
+    req = judge_request("запрос", 1)
+    (tmp_path / f"{verdict_key(req)}.json").write_text("[]", encoding="utf-8")
+
+    with pytest.raises(EvalError, match="Кеш судьи повреждён"):
+        VerdictCache(tmp_path).get(req)
+
+
+def test_binary_document_gives_message_not_traceback(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    pdf = tmp_path / "requirements.pdf"
+    pdf.write_bytes(b"%PDF-1.7\n\xe2\x80\xff\xfe")
+
+    code = main([str(BASELINE_RUN), "--name", "x", "--document", str(pdf), "--out-dir", str(tmp_path)])
+
+    err = capsys.readouterr().err
+    assert code == 1
+    assert "не текст в UTF-8" in err and "Traceback" not in err
+
+
+def test_same_name_same_day_does_not_overwrite_result(tmp_path: Path) -> None:
+    result = _toy_result(tmp_path)
+
+    first = write_result(result, tmp_path / "results")
+    second = write_result(result, tmp_path / "results")
+
+    assert first[0] != second[0] and first[0].is_file() and second[0].is_file()
+
+
+def test_run_label_is_relative_to_repo_root_from_any_folder(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
+
+    assert display_path(BASELINE_RUN) == "tests/fixtures/eval/baseline-run"
+
+
+def test_call_stats_count_reused_and_failed_attempts() -> None:
+    base = CallRecord.model_validate_json(
+        (BASELINE_RUN / "calls.jsonl").read_text(encoding="utf-8").splitlines()[0]
+    )
+    records = [
+        base.model_copy(update={"status": CallStatus.RETRIED, "cost_usd": None}),
+        base,
+        base.model_copy(update={"status": CallStatus.CACHED}),
+        base.model_copy(update={"status": CallStatus.ERROR, "cost_usd": None}),
+    ]
+
+    stats = CallStats.from_records(records, None)
+
+    assert (stats.calls, stats.failed, stats.reused, stats.cost_missing) == (2, 2, 1, 0)
+    assert stats.cost_usd == pytest.approx(2 * (base.cost_usd or 0))
+    assert stats.notes()
 
 
 def test_missing_claude_becomes_eval_error(tmp_path: Path) -> None:
@@ -173,3 +261,13 @@ def test_recorded_live_judge_gives_recorded_numbers(
     assert run.findings == 45
     assert (run.extra_real, run.extra_noise) == (3, 0)
     assert not run.warnings
+
+
+def _toy_result(tmp_path: Path) -> EvalResult:
+    return evaluate(
+        [BASELINE_RUN],
+        name="toy",
+        judge_mode=JudgeMode.FAKE,
+        fixtures=RECORDED / "llm",
+        cache_dir=tmp_path / "cache",
+    )

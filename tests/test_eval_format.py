@@ -194,6 +194,22 @@ def test_list_layout_takes_numbered_items() -> None:
     assert split.findings[0].property == "Однозначность"
 
 
+def test_nested_numbered_items_stay_inside_their_finding() -> None:
+    answer = (
+        "1. «первое требование» — неоднозначно.\n"
+        "   1. «подпункт первого» — деталь.\n"
+        "   2. «ещё подпункт» — деталь.\n"
+        "2. «второе требование» — неполно.\n"
+    )
+
+    split = split_findings(answer)
+
+    assert split.layout == "list"
+    assert len(split.findings) == 2
+    assert "ещё подпункт" in split.findings[0].text
+    assert split.findings[1].quote == "второе требование"
+
+
 def test_unrecognized_layout_falls_back_to_paragraphs_with_quotes() -> None:
     split = split_findings("Вступление без цитат.\n\nТут «первая цитата».\n\nИ «вторая цитата» тоже.")
 

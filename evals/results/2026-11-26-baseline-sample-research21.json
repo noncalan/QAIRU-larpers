@@ -1,12 +1,12 @@
 {
  "schema_version": "1",
- "name": "baseline-sample-uniform",
- "created_at": "2026-11-25T23:10:19.303200+05:00",
+ "name": "baseline-sample-research21",
+ "created_at": "2026-11-26T02:22:21.920492+05:00",
  "settings": {
   "judge_model": "claude-opus-5-5",
   "judge_effort": "high",
-  "judge_mode": "cli",
-  "judge_format": "uniform",
+  "judge_mode": "cache",
+  "judge_format": "research21",
   "gold_version": "2026-11-25.1",
   "gold_sha256": "4735b0b50db1add41dc077bb65fd0443ad07223ebd7acc3d6a36287cdf10f22b",
   "gold_total": 45,
@@ -26,8 +26,8 @@
  },
  "config": {
   "runs": 1,
-  "recall": 0.9555555555555556,
-  "recall_strict": 0.8888888888888888,
+  "recall": 0.9333333333333333,
+  "recall_strict": 0.8666666666666667,
   "critical_recall": 1.0,
   "critical_recall_strict": 1.0,
   "findings": 45.0,
@@ -37,13 +37,13 @@
   "quotes_final_verified": 0.8048780487804879,
   "wall_s": 120.222,
   "cost_usd": 0.311332,
-  "union_recall": 0.9555555555555556,
-  "union_recall_strict": 0.8888888888888888,
+  "union_recall": 0.9333333333333333,
+  "union_recall_strict": 0.8666666666666667,
   "critical_pass_all": 1.0,
   "critical_pass_any": 1.0,
   "gold_jaccard": null,
   "key_jaccard": null,
-  "judge_cost_usd": 0.213596
+  "judge_cost_usd": null
  },
  "runs": [
   {
@@ -66,7 +66,7 @@
     "13": "found",
     "14": "found",
     "15": "found",
-    "16": "partial",
+    "16": "missed",
     "17": "found",
     "18": "found",
     "19": "found",
@@ -86,7 +86,7 @@
     "33": "missed",
     "34": "found",
     "35": "found",
-    "36": "found",
+    "36": "partial",
     "37": "found",
     "38": "found",
     "39": "missed",
@@ -97,13 +97,13 @@
     "44": "found",
     "45": "partial"
    },
-   "recall": 0.9555555555555556,
-   "recall_strict": 0.8888888888888888,
+   "recall": 0.9333333333333333,
+   "recall_strict": 0.8666666666666667,
    "critical_recall": 1.0,
    "critical_recall_strict": 1.0,
    "recall_by_severity": {
     "critical": 1.0,
-    "medium": 0.9523809523809523,
+    "medium": 0.9047619047619048,
     "low": 0.9333333333333333
    },
    "extra_real": 3,
@@ -125,38 +125,39 @@
    "calls": {
     "calls": 1,
     "failed": 0,
+    "reused": 0,
     "cost_usd": 0.311332,
     "cost_missing": 0,
     "model_s": 120.222,
     "wall_s": 120.222
    },
    "judge": {
-    "key": "4807208c7851bec49fee586140c7e945bfd80bdfe0510eeb43b053ef7efaf7f2",
-    "source": "cli",
+    "key": "86a7391ef9de1c60961cff1bccbbad25cdb012db179d6701230a93add3e7e02d",
+    "source": "cache",
     "model": "claude-opus-5-5",
-    "cost_usd": 0.213596,
-    "duration_ms": 37641,
-    "cache_path": "evals/cache/judge/4807208c7851bec49fee586140c7e945bfd80bdfe0510eeb43b053ef7efaf7f2.json"
+    "cost_usd": 0.201068,
+    "duration_ms": 29618,
+    "cache_path": "evals/cache/judge/86a7391ef9de1c60961cff1bccbbad25cdb012db179d6701230a93add3e7e02d.json"
    },
    "keys": null,
    "unmatched": [
     {
      "id": 32,
-     "fingerprint": "10d6cc2ef8c3",
+     "fingerprint": null,
      "verdict": "real",
-     "quote": "400: `{\"message\":\"Некорректный запрос\"}` при таблице ответа с полем `result`"
+     "quote": null
     },
     {
      "id": 39,
-     "fingerprint": "cc15f1fed008",
+     "fingerprint": null,
      "verdict": "real",
-     "quote": "Описания 401/403/500 расположены внутри блока примеров 200"
+     "quote": null
     },
     {
      "id": 45,
-     "fingerprint": "0b79eff771a5",
+     "fingerprint": null,
      "verdict": "real",
-     "quote": "Ф‑3: «На карту приходится…»"
+     "quote": null
     }
    ],
    "overrides": [],

@@ -118,6 +118,22 @@ def test_out_of_range_override_finding_ids_are_dropped_with_warning() -> None:
     assert any("99" in w for w in fixed.warnings)
 
 
+def test_judge_numbered_run_keeps_override_ids_and_skips_fingerprints() -> None:
+    raw, ids = judged()
+    verdict = parse_verdict(raw, ids, None)
+    overrides = Overrides(
+        gold=[GoldOverride(run="*", gold=2, status=GoldStatus.FOUND, finding_ids=[12], reason="r")],
+        findings=[FindingOverride(finding="abcdef12", verdict=ExtraVerdict.NOISE, reason="r")],
+    )
+
+    fixed, applied = apply_overrides(verdict, "run-a", None, overrides)
+
+    assert fixed.gold[2].finding_ids == [12]
+    assert fixed.extra == verdict.extra
+    assert len(applied) == 1
+    assert any("нумеровал судья" in w for w in fixed.warnings)
+
+
 def test_load_overrides_from_yaml(tmp_path: Path) -> None:
     path = tmp_path / "overrides.yaml"
     path.write_text(

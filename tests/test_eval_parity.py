@@ -112,9 +112,14 @@ def test_free_text_research21_block_is_exactly_as_in_research_21(
 
 
 def _judge_output() -> dict[str, Any]:
+    """Непротиворечивый вердикт: находка 1 в эталоне, находка 2 вне его.
+
+    На противоречивом вердикте (одна находка и в эталоне, и вне его) мы, в отличие от ``score.py``,
+    не считаем её во «вне эталона» и пишем предупреждение; в записанных вердиктах такого нет.
+    """
     statuses = ["found", "partial", "missed"]
     gold = [
-        {"id": g, "status": statuses[g % 3], "finding_ids": [] if g % 3 == 2 else [1 + g % 2]}
+        {"id": g, "status": statuses[g % 3], "finding_ids": [] if g % 3 == 2 else [1]}
         for g in range(1, GOLD_TOTAL + 1)
     ]
     return {"gold": gold, "extra": [{"finding_id": 2, "verdict": "noise"}]}

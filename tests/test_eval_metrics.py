@@ -190,5 +190,49 @@ def test_research21_mode_keeps_any_positive_finding_ids() -> None:
     v = parse_verdict(raw, [1], None)
 
     assert v.gold[1].finding_ids == [40]
-    assert count_findings(v, []) == 41
+    assert count_findings(v, None) == 41
     assert count_findings(v, items(3)) == 3
+
+
+def test_run_without_findings_drops_judge_ids_and_counts_zero() -> None:
+    raw = {
+        "gold": [{"id": 1, "status": "found", "finding_ids": [5]}],
+        "extra": [{"finding_id": 3, "verdict": "noise"}],
+    }
+
+    v = parse_verdict(raw, [1], 0)
+    score = score_run(toy_run(0), v, toy_gold(), CALL, findings=count_findings(v, []))
+
+    assert count_findings(v, []) == 0
+    assert v.gold[1].finding_ids == [] and v.extra == {}
+    assert score.findings == 0 and score.noise_share is None
+    assert score.unmatched == []
+
+
+def test_extra_verdict_for_matched_finding_is_not_counted_and_warned() -> None:
+    v = verdict({1: ("found", [1]), 2: ("missed", []), 3: ("missed", []), 4: ("missed", [])}, {1: "noise"})
+
+    score = score_run(toy_run(), v, toy_gold(), CALL, findings=5)
+
+    assert (score.extra_real, score.extra_noise) == (0, 0)
+    assert score.noise_share == 0.0
+    assert any("[1]" in w for w in score.warnings)
+
+
+def test_judge_numbered_findings_are_listed_without_text() -> None:
+    raw = {
+        "gold": [{"id": 1, "status": "found", "finding_ids": [2]}],
+        "extra": [{"finding_id": 4, "verdict": "noise"}],
+    }
+    v = parse_verdict(raw, toy_gold().ids, None)
+
+    score = score_run(toy_run(2), v, toy_gold(), CALL, findings=count_findings(v, None), judge_numbered=True)
+
+    assert score.findings == 4
+    assert [(u.id, u.fingerprint, u.quote) for u in score.unmatched] == [
+        (1, None, None),
+        (3, None, None),
+        (4, None, None),
+    ]
+    assert score.unmatched[2].verdict is ExtraVerdict.NOISE
+    assert score.noise_share == 0.25
