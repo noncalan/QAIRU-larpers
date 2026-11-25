@@ -32,6 +32,7 @@ from validator.models import (
     Question,
     QuestionOption,
     QuestionPriority,
+    QuestionReview,
     Quote,
     QuoteMatch,
     Report,
@@ -48,9 +49,11 @@ from validator.models import (
     TrafficLight,
     Verdict,
     Verification,
+    WithdrawnQuestion,
     WorkStage,
 )
 from validator.models import DefectType as D
+from validator.questions.metrics import question_metrics
 from validator.report.build import FIRST_PAGE_ITEMS
 from validator.verify import summarize
 
@@ -239,6 +242,7 @@ def questions() -> list[Question]:
             ],
             if_unanswered="Команда возьмёт вариант A (так написано в ФТ-2).",
             related_findings=["F-01"],
+            review=QuestionReview(scenario=True),
         ),
         Question(
             id="Q-02",
@@ -260,8 +264,27 @@ def questions() -> list[Question]:
                 QuestionOption(label="B", text="Любое окно без нагрузки", change="НФТ-2"),
             ],
             related_findings=["F-03"],
+            review=QuestionReview(scenario=False, errors=[1], obvious_fix=True),
         ),
     ]
+
+
+def withdrawn_questions() -> list[WithdrawnQuestion]:
+    """Вопрос, на который ответил сам документ: критик снял его, цитату-ответ код сверил."""
+    answer = _quote("Бронь хранится 30 дней", 600, 21)
+    question = Question(
+        id="Q-04",
+        priority=QuestionPriority.P2,
+        addressee=[Addressee.BUSINESS],
+        question="Сколько дней хранится бронь после окончания встречи?",
+        options=[
+            QuestionOption(label="A", text="30 дней", change="—"),
+            QuestionOption(label="B", text="Бессрочно", change="—"),
+        ],
+        related_findings=["F-03"],
+        review=QuestionReview(answered=True, answer="30 дней", answer_quote=answer, scenario=True),
+    )
+    return [WithdrawnQuestion(question=question, reason="Бронь хранится 30 дней", answer=answer)]
 
 
 def _verification(
@@ -303,7 +326,9 @@ def _conclusion(ver: Verification, qs: list[Question]) -> Conclusion:
     )
 
 
-def _metrics(ver: Verification, pp: Passport) -> RunMetrics:
+def _metrics(
+    ver: Verification, pp: Passport, qs: list[Question], withdrawn: list[WithdrawnQuestion]
+) -> RunMetrics:
     s = ver.summary
     verified = s.quotes_exact + s.quotes_fuzzy
     return RunMetrics(
@@ -319,6 +344,7 @@ def _metrics(ver: Verification, pp: Passport) -> RunMetrics:
         quotes_total=s.quotes_total,
         quotes_verified=verified,
         verified_quote_share=round(verified / s.quotes_total, 4) if s.quotes_total else None,
+        questions=question_metrics(qs, withdrawn),
     )
 
 
@@ -331,6 +357,7 @@ def _report(
     input_diagnostics: list[Diagnostic] | None = None,
     diagnostics: list[Diagnostic] | None = None,
     pass_: Passport | None = None,
+    withdrawn: list[WithdrawnQuestion] | None = None,
 ) -> Report:
     pp = pass_ or passport()
     return Report(
@@ -351,8 +378,9 @@ def _report(
         segmentation=Segmentation(requirements=reqs, mode=SegmentationMode.MODEL),
         verification=ver,
         questions=qs,
+        questions_withdrawn=withdrawn or [],
         conclusion=_conclusion(ver, qs),
-        metrics=_metrics(ver, pp),
+        metrics=_metrics(ver, pp, qs, withdrawn or []),
     )
 
 
@@ -365,6 +393,7 @@ def full_report() -> Report:
         questions(),
         REQS,
         status=ReportStatus.PARTIAL,
+        withdrawn=withdrawn_questions(),
         input_diagnostics=[
             Diagnostic(
                 code="IN-051",

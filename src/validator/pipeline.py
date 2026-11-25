@@ -14,7 +14,7 @@
 | 5 слияние, 7 верификатор | внутренняя ошибка, код 1, отчёт из того, что есть |
 | 6 доказательства | находки без свидетеля, предупреждение |
 | 8 вопросы | редактор упал: вопросы кодом без редактуры; шаг упал: раздел без вопросов; предупреждение |
-| 9 отчёт | Markdown пишется всегда, в крайнем случае аварийный |
+| 9 отчёт | Markdown пишется всегда, в крайнем случае аварийный; PDF не собрался: INT-002, Markdown остаётся |
 """
 
 from __future__ import annotations
@@ -35,7 +35,6 @@ from validator.errors import (
     INT_STEP_DEGRADED,
     INT_STEP_FAILED,
     LLM_ALL_PASSES_FAILED,
-    OUT_FORMAT_FALLBACK,
     OUT_OVERWRITES_INPUT,
     OUT_WRITE_FAILED,
     InputError,
@@ -66,10 +65,11 @@ from validator.models import (
     RunOutcome,
     Segmentation,
     Verification,
+    WithdrawnQuestion,
 )
 from validator.passport import build_passport
 from validator.questions import build_questions, write_questions_yaml
-from validator.report import build_report, render_md
+from validator.report import PdfRenderError, build_report, render_md, render_pdf
 from validator.search import search
 from validator.segment import fallback_segmentation, segment
 from validator.verify import light_with_questions, verify
@@ -94,8 +94,10 @@ class _State:
     merged: list[MergedFinding] = field(default_factory=list)
     verification: Verification | None = None
     questions: list[Question] = field(default_factory=list)
+    questions_withdrawn: list[WithdrawnQuestion] = field(default_factory=list)
     client: RecordingClient | None = None
     backend_used: Backend | None = None
+    pdf_written: bool = False
 
 
 def _step(
@@ -212,16 +214,6 @@ def _check_requests(state: _State) -> None:
                 step="config",
             )
         )
-    if cfg.output_path.suffix.lower() == ".pdf":
-        state.diagnostics.append(
-            Diagnostic(
-                code=OUT_FORMAT_FALLBACK,
-                level=DiagLevel.WARNING,
-                message="PDF-версия отчёта в этой версии агента ещё не делается",
-                action=f"Отчёт записан в Markdown: {cfg.report_md_path.name}",
-                step="report",
-            )
-        )
 
 
 def _execute(state: _State) -> None:
@@ -301,6 +293,7 @@ def _execute(state: _State) -> None:
         )
         if asked is not None:
             state.questions = list(asked.questions)
+            state.questions_withdrawn = list(asked.withdrawn)
             state.diagnostics.extend(asked.diagnostics)
         state.verification = light_with_questions(ver, state.questions if asked is not None else None)
 
@@ -337,6 +330,7 @@ def _context(state: _State, finished: datetime, code: ExitCode) -> RunContext:
         merged=state.merged,
         verification=state.verification,
         questions=state.questions,
+        questions_withdrawn=state.questions_withdrawn,
         diagnostics=list(state.diagnostics),
         calls=list(calls),
         passport=passport,
@@ -389,9 +383,44 @@ def _render(state: _State) -> tuple[ExitCode, Report | None, str]:
         return code, None, _emergency_md(state, code)
 
 
+def _remove_stale_pdf(cfg: RunConfig) -> None:
+    """Прежний PDF с тем же именем рядом со свежим Markdown выдавал бы себя за отчёт этого прогона."""
+    with contextlib.suppress(OSError):
+        cfg.report_pdf_path.unlink(missing_ok=True)
+
+
+def _write_pdf(state: _State, report: Report) -> bool:
+    """PDF рядом с Markdown. Любой сбой (Typst, модель вида, запись) не роняет прогон: диагностика INT-002.
+
+    Возвращает True, если файл записан; иначе Markdown остаётся единственным отчётом.
+    """
+    cfg = state.cfg
+    try:
+        cfg.report_pdf_path.write_bytes(render_pdf(report))
+    except Exception as exc:  # PDF необязателен для отчёта: причина в лог, прогон идёт дальше
+        logger.exception("PDF-версия отчёта не собрана")
+        _remove_stale_pdf(cfg)
+        reason = exc.message if isinstance(exc, PdfRenderError) else type(exc).__name__
+        state.diagnostics.append(
+            Diagnostic(
+                code=INT_STEP_DEGRADED,
+                level=DiagLevel.WARNING,
+                message=f"PDF-версия отчёта не собрана: {reason}",
+                action=f"Отчёт записан в Markdown: {cfg.report_md_path.name}",
+                hint=f"Подробности в {cfg.log_path.name}; откройте отчёт в Markdown",
+                step="report",
+            )
+        )
+        return False
+    state.pdf_written = True
+    return True
+
+
 def _write(state: _State, report: Report | None, markdown: str) -> dict[str, Path]:
     cfg = state.cfg
     outputs = {"report_md": cfg.report_md_path}
+    if state.pdf_written:
+        outputs["report_pdf"] = cfg.report_pdf_path
     cfg.report_md_path.write_text(markdown, encoding="utf-8")
     if report is not None:
         cfg.report_json_path.write_text(report.model_dump_json(indent=2) + "\n", encoding="utf-8")
@@ -411,10 +440,11 @@ def _write(state: _State, report: Report | None, markdown: str) -> dict[str, Pat
     return outputs
 
 
-def _message(code: ExitCode, report: Report | None, path: Path | None) -> str:
+def _message(code: ExitCode, report: Report | None, path: Path | None, markdown: Path | None = None) -> str:
     head = f"Код {code.value}: {code.meaning}."
     if path is not None:
-        head = f"Отчёт: {path}. {head}"
+        beside = f" (Markdown рядом: {markdown.name})" if markdown is not None else ""
+        head = f"Отчёт: {path}{beside}. {head}"
     if report is None:
         return head
     c = report.conclusion
@@ -492,6 +522,10 @@ def run(cfg: RunConfig) -> RunOutcome:
         if state.client is not None:
             state.diagnostics.extend(state.client.diagnostics)
         code, report, markdown = _render(state)
+        if cfg.wants_pdf and report is None:
+            _remove_stale_pdf(cfg)  # отчёт аварийный (INT-001 уже в нём): PDF строить не из чего
+        elif cfg.wants_pdf and report is not None and not _write_pdf(state, report):
+            code, report, markdown = _render(state)  # в отчёте появилась диагностика о PDF
         try:
             outputs = _write(state, report, markdown)
         except OSError as exc:
@@ -511,10 +545,11 @@ def run(cfg: RunConfig) -> RunOutcome:
                 diagnostics=list(state.diagnostics),
             )
         logger.info("Готово: код %s", code.value)
+        shown = cfg.report_pdf_path if state.pdf_written else cfg.report_md_path
         return RunOutcome(
             exit_code=code,
-            message=_message(code, report, cfg.report_md_path),
-            report_path=cfg.report_md_path,
+            message=_message(code, report, shown, cfg.report_md_path if state.pdf_written else None),
+            report_path=shown,
             outputs=outputs,
             report=report,
             diagnostics=list(state.diagnostics),

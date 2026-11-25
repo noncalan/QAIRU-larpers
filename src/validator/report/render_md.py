@@ -13,10 +13,12 @@ from collections import defaultdict
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 from validator.models import (
+    Addressee,
     DefectType,
     DiagLevel,
     Finding,
@@ -112,6 +114,14 @@ def _questions_by_finding(report: Report) -> dict[str, list[str]]:
     return dict(links)
 
 
+def _addressee_label(value: str) -> str:
+    """Адресат из метрик вопросов (``by_addressee`` хранит значения перечисления) по-русски."""
+    try:
+        return Addressee(value).label
+    except ValueError:
+        return value
+
+
 def _input_status(report: Report) -> str:
     if report.status is ReportStatus.NOT_PERFORMED:
         return "НЕ ПРОЧИТАН: проверка невозможна"
@@ -120,7 +130,8 @@ def _input_status(report: Report) -> str:
     return "ПРОЧИТАН ПОЛНОСТЬЮ"
 
 
-def render_md(report: Report) -> str:
+def report_context(report: Report) -> dict[str, Any]:
+    """Всё, что нужно шаблонам отчёта: готовые списки, связи и подписи. Общий источник для MD и PDF."""
     ver = report.verification
     findings: list[Finding] = list(ver.findings) if ver else []
     requirements: list[Requirement] = list(report.segmentation.requirements) if report.segmentation else []
@@ -128,7 +139,7 @@ def render_md(report: Report) -> str:
         priority: [q.id for q in report.questions if q.priority is priority]
         for priority in (QuestionPriority.P0, QuestionPriority.P1)
     }
-    context = {
+    return {
         "report": report,
         "findings_by_id": {f.id: f for f in findings},
         "requirements_by_id": {r.id: r for r in requirements},
@@ -144,7 +155,11 @@ def render_md(report: Report) -> str:
         "blocks_testing": blocking[QuestionPriority.P1],
         "input_status": _input_status(report),
         "no_violations": NO_VIOLATIONS,
+        "addressee_label": _addressee_label,
     }
-    text = _environment().get_template("report.md.j2").render(**context)
+
+
+def render_md(report: Report) -> str:
+    text = _environment().get_template("report.md.j2").render(**report_context(report))
     text = "\n".join(line.rstrip() for line in text.splitlines()).strip()
     return _BLANK_RUNS.sub("\n\n", text) + "\n"

@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import ctypes
 from collections.abc import Iterator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Protocol
 
@@ -34,6 +34,10 @@ _MUPDF_ITALIC = 2
 _MUPDF_BOLD = 16
 _PDFIUM_FONT_NAME_BYTES = 128
 _PDFIUM_BOLD_WEIGHT = 700
+MAX_RULE_THICKNESS = 2.5
+"""Линия или прямоугольник тоньше стольких пунктов это линейка (черта под заголовком таблицы)."""
+MIN_RULE_WIDTH = 100.0
+"""Линейка уже стольких пунктов не годится в границу таблицы: это подчёркивание слова или рамка символа."""
 _LINE_TO_SIZE = 1.2
 _FALLBACK_SIZE = 10.0
 _BOLD_NAMES = ("bold", "black", "heavy", "semibold", "demi")
@@ -55,11 +59,28 @@ class Glyph:
 
 
 @dataclass(frozen=True, slots=True)
+class Rule:
+    """Горизонтальная линейка страницы (в пунктах, ось Y вниз): граница таблицы, черта под её заголовком."""
+
+    x0: float
+    x1: float
+    y: float
+
+
+def make_rule(x0: float, x1: float, top: float, bottom: float) -> Rule | None:
+    """Рамка рисованного объекта → линейка, если она тонкая и достаточно длинная; иначе None."""
+    if bottom - top > MAX_RULE_THICKNESS or x1 - x0 < MIN_RULE_WIDTH:
+        return None
+    return Rule(x0, x1, (top + bottom) / 2)
+
+
+@dataclass(frozen=True, slots=True)
 class RawPage:
     number: int
     width: float
     height: float
     glyphs: list[Glyph]
+    rules: list[Rule] = field(default_factory=list)
 
 
 class PdfSource(Protocol):
@@ -129,10 +150,26 @@ class _MuPdfSource:
                             size = span["size"] or (box.y1 - box.y0) / _LINE_TO_SIZE or _FALLBACK_SIZE
                             glyphs.append(Glyph(ch["c"], box.x0, box.x1, box.y0, box.y1, size, bold, italic))
             rect = page.rect
-            yield RawPage(number, rect.width, rect.height, glyphs)
+            yield RawPage(number, rect.width, rect.height, glyphs, _mupdf_rules(page, turn))
 
     def close(self) -> None:
         self._doc.close()
+
+
+def _mupdf_rules(page: pymupdf.Page, turn: pymupdf.Matrix | None) -> list[Rule]:
+    """Тонкие длинные линии и прямоугольники страницы: у таблиц без рамки это черта под заголовком."""
+    try:
+        drawings = page.get_drawings()
+    except (RuntimeError, ValueError):
+        return []  # рисунки не читаются: таблицы без линий остаются обычным текстом
+    rules: list[Rule] = []
+    for drawing in drawings:
+        box = pymupdf.Rect(drawing["rect"])
+        box = box * turn if turn else box
+        rule = make_rule(box.x0, box.x1, box.y0, box.y1)
+        if rule is not None:
+            rules.append(rule)
+    return rules
 
 
 class MuPdfBackend:
@@ -171,7 +208,7 @@ class _PdfiumSource:
                     glyphs = _pdfium_glyphs(page)
                 except (pdfium.PdfiumError, RuntimeError, ValueError):
                     glyphs = []  # страница не читается: она считается страницей без текста
-                yield RawPage(number + 1, width, height, glyphs)
+                yield RawPage(number + 1, width, height, glyphs, _pdfium_rules(page))
             finally:
                 page.close()
 
@@ -243,6 +280,26 @@ def _pdfium_glyphs(page: pdfium.PdfPage) -> list[Glyph]:
     finally:
         textpage.close()
     return glyphs
+
+
+def _pdfium_rules(page: pdfium.PdfPage) -> list[Rule]:
+    """Тонкие длинные пути страницы (границы объектов), как ``_mupdf_rules``."""
+    left0, bottom0, right0, top0 = page.get_mediabox()
+    width, height = right0 - left0, top0 - bottom0
+    rotation = page.get_rotation() % 360
+    rules: list[Rule] = []
+    try:
+        for obj in page.get_objects(filter=[pdfium_raw.FPDF_PAGEOBJ_PATH]):
+            box_l, box_b, box_r, box_t = obj.get_bounds()
+            x0, x1, top, bottom = _rotate_box(
+                (box_l - left0, box_b - bottom0, box_r - left0, box_t - bottom0), width, height, rotation
+            )
+            rule = make_rule(x0, x1, top, bottom)
+            if rule is not None:
+                rules.append(rule)
+    except (pdfium.PdfiumError, RuntimeError, ValueError):
+        return []  # объекты не читаются: таблицы без линий остаются обычным текстом
+    return rules
 
 
 class PdfiumBackend:

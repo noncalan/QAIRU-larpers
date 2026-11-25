@@ -198,6 +198,7 @@
     "diagnostics": []
   },
   "questions": [],
+  "questions_withdrawn": [],
   "conclusion": {
     "traffic_light": "green",
     "headline": "Можно начинать разработку и тестирование: нарушений не найдено",
@@ -223,6 +224,21 @@
     "discarded_total": 0,
     "quotes_total": 0,
     "quotes_verified": 0,
-    "verified_quote_share": null
+    "verified_quote_share": null,
+    "questions": {
+      "total": 0,
+      "before_critic": 0,
+      "withdrawn": 0,
+      "withdrawn_share": null,
+      "reviewed": 0,
+      "with_scenario": null,
+      "closed": null,
+      "without_errors": null,
+      "obvious_fix": 0,
+      "common_sense": 0,
+      "duplicate_pairs": 0,
+      "by_priority": {},
+      "by_addressee": {}
+    }
   }
 }

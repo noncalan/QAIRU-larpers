@@ -1,0 +1,16 @@
+# Конфиг gitleaks для задачи secrets в CI (.github/workflows/ci.yml).
+# Берём стандартные правила и разрешаем только шаблон ключей: .env.example без значений.
+title = "QAIRU gitleaks"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Шаблон переменных окружения: в нём пустые значения, реальные ключи только в .env (он в .gitignore)"
+paths = ['''(^|/)\.env\.example$''']
+
+[[allowlists]]
+description = "Хеш-ключи кеша вызовов модели и судьи (поле key в JSON/JSONL): это sha256, а не секрет"
+condition = "AND"
+paths = ['''^evals/(cache|results)/''', '''^tests/fixtures/''']
+regexes = ['''^[0-9a-f]{64}$''']

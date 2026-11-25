@@ -65,9 +65,14 @@ LLM_SEGMENT_UNCOVERED = "LLM-022"  # нарезка: блоки без реше�
 LLM_SEGMENT_OVERLAP = "LLM-023"  # нарезка: требования пересекаются
 LLM_PASS_FAILED = "LLM-030"  # noqa: S105 - код диагностики, не пароль
 LLM_ALL_PASSES_FAILED = "LLM-031"
+LLM_PASS_TRANSFERRED = "LLM-032"  # noqa: S105 - код диагностики; часть прохода перенесена в JSON моделью
+LLM_TRANSFER_FAILED = "LLM-033"  # перенос в JSON не удался или вернул не все находки прохода
+LLM_UNKNOWN_BLOCKS = "LLM-034"  # модель сослалась на ID блоков, которых нет в документе
 LLM_EVIDENCE_FAILED = "LLM-040"
 LLM_QUESTIONS_FAILED = "LLM-050"
 LLM_QUESTIONS_CHECKED = "LLM-051"  # код поправил или отбросил карточки редактора вопросов
+LLM_QUESTIONS_CRITIC_FAILED = "LLM-052"  # критик-самоответ не сработал: вопросы не перепроверены
+LLM_QUESTIONS_WITHDRAWN = "LLM-053"  # ИНФО: критик снял вопросы, ответ на которые есть в документе
 
 # Настройки и флаги.
 CFG_BACKEND_UNAVAILABLE = "CFG-001"
@@ -79,7 +84,6 @@ INT_STEP_DEGRADED = "INT-002"
 
 # Запись отчёта.
 OUT_WRITE_FAILED = "OUT-001"
-OUT_FORMAT_FALLBACK = "OUT-002"
 OUT_OVERWRITES_INPUT = "OUT-003"
 
 

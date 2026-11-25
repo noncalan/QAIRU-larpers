@@ -542,7 +542,7 @@ def test_cache_is_off_for_fixtures_and_replay(tmp_path: Path) -> None:
 
 
 def _fake_claude(tmp_path: Path, mode: str = "ok") -> tuple[str, Path]:
-    """Скрипт вместо claude: ``ok`` отвечает по схеме, иначе отдаёт записанную ошибку ``claude -p``."""
+    """Скрипт вместо claude: ``ok`` отвечает по схеме, без схемы как проход поиска без находок (#18)."""
     counter = tmp_path / "calls.txt"
     errors = {
         "limit": {"is_error": True, "subtype": "success", "result": "You've hit your limit · resets 3am"},
@@ -565,7 +565,8 @@ def _fake_claude(tmp_path: Path, mode: str = "ok") -> tuple[str, Path]:
         f"errors = {errors!r}\n"
         "if mode in errors:\n    print(json.dumps(errors[mode])); sys.exit(1)\n"
         "answer = {'type': 'result', 'subtype': 'success', 'is_error': False,\n"
-        "          'result': 'Проверка выполнена. ' + str(len(system) > 0), 'duration_ms': 10,\n"
+        "          'result': '## Обзор документа\\n\\nПроверка выполнена. ' + str(len(system) > 0)\n"
+        "                    + '\\n\\n## Находки\\n\\nНаходок нет.\\n', 'duration_ms': 10,\n"
         "          'usage': {'input_tokens': 100, 'output_tokens': 10},\n"
         "          'modelUsage': {args[args.index('--model') + 1]:\n"
         "                         {'inputTokens': 100, 'outputTokens': 10}}}\n"

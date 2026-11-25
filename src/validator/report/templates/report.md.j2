@@ -246,6 +246,8 @@
 {% endif %}
 {% endfor %}
 Ответы можно вписать в `questions.yaml` рядом с отчётом.
+{% elif r.questions_withdrawn %}
+Открытых вопросов нет: самопроверка нашла в документе ответы на все вопросы, они перечислены ниже.
 {% elif r.diagnostics | selectattr("step", "equalto", "questions") | rejectattr("level", "equalto", "info") | list %}
 Вопросы не сформированы: шаг вопросов завершился с ошибкой, смотрите диагностику прогона.
 {% elif v and v.findings %}
@@ -254,6 +256,16 @@
 Вопросов нет: нарушений и неясностей не найдено.
 {% else %}
 Вопросы не сформированы: проверка выполнена не полностью, смотрите диагностику прогона.
+{% endif %}
+{% if r.questions_withdrawn %}
+
+### Снятые вопросы: ответ есть в документе
+
+Перед отчётом агент попытался сам ответить на каждый вопрос по документу. Эти вопросы сняты: ответ нашёлся, и код сверил цитату-ответ с документом.
+
+{% for w in r.questions_withdrawn %}
+- **{{ w.question.id }}.** {{ w.question.question | cell(200) }} Ответ: {{ w.reason | cell(200) }}. Документ: «{{ w.answer | quote_text(200) }}» ({{ w.answer.anchor | where(section_of(w.answer)) }}).
+{% endfor %}
 {% endif %}
 
 ## 7. Сводка
@@ -314,6 +326,15 @@
 | Токены | вход {{ r.metrics.tokens.input_tokens }}, выход {{ r.metrics.tokens.output_tokens }}, запись в кеш {{ r.metrics.tokens.cache_creation_input_tokens }}, чтение из кеша {{ r.metrics.tokens.cache_read_input_tokens }} |
 | Время прогона | {{ r.metrics.duration_s if r.metrics.duration_s is not none else "—" }} с |
 | Цена по тарифу API | {{ r.metrics.cost_usd | money }} |
+{% set qm = r.metrics.questions %}
+{% if qm and qm.before_critic %}
+| Вопросов автору | {{ qm.total }}{% if qm.reviewed %} (до самопроверки {{ qm.before_critic }}, снято {{ qm.withdrawn }}: ответ есть в документе){% else %} (самопроверка не выполнена){% endif %} |
+| Вопросы: со сценарием | {{ qm.with_scenario | pct }} |
+| Вопросы: закрытые (2–4 варианта с последствиями) | {{ qm.closed | pct }} |
+| Вопросы: без ошибок формулировки | {{ qm.without_errors | pct }} |
+| Вопросы: дубли с находками, повторы | {{ qm.obvious_fix }}, {{ qm.duplicate_pairs }} |
+| Вопросы: адресаты | {% for a, n in qm.by_addressee.items() %}{{ addressee_label(a) }} {{ n }}{% if not loop.last %}, {% endif %}{% else %}—{% endfor %} |
+{% endif %}
 {% endif %}
 
 ## {{ "10. " if c.performed else "" }}Диагностика прогона

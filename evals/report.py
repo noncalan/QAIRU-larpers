@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 from evals.gold import GoldSeverity, load_gold
 from evals.judge import GoldStatus
+from evals.questions import render_questions
 
 if TYPE_CHECKING:
     from evals.eval import EvalResult
@@ -166,6 +167,10 @@ def render_markdown(result: EvalResult) -> str:
         ("Матрица: дефект эталона × прогон", _matrix(result.runs)),
         ("Пропуски", _missed(result.runs)),
         ("Находки вне эталона (для ручных поправок в evals/overrides.yaml)", _unmatched(result.runs)),
+        (
+            "Вопросы автору: до и после критика",
+            render_questions(result.config.questions, [r.questions for r in result.runs if r.questions]),
+        ),
         ("Поправки, предупреждения, заметки", _notes(result)),
     ]
     body: list[str] = header

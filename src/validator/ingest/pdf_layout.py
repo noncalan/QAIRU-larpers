@@ -167,6 +167,16 @@ def _line_text(row: list[Glyph], gap_em: float) -> str:
     return inner.strip()
 
 
+def cluster_rows(glyphs: list[Glyph]) -> list[list[Glyph]]:
+    """Символы по визуальным строкам сверху вниз (для разбора таблиц: ``pdf_tables``)."""
+    return _cluster(glyphs)
+
+
+def row_text(row: list[Glyph], gap_em: float) -> str:
+    """Текст одной строки символов слева направо с пробелами по зазору (для ячеек таблиц)."""
+    return _line_text(row, gap_em)
+
+
 def build_lines(page: RawPage, gap_em: float) -> list[Line]:
     """Строки страницы сверху вниз, слева направо. ``page_line`` это порядковый номер строки на странице."""
     lines: list[Line] = []
@@ -202,6 +212,11 @@ def build_lines(page: RawPage, gap_em: float) -> list[Line]:
 
 
 # ---------------------------------------------------------------- колонтитулы
+
+
+def is_page_number(text: str) -> bool:
+    """«3», «стр. 3 из 8», «— 3 —»: номер страницы, а не содержание (внизу таблицы это не строка таблицы)."""
+    return bool(_PAGE_NUMBER.fullmatch(_furniture_key(text).replace("#", "1")))
 
 
 def _furniture_key(text: str) -> str:

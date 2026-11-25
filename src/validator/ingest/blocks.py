@@ -432,10 +432,13 @@ class _Builder:
     def table(self, i: int, n: int) -> int:
         line = self.lines[i]
         if not self.in_table or (line.table is not None and line.table != self.table_no):
+            # Та же таблица после абзаца (PDF, продолжение на странице): счёт строк и заголовок остаются.
+            resumed = line.table is not None and line.table == self.table_no and self.table_row > 0
             self.in_table = True
             self.table_no = line.table if line.table is not None else self.table_no + 1
-            self.table_row = 0
-            self.header = None
+            if not resumed:
+                self.table_row = 0
+                self.header = None
         if self.is_md and _is_separator(line.text):
             return i + 1
         cells = list(line.cells) if line.table is not None else _md_cells(line.text)
