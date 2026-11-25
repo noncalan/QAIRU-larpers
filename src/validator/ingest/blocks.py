@@ -23,10 +23,12 @@ from pathlib import Path
 
 from razdel import sentenize
 
+from validator.errors import IN_HEADINGS_ONLY, IN_NO_TEXT
 from validator.models import (
     Anchor,
     Block,
     BlockKind,
+    DiagLevel,
     Diagnostic,
     DocKind,
     ParsedDocument,
@@ -40,14 +42,23 @@ HEADING = re.compile(r"^(#{1,6})\s+(.*\S)\s*$")
 TABLE_ROW = re.compile(r"^\s*\|.*\|\s*$")
 TABLE_SEP = re.compile(r"^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?\s*$")
 LIST_ITEM = re.compile(r"^\s*(?:[*+•-]|\d+[.)])\s+")
+LIST_LABEL = re.compile(r"^\s*(?:[*+•-]|\(?(?:\d+(?:\.\d+)*|[A-Za-zА-Яа-яЁё]|[ivxlcdmIVXLCDM]+)[.)])\s+")
 ORDINAL = re.compile(r"^\s*(\d+)[.)]\s+")
-FENCE = re.compile(r"^\s*(```|~~~)")
+FENCE = re.compile(r"^\s*(?P<mark>`{3,}|~{3,})")
 HR = re.compile(r"^\s*(-{3,}|\*{3,}|_{3,})\s*$")
+QUOTE_LINE = re.compile(r"^\s{0,3}>[ \t]?")
+SETEXT = re.compile(r"^\s{0,3}(?:(?P<h1>=+)|(?P<h2>-{2,}))\s*$")
+# Таблица без внешних вертикальных черт: «Колонка | Колонка» и под ней «--- | ---» (GFM допускает).
+PIPE_SEP = re.compile(r"^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)+\|?\s*$")
+FRONT_MATTER_KEY = re.compile(r"^[A-Za-z_][A-Za-z0-9_.-]*\s*:")
+MAX_SETEXT_LINES = 2
+MAX_SETEXT_CHARS = 200
+CLOSING_HASHES = re.compile(r"\s+#+\s*$")
 # Метка требования в начале пункта: «**ABC-1.**», «REQ-12:», «FR.3», «ТР-2.1)», «FR12». С заглавной буквы,
 # 1–6 букв, затем дефис, точка или подчёркивание и номер; без разделителя только заглавные (FR12). Пробел
 # разделителем не считаем: «В 2025 году», «До 10 попыток» это обычный текст, а не метка.
 SOURCE_ID = re.compile(
-    r"^\s*(?:[*+-]\s+|\d+[.)]\s+)?(?:\*\*|__)?\s*"
+    r"^\s*(?:[*+•-]\s+|\d+[.)]\s+|\d+(?:\.\d+)+[.)]?\s+)?(?:\*\*|__)?\s*"
     r"(?P<id>(?:[A-ZА-ЯЁ][A-Za-zА-Яа-яЁё]{0,5}[-‑.‐_]|[A-ZА-ЯЁ]{1,6})\d+(?:\.\d+)*)"
     r"\s*[.:)]?\s*(?:\*\*|__)?[.:)]?\s+"
 )
@@ -59,7 +70,9 @@ OBLIGATION = re.compile(
     r"shall|must|should|required)\b",
     re.IGNORECASE,
 )
-LIST_KINDS = frozenset({BlockKind.PARAGRAPH, BlockKind.LIST_ITEM})
+SENTENCE_KINDS = frozenset({BlockKind.PARAGRAPH, BlockKind.LIST_ITEM, BlockKind.QUOTE})
+TEXT_KINDS = frozenset({BlockKind.HEADING, BlockKind.TABLE_ROW, *SENTENCE_KINDS})
+"""Виды блоков с содержательным текстом документа: сноски, колонтитулы и код сюда не входят."""
 
 
 @dataclass(frozen=True)
@@ -127,6 +140,7 @@ class _Builder:
     table_row: int = 0
     in_table: bool = False
     full: str = ""
+    pipe_tables: set[int] = field(default_factory=set)
 
     def __post_init__(self) -> None:
         self.full = canonical_text(self.lines)
@@ -134,6 +148,25 @@ class _Builder:
         for line in self.lines:
             self.starts.append(offset)
             offset += len(line.text) + 1
+        if self.is_md:
+            self.pipe_tables = self.find_pipe_tables()
+
+    def find_pipe_tables(self) -> set[int]:
+        """Строки таблиц без внешних черт: заголовок, под ним «--- | ---», затем строки до пустой."""
+        found: set[int] = set()
+        n = len(self.lines)
+        i = 0
+        while i + 1 < n:
+            head, sep = self.text(i), self.text(i + 1)
+            if "|" in head and not TABLE_ROW.match(head) and PIPE_SEP.match(sep):
+                j = i + 2
+                while j < n and self.text(j).strip() and "|" in self.text(j):
+                    j += 1
+                found.update(range(i, j))
+                i = j
+            else:
+                i += 1
+        return found
 
     # ---------------------------------------------------------------- распознавание строк
 
@@ -153,16 +186,21 @@ class _Builder:
 
     def is_table(self, i: int) -> bool:
         line = self.lines[i]
-        return line.table is not None or (self.is_md and bool(TABLE_ROW.match(line.text)))
+        return line.table is not None or (
+            self.is_md and (bool(TABLE_ROW.match(line.text)) or i in self.pipe_tables)
+        )
 
     def is_fence(self, i: int) -> bool:
         return self.is_md and bool(FENCE.match(self.text(i)))
 
     def is_list(self, i: int) -> bool:
-        return bool(LIST_ITEM.match(self.text(i)))
+        return self.lines[i].kind is BlockKind.LIST_ITEM or bool(LIST_ITEM.match(self.text(i)))
+
+    def is_quote(self, i: int) -> bool:
+        return self.is_md and bool(QUOTE_LINE.match(self.text(i)))
 
     def is_special(self, i: int) -> bool:
-        return self.lines[i].kind is not None
+        return self.lines[i].kind not in (None, BlockKind.LIST_ITEM)
 
     def breaks_paragraph(self, i: int) -> bool:
         return (
@@ -171,8 +209,9 @@ class _Builder:
             or self.is_table(i)
             or self.is_list(i)
             or self.is_fence(i)
+            or self.is_quote(i)
             or self.is_special(i)
-            or (self.is_md and bool(HR.match(self.text(i))))
+            or (self.is_md and (bool(HR.match(self.text(i))) or bool(SETEXT.match(self.text(i)))))
         )
 
     # ---------------------------------------------------------------- сборка блока
@@ -219,7 +258,7 @@ class _Builder:
             serialized=serialized,
             cells=cells or [],
         )
-        if kind in LIST_KINDS:
+        if kind in SENTENCE_KINDS:
             block = self.enrich(block, first, last)
         self.blocks.append(block)
         return block
@@ -247,8 +286,12 @@ class _Builder:
         предложение не режет, разделяет только razdel."""
         start = self.starts[first]
         if kind is BlockKind.LIST_ITEM:
-            m = LIST_ITEM.match(self.text(first))
+            labelled = self.lines[first].kind is BlockKind.LIST_ITEM  # DOCX: метка нумерации любого вида
+            m = (LIST_LABEL if labelled else LIST_ITEM).match(self.text(first))
             start += m.end() if m else 0
+        if kind is BlockKind.QUOTE:
+            marker = QUOTE_LINE.match(self.text(first))
+            start += marker.end() if marker else 0
         end = self.starts[last] + len(self.text(last))
         out: list[Sentence] = []
         for piece in sentenize(self.full[start:end]):
@@ -268,8 +311,23 @@ class _Builder:
 
     # ---------------------------------------------------------------- проход по строкам
 
+    def front_matter_end(self) -> int | None:
+        """Индекс строки, закрывающей YAML-шапку Markdown в начале файла («---» … «---»), или None."""
+        n = len(self.lines)
+        if not self.is_md or n < 3 or self.text(0).strip() != "---":
+            return None
+        for k in range(2, n):
+            if self.text(k).strip() in ("---", "..."):
+                body = [self.text(m) for m in range(1, k) if self.text(m).strip()]
+                return k if body and all(FRONT_MATTER_KEY.match(t) or t[:1] in " -#" for t in body) else None
+        return None
+
     def run(self) -> list[Block]:
         i, n = 0, len(self.lines)
+        end = self.front_matter_end()
+        if end is not None:  # шапка с метаданными: один блок кода, а не «заголовок» по правилу Setext
+            self.add(BlockKind.CODE, 1, end - 1)
+            i = end + 1
         while i < n:
             i = self.step(i, n)
         return self.blocks
@@ -287,10 +345,15 @@ class _Builder:
             return self.heading(i, level)
         if self.is_special(i):
             kind = self.lines[i].kind or BlockKind.PARAGRAPH
-            self.add(kind, i, i)
-            return i + 1
+            j = i + 1
+            while kind is BlockKind.CODE and j < n and self.lines[j].kind is BlockKind.CODE:
+                j += 1  # соседние строки кода (абзацы DOCX в стиле «Source Code») это один блок
+            self.add(kind, i, j - 1)
+            return j
         if self.is_fence(i):
             return self.fence(i, n)
+        if self.is_quote(i):
+            return self.quote(i, n)
         if self.is_table(i):
             return self.table(i, n)
         if self.is_list(i):
@@ -298,20 +361,41 @@ class _Builder:
         j = i + 1
         while j < n and not self.breaks_paragraph(j):
             j += 1
+        underline = SETEXT.match(self.text(j)) if self.is_md and j < n else None
+        if underline and self.fits_setext(i, j - 1):  # абзац, подчёркнутый «===» или «---», это заголовок
+            return self.heading(i, 1 if underline.group("h1") else 2, last=j - 1) + 1
         self.add(BlockKind.PARAGRAPH, i, j - 1)
-        return j
+        return j + 1 if underline else j  # линию «===» или «---» под длинным абзацем пропускаем
 
-    def heading(self, i: int, level: int) -> int:
+    def fits_setext(self, first: int, last: int) -> bool:
+        """Заголовок Setext короткий. Длинный абзац над «---» это абзац и линия, а не заголовок."""
+        text = " ".join(self.text(k).strip() for k in range(first, last + 1))
+        return last - first < MAX_SETEXT_LINES and len(text) <= MAX_SETEXT_CHARS
+
+    def heading(self, i: int, level: int, last: int | None = None) -> int:
+        last = i if last is None else last
         raw = self.text(i)
         m = HEADING.match(raw) if self.is_md else None
-        title = _heading_title(raw) if m else _plain(raw)
+        if m:
+            title = _heading_title(raw)
+        else:
+            title = " ".join(_plain(self.text(k)) for k in range(i, last + 1) if self.text(k).strip())
         self.section = [(lv, t) for lv, t in self.section if lv < level] + [(level, title)]
-        self.add(BlockKind.HEADING, i, i)
-        return i + 1
+        self.add(BlockKind.HEADING, i, last)
+        return last + 1
+
+    def quote(self, i: int, n: int) -> int:
+        j = i + 1
+        while j < n and self.is_quote(j):
+            j += 1
+        self.add(BlockKind.QUOTE, i, j - 1)
+        return j
 
     def fence(self, i: int, n: int) -> int:
+        opening = FENCE.match(self.text(i))
+        mark = opening.group("mark") if opening else "```"
         j = i + 1
-        while j < n and not FENCE.match(self.text(j)):
+        while j < n and not self._closes_fence(j, mark):
             j += 1
         body_last = min(j, n) - 1
         if body_last >= i + 1 and any(self.text(k).strip() for k in range(i + 1, body_last + 1)):
@@ -320,15 +404,24 @@ class _Builder:
             self.add(BlockKind.CODE, first, last)
         return j + 1
 
+    def _closes_fence(self, j: int, mark: str) -> bool:
+        found = FENCE.match(self.text(j))
+        if not found:
+            return False
+        closing = found.group("mark")
+        rest = self.text(j).strip()[len(closing) :].strip()
+        return closing[0] == mark[0] and len(closing) >= len(mark) and not rest
+
     def list_item(self, i: int, n: int) -> int:
         j = i + 1
-        while (
-            self.is_md
-            and j < n
-            and self.text(j).strip()
-            and self.text(j).startswith(("  ", "\t"))
-            and not self.is_list(j)
-        ):
+        paragraph = self.lines[i].paragraph
+        while j < n and self.text(j).strip() and not self.is_list(j) and not self.is_table(j):
+            indented = self.is_md and self.text(j).startswith(("  ", "\t"))
+            same_paragraph = (
+                paragraph is not None and self.lines[j].paragraph == paragraph
+            )  # DOCX: перенос строки
+            if not (indented or same_paragraph):
+                break
             j += 1
         self.add(BlockKind.LIST_ITEM, i, j - 1)
         return j
@@ -340,11 +433,11 @@ class _Builder:
             self.table_no = line.table if line.table is not None else self.table_no + 1
             self.table_row = 0
             self.header = None
-        if self.is_md and TABLE_SEP.match(line.text):
+        if self.is_md and _is_separator(line.text):
             return i + 1
         cells = list(line.cells) if line.table is not None else _md_cells(line.text)
         is_header = line.header or (
-            self.is_md and self.header is None and i + 1 < n and bool(TABLE_SEP.match(self.text(i + 1)))
+            self.is_md and self.header is None and i + 1 < n and _is_separator(self.text(i + 1))
         )
         if is_header:
             self.header = [_clean_cell(c) for c in cells]
@@ -365,6 +458,11 @@ class _Builder:
             row=self.table_row,
         )
         return i + 1
+
+
+def _is_separator(text: str) -> bool:
+    """Строка «---|---» под заголовком таблицы Markdown, с внешними чертами или без них."""
+    return bool(TABLE_SEP.match(text) or PIPE_SEP.match(text))
 
 
 def _locate_cells(text: str, cells: Sequence[str], header: Sequence[str], base: int) -> list[TableCell]:
@@ -389,6 +487,46 @@ def _locate_cells(text: str, cells: Sequence[str], header: Sequence[str], base: 
 def build_blocks(lines: Sequence[SourceLine], source: DocKind) -> list[Block]:
     """Режет строки на блоки с ID, якорями, разделами и предложениями. Детерминированно."""
     return _Builder(lines, source).run()
+
+
+def text_diagnostics(lines: Sequence[SourceLine], source: DocKind, name: str) -> list[Diagnostic]:
+    """Пустой документ и документ без текстовых блоков: диагностика вместо молчаливого пустого отчёта.
+
+    ``IN-071`` ошибка: в блоках нет ни одной буквы или цифры (пробелы, одна разметка, пустые ячейки).
+    ``IN-081`` предупреждение: есть только заголовки, это похоже на пустой шаблон.
+    """
+    blocks = build_blocks(lines, source)
+    texts = [b for b in blocks if b.kind in TEXT_KINDS and any(ch.isalnum() for ch in b.text)]
+    if not texts:
+        visible = any(line.text.strip() for line in lines)
+        return [
+            Diagnostic(
+                code=IN_NO_TEXT,
+                level=DiagLevel.ERROR,
+                message=(
+                    "В документе нет текстовых блоков: только разметка, пустые таблицы или код"
+                    if visible
+                    else "Документ пустой: в нём нет ни одного видимого символа"
+                ),
+                action="Проверка не выполнялась",
+                hint="Пришлите документ с текстом требований (не пустой шаблон)",
+                location=name,
+                step="parse",
+            )
+        ]
+    if all(b.kind is BlockKind.HEADING for b in texts):
+        return [
+            Diagnostic(
+                code=IN_HEADINGS_ONLY,
+                level=DiagLevel.WARNING,
+                message="В документе только заголовки, текста под ними нет: похоже на пустой шаблон",
+                action="Проверка идёт по тому, что есть",
+                hint="Заполните разделы документа и запустите проверку снова",
+                location=name,
+                step="parse",
+            )
+        ]
+    return []
 
 
 def make_document(path: Path, kind: DocKind, parsed: ParsedLines) -> ParsedDocument:
@@ -444,13 +582,14 @@ def _header(block: Block, title: str | None) -> str:
 
 def _document_title(doc: ParsedDocument) -> str | None:
     """Первый раздел, общий для всех блоков (заголовок-название документа), или None."""
-    firsts = {b.section[0] if b.section else None for b in doc.blocks}
+    firsts = {b.section[0] if b.section else None for b in doc.blocks if b.kind is not BlockKind.FURNITURE}
     return next(iter(firsts)) if len(firsts) == 1 else None
 
 
 def _heading_title(text: str) -> str:
     m = HEADING.match(text)
-    return _plain(m.group(2) if m else text)
+    title = CLOSING_HASHES.sub("", m.group(2)) if m else text
+    return " ".join(_plain(title).split())
 
 
 def _one_line(text: str) -> str:

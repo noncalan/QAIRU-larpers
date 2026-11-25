@@ -54,6 +54,8 @@ def where(anchor: Anchor | None, section: Sequence[str] | None = None) -> str:
         parts.append(f"стр. {anchor.page}")
     if anchor.table is not None and anchor.row is not None:
         table = f"таблица {anchor.table}, строка {anchor.row}"
+        if anchor.cell is not None:
+            table += f", ячейка {anchor.cell}"
         if anchor.column:
             table += f", колонка «{anchor.column}»"
         parts.append(table)
