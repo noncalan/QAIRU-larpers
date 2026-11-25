@@ -1,7 +1,8 @@
-"""Клиент модели: протокол, бэкенды (подписка, replay, фикстуры; SDK в #32), кеш, лог вызовов, тарифы."""
+"""Клиент модели: протокол, бэкенды (подписка, SDK anthropic, replay, фикстуры), кеш, лог вызовов, тарифы."""
 
 from __future__ import annotations
 
+from validator.llm.anthropic_api import AnthropicAPI
 from validator.llm.base import LLMClient, classify_error, parse_cli_payload, to_payload
 from validator.llm.cache import ResponseCache
 from validator.llm.calllog import RecordingClient, read_calls_jsonl, write_calls_jsonl
@@ -12,6 +13,7 @@ from validator.llm.pricing import response_cost
 from validator.llm.replay import ReplayLLM
 
 __all__ = [
+    "AnthropicAPI",
     "ClaudeCLI",
     "FakeLLM",
     "LLMClient",
