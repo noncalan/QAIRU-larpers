@@ -140,7 +140,7 @@ def _read_input(state: _State) -> ParsedDocument | None:
     if state.guard.fatal:
         return None
     try:
-        doc = parse(cfg.input_path, state.guard.kind)
+        doc = parse(cfg.input_path, state.guard.kind, pdf_backend=cfg.pdf_backend)
     except InputError as exc:
         state.diagnostics.append(
             exc.to_diagnostic(action="Проверка не выполнялась: документ не прочитан", step="parse")

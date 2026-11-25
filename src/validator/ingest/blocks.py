@@ -194,7 +194,9 @@ class _Builder:
         return self.is_md and bool(FENCE.match(self.text(i)))
 
     def is_list(self, i: int) -> bool:
-        return self.lines[i].kind is BlockKind.LIST_ITEM or bool(LIST_ITEM.match(self.text(i)))
+        line = self.lines[i]
+        # Строка-перенос (PDF) продолжает абзац, даже если начинается как «5. » или «- ».
+        return line.kind is BlockKind.LIST_ITEM or (not line.wrapped and bool(LIST_ITEM.match(line.text)))
 
     def is_quote(self, i: int) -> bool:
         return self.is_md and bool(QUOTE_LINE.match(self.text(i)))
@@ -244,6 +246,7 @@ class _Builder:
             line_start=first + 1,
             line_end=last + 1,
             page=line.page,
+            page_line=line.page_line,
             paragraph=line.paragraph,
             table=table,
             row=row,
@@ -420,7 +423,7 @@ class _Builder:
             same_paragraph = (
                 paragraph is not None and self.lines[j].paragraph == paragraph
             )  # DOCX: перенос строки
-            if not (indented or same_paragraph):
+            if not (indented or same_paragraph or self.lines[j].wrapped):  # wrapped: перенос строки в PDF
                 break
             j += 1
         self.add(BlockKind.LIST_ITEM, i, j - 1)
@@ -607,6 +610,8 @@ def render_for_model(doc: ParsedDocument) -> str:
     title = _document_title(doc)
     out: list[str] = []
     for block in doc.blocks:
+        if block.kind is BlockKind.FURNITURE:
+            continue  # колонтитул и номер страницы: не документ, модели их не показываем
         if block.kind is BlockKind.HEADING:
             level = max(1, len(block.section))
             out.append(f"[{block.id}] {'#' * level} {_heading_title(block.text)}")

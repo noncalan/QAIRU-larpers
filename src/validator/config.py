@@ -11,6 +11,7 @@ from pathlib import Path
 
 from dotenv import find_dotenv, load_dotenv
 
+from validator.ingest.pdf_backends import BACKEND_NAMES, DEFAULT_BACKEND
 from validator.llm.fake import default_fixtures_dir
 from validator.models import Backend, CacheMode, Effort, LLMStep, Profile, RunConfig, StepModel
 
@@ -54,6 +55,12 @@ CALL_TIMEOUT_S = 1200
 
 CACHE_DIR = Path(".cache/validator")
 API_KEY_ENV = "ANTHROPIC_API_KEY"
+PDF_BACKEND_ENV = "VALIDATOR_PDF_BACKEND"
+PDF_BACKEND = DEFAULT_BACKEND
+"""Движок PDF по умолчанию: ``mupdf`` (PyMuPDF, AGPL) или ``pdfium`` (pypdfium2, без копилефта).
+
+Переключается флагом ``--pdf-backend`` или переменной ``VALIDATOR_PDF_BACKEND`` (зачем два: исследование 04).
+"""
 
 
 def step_models(profile: Profile) -> dict[LLMStep, StepModel]:
@@ -82,9 +89,13 @@ def load_config(
     answers_path: Path | None = None,
     ask: bool = False,
     max_budget_usd: float | None = None,
+    pdf_backend: str | None = None,
     env_file: Path | None = None,
 ) -> RunConfig:
     load_env(env_file)
+    pdf_engine = (pdf_backend or os.environ.get(PDF_BACKEND_ENV) or PDF_BACKEND).lower()
+    if pdf_engine not in BACKEND_NAMES:
+        raise ValueError(f"Неизвестный движок PDF «{pdf_engine}», доступны: {', '.join(BACKEND_NAMES)}")
     spec = PROFILES[profile]
     return RunConfig(
         input_path=input_path,
@@ -98,6 +109,7 @@ def load_config(
         answers_path=answers_path,
         ask=ask,
         max_budget_usd=max_budget_usd,
+        pdf_backend=pdf_engine,
         step_models=step_models(profile),
         fake_fixtures=default_fixtures_dir() if backend is Backend.FAKE else None,
         call_timeout_s=CALL_TIMEOUT_S,

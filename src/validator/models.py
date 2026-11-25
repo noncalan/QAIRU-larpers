@@ -623,6 +623,7 @@ class Anchor(Contract):
     line_start: int | None = Field(default=None, description="Строка канонического текста, с 1")
     line_end: int | None = Field(default=None, description="Последняя строка, включительно")
     page: int | None = Field(default=None, description="Страница PDF, с 1")
+    page_line: int | None = Field(default=None, description="Строка на странице PDF сверху, с 1")
     paragraph: int | None = Field(default=None, description="Абзац DOCX, с 1")
     table: int | None = Field(default=None, description="Номер таблицы в документе, с 1")
     row: int | None = Field(default=None, description="Строка таблицы, с 1 (без строки заголовка)")
@@ -641,6 +642,10 @@ class SourceLine(Contract):
 
     text: str
     page: int | None = None
+    page_line: int | None = Field(default=None, description="Строка на странице PDF сверху, с 1 (#26)")
+    wrapped: bool = Field(
+        default=False, description="Продолжение абзаца или пункта списка: перенос строки в PDF (#26)"
+    )
     paragraph: int | None = None
     heading_level: int | None = Field(default=None, ge=1, le=9, description="Заголовок по стилю или шрифту")
     table: int | None = Field(default=None, description="Номер таблицы, если строка это строка таблицы")

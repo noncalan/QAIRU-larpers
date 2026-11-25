@@ -20,11 +20,16 @@ _READERS: dict[DocKind, Callable[[Path], ParsedLines]] = {
 }
 
 
-def parse(path: Path, kind: DocKind) -> ParsedDocument:
-    """Шаг 1: документ в блоки с якорями. Ошибки чтения приходят как ``InputError``."""
+def parse(path: Path, kind: DocKind, *, pdf_backend: str | None = None) -> ParsedDocument:
+    """Шаг 1: документ в блоки с якорями. Ошибки чтения приходят как ``InputError``.
+
+    ``pdf_backend``: ``mupdf`` (по умолчанию) или ``pdfium``; для других форматов не используется.
+    """
     reader = _READERS.get(kind)
     if reader is None:
         raise InputError(f"Формат {kind.value} не поддерживается", code=IN_UNSUPPORTED)
+    if kind is DocKind.PDF:
+        return make_document(path, kind, parse_pdf(path, pdf_backend))
     return make_document(path, kind, reader(path))
 
 
