@@ -26,6 +26,7 @@ experiments/out/
 # Прогоны агента: отчёты, report.json, questions.yaml, run/calls.jsonl
 /out/
 /out-*/
+/out[0-9]*/
 /runs/
 
 # Claude Code: личные файлы

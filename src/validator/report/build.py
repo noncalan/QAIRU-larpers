@@ -94,7 +94,7 @@ def _metrics(ctx: RunContext) -> RunMetrics:
     verified = (summary.quotes_exact + summary.quotes_fuzzy) if summary else 0
     return RunMetrics(
         duration_s=ctx.passport.duration_s,
-        calls_total=len(ctx.calls),
+        calls_total=ctx.passport.calls_total,
         calls_failed=ctx.passport.calls_failed,
         calls_cached=sum(c.status is CallStatus.CACHED for c in ctx.calls),
         tokens=ctx.passport.tokens,

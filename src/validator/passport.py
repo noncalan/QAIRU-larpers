@@ -120,7 +120,8 @@ def build_passport(
         passes=cfg.passes,
         models={step.value: model.label for step, model in cfg.step_models.items()},
         models_actual=sorted({c.model_actual for c in calls if c.model_actual}),
-        calls_total=len(calls),
+        # Повторённая попытка не отдельный вызов: считаем вызовы по их последней попытке.
+        calls_total=sum(c.status is not CallStatus.RETRIED for c in calls),
         calls_failed=sum(c.status is CallStatus.ERROR for c in calls),
         tokens=tokens,
         cost_usd=_cost(calls),

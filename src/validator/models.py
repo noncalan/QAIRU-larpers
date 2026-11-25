@@ -582,6 +582,7 @@ class CallStatus(StrEnum):
     ERROR = "error"
     CACHED = "cached"
     REPLAYED = "replayed"
+    RETRIED = "retried"  # попытка упала на временной ошибке, вызов повторён (следующая строка лога)
 
 
 class ReportStatus(StrEnum):
@@ -1069,9 +1070,21 @@ class LLMRequest(Contract):
 
     @property
     def key(self) -> str:
-        """Ключ кеша: sha256 от модели, effort, системного промпта, промпта и схемы (docs/plan.md)."""
+        """Ключ кеша: sha256 от шага, номера вызова, модели, effort, системного промпта, промпта и схемы.
+
+        Шаг и номер входят в ключ (#21): проходы поиска шлют один и тот же промпт, и без номера кеш
+        и replay отдали бы всем проходам ответ первого, а «найдено в N из K» стало бы фикцией.
+        """
         material = json.dumps(
-            [self.model, self.effort.value, self.system, self.prompt, self.json_schema],
+            [
+                self.step.value,
+                self.call_index,
+                self.model,
+                self.effort.value,
+                self.system,
+                self.prompt,
+                self.json_schema,
+            ],
             ensure_ascii=False,
             sort_keys=True,
         )
@@ -1088,6 +1101,11 @@ class LLMResponse(Contract):
     duration_ms: int | None = None
     backend: Backend
     cached: bool = False
+    raw: dict[str, Any] | None = Field(
+        default=None,
+        repr=False,
+        description="Ответ бэкенда целиком в формате claude -p --output-format json: его пишут кеш и replay",
+    )
 
 
 class CallRecord(Contract):
@@ -1110,6 +1128,10 @@ class CallRecord(Contract):
     response_path: str | None = None
     prompt_chars: int = 0
     response_chars: int = 0
+    attempt: int = Field(default=1, ge=1, description="Номер попытки этого вызова: 2 это повтор после сбоя")
+    cost_reported_usd: float | None = Field(
+        default=None, description="Цена, которую сообщил бэкенд (total_cost_usd); cost_usd считаем по тарифу"
+    )
 
 
 # ---------------------------------------------------------------- прогон
