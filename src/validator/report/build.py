@@ -205,4 +205,5 @@ def build_report(ctx: RunContext) -> Report:
         metrics=_metrics(ctx),
         coverage=_coverage(ctx),
         checklists=_checklists(ctx),
+        questions_file=ctx.questions_file,
     )

@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, replace
 
 from rapidfuzz import fuzz
@@ -30,7 +30,6 @@ from validator.models import (
     Finding,
     QuestionOrigin,
     Quote,
-    RequirementType,
     SourceKind,
     Verdict,
     Verification,
@@ -38,11 +37,9 @@ from validator.models import (
 from validator.questions.scoring import (
     draft_gaps,
     is_contradiction,
-    priority,
-    priority_rank,
     proven_witness,
+    rank_key,
     requirement_ids,
-    value,
 )
 
 CLARIFY = re.compile(r"\[\s*уточнить\b\s*:?\s*([^\]]*)\]", re.IGNORECASE)
@@ -229,7 +226,6 @@ def collect_candidates(ver: Verification) -> list[Candidate]:
 
 def shortlist(
     cands: Sequence[Candidate],
-    req_types: Mapping[str, RequirementType],
     limit: int = EDITOR_MAX_CANDIDATES,
 ) -> list[Candidate]:
     """Кандидаты для редактора: все, если их не больше ``limit``, иначе главные по приоритету и ценности.
@@ -238,8 +234,6 @@ def shortlist(
     """
     if len(cands) <= limit:
         return list(cands)
-    ranked = sorted(
-        cands, key=lambda c: (priority_rank(priority(c.findings, req_types)), -value(c.findings), c.position)
-    )
+    ranked = sorted(cands, key=lambda c: (*rank_key(c.findings), c.position))
     keep = {c.cid for c in ranked[:limit]}
     return [c for c in cands if c.cid in keep]

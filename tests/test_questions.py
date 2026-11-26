@@ -42,7 +42,8 @@ from validator.models import (
 from validator.questions import QuestionsOutcome, ask, build_questions, write_questions_yaml
 from validator.questions.candidates import collect_candidates, shortlist
 from validator.questions.cards import MAX_QUESTIONS, CardDraft, CheckLog, finalize
-from validator.questions.export import SCHEMA_VERSION
+from validator.questions.export import SCHEMA_VERSION, has_author_input, safe_questions_path
+from validator.questions.scoring import priority
 
 INVENTED = "Продление занимает ровно три секунды и выполняется на сервере."
 ANSWERED = "Ответ есть в документе."
@@ -127,6 +128,76 @@ def test_same_requirement_and_same_gap_merge(doc: ParsedDocument) -> None:
     cands = collect_candidates(verification(findings))
 
     assert [c.finding_ids for c in cands] == [("F-01", "F-02")]
+
+
+# ---------------------------------------------------------------- приоритет (#122)
+
+
+def test_p0_only_when_a_related_finding_is_critical(doc: ParsedDocument) -> None:
+    """P0 «блокирует разработку» следует за критичной находкой; «мешает тесту» без критичности это P1."""
+    critical = finding(doc, "F-01", [TERM], severity=Severity.CRITICAL, blocks_testing=True)
+    blocks_test = finding(doc, "F-02", [EXTEND], defect=DefectType.INCOMPLETE, blocks_testing=True)
+    major = finding(doc, "F-03", [FINE], defect=DefectType.INCOMPLETE)
+    minor = finding(doc, "F-04", [FINE], defect=DefectType.TRACEABILITY, severity=Severity.MINOR)
+    minor_blocks_test = finding(doc, "F-05", [FINE], severity=Severity.MINOR, blocks_testing=True)
+
+    assert priority([critical]) is QuestionPriority.P0
+    assert priority([blocks_test, critical]) is QuestionPriority.P0
+    assert priority([blocks_test]) is QuestionPriority.P1
+    assert priority([major]) is QuestionPriority.P1
+    assert priority([minor_blocks_test]) is QuestionPriority.P1
+    assert priority([minor]) is QuestionPriority.P2
+
+
+def test_many_major_findings_that_block_tests_give_no_p0(doc: ParsedDocument, tmp_path: Path) -> None:
+    """Ревью RC1: 15 из 15 вопросов P0 при 8 критичных. Без критичной находки ни один вопрос не P0."""
+    majors = [
+        finding(doc, f"F-0{n}", [quote], defect=DefectType.INCOMPLETE, blocks_testing=True)
+        for n, quote in enumerate([TERM, EXTEND, FINE, FIVE_DAYS], start=1)
+    ]
+
+    outcome = build_questions(
+        verification(majors),
+        doc,
+        segmentation(doc),
+        editor_llm("Сбой", is_error=True),
+        make_cfg(doc, tmp_path),
+    )
+
+    assert outcome.questions
+    assert {q.priority for q in outcome.questions} == {QuestionPriority.P1}
+    assert all(q.blocks == [WorkStage.TESTING] for q in outcome.questions)
+
+
+def test_question_keeps_only_findings_with_shared_place_or_requirement(
+    doc: ParsedDocument, tmp_path: Path
+) -> None:
+    """#122: вопрос о месте TERM закрывает находку того же требования, но не находку другого места."""
+    term = finding(
+        doc, "F-01", [TERM], severity=Severity.CRITICAL, blocks_testing=True, requirements=["R-03"]
+    )
+    same_req = finding(doc, "F-02", [FINE], blocks_testing=True, requirements=["R-03"])
+    elsewhere = finding(doc, "F-03", [EXTEND], blocks_testing=True, requirements=["R-02"])
+    ver = verification([term, same_req, elsewhere])
+    cids = [c.cid for c in collect_candidates(ver)]
+    reply = editor_text([card(cids, "Книгу вернули на пятнадцатый день: штраф есть?", quotes=[TERM])])
+
+    outcome = build_questions(ver, doc, segmentation(doc), editor_llm(reply), make_cfg(doc, tmp_path))
+
+    assert [q.related_findings for q in outcome.questions] == [["F-01", "F-02"]]
+    assert "связей с находками без общей цитаты или требования убрано: 1" in outcome.diagnostics[0].message
+
+
+def test_question_is_p0_exactly_when_it_closes_a_critical_finding(
+    doc: ParsedDocument, tmp_path: Path
+) -> None:
+    findings = {f.id: f for f in library_findings(doc)}
+
+    outcome = run(doc, tmp_path, editor_llm("Сбой", is_error=True))
+
+    for q in outcome.questions:
+        critical = any(findings[i].severity is Severity.CRITICAL for i in q.related_findings)
+        assert (q.priority is QuestionPriority.P0) == critical, q.id
 
 
 # ---------------------------------------------------------------- карточки редактора и проверки кода
@@ -276,10 +347,13 @@ def test_duplicates_merge_and_each_finding_has_one_question(doc: ParsedDocument,
     outcome = run(doc, tmp_path, editor_llm(reply))
 
     related = [q.related_findings for q in outcome.questions]
-    assert related == [["F-01", "F-06"], ["F-02", "F-03"]]
+    # F-06 (штраф) пришёл к вопросам о сроке и о продлении через склейку кандидатов, но с их местами
+    # у него нет ни общей цитаты, ни общего требования: ответ его не закрывает (#122).
+    assert related == [["F-01"], ["F-02", "F-03"]]
     flat = [fid for ids in related for fid in ids]
     assert len(flat) == len(set(flat))
     assert "повторов слито с другими вопросами: 2" in outcome.diagnostics[0].message
+    assert "связей с находками без общей цитаты или требования убрано: 2" in outcome.diagnostics[0].message
 
 
 def test_addressees_are_mapped_and_limited(doc: ParsedDocument, tmp_path: Path) -> None:
@@ -328,7 +402,7 @@ def test_more_than_limit_is_cut(doc: ParsedDocument) -> None:
     ]
     log = CheckLog()
 
-    questions = finalize(drafts, findings, {}, log)
+    questions = finalize(drafts, findings, log)
 
     assert len(questions) == MAX_QUESTIONS
     assert log.over_limit == 20 - MAX_QUESTIONS
@@ -477,18 +551,17 @@ def test_no_candidates_means_no_model_call(doc: ParsedDocument, tmp_path: Path) 
 def test_shortlist_takes_highest_priority_and_keeps_document_order(doc: ParsedDocument) -> None:
     """Кандидаты C-01 (P1, ценность 6), C-02 (P0, 8), C-03 (P1, 1): сначала приоритет, потом ценность."""
     cands = collect_candidates(verification(library_findings(doc)))
-    req_types = {r.id: r.type for r in segmentation(doc).requirements}
 
-    assert shortlist(cands, req_types) == cands
-    assert [c.cid for c in shortlist(cands, req_types, limit=1)] == ["C-02"]
-    assert [c.cid for c in shortlist(cands, req_types, limit=2)] == ["C-01", "C-02"]
+    assert shortlist(cands) == cands
+    assert [c.cid for c in shortlist(cands, limit=1)] == ["C-02"]
+    assert [c.cid for c in shortlist(cands, limit=2)] == ["C-01", "C-02"]
 
 
 def test_editor_sees_only_the_shortlist_on_a_long_document(
     doc: ParsedDocument, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Кандидатов больше, чем разбирает редактор (#38): лишние не идут в вызов и не считаются пропущенными."""
-    monkeypatch.setattr(questions_step, "shortlist", lambda cands, types: shortlist(cands, types, limit=2))
+    monkeypatch.setattr(questions_step, "shortlist", lambda cands: shortlist(cands, limit=2))
     reply = editor_text(
         [card(["C-02"], "Сколько секунд допустимо на продление?", quotes=[EXTEND])], dropped("C-01")
     )
@@ -526,6 +599,69 @@ def test_questions_yaml_is_valid_and_ready_for_answers(doc: ParsedDocument, tmp_
         assert all(o["text"] and o["change"] and o["for_discussion"] is False for o in item["options"])
         assert all(w["quote"] in doc.text and w["place"] for w in item["where"])
         assert item["related_findings"] == q.related_findings
+
+
+def _questions_file(path: Path, *, answer: object = None, comment: object = None, by: object = None) -> Path:
+    payload = {
+        "schema_version": SCHEMA_VERSION,
+        "answered_by": by,
+        "questions": [{"id": "Q-01", "answer": answer, "comment": comment}],
+    }
+    path.write_text(yaml.safe_dump(payload, allow_unicode=True), encoding="utf-8")
+    return path
+
+
+@pytest.mark.parametrize(
+    ("fields", "filled"),
+    [
+        ({}, False),
+        ({"answer": "   "}, False),
+        ({"answer": "A"}, True),
+        ({"answer": "пропустить"}, True),
+        ({"answer": 0}, True),
+        ({"comment": "Уточним у владельца"}, True),
+        ({"by": "Аналитик"}, True),
+    ],
+)
+def test_author_input_is_any_answer_comment_or_name(
+    tmp_path: Path, fields: dict[str, object], filled: bool
+) -> None:
+    assert has_author_input(_questions_file(tmp_path / "questions.yaml", **fields)) is filled
+
+
+@pytest.mark.parametrize("text", ["questions: [\n", "просто заметки автора", "- 1\n- 2\n"])
+def test_unreadable_or_foreign_file_counts_as_author_input(tmp_path: Path, text: str) -> None:
+    path = tmp_path / "questions.yaml"
+    path.write_text(text, encoding="utf-8")
+
+    assert has_author_input(path)
+
+
+def test_safe_path_keeps_answers_and_reuses_files_without_them(tmp_path: Path) -> None:
+    main = tmp_path / "questions.yaml"
+    assert safe_questions_path(main) == main  # файла нет
+
+    _questions_file(main)
+    assert safe_questions_path(main) == main  # прошлый прогон без ответов: перезаписываем, как раньше
+
+    _questions_file(main, answer="A")
+    assert safe_questions_path(main) == tmp_path / "questions-2.yaml"
+
+    _questions_file(tmp_path / "questions-2.yaml", answer="B")
+    assert safe_questions_path(main) == tmp_path / "questions-3.yaml"
+
+    _questions_file(tmp_path / "questions-2.yaml")
+    assert safe_questions_path(main) == tmp_path / "questions-2.yaml"
+
+
+def test_questions_yaml_under_new_name_points_to_kept_file(tmp_path: Path) -> None:
+    path = tmp_path / "questions-2.yaml"
+
+    write_questions_yaml(path, [], "doc.md", None, kept=tmp_path / "questions.yaml")
+
+    text = path.read_text(encoding="utf-8")
+    assert "Ответы в questions.yaml не тронуты" in text
+    assert yaml.safe_load(text)["questions"] == []
 
 
 def test_questions_yaml_without_questions_is_valid(tmp_path: Path) -> None:
