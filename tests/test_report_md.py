@@ -267,7 +267,10 @@ def test_lint_only_finding_does_not_say_found_in_zero_passes() -> None:
     card = md[md.index("### F-04 · ") : md.index("### F-05 · ")]
 
     assert "в 0 из 3 проходов" not in card
-    assert "**Найдено:** линтер, правило LNT-04; проходы модели этого не отметили (0 из 3)" in card
+    assert (
+        "**Найдено:** правилом «Несколько обязательств в одном предложении»; проходы модели этого не "
+        "отметили (0 из 3)"
+    ) in card
 
 
 # ---------------------------------------------------------------- места в документе
@@ -393,6 +396,26 @@ def test_failed_step_never_gives_green_light() -> None:
     assert report.status is ReportStatus.PARTIAL
     assert report.conclusion.traffic_light is TrafficLight.YELLOW
     assert "не полностью" in report.conclusion.headline
+
+
+def test_input_read_with_reservations_never_gives_green_light() -> None:
+    """#126: код 3 (вход с оговорками) не даёт зелёного итога, заголовок называет оговорку."""
+    clean = factory.clean_report()
+    diag = Diagnostic(
+        code="IN-050",
+        level=DiagLevel.WARNING,
+        message="Документ распознан OCR: цитаты сверены с распознанным текстом",
+        step="ingest",
+    )
+    ctx = _context_from(clean).model_copy(update={"diagnostics": [diag]})
+
+    report = build_report(ctx)
+
+    assert report.conclusion.traffic_light is TrafficLight.YELLOW
+    assert report.conclusion.headline.startswith(
+        "Проверка выполнена с оговорками (документ распознан OCR: цитаты сверены с распознанным текстом). "
+        "По прочитанному: "
+    )
 
 
 def test_unread_input_gives_not_performed_conclusion() -> None:

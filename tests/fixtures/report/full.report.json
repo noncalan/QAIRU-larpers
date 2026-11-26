@@ -13,6 +13,7 @@
     "agent_version": "v0.9.0",
     "agent_version_source": "git",
     "agent_dirty": false,
+    "agent_commit": null,
     "prompts_sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
     "os": "Linux 6.1 (x86_64)",
     "python": "3.12.0",
@@ -35,6 +36,7 @@
     ],
     "calls_total": 5,
     "calls_failed": 0,
+    "calls_cached": 0,
     "tokens": {
       "input_tokens": 30000,
       "output_tokens": 12000,
@@ -50,6 +52,7 @@
     "name": "rooms.md",
     "path": "/tmp/rooms.md",
     "kind": "md",
+    "title": null,
     "sha256": "abababababababababababababababababababababababababababababababab",
     "size_bytes": 2048,
     "pages": null,
@@ -108,7 +111,8 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": []
         },
         "atomic_parts": [],
         "entities": {},
@@ -143,7 +147,8 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": []
         },
         "atomic_parts": [],
         "entities": {},
@@ -178,7 +183,8 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": []
         },
         "atomic_parts": [],
         "entities": {},
@@ -214,7 +220,8 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": []
         },
         "atomic_parts": [],
         "entities": {},
@@ -250,7 +257,8 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": []
         },
         "atomic_parts": [],
         "entities": {},
@@ -286,7 +294,8 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": []
         },
         "atomic_parts": [],
         "entities": {},
@@ -335,7 +344,8 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": []
             }
           },
           {
@@ -357,7 +367,8 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": []
             }
           }
         ],
@@ -421,7 +432,8 @@
                   "row": null,
                   "cell": null,
                   "column": null,
-                  "extraction": "text"
+                  "extraction": "text",
+                  "section": []
                 }
               }
             },
@@ -448,7 +460,8 @@
                   "row": null,
                   "cell": null,
                   "column": null,
-                  "extraction": "text"
+                  "extraction": "text",
+                  "section": []
                 }
               }
             }
@@ -480,7 +493,8 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": []
             }
           },
           "proposed": null,
@@ -521,7 +535,8 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": []
             }
           }
         ],
@@ -590,7 +605,8 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": []
             }
           }
         ],
@@ -639,7 +655,8 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": []
             }
           },
           "proposed": "drop",
@@ -680,7 +697,8 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": []
             }
           }
         ],
@@ -699,7 +717,7 @@
           {
             "kind": "lint",
             "pass_index": null,
-            "rule_id": "LNT-04",
+            "rule_id": "L-10",
             "call_id": null,
             "checklist_item": null
           }
@@ -744,7 +762,8 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "ocr"
+              "extraction": "ocr",
+              "section": []
             }
           }
         ],
@@ -867,7 +886,8 @@
                 "row": null,
                 "cell": null,
                 "column": null,
-                "extraction": "text"
+                "extraction": "text",
+                "section": []
               }
             },
             "proposed": null,
@@ -973,7 +993,8 @@
             "row": null,
             "cell": null,
             "column": null,
-            "extraction": "text"
+            "extraction": "text",
+            "section": []
           }
         }
       ],
@@ -1066,7 +1087,8 @@
             "row": null,
             "cell": null,
             "column": null,
-            "extraction": "text"
+            "extraction": "text",
+            "section": []
           }
         }
       ],
@@ -1160,7 +1182,8 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": []
             }
           },
           "common_sense": false,
@@ -1189,7 +1212,8 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": []
         }
       }
     }
@@ -1409,7 +1433,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-02",
@@ -1458,7 +1487,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-01"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-03",
@@ -1509,7 +1545,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-04",
@@ -1558,7 +1599,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-05",
@@ -1609,7 +1655,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-06",
@@ -1660,7 +1711,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       }
     ],
     "set_rows": [
@@ -1737,7 +1793,8 @@
     ],
     "extra_finding_ids": [],
     "unlinked_finding_ids": [],
-    "checked": true
+    "checked": true,
+    "unchecked_parts": []
   },
   "selfcheck": {
     "applicable": true,
@@ -1810,7 +1867,7 @@
         "title": "Матрица покрытия совпадает с находками",
         "passed": true,
         "integrity": true,
-        "detail": "6 требований × 11 свойств (66 ячеек), 8 свойств набора",
+        "detail": "6 требований × 11 свойств и колонка «Набор», ячеек: 72; свойств набора: 8; у каждого требования те же находки, что в разделе 4",
         "failures": []
       }
     ],
@@ -1872,5 +1929,6 @@
       "used": false,
       "findings": []
     }
-  ]
+  ],
+  "questions_file": "questions.yaml"
 }

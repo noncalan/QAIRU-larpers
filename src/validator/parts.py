@@ -30,7 +30,7 @@ from validator.config import (
     estimate_tokens,
 )
 from validator.ingest.blocks import document_title, render_block, render_for_model
-from validator.models import Block, BlockKind, DocumentPart, ParsedDocument
+from validator.models import Block, BlockKind, DocumentPart, ParsedDocument, PassResult, Requirement
 from validator.prompting import fill, load_prompt
 
 PART_NOTE = "part_note.md"
@@ -358,10 +358,31 @@ def _windows_around(
     return [b for b in doc.blocks if b.id in taken]
 
 
-def describe(plan: PartPlan, doc: ParsedDocument) -> list[DocumentPart]:
-    """Части для отчёта (``DocumentInfo.parts``); пусто, если документ проверялся целиком."""
+def requirement_part(plan: PartPlan, doc: ParsedDocument, req: Requirement) -> int | None:
+    """Часть, которой принадлежит место требования: по первому блоку якоря, без блоков по началу цитаты."""
+    for block_id in req.anchor.block_ids:
+        part = plan.part_of(block_id)
+        if part is not None:
+            return part
+    start = req.anchor.char_start
+    block = next((b for b in doc.blocks if b.anchor.char_start <= start < b.anchor.char_end), None)
+    return plan.part_of(block.id) if block is not None else None
+
+
+def describe(
+    plan: PartPlan,
+    doc: ParsedDocument,
+    passes: Sequence[PassResult] = (),
+    requirements: Sequence[Requirement] = (),
+) -> list[DocumentPart]:
+    """Части для отчёта (``DocumentInfo.parts``); пусто, если документ проверялся целиком.
+
+    Покрытие хранится по частям: сколько проходов поиска отработало по части и какие требования в ней
+    лежат. По этому матрица и раздел 4 отчёта не пишут «нарушений нет» там, где поиск не отработал.
+    """
     if not plan.split:
         return []
+    owner = {req.id: requirement_part(plan, doc, req) for req in requirements}
     out: list[DocumentPart] = []
     for part in plan.parts:
         pages = sorted({b.anchor.page for b in part.blocks if b.anchor.page is not None})
@@ -376,6 +397,8 @@ def describe(plan: PartPlan, doc: ParsedDocument) -> list[DocumentPart]:
                 pages=shown,
                 tokens=part.tokens,
                 context_blocks=len(plan.context_for(part)),
+                passes_ok=sum(p.covers(part.index) for p in passes),
+                requirement_ids=[rid for rid, index in owner.items() if index == part.index],
             )
         )
     return out
@@ -390,6 +413,7 @@ __all__ = [
     "part_view",
     "plan_parts",
     "render_part",
+    "requirement_part",
     "view_document",
     "whole_plan",
 ]

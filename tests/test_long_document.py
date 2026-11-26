@@ -29,6 +29,7 @@ from validator.merge import merge
 from validator.models import (
     Backend,
     BlockKind,
+    CellState,
     DefectType,
     DiagLevel,
     DocKind,
@@ -509,7 +510,50 @@ def test_pipeline_checks_long_document_by_parts(tmp_path: Path, monkeypatch: pyt
     assert len(cross) == 1 and len(cross[0].requirement_ids) == 2
     markdown = (tmp_path / "out" / "report.md").read_text(encoding="utf-8")
     assert "| Часть | Разделы |" in markdown
-    assert "сверка требований между частями документа; проходы поиска видят по одной части" in markdown
+    assert "сверкой требований между частями документа; проходы поиска видят по одной части" in markdown
+
+
+def test_part_where_every_pass_failed_is_not_reported_as_checked(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Сбой модели на части 2 во всех проходах (воспроизведение внешнего ревью RC1): требования части
+    в разделе 4 «не проверено моделью», в матрице «–», а не «проверено, нарушений нет»; ошибка LLM-035."""
+    real = ScriptedLLM._payload
+    passes = 2
+
+    def fail_second_part(self: ScriptedLLM, req: LLMRequest) -> dict[str, Any]:
+        if req.step is LLMStep.SEARCH and passes < req.call_index <= 2 * passes:  # (часть − 1) · K + k
+            return {"type": "result", "subtype": "error_during_execution", "is_error": True, "result": "сбой"}
+        return real(self, req)
+
+    monkeypatch.setattr(ScriptedLLM, "_payload", fail_second_part)
+    outcome, _ = run_long(tmp_path, monkeypatch, passes=passes)
+
+    report = outcome.report
+    assert report is not None and report.document is not None and report.coverage is not None
+    parts = report.document.parts
+    assert len(parts) > 2 and parts[1].passes_ok == 0 and parts[1].requirement_ids
+    assert all(p.passes_ok == passes for p in parts if p.index != 2)
+    assert sorted(r for p in parts for r in p.requirement_ids) == sorted(
+        r.id
+        for r in report.segmentation.requirements  # type: ignore[union-attr]
+    )
+    errors = [d for d in outcome.diagnostics if d.code == "LLM-035"]
+    assert len(errors) == 1 and errors[0].level is DiagLevel.ERROR
+    assert errors[0].message.startswith(f"Часть 2 из {len(parts)} не проверена моделью")
+    assert outcome.exit_code is ExitCode.MODEL
+    assert report.conclusion.headline.startswith("Проверка выполнена не полностью")
+    assert report.coverage.unchecked_parts == [2]
+    rows = {r.requirement_id: r for r in report.coverage.rows}
+    for rid in parts[1].requirement_ids:
+        assert not rows[rid].searched
+        assert all(c.state is not CellState.CLEAN for c in [*rows[rid].cells.values(), rows[rid].set_cell])
+    assert all(rows[rid].searched for rid in parts[0].requirement_ids)
+    assert report.selfcheck is not None and all(i.passed for i in report.selfcheck.items)
+    markdown = (tmp_path / "out" / "report.md").read_text(encoding="utf-8")
+    assert f"| {parts[1].requirement_ids[0]} | нет номера | не проверено моделью |" in markdown
+    assert f"Поиском не проверены: часть 2 из {len(parts)}" in markdown
+    assert "| не проверена моделью |" in markdown  # таблица частей в разделе нарезки
 
 
 def test_budget_below_estimate_warns_before_calls(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

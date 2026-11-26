@@ -13,6 +13,7 @@
     "agent_version": "v0.9.0",
     "agent_version_source": "git",
     "agent_dirty": false,
+    "agent_commit": null,
     "prompts_sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
     "os": "Linux 6.1 (x86_64)",
     "python": "3.12.0",
@@ -32,6 +33,7 @@
     ],
     "calls_total": 5,
     "calls_failed": 0,
+    "calls_cached": 0,
     "tokens": {
       "input_tokens": 30000,
       "output_tokens": 12000,
@@ -47,6 +49,7 @@
     "name": "rooms.md",
     "path": "/tmp/rooms.md",
     "kind": "md",
+    "title": null,
     "sha256": "abababababababababababababababababababababababababababababababab",
     "size_bytes": 2048,
     "pages": null,
@@ -85,7 +88,8 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": []
         },
         "atomic_parts": [],
         "entities": {},
@@ -120,7 +124,8 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": []
         },
         "atomic_parts": [],
         "entities": {},
@@ -155,7 +160,8 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": []
         },
         "atomic_parts": [],
         "entities": {},
@@ -369,7 +375,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-02",
@@ -418,7 +429,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-03",
@@ -467,7 +483,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       }
     ],
     "set_rows": [
@@ -540,7 +561,8 @@
     ],
     "extra_finding_ids": [],
     "unlinked_finding_ids": [],
-    "checked": true
+    "checked": true,
+    "unchecked_parts": []
   },
   "selfcheck": {
     "applicable": true,
@@ -613,11 +635,12 @@
         "title": "Матрица покрытия совпадает с находками",
         "passed": true,
         "integrity": true,
-        "detail": "3 требований × 11 свойств (33 ячеек), 8 свойств набора",
+        "detail": "3 требований × 11 свойств и колонка «Набор», ячеек: 36; свойств набора: 8; у каждого требования те же находки, что в разделе 4",
         "failures": []
       }
     ],
     "summary": "ТЗ п. 6: 6 из 6 разделов; находок нет; цитат в находках нет; счётчики сводки сходятся с таблицами"
   },
-  "checklists": []
+  "checklists": [],
+  "questions_file": "questions.yaml"
 }

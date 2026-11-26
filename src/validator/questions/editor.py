@@ -31,7 +31,6 @@ from validator.models import (
     LLMResponse,
     LLMStep,
     ParsedDocument,
-    RequirementType,
     RunConfig,
 )
 from validator.parts import focus_view
@@ -127,9 +126,9 @@ def _finding_line(f: Finding) -> list[str]:
     return lines
 
 
-def render_candidate(c: Candidate, req_types: Mapping[str, RequirementType]) -> str:
+def render_candidate(c: Candidate) -> str:
     """Кандидат для промпта: предварительный приоритет и ценность от кода, цитаты, находки."""
-    p = priority(c.findings, req_types)
+    p = priority(c.findings)
     reqs = ", ".join(c.requirement_ids) or "уровень набора, без отдельного требования"
     lines = [
         f"### {c.cid}",
@@ -157,11 +156,10 @@ def _fill(template: str, values: Mapping[str, str]) -> str:
 def build_request(
     candidates: Sequence[Candidate],
     doc: ParsedDocument,
-    req_types: Mapping[str, RequirementType],
     cfg: RunConfig,
 ) -> LLMRequest:
     model = cfg.model_for(LLMStep.QUESTIONS)
-    rendered = "\n\n".join(render_candidate(c, req_types) for c in candidates)
+    rendered = "\n\n".join(render_candidate(c) for c in candidates)
     places = (
         b for c in candidates for f in c.findings for q in f.quotes if q.anchor for b in q.anchor.block_ids
     )
@@ -248,10 +246,9 @@ def parse_reply(resp: LLMResponse) -> EditorReply:
 def edit(
     candidates: Sequence[Candidate],
     doc: ParsedDocument,
-    req_types: Mapping[str, RequirementType],
     llm: LLMClient,
     cfg: RunConfig,
 ) -> EditorReply:
     """Один вызов редактора. Сбой модели или ответ без JSON → ``LLMError``: тогда запасной путь."""
-    req = build_request(candidates, doc, req_types, cfg)
+    req = build_request(candidates, doc, cfg)
     return parse_reply(llm.call(req))

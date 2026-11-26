@@ -8,13 +8,18 @@ import re
 import pytest
 
 from conftest import ROOT
-from evals.holdout import DATA, DOCS, SUMMARY, HoldoutDoc, render_summary
+from evals.holdout_summary import DATA, DOCS, SUMMARY, HoldoutDoc, render_summary
 from evals.runs import load_document
 from test_prompt_leak import SHINGLE, _package_files, _shingles, _words
 
 README = DATA / "README.md"
 SHA = re.compile(r"\b[0-9a-f]{64}\b")
 DOC_IDS = [d.name for d in DOCS]
+# ТЗ кейса: у организаторов файла лицензии нет, пояснение в data/holdout/README.md.
+NO_LICENSE_FILE = frozenset({"task"})
+# ТЗ кейса это задание, по которому агент написан: названия разделов отчёта и ссылки на стандарты
+# взяты из него намеренно, поэтому проверка «фраз документа нет в агенте» к нему не применяется.
+AGENT_SPEC = frozenset({"task"})
 
 
 def _recorded_hashes() -> dict[str, str]:
@@ -28,16 +33,20 @@ def _recorded_hashes() -> dict[str, str]:
 
 
 @pytest.mark.parametrize("doc", DOCS, ids=DOC_IDS)
-def test_holdout_document_is_unchanged_and_has_a_license(doc: HoldoutDoc) -> None:
+def test_holdout_document_is_unchanged(doc: HoldoutDoc) -> None:
     recorded = _recorded_hashes()
 
     actual = hashlib.sha256(doc.path.read_bytes()).hexdigest()
 
     assert recorded.get(f"{doc.name}/{doc.file}") == actual
+
+
+@pytest.mark.parametrize("doc", [d for d in DOCS if d.name not in NO_LICENSE_FILE], ids=lambda d: d.name)
+def test_holdout_document_has_the_authors_license(doc: HoldoutDoc) -> None:
     assert (doc.path.parent / "LICENSE").read_text(encoding="utf-8").startswith("MIT License")
 
 
-@pytest.mark.parametrize("doc", DOCS, ids=DOC_IDS)
+@pytest.mark.parametrize("doc", [d for d in DOCS if d.name not in AGENT_SPEC], ids=lambda d: d.name)
 def test_no_six_word_sequence_from_holdout_in_package(doc: HoldoutDoc) -> None:
     """Агент не подогнан и под чужие документы: их фраз нет в промптах, чек-листах и правилах."""
     document = _shingles(_words(load_document(doc.path).text))

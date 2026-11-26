@@ -44,6 +44,7 @@ VOLATILE = {
         "agent_version",
         "agent_version_source",
         "agent_dirty",
+        "agent_commit",
         "os",
         "python",
     ),
@@ -54,7 +55,24 @@ VOLATILE = {
 MAX_DIFFERENCES_SHOWN = 20
 SHORT_VALUE = 300
 
-STALE_RECORDINGS: dict[DocKind, str] = {}
+_STALE_QUESTIONS = (
+    "#122: P0 только при критичной находке; приоритет виден в промпте редактора вопросов, номера "
+    "вопросов в промпте критика: questions.1 и questions_critic.1 ждут общей перезаписи"
+)
+_STALE_MERGE = (
+    "#124: находки одного прохода не склеиваются по общей цитате, L-03 присоединяется к находке модели, "
+    "поэтому список находок и M-номера другие: evidence.1, test_draft.N и clarify идут по позиции; "
+    "#120: значения из ячеек таблиц больше не пропуски, вход questions.1 другой"
+)
+_STALE_PDF_TEXT = (
+    "#121: слова, разорванные у края узкой колонки PDF, теперь склеены («Идентификатор», «limit_kzt»), "
+    "текст документа и ключи всех запросов PDF поменялись; ответы находятся по номеру вызова"
+)
+STALE_RECORDINGS: dict[DocKind, str] = {
+    DocKind.MD: f"{_STALE_QUESTIONS}; {_STALE_MERGE}",
+    DocKind.PDF: f"{_STALE_PDF_TEXT}; {_STALE_QUESTIONS}; {_STALE_MERGE}",
+    DocKind.DOCX: f"{_STALE_QUESTIONS}; {_STALE_MERGE}",
+}
 """Записи, которые отстали от кода и ждут живой перезаписи. Пока запись в этом списке, проверка «каждый
 ответ по ключу» для формата помечена как ожидаемо падающая (``strict``): после перезаписи она пройдёт,
 и pytest напомнит убрать формат отсюда. Снапшот отчёта сравнивается для всех форматов."""
@@ -114,6 +132,8 @@ def run_replay(kind: DocKind, out_dir: Path) -> subprocess.CompletedProcess[str]
         "replay",
         "--replay",
         _rel(E2E / kind.value / "run"),
+        # Отставшая запись проигрывается по шагу и номеру вызова, иначе replay честно откажет (#132).
+        *(["--replay-by-position"] if kind in STALE_RECORDINGS else []),
     ]
     return subprocess.run(
         [sys.executable, "-m", "validator", *args],

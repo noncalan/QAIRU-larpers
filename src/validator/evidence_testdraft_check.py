@@ -144,8 +144,8 @@ class CheckLog:
 
     def details(self) -> list[str]:
         labels = (
-            (self.values_replaced, "значений без цитаты заменено пропуском"),
-            (self.numbers_replaced, "чисел ожидаемого результата без цитаты заменено пропуском"),
+            (self.values_replaced, "пропусков вместо значений без цитаты"),
+            (self.numbers_replaced, "пропусков вместо чисел ожидаемого результата без цитаты"),
             (self.claims_rejected, "выводов «тест написать можно» без подтверждённых значений не принято"),
             (self.unusable, "черновиков отброшено (нет ни результата, ни пропуска)"),
             (self.no_finding, "записей про несуществующие находки пропущено"),
@@ -167,13 +167,17 @@ def _has_value(located: str, value: str) -> bool:
 
 
 def check_value(raw: DraftValueIn, finding: MergedFinding, doc: ParsedDocument) -> DraftValue:
-    """Значение черновика: подтверждено, если цитата найдена в документе и значение есть в ней."""
+    """Значение черновика: подтверждено, если цитата найдена в документе и значение есть в ней.
+
+    Цитату ищем как верификатор, включая строки таблиц в виде «Колонка: значение» (#120). У подтверждённого
+    значения в отчёт идёт фрагмент документа, а не пересказ модели: у ячейки таблицы без названия колонки.
+    """
     quote = verify_quote(doc, raw.quote, finding.block_ids)
     shown = (quote.located or quote.text) if quote is not None else raw.quote
     confirmed = quote is not None and quote.anchor is not None and _has_value(shown, raw.value)
     return DraftValue(
         value=raw.value.strip(),
-        quote=" ".join(raw.quote.split()),
+        quote=" ".join((shown if confirmed else raw.quote).split()),
         verified=confirmed,
         anchor=quote.anchor if confirmed and quote is not None else None,
     )
@@ -334,16 +338,15 @@ def build_draft(
         if v.verified:
             log.values_verified += 1
             kept.append(v)
-        elif draft.replace(pattern, NO_QUOTE.format(value=v.value), v.value):
-            log.values_replaced += 1
+        else:  # считаем места, а не значения: столько пропусков покажут карточки и сводка (#118)
+            log.values_replaced += draft.replace(pattern, NO_QUOTE.format(value=v.value), v.value)
     for number in _expected_numbers(texts, kept):
         target = _canon(number)
 
         def same(m: re.Match[str], target: str = target) -> bool:
             return _canon(m.group(0)) == target and not _is_step_ref(m, len(texts["steps"]))
 
-        if draft.replace(NUMBER, NO_NUMBER_QUOTE.format(value=number), number, same):
-            log.numbers_replaced += 1
+        log.numbers_replaced += draft.replace(NUMBER, NO_NUMBER_QUOTE.format(value=number), number, same)
     rendered, gaps = _order(draft, entry.gaps)
     _unplaced(gaps, entry.gaps, rendered)
     if not gaps and not entry.can_write:

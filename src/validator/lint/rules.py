@@ -26,6 +26,11 @@ class Rule:
     threshold: str
     blocks_testing: bool = False
     verdict: Verdict = Verdict.VIOLATION
+    merges_with: frozenset[Property] = frozenset()
+    """Свойства вне группы ``criterion``, под которыми проходы модели описывают тот же дефект (#124).
+
+    Срабатывание на той же или вложенной цитате присоединяется к такой находке модели как подтверждение,
+    а не идёт в отчёт отдельной находкой. Группы свойств: ``merge.PROPERTY_GROUPS``."""
 
     @property
     def scope(self) -> Scope:
@@ -70,6 +75,8 @@ L03 = Rule(
         "остальные элементы не названы, разработчик и тестировщик их не знают."
     ),
     threshold="оборот из словаря; слова в кавычках пропускаем",
+    # Открытый перечень модель называет и неполнотой, и неоднозначностью («что входит в „и далее“?»).
+    merges_with=frozenset({Property.UNAMBIGUOUS}),
 )
 L04 = Rule(
     id="L-04",

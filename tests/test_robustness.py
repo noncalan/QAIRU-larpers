@@ -35,6 +35,7 @@ from validator.text import locate_quote
 
 CASES = {c.slug: c for c in build_cases()}
 BROKEN = [c for c in CASES.values() if c.group == "Битые файлы"]
+PARTIAL = [c for c in CASES.values() if c.group == "Вход с оговорками"]
 MODEL = [c for c in CASES.values() if c.failure is not None]
 RECORDED = [c for c in CASES.values() if c.recorded]
 SECTION_NUMBER = re.compile(r"^## (\d+)\. ", re.MULTILINE)
@@ -73,6 +74,23 @@ def test_there_are_8_to_10_broken_files_and_every_model_failure() -> None:
         "LLM-012",
         "LLM-013",
     }
+
+
+def test_showcase_has_code_3_inputs_and_a_document_without_requirements() -> None:
+    """#126: витрина показывает и вход с оговорками (код 3), и документ, где требований нет."""
+    assert {c.exit_code for c in PARTIAL} == {3}
+    assert {c.code for c in PARTIAL} >= {"IN-043", "IN-051", "IN-080", "IN-081"}
+
+
+@pytest.mark.parametrize("case", PARTIAL, ids=lambda c: c.slug)
+def test_partial_input_gives_code_3_and_a_full_report(case: Case, results: dict[str, Result]) -> None:
+    result = results[case.slug]
+    md = md_of(result)
+
+    assert int(result.outcome.exit_code) == 3
+    assert case.code in codes_of(result)
+    assert "Traceback" not in md
+    assert all(f"## {n}. " in md for n in range(1, 7))
 
 
 def test_committed_reports_cover_every_case() -> None:

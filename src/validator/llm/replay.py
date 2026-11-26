@@ -5,9 +5,12 @@
 
 1. по ключу запроса (шаг, номер вызова, модель, effort, системный промпт, промпт, схема): ответ ровно
    на этот запрос;
-2. если ключ не совпал (поменялся промпт, документ или модель), по паре «шаг, номер вызова» с
-   предупреждением ``LLM-016``: отчёт пересобран, но ответы получены на другой запрос;
-3. если нет и пары, ``LLMError`` ``LLM-015`` с понятным текстом, шаг срабатывает по своей политике отказа.
+2. ключ не совпал: в записи нет ответа на этот запрос, ``LLMError`` ``LLM-015``, шаг срабатывает по своей
+   политике отказа (отчёт честно неполный, код 5). Ключ не совпадает, когда подан другой документ, другие
+   ответы автора (``--answers``) или промпт агента изменился после записи (#132): подставлять ответ про
+   чужой вход нельзя, отчёт выглядел бы настоящим;
+3. только для разработки и тестов (``--replay-by-position``, ``by_position=True``): ответ по паре «шаг,
+   номер вызова» с предупреждением ``LLM-016``. Так проигрывается запись, отставшая от промптов.
 """
 
 from __future__ import annotations
@@ -52,8 +55,9 @@ class ReplayLLM:
 
     backend = Backend.REPLAY
 
-    def __init__(self, run_dir: Path) -> None:
+    def __init__(self, run_dir: Path, *, by_position: bool = False) -> None:
         self.run_dir = resolve_run_dir(run_dir)
+        self.by_position = by_position
         self._by_key: dict[str, dict[str, Any]] = {}
         self._by_position: dict[tuple[str, int], dict[str, Any]] = {}
         self._recorded: dict[str, dict[int, StepModel]] = {}
@@ -123,7 +127,19 @@ class ReplayLLM:
     def call(self, req: LLMRequest) -> LLMResponse:
         payload = self._by_key.get(req.key)
         if payload is None:
-            payload = self._by_position.get((req.step.value, req.call_index))
+            positioned = self._by_position.get((req.step.value, req.call_index))
+            if positioned is not None and not self.by_position:
+                raise LLMError(
+                    f"В записи нет ответа на этот запрос ({req.call_id}): запись сделана для другого "
+                    "документа, других ответов автора или другой версии промпта",
+                    code=LLM_REPLAY_MISSING,
+                    hint=(
+                        "Replay воспроизводит только тот документ и те ответы, с которыми сделана запись; "
+                        "для своего документа нужна модель: --backend cli или --backend api"
+                    ),
+                    location=req.call_id,
+                )
+            payload = positioned
             if payload is None:
                 raise LLMError(
                     f"В записанном прогоне нет ответа для шага {req.step.value}, вызов {req.call_index}",
@@ -149,9 +165,12 @@ class ReplayLLM:
                 message=(
                     f"Записанные ответы не совпали с запросами по ключу у {len(self.by_position_calls)} "
                     f"вызовов ({shown}{f' и ещё {more}' if more > 0 else ''}): поменялся документ, "
-                    "промпт или модель"
+                    "ответы автора, промпт или модель"
                 ),
-                action="Ответы взяты по шагу и номеру вызова; цитаты всё равно сверены с документом",
+                action=(
+                    "Ответы взяты по шагу и номеру вызова (--replay-by-position, только для разработки); "
+                    "цитаты всё равно сверены с документом"
+                ),
                 hint="Для точного воспроизведения возьмите ту же версию агента и тот же документ",
                 step="llm",
             )

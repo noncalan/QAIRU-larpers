@@ -64,6 +64,8 @@ SOURCE_ID = re.compile(
     r"(?P<id>(?:[A-ZА-ЯЁ][A-Za-zА-Яа-яЁё]{0,5}[-‑.‐_]|[A-ZА-ЯЁ]{1,6})\d+(?:\.\d+)*)"
     r"\s*[.:)]?\s*(?:\*\*|__)?[.:)]?\s+"
 )
+# Метка требования в первой ячейке строки таблицы («REQ-01 | Требование | Приоритет»): вся ячейка это метка.
+ROW_LABEL = re.compile(r"^(?P<id>(?:[A-ZА-ЯЁ][A-Za-zА-Яа-яЁё]{0,5}[-\u2011.\u2010_]|[A-ZА-ЯЁ]{1,6})\d+)$")
 # Жирная числовая метка «**200.**» — номер пункта или код статуса, а не ID требования.
 BOLD_NUM = re.compile(r"^\s*\*\*\d{3}\.?\*\*")
 # Общие признаки обязательства (подсказка нарезке, не решение). Только общий язык ТЗ, без слов документа.
@@ -120,6 +122,18 @@ def is_empty_cell_quote(quote: Quote) -> bool:
 
 KEY_VALUE_HEADERS = frozenset({"поле", "field", "параметр", "parameter", "ключ", "key"})
 """Таблица «поле | значение» показывается модели как «Поле: значение», без названий колонок."""
+
+
+def row_label(block: Block) -> str | None:
+    """Метка требования в первой ячейке строки таблицы («REQ-01», «NFR-2»), если вся ячейка это метка.
+
+    Разбор документа её в ``Block.source_id`` не ставит: строка таблицы не абзац, и подсказки модели по ней
+    не меняются. Метку берут нарезка (номер требования из документа) и правила линтера.
+    """
+    if block.kind is not BlockKind.TABLE_ROW or not block.cells:
+        return None
+    match = ROW_LABEL.match(block.cells[0].text.replace("**", "").replace("__", "").strip())
+    return match["id"].replace("\u2011", "-") if match else None
 
 
 def _clean_cell(cell: str) -> str:
@@ -257,6 +271,7 @@ class _Builder:
         start, end = self.span(first, last)
         line = self.lines[first]
         bid = f"B{len(self.blocks) + 1:03d}"
+        section = [title for _, title in self.section]
         anchor = Anchor(
             char_start=start,
             char_end=end,
@@ -269,13 +284,14 @@ class _Builder:
             table=table,
             row=row,
             extraction=line.extraction,
+            section=section,
         )
         block = Block(
             id=bid,
             kind=kind,
             text=self.full[start:end],
             anchor=anchor,
-            section=[title for _, title in self.section],
+            section=list(section),
             serialized=serialized,
             cells=cells or [],
         )
@@ -544,7 +560,10 @@ def text_diagnostics(lines: Sequence[SourceLine], source: DocKind, name: str) ->
                 code=IN_HEADINGS_ONLY,
                 level=DiagLevel.WARNING,
                 message="В документе только заголовки, текста под ними нет: похоже на пустой шаблон",
-                action="Проверка идёт по тому, что есть",
+                action=(
+                    "Документ прочитан полностью, но требований в нём нет; проверка идёт по тому, что есть "
+                    "(код 3: проверка с оговорками)"
+                ),
                 hint="Заполните разделы документа и запустите проверку снова",
                 location=name,
                 step="parse",

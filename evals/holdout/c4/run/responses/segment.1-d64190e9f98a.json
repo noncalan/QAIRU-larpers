@@ -1,0 +1,1097 @@
+{
+ "envelope_version": 1,
+ "key": "d64190e9f98a26deebaaf1579b7d7d3e27b8db073c4c621819a94ed99b29f3b3",
+ "call_id": "segment.1",
+ "step": "segment",
+ "call_index": 1,
+ "model": "claude-sonnet-5-5",
+ "effort": "medium",
+ "backend": "cli",
+ "saved_at": "2026-11-26T15:54:04.051920+00:00",
+ "payload": {
+  "duration_api_ms": 26563,
+  "stop_reason": "tool_use",
+  "session_id": "fd3fd156-b71d-434c-b759-69bb24064d44",
+  "total_cost_usd": 0.096748,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 9701,
+   "cache_read_input_tokens": 0,
+   "output_tokens": 5794,
+   "output_tokens_details": {
+    "thinking_tokens": 0
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 9701,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 5794,
+     "cache_read_input_tokens": 0,
+     "cache_creation_input_tokens": 9701,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 9701
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 5794,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 9701,
+    "webSearchRequests": 0,
+    "costUSD": 0.096748,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 2,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "{\"requirements\":[{\"refs\":[\"B004.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"goal\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Приложение управляет компаниями и сотрудниками\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B004.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Пользователи регистрируются, авторизуются и выполняют CRUD над своими компаниями и сотрудниками\",\"entities\":[{\"kind\":\"actor\",\"value\":\"пользователи\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B004.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"goal\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Создать безопасный REST-бекенд на Spring Boot 3.4, Hibernate 6, PostgreSQL, Flyway\",\"entities\":[{\"kind\":\"system\",\"value\":\"Spring Boot 3.4\"},{\"kind\":\"system\",\"value\":\"Hibernate 6\"},{\"kind\":\"system\",\"value\":\"PostgreSQL\"},{\"kind\":\"system\",\"value\":\"Flyway\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B006\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"other\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Backend — Spring Boot-приложение с REST API\",\"entities\":[{\"kind\":\"system\",\"value\":\"Backend\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B007\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"data\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"PostgreSQL хранит данные пользователей, компаний и сотрудников\",\"entities\":[{\"kind\":\"system\",\"value\":\"PostgreSQL\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B008\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"other\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Swagger UI описывает эндпоинты\",\"entities\":[{\"kind\":\"system\",\"value\":\"Swagger UI\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B011\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"nfr\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Сессионная аутентификация через Spring Security\",\"entities\":[{\"kind\":\"system\",\"value\":\"Spring Security\"}],\"links\":[],\"depends_on\":\"B010\"},{\"refs\":[\"B012\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"nfr\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Пароли хранятся в хэшированном виде BCrypt\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"password\"}],\"links\":[],\"depends_on\":\"B010\"},{\"refs\":[\"B014\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Создание, редактирование, удаление компаний с валидацией ИНН и ОГРН\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"ИНН\"},{\"kind\":\"data_field\",\"value\":\"ОГРН\"}],\"links\":[],\"depends_on\":\"B013\"},{\"refs\":[\"B016\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Создание, редактирование, удаление сотрудников\",\"entities\":[],\"links\":[],\"depends_on\":\"B015\"},{\"refs\":[\"B017\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Сотрудник привязывается к компании 1:1 или null\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"company\"}],\"links\":[],\"depends_on\":\"B015\"},{\"refs\":[\"B018\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Flyway управляет схемой БД\",\"entities\":[{\"kind\":\"system\",\"value\":\"Flyway\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B019\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"OpenAPI 3.0 описывает все эндпоинты\",\"entities\":[{\"kind\":\"system\",\"value\":\"OpenAPI 3.0\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B023\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"data\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Сущность User: id, login (уникальный), password, createdAt\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"login\"}],\"links\":[],\"depends_on\":\"B022\"},{\"refs\":[\"B025\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"data\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Сущность Company: поля, name обязательное, inn 10/12 цифр и ogrn 13 цифр уникальны\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"inn\"},{\"kind\":\"data_field\",\"value\":\"ogrn\"}],\"links\":[],\"depends_on\":\"B024\"},{\"refs\":[\"B027\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"data\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Сущность Employee: поля, enum gender и maritalStatus, company может быть null\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"gender\"},{\"kind\":\"data_field\",\"value\":\"maritalStatus\"}],\"links\":[],\"depends_on\":\"B026\"},{\"refs\":[\"B030\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"url\",\"source_id\":\"\",\"summary\":\"POST /api/auth/register — регистрация с login и password\",\"entities\":[{\"kind\":\"endpoint\",\"value\":\"POST /api/auth/register\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B031\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"url\",\"source_id\":\"\",\"summary\":\"POST /api/auth/login — вход, устанавливает session cookie\",\"entities\":[{\"kind\":\"endpoint\",\"value\":\"POST /api/auth/login\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B032\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"url\",\"source_id\":\"\",\"summary\":\"POST /api/auth/logout — выход\",\"entities\":[{\"kind\":\"endpoint\",\"value\":\"POST /api/auth/logout\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B033\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"url\",\"source_id\":\"\",\"summary\":\"GET /api/users/me — информация о текущем пользователе\",\"entities\":[{\"kind\":\"endpoint\",\"value\":\"GET /api/users/me\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B034\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"auth\",\"source_id\":\"\",\"summary\":\"Эндпоинты компаний требуют авторизации\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B035\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"url\",\"source_id\":\"\",\"summary\":\"GET /api/companies — список компаний текущего пользователя\",\"entities\":[{\"kind\":\"endpoint\",\"value\":\"GET /api/companies\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B036\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"url\",\"source_id\":\"\",\"summary\":\"POST /api/companies — создать компанию\",\"entities\":[{\"kind\":\"endpoint\",\"value\":\"POST /api/companies\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B037\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"url\",\"source_id\":\"\",\"summary\":\"GET /api/companies/{id} — получить свою компанию по ID\",\"entities\":[{\"kind\":\"endpoint\",\"value\":\"GET /api/companies/{id}\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B038\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"url\",\"source_id\":\"\",\"summary\":\"PUT /api/companies/{id} — обновить компанию\",\"entities\":[{\"kind\":\"endpoint\",\"value\":\"PUT /api/companies/{id}\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B039\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"url\",\"source_id\":\"\",\"summary\":\"DELETE /api/companies/{id} — удалить компанию, если нет сотрудников\",\"entities\":[{\"kind\":\"endpoint\",\"value\":\"DELETE /api/companies/{id}\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B040\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"auth\",\"source_id\":\"\",\"summary\":\"Эндпоинты сотрудников требуют авторизации\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B041\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"url\",\"source_id\":\"\",\"summary\":\"GET /api/employees — список сотрудников, всех или по companyId\",\"entities\":[{\"kind\":\"endpoint\",\"value\":\"GET /api/employees\"},{\"kind\":\"data_field\",\"value\":\"companyId\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B042\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"url\",\"source_id\":\"\",\"summary\":\"POST /api/employees — создать сотрудника\",\"entities\":[{\"kind\":\"endpoint\",\"value\":\"POST /api/employees\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B043\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"url\",\"source_id\":\"\",\"summary\":\"PATCH /api/employees/{id}/company — привязать к компании или null\",\"entities\":[{\"kind\":\"endpoint\",\"value\":\"PATCH /api/employees/{id}/company\"},{\"kind\":\"data_field\",\"value\":\"companyId\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B044\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"url\",\"source_id\":\"\",\"summary\":\"PUT /api/employees/{id} — обновить сотрудника\",\"entities\":[{\"kind\":\"endpoint\",\"value\":\"PUT /api/employees/{id}\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B045\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"url\",\"source_id\":\"\",\"summary\":\"DELETE /api/employees/{id} — удалить сотрудника\",\"entities\":[{\"kind\":\"endpoint\",\"value\":\"DELETE /api/employees/{id}\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B047\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Использовать Lombok для моделей и DTO\",\"entities\":[{\"kind\":\"system\",\"value\":\"Lombok\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B048\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Глобальная обработка исключений со структурированными ошибками HTTP 400, 404, 409\",\"entities\":[{\"kind\":\"status\",\"value\":\"400\"},{\"kind\":\"status\",\"value\":\"404\"},{\"kind\":\"status\",\"value\":\"409\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B049\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Валидация входных данных через Jakarta Validation, @NotBlank, @Pattern для ИНН/ОГРН\",\"entities\":[{\"kind\":\"system\",\"value\":\"Jakarta Validation\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B050\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Настроить CORS, разрешить все для тестового окружения\",\"entities\":[{\"kind\":\"system\",\"value\":\"CORS\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B051\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Логировать ключевые операции: создание компании, ошибки авторизации\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B054\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Структура пакетов проекта: controller, service, repository, model, config, exception, dto, migration\",\"entities\":[],\"links\":[],\"depends_on\":\"B053\"},{\"refs\":[\"B055\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Модели БД отделены от DTO\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B057\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Создать скрипты миграций V1__init_tables.sql и V2__add_constraints.sql\",\"entities\":[{\"kind\":\"system\",\"value\":\"Flyway\"}],\"links\":[],\"depends_on\":\"B056\"},{\"refs\":[\"B058\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"data\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Структура таблицы users: id, login, password, created_at\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"login VARCHAR(50)\"}],\"links\":[],\"depends_on\":\"B057\"},{\"refs\":[\"B060\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Описать эндпоинты аннотациями @Operation и @Schema\",\"entities\":[],\"links\":[],\"depends_on\":\"B059\"},{\"refs\":[\"B061\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"data\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"CompanyDTO: name обязательное, inn длиной 10–12\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"inn\"}],\"links\":[],\"depends_on\":\"B060\"},{\"refs\":[\"B063\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Интеграционные тесты с @SpringBootTest\",\"entities\":[],\"links\":[],\"depends_on\":\"B062\"},{\"refs\":[\"B064\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Создание компании с неуникальным ИНН возвращает HTTP 409\",\"entities\":[{\"kind\":\"status\",\"value\":\"409\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B066\"],\"part_start\":\"Корректная работа всех\",\"part_end\":\"эндпоинтов\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Все эндпоинты работают корректно\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B067\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Чистый код, соблюдение принципов SOLID\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B068\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Swagger-документация доступна по /swagger-ui.html\",\"entities\":[{\"kind\":\"endpoint\",\"value\":\"/swagger-ui.html\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B069\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Миграции Flyway применяются при старте приложения\",\"entities\":[{\"kind\":\"event\",\"value\":\"старт приложения\"}],\"links\":[],\"depends_on\":\"\"}],\"excluded\":[{\"block\":\"B010\",\"label\":\"heading\",\"reason\":\"заголовок группы списка\"},{\"block\":\"B013\",\"label\":\"heading\",\"reason\":\"заголовок группы списка\"},{\"block\":\"B015\",\"label\":\"heading\",\"reason\":\"заголовок группы списка\"},{\"block\":\"B022\",\"label\":\"heading\",\"reason\":\"заголовок группы списка\"},{\"block\":\"B024\",\"label\":\"heading\",\"reason\":\"заголовок группы списка\"},{\"block\":\"B026\",\"label\":\"heading\",\"reason\":\"заголовок группы списка\"},{\"block\":\"B029\",\"label\":\"heading\",\"reason\":\"заголовок группы списка\"},{\"block\":\"B053\",\"label\":\"heading\",\"reason\":\"заголовок группы списка\"},{\"block\":\"B056\",\"label\":\"heading\",\"reason\":\"заголовок группы списка\"},{\"block\":\"B059\",\"label\":\"heading\",\"reason\":\"заголовок группы списка\"},{\"block\":\"B062\",\"label\":\"heading\",\"reason\":\"заголовок группы списка\"},{\"block\":\"B066\",\"label\":\"context\",\"reason\":\"пожелание про Postman-коллекцию, необязательное\"},{\"block\":\"B070\",\"label\":\"context\",\"reason\":\"завершающее пожелание\"}]}",
+  "structured_output": {
+   "requirements": [
+    {
+     "refs": [
+      "B004.1"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "goal",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Приложение управляет компаниями и сотрудниками",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B004.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Пользователи регистрируются, авторизуются и выполняют CRUD над своими компаниями и сотрудниками",
+     "entities": [
+      {
+       "kind": "actor",
+       "value": "пользователи"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B004.3"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "goal",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Создать безопасный REST-бекенд на Spring Boot 3.4, Hibernate 6, PostgreSQL, Flyway",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "Spring Boot 3.4"
+      },
+      {
+       "kind": "system",
+       "value": "Hibernate 6"
+      },
+      {
+       "kind": "system",
+       "value": "PostgreSQL"
+      },
+      {
+       "kind": "system",
+       "value": "Flyway"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B006"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "other",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Backend — Spring Boot-приложение с REST API",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "Backend"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B007"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "data",
+     "subtype": "",
+     "source_id": "",
+     "summary": "PostgreSQL хранит данные пользователей, компаний и сотрудников",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "PostgreSQL"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B008"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "other",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Swagger UI описывает эндпоинты",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "Swagger UI"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B011"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "nfr",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Сессионная аутентификация через Spring Security",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "Spring Security"
+      }
+     ],
+     "links": [],
+     "depends_on": "B010"
+    },
+    {
+     "refs": [
+      "B012"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "nfr",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Пароли хранятся в хэшированном виде BCrypt",
+     "entities": [
+      {
+       "kind": "data_field",
+       "value": "password"
+      }
+     ],
+     "links": [],
+     "depends_on": "B010"
+    },
+    {
+     "refs": [
+      "B014"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Создание, редактирование, удаление компаний с валидацией ИНН и ОГРН",
+     "entities": [
+      {
+       "kind": "data_field",
+       "value": "ИНН"
+      },
+      {
+       "kind": "data_field",
+       "value": "ОГРН"
+      }
+     ],
+     "links": [],
+     "depends_on": "B013"
+    },
+    {
+     "refs": [
+      "B016"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Создание, редактирование, удаление сотрудников",
+     "entities": [],
+     "links": [],
+     "depends_on": "B015"
+    },
+    {
+     "refs": [
+      "B017"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Сотрудник привязывается к компании 1:1 или null",
+     "entities": [
+      {
+       "kind": "data_field",
+       "value": "company"
+      }
+     ],
+     "links": [],
+     "depends_on": "B015"
+    },
+    {
+     "refs": [
+      "B018"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Flyway управляет схемой БД",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "Flyway"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B019"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "",
+     "summary": "OpenAPI 3.0 описывает все эндпоинты",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "OpenAPI 3.0"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B023"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "data",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Сущность User: id, login (уникальный), password, createdAt",
+     "entities": [
+      {
+       "kind": "data_field",
+       "value": "login"
+      }
+     ],
+     "links": [],
+     "depends_on": "B022"
+    },
+    {
+     "refs": [
+      "B025"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "data",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Сущность Company: поля, name обязательное, inn 10/12 цифр и ogrn 13 цифр уникальны",
+     "entities": [
+      {
+       "kind": "data_field",
+       "value": "inn"
+      },
+      {
+       "kind": "data_field",
+       "value": "ogrn"
+      }
+     ],
+     "links": [],
+     "depends_on": "B024"
+    },
+    {
+     "refs": [
+      "B027"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "data",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Сущность Employee: поля, enum gender и maritalStatus, company может быть null",
+     "entities": [
+      {
+       "kind": "data_field",
+       "value": "gender"
+      },
+      {
+       "kind": "data_field",
+       "value": "maritalStatus"
+      }
+     ],
+     "links": [],
+     "depends_on": "B026"
+    },
+    {
+     "refs": [
+      "B030"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "api",
+     "subtype": "url",
+     "source_id": "",
+     "summary": "POST /api/auth/register — регистрация с login и password",
+     "entities": [
+      {
+       "kind": "endpoint",
+       "value": "POST /api/auth/register"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B031"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "api",
+     "subtype": "url",
+     "source_id": "",
+     "summary": "POST /api/auth/login — вход, устанавливает session cookie",
+     "entities": [
+      {
+       "kind": "endpoint",
+       "value": "POST /api/auth/login"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B032"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "api",
+     "subtype": "url",
+     "source_id": "",
+     "summary": "POST /api/auth/logout — выход",
+     "entities": [
+      {
+       "kind": "endpoint",
+       "value": "POST /api/auth/logout"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B033"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "api",
+     "subtype": "url",
+     "source_id": "",
+     "summary": "GET /api/users/me — информация о текущем пользователе",
+     "entities": [
+      {
+       "kind": "endpoint",
+       "value": "GET /api/users/me"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B034"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "api",
+     "subtype": "auth",
+     "source_id": "",
+     "summary": "Эндпоинты компаний требуют авторизации",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B035"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "api",
+     "subtype": "url",
+     "source_id": "",
+     "summary": "GET /api/companies — список компаний текущего пользователя",
+     "entities": [
+      {
+       "kind": "endpoint",
+       "value": "GET /api/companies"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B036"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "api",
+     "subtype": "url",
+     "source_id": "",
+     "summary": "POST /api/companies — создать компанию",
+     "entities": [
+      {
+       "kind": "endpoint",
+       "value": "POST /api/companies"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B037"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "api",
+     "subtype": "url",
+     "source_id": "",
+     "summary": "GET /api/companies/{id} — получить свою компанию по ID",
+     "entities": [
+      {
+       "kind": "endpoint",
+       "value": "GET /api/companies/{id}"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B038"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "api",
+     "subtype": "url",
+     "source_id": "",
+     "summary": "PUT /api/companies/{id} — обновить компанию",
+     "entities": [
+      {
+       "kind": "endpoint",
+       "value": "PUT /api/companies/{id}"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B039"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "api",
+     "subtype": "url",
+     "source_id": "",
+     "summary": "DELETE /api/companies/{id} — удалить компанию, если нет сотрудников",
+     "entities": [
+      {
+       "kind": "endpoint",
+       "value": "DELETE /api/companies/{id}"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B040"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "api",
+     "subtype": "auth",
+     "source_id": "",
+     "summary": "Эндпоинты сотрудников требуют авторизации",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B041"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "api",
+     "subtype": "url",
+     "source_id": "",
+     "summary": "GET /api/employees — список сотрудников, всех или по companyId",
+     "entities": [
+      {
+       "kind": "endpoint",
+       "value": "GET /api/employees"
+      },
+      {
+       "kind": "data_field",
+       "value": "companyId"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B042"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "api",
+     "subtype": "url",
+     "source_id": "",
+     "summary": "POST /api/employees — создать сотрудника",
+     "entities": [
+      {
+       "kind": "endpoint",
+       "value": "POST /api/employees"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B043"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "api",
+     "subtype": "url",
+     "source_id": "",
+     "summary": "PATCH /api/employees/{id}/company — привязать к компании или null",
+     "entities": [
+      {
+       "kind": "endpoint",
+       "value": "PATCH /api/employees/{id}/company"
+      },
+      {
+       "kind": "data_field",
+       "value": "companyId"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B044"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "api",
+     "subtype": "url",
+     "source_id": "",
+     "summary": "PUT /api/employees/{id} — обновить сотрудника",
+     "entities": [
+      {
+       "kind": "endpoint",
+       "value": "PUT /api/employees/{id}"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B045"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "api",
+     "subtype": "url",
+     "source_id": "",
+     "summary": "DELETE /api/employees/{id} — удалить сотрудника",
+     "entities": [
+      {
+       "kind": "endpoint",
+       "value": "DELETE /api/employees/{id}"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B047"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Использовать Lombok для моделей и DTO",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "Lombok"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B048"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Глобальная обработка исключений со структурированными ошибками HTTP 400, 404, 409",
+     "entities": [
+      {
+       "kind": "status",
+       "value": "400"
+      },
+      {
+       "kind": "status",
+       "value": "404"
+      },
+      {
+       "kind": "status",
+       "value": "409"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B049"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Валидация входных данных через Jakarta Validation, @NotBlank, @Pattern для ИНН/ОГРН",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "Jakarta Validation"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B050"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Настроить CORS, разрешить все для тестового окружения",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "CORS"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B051"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Логировать ключевые операции: создание компании, ошибки авторизации",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B054"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Структура пакетов проекта: controller, service, repository, model, config, exception, dto, migration",
+     "entities": [],
+     "links": [],
+     "depends_on": "B053"
+    },
+    {
+     "refs": [
+      "B055"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Модели БД отделены от DTO",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B057"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Создать скрипты миграций V1__init_tables.sql и V2__add_constraints.sql",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "Flyway"
+      }
+     ],
+     "links": [],
+     "depends_on": "B056"
+    },
+    {
+     "refs": [
+      "B058"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "data",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Структура таблицы users: id, login, password, created_at",
+     "entities": [
+      {
+       "kind": "data_field",
+       "value": "login VARCHAR(50)"
+      }
+     ],
+     "links": [],
+     "depends_on": "B057"
+    },
+    {
+     "refs": [
+      "B060"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Описать эндпоинты аннотациями @Operation и @Schema",
+     "entities": [],
+     "links": [],
+     "depends_on": "B059"
+    },
+    {
+     "refs": [
+      "B061"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "data",
+     "subtype": "",
+     "source_id": "",
+     "summary": "CompanyDTO: name обязательное, inn длиной 10–12",
+     "entities": [
+      {
+       "kind": "data_field",
+       "value": "inn"
+      }
+     ],
+     "links": [],
+     "depends_on": "B060"
+    },
+    {
+     "refs": [
+      "B063"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Интеграционные тесты с @SpringBootTest",
+     "entities": [],
+     "links": [],
+     "depends_on": "B062"
+    },
+    {
+     "refs": [
+      "B064"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "acceptance",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Создание компании с неуникальным ИНН возвращает HTTP 409",
+     "entities": [
+      {
+       "kind": "status",
+       "value": "409"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B066"
+     ],
+     "part_start": "Корректная работа всех",
+     "part_end": "эндпоинтов",
+     "type": "acceptance",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Все эндпоинты работают корректно",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B067"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Чистый код, соблюдение принципов SOLID",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B068"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "acceptance",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Swagger-документация доступна по /swagger-ui.html",
+     "entities": [
+      {
+       "kind": "endpoint",
+       "value": "/swagger-ui.html"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B069"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "acceptance",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Миграции Flyway применяются при старте приложения",
+     "entities": [
+      {
+       "kind": "event",
+       "value": "старт приложения"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    }
+   ],
+   "excluded": [
+    {
+     "block": "B010",
+     "label": "heading",
+     "reason": "заголовок группы списка"
+    },
+    {
+     "block": "B013",
+     "label": "heading",
+     "reason": "заголовок группы списка"
+    },
+    {
+     "block": "B015",
+     "label": "heading",
+     "reason": "заголовок группы списка"
+    },
+    {
+     "block": "B022",
+     "label": "heading",
+     "reason": "заголовок группы списка"
+    },
+    {
+     "block": "B024",
+     "label": "heading",
+     "reason": "заголовок группы списка"
+    },
+    {
+     "block": "B026",
+     "label": "heading",
+     "reason": "заголовок группы списка"
+    },
+    {
+     "block": "B029",
+     "label": "heading",
+     "reason": "заголовок группы списка"
+    },
+    {
+     "block": "B053",
+     "label": "heading",
+     "reason": "заголовок группы списка"
+    },
+    {
+     "block": "B056",
+     "label": "heading",
+     "reason": "заголовок группы списка"
+    },
+    {
+     "block": "B059",
+     "label": "heading",
+     "reason": "заголовок группы списка"
+    },
+    {
+     "block": "B062",
+     "label": "heading",
+     "reason": "заголовок группы списка"
+    },
+    {
+     "block": "B066",
+     "label": "context",
+     "reason": "пожелание про Postman-коллекцию, необязательное"
+    },
+    {
+     "block": "B070",
+     "label": "context",
+     "reason": "завершающее пожелание"
+    }
+   ]
+  },
+  "ttft_ms": 26951,
+  "type": "result",
+  "duration_ms": 26975,
+  "uuid": "1de049d9-f58b-4223-8eef-94957ae5bbba",
+  "ttft_stream_ms": 1720,
+  "time_to_request_ms": 409,
+  "first_content_frame_ms": 1721,
+  "queued_turn_count": 0,
+  "result_index": 0
+ }
+}

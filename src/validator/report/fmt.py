@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from datetime import datetime
 
 from validator.ingest.blocks import is_empty_cell_quote
-from validator.models import Anchor, Extraction, Finding, Quote, ReportStatus, SourceKind
+from validator.models import Anchor, Extraction, Finding, FindingSource, Quote, ReportStatus, SourceKind
 
 _SPACES = re.compile(r"\s+")
 _MD_SPECIAL = re.compile(r"[*`<]|(?<!\w)_|_(?!\w)")
@@ -117,14 +117,41 @@ FILTERS = {
 }
 
 
-def found_text(f: Finding) -> str:
-    """Кто нашёл: «в 2 из 3 проходов»; находку только линтера не пишем «в 0 из 3», а называем источник.
+ChecklistItems = Mapping[str, tuple[str, str]]
+"""Пункт доменного чек-листа: ID (MON-05) → (название чек-листа, вопрос пункта)."""
 
-    Находка сверки между частями длинного документа (#38) не «пропущена проходами»: проход видит одну часть.
+
+def _source_text(s: FindingSource, items: ChecklistItems, rules: Mapping[str, str]) -> str | None:
+    if s.kind is SourceKind.LINT:
+        name = rules.get(s.rule_id or "")
+        return f"правилом «{name}»" if name else f"правилом {s.rule_id}"
+    if s.kind is SourceKind.SET_CHECK:
+        return "сверкой требований между частями документа"
+    if s.kind is SourceKind.ANSWER:
+        return f"сверкой с ответом автора {s.rule_id}"
+    item = s.checklist_item if s.kind is SourceKind.PASS else s.rule_id
+    if not item:
+        return None
+    title, question = items.get(item, ("", ""))
+    return f"по чек-листу «{title}»: {plain(question)}" if title else f"по пункту чек-листа {item}"
+
+
+def found_text(
+    f: Finding, items: ChecklistItems | None = None, rules: Mapping[str, str] | None = None
+) -> str:
+    """Как найдена находка, человеческими словами; пусто, если сказать нечего (один проход без подсказок).
+
+    Чек-лист называем по-русски с текстом пункта, правило линтера по названию (#125). «В N из K проходов»
+    пишем, только если проходов больше одного: при одном проходе это ничего не говорит.
     """
-    sources = ", ".join(s.label for s in f.sources)
-    if f.found_in:
-        return f"в {f.found_in} из {f.of} проходов" + (f" ({sources})" if sources else "")
+    items = items or {}
+    rules = rules or {}
+    how = list(dict.fromkeys(t for s in f.sources if (t := _source_text(s, items, rules))))
+    model = any(s.kind is SourceKind.PASS for s in f.sources)
+    if f.of > 1 and model:
+        how.insert(0, f"в {f.found_in} из {f.of} проходов поиска")
+    elif f.of > 1 and not f.found_in and not all(s.kind is SourceKind.SET_CHECK for s in f.sources):
+        how.append(f"проходы модели этого не отметили (0 из {f.of})")
     if f.sources and all(s.kind is SourceKind.SET_CHECK for s in f.sources):
-        return f"{sources}; проходы поиска видят по одной части и такие пары не сравнивают"
-    return f"{sources or 'без модели'}; проходы модели этого не отметили (0 из {f.of})"
+        how.append("проходы поиска видят по одной части и такие пары не сравнивают")
+    return "; ".join(how)

@@ -478,6 +478,114 @@ def test_every_property_is_in_exactly_one_group() -> None:
     assert set(counts.values()) == {1}
 
 
+# ---------------------------------------------------------------- ревью RC1 (#124)
+
+RETENTION = "Бронь хранится 30 дней."
+
+
+def test_two_findings_of_one_pass_on_one_quote_stay_apart(doc: ParsedDocument) -> None:
+    """Модель сама записала два дефекта отдельно: общая цитата и свойство их не склеивают."""
+    passes = passes_of(
+        [
+            cand(
+                1,
+                1,
+                Property.COMPLETE,
+                [RETENTION],
+                ["B003"],
+                explanation="Не сказано, что будет с бронью потом.",
+            ),
+            cand(
+                1,
+                2,
+                Property.COMPLETE,
+                [RETENTION, "Отмена брони доступна администратору."],
+                ["B003", "B004"],
+                explanation="Не задано, кто и как отменяет бронь до конца срока.",
+            ),
+        ]
+    )
+
+    merged = merge(passes, [], doc)
+
+    assert len(merged) == 2
+    assert sorted(len(m.quotes) for m in merged) == [1, 2]
+
+
+def test_one_pass_repeating_itself_is_merged(doc: ParsedDocument) -> None:
+    """Повтор одной находки тем же проходом (та же суть) по-прежнему одна находка."""
+    gist = "Срок хранения брони не связан с отменой: непонятно, что раньше."
+    passes = passes_of(
+        [
+            cand(1, 1, Property.COMPLETE, [RETENTION], ["B003"], explanation=gist),
+            cand(1, 2, Property.COMPLETE, ["хранится 30 дней"], ["B003"], explanation=gist),
+        ]
+    )
+
+    merged = merge(passes, [], doc)
+
+    assert [len(m.members) for m in merged] == [2]
+
+
+def test_two_passes_in_different_words_still_merge(doc: ParsedDocument) -> None:
+    """Правило «одна суть» только для одного прохода: разные проходы описывают дефект своими словами."""
+    passes = passes_of(
+        [cand(1, 1, Property.COMPLETE, [RETENTION], ["B003"], explanation="Нет поведения после срока.")],
+        [
+            cand(
+                2,
+                1,
+                Property.COMPLETE,
+                [RETENTION],
+                ["B003"],
+                explanation="Что делать с просроченной бронью?",
+            )
+        ],
+    )
+
+    merged = merge(passes, [], doc)
+
+    assert [(m.found_in, m.of) for m in merged] == [(2, 2)]
+
+
+def test_open_list_lint_hit_joins_ambiguity_finding_of_pass(doc: ParsedDocument) -> None:
+    """Открытый перечень (L-03) модель зовёт неоднозначностью: срабатывание подтверждает её находку."""
+    passes = passes_of(
+        [
+            cand(
+                1,
+                1,
+                Property.UNAMBIGUOUS,
+                [RETENTION, "Бронь хранится 60 дней."],
+                ["B003"],
+                explanation="Перечень.",
+            )
+        ]
+    )
+    lint = [cand("L-03", 1, Property.COMPLETE, [RETENTION], ["B003"])]
+
+    merged = merge(passes, lint, doc)
+
+    assert len(merged) == 1
+    assert [(s.kind, s.rule_id) for s in merged[0].sources] == [
+        (SourceKind.PASS, None),
+        (SourceKind.LINT, "L-03"),
+    ]
+    assert merged[0].property is Property.UNAMBIGUOUS
+
+
+def test_lint_hit_does_not_join_unrelated_property_of_pass(doc: ParsedDocument) -> None:
+    """Связь правила со свойством узкая: размытое слово (L-01) не прячется в противоречие на той же фразе."""
+    passes = passes_of(
+        [cand(1, 1, Property.SET_CONSISTENT, [SENTENCE, "Бронь хранится 60 дней."], ["B002", "B003"])]
+    )
+    lint = [cand("L-01", 1, Property.VERIFIABLE, ["быстро"], ["B002"])]
+
+    merged = merge(passes, lint, doc)
+
+    assert len(merged) == 2
+
+
 # ---------------------------------------------------------------- сквозной прогон на фикстурах
 
 
