@@ -718,6 +718,9 @@ class SourceLine(Contract):
     row: int | None = None
     cells: list[str] = Field(default_factory=list, description="Ячейки строки таблицы")
     header: bool = Field(default=False, description="Строка заголовка таблицы")
+    inferred_header: bool = Field(
+        default=False, description="Предполагаемые подписи колонок в обычной строке"
+    )
     kind: BlockKind | None = Field(default=None, description="Явный вид блока: сноска, колонтитул, код")
     extraction: Extraction = Extraction.TEXT
 

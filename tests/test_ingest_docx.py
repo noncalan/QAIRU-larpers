@@ -6,13 +6,26 @@ import re
 from collections import Counter
 from pathlib import Path
 
+import docx
 import pytest
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
+from typer.testing import CliRunner
 
 from conftest import REQUIREMENTS
 from docx_factory import cell, footnote_ref, make_docx, para, row, run, table
+from validator.cli import app
 from validator.errors import IN_DOCX_TEXT_BOXES, IN_DOCX_TRACKED_CHANGES, IN_HEADINGS_ONLY, IN_NO_TEXT
 from validator.ingest import parse
-from validator.models import Block, BlockKind, DiagLevel, DocKind, Extraction, ParsedDocument
+from validator.models import (
+    Block,
+    BlockKind,
+    DiagLevel,
+    DocKind,
+    Extraction,
+    ParsedDocument,
+    Report,
+)
 from validator.report.fmt import where
 from validator.text import span_anchor
 
@@ -180,6 +193,145 @@ def test_line_break_inside_list_item_stays_in_one_block(tmp_path: Path) -> None:
 
 
 # ---------------------------------------------------------------- таблицы
+
+
+REQUIREMENT_ROWS = (
+    ("REQ-1", "Система должна архивировать закрытые заявки."),
+    ("REQ-2", "Портал должен уведомлять автора об отклонении."),
+    ("REQ-3", "Клиент должен подписывать акт электронной подписью."),
+)
+
+
+def _write_table(
+    path: Path,
+    rows: tuple[tuple[str, ...], ...],
+    *,
+    look: str = "default",
+    header: str | None = None,
+) -> Path:
+    document = docx.Document()
+    word_table = document.add_table(rows=len(rows), cols=len(rows[0]))
+    for word_row, values in zip(word_table.rows, rows, strict=True):
+        for word_cell, value in zip(word_row.cells, values, strict=True):
+            word_cell.text = value
+    style = word_table._tbl.tblPr.find(qn("w:tblLook"))
+    assert style is not None
+    if look != "default":
+        style.attrib.clear()
+        if look == "absent":
+            word_table._tbl.tblPr.remove(style)
+        elif look == "firstRow":
+            style.set(qn("w:firstRow"), "1")
+        elif look == "bitmask":
+            style.set(qn("w:val"), "0020")
+    if header is not None:
+        marker = OxmlElement("w:tblHeader")
+        if header:
+            marker.set(qn("w:val"), header)
+        word_table.rows[0]._tr.get_or_add_trPr().append(marker)
+    document.save(path)
+    return path
+
+
+@pytest.mark.parametrize("look", ["default", "empty", "absent", "firstRow", "bitmask"])
+def test_table_look_keeps_all_requirement_rows(tmp_path: Path, look: str) -> None:
+    path = _write_table(tmp_path / "requirements.docx", REQUIREMENT_ROWS, look=look)
+
+    doc = parse(path, DocKind.DOCX)
+    assert [b.id for b in doc.blocks] == ["B001", "B002", "B003"]
+    for index, (block, (label, text)) in enumerate(zip(doc.blocks, REQUIREMENT_ROWS, strict=True), 1):
+        assert block.kind is BlockKind.TABLE_ROW
+        assert block.cells[0].text == label
+        assert block.text == f"{label} | {text}"
+        assert block.serialized == f"колонка 1: {label}; колонка 2: {text}"
+        assert (block.anchor.table, block.anchor.row) == (1, index)
+        assert doc.text[block.anchor.char_start : block.anchor.char_end] == block.text
+
+
+def test_inferred_columns_keep_the_first_row_citable(tmp_path: Path) -> None:
+    path = _write_table(tmp_path / "labels.docx", (("ID", "Описание"), *REQUIREMENT_ROWS))
+
+    doc = parse(path, DocKind.DOCX)
+    assert [b.kind for b in doc.blocks] == [BlockKind.TABLE_ROW] * 4
+    assert [b.anchor.row for b in doc.blocks] == [1, 2, 3, 4]
+    assert doc.blocks[0].serialized == "колонка 1: ID; колонка 2: Описание"
+    assert doc.blocks[1].serialized == f"ID: {REQUIREMENT_ROWS[0][0]}; Описание: {REQUIREMENT_ROWS[0][1]}"
+    for index, expected in ((0, "колонка 2"), (1, "Описание")):
+        cell = doc.blocks[index].cells[1]
+        anchor = span_anchor(doc, cell.char_start, cell.char_end)
+        assert (anchor.table, anchor.row, anchor.cell, anchor.column) == (1, index + 1, 2, expected)
+
+
+def test_ragged_table_keeps_every_cell_in_model_input(tmp_path: Path) -> None:
+    doc = read(
+        tmp_path,
+        table(
+            row(cell("Поле"), cell("Значение")),
+            row(cell("Период"), cell("30 дней")),
+            row(cell("Срок"), cell("10 дней"), cell("После уведомления")),
+        ),
+    )
+
+    assert [b.anchor.row for b in doc.blocks] == [1, 2, 3]
+    assert doc.blocks[2].serialized == "колонка 1: Срок; колонка 2: 10 дней; колонка 3: После уведомления"
+
+
+@pytest.mark.parametrize("header", ["", "1", "true", "on"])
+def test_explicit_table_header_supplies_columns_without_a_block(tmp_path: Path, header: str) -> None:
+    path = _write_table(tmp_path / "labels.docx", (("ID", "Описание"), *REQUIREMENT_ROWS), header=header)
+
+    doc = parse(path, DocKind.DOCX)
+    assert doc.text.startswith("ID | Описание\n")
+    assert [b.anchor.row for b in doc.blocks] == [1, 2, 3]
+    assert [c.column for c in doc.blocks[0].cells] == ["ID", "Описание"]
+
+
+@pytest.mark.parametrize("header", ["0", "false", "off"])
+def test_disabled_table_header_keeps_fallback_columns(tmp_path: Path, header: str) -> None:
+    path = _write_table(tmp_path / "labels.docx", (("ID", "Описание"), *REQUIREMENT_ROWS), header=header)
+
+    doc = parse(path, DocKind.DOCX)
+    assert [b.anchor.row for b in doc.blocks] == [1, 2, 3, 4]
+    assert [c.column for c in doc.blocks[1].cells] == ["колонка 1", "колонка 2"]
+
+
+def test_single_explicit_header_row_is_still_data(tmp_path: Path) -> None:
+    path = _write_table(tmp_path / "one-row.docx", (("ID", "Описание"),), header="")
+
+    doc = parse(path, DocKind.DOCX)
+    assert [(b.kind, b.anchor.row, b.text) for b in doc.blocks] == [(BlockKind.TABLE_ROW, 1, "ID | Описание")]
+
+
+@pytest.mark.parametrize(
+    "first",
+    [
+        ("Сервис", "Должен отвечать"),
+        ("Сервис", "Может отвечать"),
+        ("Service", "May respond"),
+        ("Service", "Can respond"),
+        ("REQ-1", "Архивация заявок"),
+    ],
+)
+def test_short_requirement_row_does_not_supply_columns(tmp_path: Path, first: tuple[str, ...]) -> None:
+    path = _write_table(tmp_path / "requirements.docx", (first, REQUIREMENT_ROWS[1]))
+
+    doc = parse(path, DocKind.DOCX)
+    assert [b.anchor.row for b in doc.blocks] == [1, 2]
+    assert [cell.column for cell in doc.blocks[1].cells] == ["колонка 1", "колонка 2"]
+
+
+def test_fake_cli_segments_all_unmarked_table_rows(tmp_path: Path) -> None:
+    path = _write_table(tmp_path / "requirements.docx", REQUIREMENT_ROWS)
+    out = tmp_path / "report.md"
+
+    result = CliRunner().invoke(app, [str(path), str(out), "--backend", "fake"])
+
+    assert result.exit_code == 0, result.output
+    report = Report.model_validate_json(out.with_suffix(".json").read_text(encoding="utf-8"))
+    assert report.segmentation is not None
+    assert [(r.source_id, r.anchor.row, r.quote) for r in report.segmentation.requirements] == [
+        (label, index, f"{label} | {text}") for index, (label, text) in enumerate(REQUIREMENT_ROWS, 1)
+    ]
 
 
 def test_table_cells_have_columns_offsets_and_row_numbers_without_header(tmp_path: Path) -> None:

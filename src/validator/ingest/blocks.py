@@ -497,6 +497,8 @@ class _Builder:
             table=self.table_no,
             row=self.table_row,
         )
+        if line.inferred_header:
+            self.header = [_clean_cell(c) for c in cells]
         return i + 1
 
 
