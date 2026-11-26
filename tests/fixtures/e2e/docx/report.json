@@ -7,10 +7,10 @@
     "document_sha256": "7fd7c1d145b0c4e01ac8a502856b08eaf0cdbddc896069271687f6a2a16022d5",
     "document_size_bytes": 16072,
     "document_pages": null,
-    "started_at": "2026-11-26T12:31:22.064729Z",
-    "finished_at": "2026-11-26T12:31:22.338909Z",
-    "duration_s": 0.27,
-    "agent_version": "5a34ca1-dirty",
+    "started_at": "2026-11-26T12:34:03.876694Z",
+    "finished_at": "2026-11-26T12:34:04.183098Z",
+    "duration_s": 0.31,
+    "agent_version": "52bd77a-dirty",
     "agent_version_source": "git",
     "agent_dirty": true,
     "prompts_sha256": "7dd96b1cffa406769efc8daf0df90f974ab4ef58757a546a07948210acc7492d",
@@ -11111,7 +11111,7 @@
     ]
   },
   "metrics": {
-    "duration_s": 0.27,
+    "duration_s": 0.31,
     "calls_total": 8,
     "calls_failed": 0,
     "calls_cached": 0,
