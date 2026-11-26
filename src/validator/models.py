@@ -587,6 +587,8 @@ class LLMStep(StrEnum):
     # Судья eval (#24): его вызывает только eval через тот же клиент модели, отдельно от агента.
     # Конвейер агента этот шаг не вызывает, модели для него в STEP_MODELS нет.
     JUDGE = "judge"
+    # Разметчики precision (#49): их тоже вызывает только eval, вслепую, без эталона и вердиктов судьи.
+    PRECISION = "precision"
 
 
 class CallStatus(StrEnum):
