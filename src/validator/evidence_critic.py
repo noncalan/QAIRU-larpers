@@ -58,7 +58,7 @@ from validator.models import (
 )
 from validator.parts import focus_view
 from validator.prompting import PROMPTS_DIR, fill, load_prompt
-from validator.severity import severity_disputed, severity_for, table_severity
+from validator.severity import severity_for
 
 logger = logging.getLogger("validator")
 
@@ -89,13 +89,13 @@ WHY_DISPUTED = "оценка важности модели и таблица к�
 WHY_NO_WITNESS = "противоречие без проверенного примера-свидетеля"
 
 
-def _reasons(m: MergedFinding, severity: Severity) -> tuple[str, ...]:
+def _reasons(m: MergedFinding, severity: Severity, disputed: bool) -> tuple[str, ...]:
     out: list[str] = []
     if severity is Severity.CRITICAL:
         out.append(WHY_CRITICAL)
     if m.of > 1 and m.found_in == 1:
         out.append(WHY_SINGLE)
-    if severity_disputed(m.severity_hint, table_severity(m.defect_type, m.blocks_testing)):
+    if disputed:
         out.append(WHY_DISPUTED)
     if m.defect_type is DefectType.CONTRADICTION and not (m.witness and m.witness.checked):
         out.append(WHY_NO_WITNESS)
@@ -109,10 +109,10 @@ def select(found: Sequence[MergedFinding], located: Located) -> list[Pick]:
         quotes = located.get(m.mid, ())
         if not quotes or not from_model(m):
             continue
-        severity = severity_for(m, quotes).severity
-        reasons = _reasons(m, severity)
+        result = severity_for(m, quotes)
+        reasons = _reasons(m, result.severity, result.disputed)
         if reasons:
-            picks.append(Pick(m, severity, reasons))
+            picks.append(Pick(m, result.severity, reasons))
     picks.sort(key=lambda p: (p.severity.rank, -len(p.reasons)))  # устойчиво: порядок слияния внутри
     return picks[:MAX_FINDINGS]
 
