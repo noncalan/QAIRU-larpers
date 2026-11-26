@@ -20,6 +20,7 @@ from collections.abc import Callable, Iterable, Sequence
 
 from validator.errors import INT_SELFCHECK_FAILED, INT_SELFCHECK_WARNING
 from validator.models import (
+    Block,
     CellState,
     ClarifyEffect,
     CoverageMatrix,
@@ -137,8 +138,14 @@ def _has_anchor(finding: Finding) -> bool:
     return any(q.verified and q.anchor is not None and q.located for q in finding.quotes)
 
 
-def _recheck_quote(finding: Finding, doc_text: str | None) -> tuple[int, list[str]]:
-    """Сверка с текстом документа заново: фрагмент по якорю равен тому, что сверил верификатор."""
+def _recheck_quote(
+    finding: Finding, doc_text: str | None, sections: dict[str, list[str]] | None = None
+) -> tuple[int, list[str]]:
+    """Сверка с документом заново: фрагмент по якорю равен тому, что сверил верификатор.
+
+    ``sections``: путь заголовков каждого блока документа. С ним сверяем и раздел якоря: он равен
+    разделу блока, где цитата начинается (#119). Раздел из якоря отчёт показывает рядом с цитатой.
+    """
     if doc_text is None:
         return 0, []
     checked, failures = 0, []
@@ -146,26 +153,32 @@ def _recheck_quote(finding: Finding, doc_text: str | None) -> tuple[int, list[st
         if not q.verified or q.anchor is None:
             continue
         checked += 1
+        short = (q.located or "")[:40]
         if doc_text[q.anchor.char_start : q.anchor.char_end] != q.located:
-            failures.append(
-                f"{finding.id}: фрагмент по якорю не совпадает с цитатой «{(q.located or '')[:40]}»"
-            )
+            failures.append(f"{finding.id}: фрагмент по якорю не совпадает с цитатой «{short}»")
+        block = q.anchor.block_ids[0] if q.anchor.block_ids else None
+        if sections is not None and block in sections and q.anchor.section != sections[block]:
+            failures.append(f"{finding.id}: раздел в якоре не совпадает с разделом блока цитаты «{short}»")
     return checked, failures
 
 
-def _check_anchors(findings: Sequence[Finding], doc_text: str | None) -> tuple[list[SelfCheckItem], int, int]:
+def _check_anchors(
+    findings: Sequence[Finding], doc_text: str | None, blocks: Sequence[Block] | None = None
+) -> tuple[list[SelfCheckItem], int, int]:
     """У каждой находки есть якорь и сверенная цитата; цитаты находок сверены и заново с документом."""
     unanchored = [f"{f.id}: нет якоря или сверенной цитаты" for f in findings if not _has_anchor(f)]
     quotes = [q for f in findings for q in f.quotes]
     unverified = [
         f"{f.id}: цитата не найдена в документе" for f in findings for q in f.quotes if not q.verified
     ]
+    sections = {b.id: list(b.section) for b in blocks} if blocks is not None else None
     rechecked, mismatched = 0, []
     for f in findings:
-        n, bad = _recheck_quote(f, doc_text)
+        n, bad = _recheck_quote(f, doc_text, sections)
         rechecked += n
         mismatched += bad
     anchored = sum(_has_anchor(f) for f in findings)
+    by_section = " с разделом" if sections is not None else ""
     items = [
         _item(
             "anchors",
@@ -179,7 +192,7 @@ def _check_anchors(findings: Sequence[Finding], doc_text: str | None) -> tuple[l
             unverified + mismatched,
             (
                 f"цитат в находках: {len(quotes)}, все сверены верификатором"
-                + (f"; заново по тексту документа и якорю: {rechecked}" if doc_text is not None else "")
+                + (f"; заново по тексту документа и якорю{by_section}: {rechecked}" if doc_text else "")
                 if quotes
                 else "цитат нет"
             ),
@@ -531,11 +544,17 @@ def _summary(sc: SelfCheck, report: Report) -> str:
     return "; ".join(parts)
 
 
-def check_report(report: Report, markdown: str | None = None, doc_text: str | None = None) -> SelfCheck:
+def check_report(
+    report: Report,
+    markdown: str | None = None,
+    doc_text: str | None = None,
+    blocks: Sequence[Block] | None = None,
+) -> SelfCheck:
     """Самопроверка готового отчёта.
 
     ``markdown``: отчёт в том виде, в каком его прочтут; без него рендерится из ``report``.
     ``doc_text``: канонический текст документа; с ним цитаты находок сверяются ещё раз по якорям.
+    ``blocks``: блоки документа; с ними сверяется и раздел в якоре каждой цитаты.
     """
     if report.status is ReportStatus.NOT_PERFORMED or not report.conclusion.performed:
         sc = SelfCheck(applicable=False)
@@ -545,7 +564,7 @@ def check_report(report: Report, markdown: str | None = None, doc_text: str | No
     findings = list(report.verification.findings) if report.verification else []
 
     sections_item, found = _check_sections(sections)
-    anchor_items, rechecked, anchored = _check_anchors(findings, doc_text)
+    anchor_items, rechecked, anchored = _check_anchors(findings, doc_text, blocks)
     checks: list[Callable[[], SelfCheckItem]] = [
         lambda: _check_requirements(report, sections),
         lambda: _check_cards(report, sections),

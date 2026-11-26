@@ -187,6 +187,7 @@ def span_anchor(doc: ParsedDocument, start: int, end: int) -> Anchor:
         cell=cell.index if cell else None,
         column=cell.column if cell else None,
         extraction=first.anchor.extraction if first else Extraction.TEXT,
+        section=list(first.section) if first else [],
     )
 
 

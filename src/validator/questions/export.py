@@ -45,7 +45,7 @@ from typing import Any
 
 import yaml
 
-from validator.models import Question, QuestionOption
+from validator.models import Question, QuestionOption, Quote
 from validator.report.fmt import where
 
 SCHEMA_VERSION = 1
@@ -66,6 +66,11 @@ def _option(o: QuestionOption) -> dict[str, Any]:
     return {"label": o.label, "text": o.text, "change": o.change, "for_discussion": o.grounded_in is None}
 
 
+def _place(quote: Quote) -> str:
+    """Место цитаты как в отчёте: раздел блока, где она стоит, и страница или строка (#119)."""
+    return where(quote.anchor, quote.anchor.section if quote.anchor else None)
+
+
 def _question(q: Question) -> dict[str, Any]:
     return {
         "id": q.id,
@@ -75,7 +80,7 @@ def _question(q: Question) -> dict[str, Any]:
         "topic": q.topic,
         "question": q.question,
         "why": q.why,
-        "where": [{"quote": quote.located or quote.text, "place": where(quote.anchor)} for quote in q.quotes],
+        "where": [{"quote": quote.located or quote.text, "place": _place(quote)} for quote in q.quotes],
         "options": [_option(o) for o in q.options],
         "if_unanswered": q.if_unanswered,
         "related_findings": list(q.related_findings),

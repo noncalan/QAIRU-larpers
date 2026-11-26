@@ -7,10 +7,10 @@
     "document_sha256": "7fd7c1d145b0c4e01ac8a502856b08eaf0cdbddc896069271687f6a2a16022d5",
     "document_size_bytes": 16072,
     "document_pages": null,
-    "started_at": "2026-11-26T13:00:00.425603Z",
-    "finished_at": "2026-11-26T13:00:00.753527Z",
-    "duration_s": 0.33,
-    "agent_version": "7fefbe0-dirty",
+    "started_at": "2026-11-26T13:04:41.969776Z",
+    "finished_at": "2026-11-26T13:04:42.254418Z",
+    "duration_s": 0.28,
+    "agent_version": "7da4689-dirty",
     "agent_version_source": "git",
     "agent_dirty": true,
     "prompts_sha256": "7dd96b1cffa406769efc8daf0df90f974ab4ef58757a546a07948210acc7492d",
@@ -83,8 +83,8 @@
     {
       "code": "LLM-041",
       "level": "info",
-      "message": "Примеры-свидетели: запрошено 15, проверено кодом 9, отклонено 1, модель не нашла сценария 5",
-      "action": "Отклонённые свидетели в находках помечены, находки остались; у противоречия меньше двух разных мест документа: 1",
+      "message": "Примеры-свидетели: запрошено 15, проверено кодом 8, отклонено 0, модель не нашла сценария 3",
+      "action": "Отклонённые свидетели в находках помечены, находки остались; без ответа модели: 4",
       "hint": "",
       "location": null,
       "step": "evidence"
@@ -92,8 +92,8 @@
     {
       "code": "LLM-045",
       "level": "info",
-      "message": "Код проверил черновики теста: готово 37 из 37",
-      "action": "пропусков вместо значений без цитаты: 7; пропусков вместо чисел ожидаемого результата без цитаты: 5; выводов «тест написать можно» без подтверждённых значений не принято: 1",
+      "message": "Код проверил черновики теста: готово 34 из 38",
+      "action": "пропусков вместо чисел ожидаемого результата без цитаты: 5; выводов «тест написать можно» без подтверждённых значений не принято: 1; записей про несуществующие находки пропущено: 3",
       "hint": "",
       "location": null,
       "step": "test_draft"
@@ -101,8 +101,8 @@
     {
       "code": "LLM-051",
       "level": "info",
-      "message": "Вопросы автору: код поправил карточки (карточек не по схеме или без вопроса: 1; кандидатов редактор не взял и не отклонил: 23; связей с находками без общей цитаты или требования убрано: 7)",
-      "action": "В отчёт вошло вопросов: 11, кандидатов было: 42",
+      "message": "Вопросы автору: код поправил карточки (карточек не по схеме или без вопроса: 1; ссылок на несуществующих кандидатов: 1; кандидатов редактор не взял и не отклонил: 23; связей с находками без общей цитаты или требования убрано: 6)",
+      "action": "В отчёт вошло вопросов: 11, кандидатов было: 41",
       "hint": "",
       "location": null,
       "step": "questions"
@@ -119,7 +119,7 @@
     {
       "code": "LLM-016",
       "level": "warning",
-      "message": "Записанные ответы не совпали с запросами по ключу у 2 вызовов (questions.1, questions_critic.1): поменялся документ, промпт или модель",
+      "message": "Записанные ответы не совпали с запросами по ключу у 5 вызовов (evidence.1, test_draft.2, test_draft.3, questions.1, questions_critic.1): поменялся документ, промпт или модель",
       "action": "Ответы взяты по шагу и номеру вызова; цитаты всё равно сверены с документом",
       "hint": "Для точного воспроизведения возьмите ту же версию агента и тот же документ",
       "location": null,
@@ -160,7 +160,12 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть A. Новый функционал",
+            "Цели"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -205,7 +210,12 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть A. Новый функционал",
+            "Архитектура решения"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -251,7 +261,12 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть A. Новый функционал",
+            "Архитектура решения"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -297,7 +312,12 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть A. Новый функционал",
+            "Дизайн процесса UI"
+          ]
         },
         "atomic_parts": [],
         "entities": {},
@@ -338,7 +358,12 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть A. Новый функционал",
+            "Дизайн процесса UI"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -383,7 +408,12 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть A. Новый функционал",
+            "Дизайн процесса UI"
+          ]
         },
         "atomic_parts": [],
         "entities": {},
@@ -425,7 +455,13 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть A. Новый функционал",
+            "Требования к изменениям",
+            "BPMN схема процесса"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -471,7 +507,13 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть A. Новый функционал",
+            "Требования к изменениям",
+            "Функциональные требования"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -520,7 +562,13 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть A. Новый функционал",
+            "Требования к изменениям",
+            "Функциональные требования"
+          ]
         },
         "atomic_parts": [],
         "entities": {},
@@ -562,7 +610,13 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть A. Новый функционал",
+            "Требования к изменениям",
+            "Функциональные требования"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -610,7 +664,13 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть A. Новый функционал",
+            "Требования к изменениям",
+            "Функциональные требования"
+          ]
         },
         "atomic_parts": [],
         "entities": {},
@@ -652,7 +712,13 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть A. Новый функционал",
+            "Требования к изменениям",
+            "Функциональные требования"
+          ]
         },
         "atomic_parts": [],
         "entities": {},
@@ -694,7 +760,13 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть A. Новый функционал",
+            "Требования к изменениям",
+            "Функциональные требования"
+          ]
         },
         "atomic_parts": [],
         "entities": {},
@@ -738,7 +810,13 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть A. Новый функционал",
+            "Требования к изменениям",
+            "Функциональные требования"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -786,7 +864,13 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть A. Новый функционал",
+            "Требования к изменениям",
+            "Функциональные требования"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -835,7 +919,13 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть A. Новый функционал",
+            "Требования к изменениям",
+            "Функциональные требования"
+          ]
         },
         "atomic_parts": [],
         "entities": {},
@@ -877,7 +967,13 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть A. Новый функционал",
+            "Требования к изменениям",
+            "Функциональные требования"
+          ]
         },
         "atomic_parts": [],
         "entities": {},
@@ -918,7 +1014,12 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть A. Новый функционал",
+            "Sequence Diagram"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -964,7 +1065,12 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть A. Новый функционал",
+            "Sequence Diagram"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -1009,7 +1115,12 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть A. Новый функционал",
+            "Sequence Diagram"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -1054,7 +1165,12 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть A. Новый функционал",
+            "Нефункциональные требования"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -1099,7 +1215,12 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть A. Новый функционал",
+            "Требования к данным"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -1144,7 +1265,12 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть A. Новый функционал",
+            "Требования к интеграции"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -1191,7 +1317,12 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть A. Новый функционал",
+            "Требования к интеграции"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -1234,7 +1365,12 @@
           "row": 1,
           "cell": null,
           "column": null,
-          "extraction": "table"
+          "extraction": "table",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть A. Новый функционал",
+            "Критерии приемки"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -1277,7 +1413,12 @@
           "row": 2,
           "cell": null,
           "column": null,
-          "extraction": "table"
+          "extraction": "table",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть A. Новый функционал",
+            "Критерии приемки"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -1320,7 +1461,12 @@
           "row": 3,
           "cell": null,
           "column": null,
-          "extraction": "table"
+          "extraction": "table",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть A. Новый функционал",
+            "Критерии приемки"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -1363,7 +1509,12 @@
           "row": 1,
           "cell": null,
           "column": null,
-          "extraction": "table"
+          "extraction": "table",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Общие параметры"
+          ]
         },
         "atomic_parts": [],
         "entities": {},
@@ -1402,7 +1553,12 @@
           "row": 2,
           "cell": null,
           "column": null,
-          "extraction": "table"
+          "extraction": "table",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Общие параметры"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -1445,7 +1601,12 @@
           "row": 3,
           "cell": null,
           "column": null,
-          "extraction": "table"
+          "extraction": "table",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Общие параметры"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -1488,7 +1649,12 @@
           "row": 6,
           "cell": null,
           "column": null,
-          "extraction": "table"
+          "extraction": "table",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Общие параметры"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -1535,7 +1701,12 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Логика работы метода"
+          ]
         },
         "atomic_parts": [],
         "entities": {},
@@ -1576,7 +1747,12 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Логика работы метода"
+          ]
         },
         "atomic_parts": [],
         "entities": {},
@@ -1617,7 +1793,12 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Логика работы метода"
+          ]
         },
         "atomic_parts": [],
         "entities": {},
@@ -1658,7 +1839,12 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Логика работы метода"
+          ]
         },
         "atomic_parts": [],
         "entities": {},
@@ -1699,7 +1885,12 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Логика работы метода"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -1744,7 +1935,12 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Особые правила"
+          ]
         },
         "atomic_parts": [],
         "entities": {},
@@ -1785,7 +1981,12 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Особые правила"
+          ]
         },
         "atomic_parts": [],
         "entities": {},
@@ -1826,7 +2027,12 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Особые правила"
+          ]
         },
         "atomic_parts": [],
         "entities": {},
@@ -1865,7 +2071,12 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Схема"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -1911,7 +2122,13 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Параметры запроса",
+            "Path-параметры"
+          ]
         },
         "atomic_parts": [],
         "entities": {},
@@ -1951,7 +2168,13 @@
           "row": 1,
           "cell": null,
           "column": null,
-          "extraction": "table"
+          "extraction": "table",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Параметры запроса",
+            "Query-параметры"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -1995,7 +2218,13 @@
           "row": 2,
           "cell": null,
           "column": null,
-          "extraction": "table"
+          "extraction": "table",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Параметры запроса",
+            "Query-параметры"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -2039,7 +2268,13 @@
           "row": 3,
           "cell": null,
           "column": null,
-          "extraction": "table"
+          "extraction": "table",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Параметры запроса",
+            "Query-параметры"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -2085,7 +2320,13 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Параметры запроса",
+            "Request body"
+          ]
         },
         "atomic_parts": [],
         "entities": {},
@@ -2127,7 +2368,13 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Параметры запроса",
+            "Request body"
+          ]
         },
         "atomic_parts": [],
         "entities": {},
@@ -2168,7 +2415,12 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Ответ"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -2214,7 +2466,12 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Ответ"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -2258,7 +2515,12 @@
           "row": 1,
           "cell": null,
           "column": null,
-          "extraction": "table"
+          "extraction": "table",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Ответ"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -2301,7 +2563,12 @@
           "row": 2,
           "cell": null,
           "column": null,
-          "extraction": "table"
+          "extraction": "table",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Ответ"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -2344,7 +2611,12 @@
           "row": 3,
           "cell": null,
           "column": null,
-          "extraction": "table"
+          "extraction": "table",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Ответ"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -2387,7 +2659,12 @@
           "row": 4,
           "cell": null,
           "column": null,
-          "extraction": "table"
+          "extraction": "table",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Ответ"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -2432,7 +2709,12 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Статусы"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -2480,7 +2762,12 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Статусы"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -2528,7 +2815,13 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Статусы",
+            "200. Successful — Created"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -2576,7 +2869,13 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Статусы",
+            "200. Successful — Created"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -2622,7 +2921,13 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Статусы",
+            "200. Successful — Created"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -2670,7 +2975,13 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Статусы",
+            "403. Unsuccessful — Forbidden"
+          ]
         },
         "atomic_parts": [],
         "entities": {
@@ -3132,7 +3443,12 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Дизайн процесса UI"
+              ]
             }
           }
         ],
@@ -3199,7 +3515,12 @@
                 "row": null,
                 "cell": null,
                 "column": null,
-                "extraction": "text"
+                "extraction": "text",
+                "section": [
+                  "Уведомление о расходах по карте",
+                  "Часть A. Новый функционал",
+                  "Дизайн процесса UI"
+                ]
               }
             },
             {
@@ -3224,7 +3545,12 @@
                 "row": null,
                 "cell": null,
                 "column": null,
-                "extraction": "text"
+                "extraction": "text",
+                "section": [
+                  "Уведомление о расходах по карте",
+                  "Часть A. Новый функционал",
+                  "Дизайн процесса UI"
+                ]
               }
             }
           ],
@@ -3297,7 +3623,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Требования к изменениям",
+                "Функциональные требования"
+              ]
             }
           }
         ],
@@ -3432,7 +3764,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Требования к изменениям",
+                "Функциональные требования"
+              ]
             }
           },
           {
@@ -3456,7 +3794,12 @@
               "row": 2,
               "cell": 3,
               "column": "Ожидаемый результат",
-              "extraction": "table"
+              "extraction": "table",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Критерии приемки"
+              ]
             }
           }
         ],
@@ -3516,7 +3859,13 @@
                   "row": null,
                   "cell": null,
                   "column": null,
-                  "extraction": "text"
+                  "extraction": "text",
+                  "section": [
+                    "Уведомление о расходах по карте",
+                    "Часть A. Новый функционал",
+                    "Требования к изменениям",
+                    "Функциональные требования"
+                  ]
                 }
               }
             },
@@ -3545,7 +3894,12 @@
                   "row": 2,
                   "cell": 3,
                   "column": "Ожидаемый результат",
-                  "extraction": "table"
+                  "extraction": "table",
+                  "section": [
+                    "Уведомление о расходах по карте",
+                    "Часть A. Новый функционал",
+                    "Критерии приемки"
+                  ]
                 }
               }
             }
@@ -3587,7 +3941,12 @@
                 "row": 2,
                 "cell": 1,
                 "column": "Исходные условия",
-                "extraction": "table"
+                "extraction": "table",
+                "section": [
+                  "Уведомление о расходах по карте",
+                  "Часть A. Новый функционал",
+                  "Критерии приемки"
+                ]
               }
             }
           ],
@@ -3644,7 +4003,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Требования к изменениям",
+                "Функциональные требования"
+              ]
             }
           }
         ],
@@ -3703,7 +4068,13 @@
                   "row": null,
                   "cell": null,
                   "column": null,
-                  "extraction": "text"
+                  "extraction": "text",
+                  "section": [
+                    "Уведомление о расходах по карте",
+                    "Часть A. Новый функционал",
+                    "Требования к изменениям",
+                    "Функциональные требования"
+                  ]
                 }
               }
             },
@@ -3734,7 +4105,13 @@
                   "row": null,
                   "cell": null,
                   "column": null,
-                  "extraction": "text"
+                  "extraction": "text",
+                  "section": [
+                    "Уведомление о расходах по карте",
+                    "Часть A. Новый функционал",
+                    "Требования к изменениям",
+                    "Функциональные требования"
+                  ]
                 }
               }
             }
@@ -3828,7 +4205,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Требования к изменениям",
+                "Функциональные требования"
+              ]
             }
           },
           {
@@ -3854,7 +4237,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Требования к изменениям",
+                "Функциональные требования"
+              ]
             }
           }
         ],
@@ -3914,7 +4303,13 @@
                   "row": null,
                   "cell": null,
                   "column": null,
-                  "extraction": "text"
+                  "extraction": "text",
+                  "section": [
+                    "Уведомление о расходах по карте",
+                    "Часть A. Новый функционал",
+                    "Требования к изменениям",
+                    "Функциональные требования"
+                  ]
                 }
               }
             },
@@ -3945,7 +4340,13 @@
                   "row": null,
                   "cell": null,
                   "column": null,
-                  "extraction": "text"
+                  "extraction": "text",
+                  "section": [
+                    "Уведомление о расходах по карте",
+                    "Часть A. Новый функционал",
+                    "Требования к изменениям",
+                    "Функциональные требования"
+                  ]
                 }
               }
             }
@@ -3985,7 +4386,7 @@
       },
       {
         "id": "F-06",
-        "merged_id": "M-038",
+        "merged_id": "M-039",
         "property": "IND-CORR",
         "defect_type": "incorrect",
         "verdict": "violation",
@@ -4017,7 +4418,12 @@
               "row": 2,
               "cell": 2,
               "column": "Значение",
-              "extraction": "table"
+              "extraction": "table",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть B. REST API",
+                "Общие параметры"
+              ]
             }
           }
         ],
@@ -4047,46 +4453,31 @@
         ],
         "witness": null,
         "test_draft": {
-          "precondition": "Dev-среда. Пользователь вошёл, на его карте demo-42 порог не задан.",
-          "action": "Отправить GET-запрос на /alerts/saveLimit с параметрами cardId=demo-42, amount=50000, enabled=1.; Запросить настройку карты demo-42 и сравнить с состоянием до запроса.",
-          "expected": "[?1]",
+          "precondition": "Есть доступ к Prod-среде, пользователь вошёл, карта принадлежит ему.",
+          "action": "Определить адрес метода сохранения порога на Prod: [?1].; Отправить на него запрос с корректными cardId, amount и enabled.",
+          "expected": "Ответ соответствует контракту Swagger [?2].",
           "gaps": [
-            "каким HTTP-методом вызывается сохранение и должен ли GET менять настройку: в документе указан GET, но операция изменяет состояние, допустимое поведение не определено"
+            "Request URL для Prod: в документе стоит «—», задан только Dev-адрес /alerts/saveLimit",
+            "контракт Swagger: в документе стоит «—», схемы запроса и ответа для сверки нет"
           ],
           "complete": false,
           "steps": [
-            "Отправить GET-запрос на /alerts/saveLimit с параметрами cardId=demo-42, amount=50000, enabled=1.",
-            "Запросить настройку карты demo-42 и сравнить с состоянием до запроса."
+            "Определить адрес метода сохранения порога на Prod: [?1].",
+            "Отправить на него запрос с корректными cardId, amount и enabled."
           ],
-          "values": [
-            {
-              "value": "GET",
-              "quote": "REST type: GET",
-              "verified": true,
-              "anchor": {
-                "char_start": 5159,
-                "char_end": 5174,
-                "block_ids": [
-                  "B063"
-                ],
-                "sentence_ids": [],
-                "line_start": 109,
-                "line_end": 109,
-                "page": null,
-                "page_line": null,
-                "paragraph": null,
-                "table": 5,
-                "row": 2,
-                "cell": null,
-                "column": null,
-                "extraction": "table"
-              }
-            }
-          ],
+          "values": [],
           "gap_items": [
             {
               "number": 1,
-              "missing": "каким HTTP-методом вызывается сохранение и должен ли GET менять настройку: в документе указан GET, но операция изменяет состояние, допустимое поведение не определено",
+              "missing": "Request URL для Prod: в документе стоит «—», задан только Dev-адрес /alerts/saveLimit",
+              "part": "шаги",
+              "replaced": null,
+              "question_id": "Q-01",
+              "question_withdrawn": false
+            },
+            {
+              "number": 2,
+              "missing": "контракт Swagger: в документе стоит «—», схемы запроса и ответа для сверки нет",
               "part": "ожидаемый результат",
               "replaced": null,
               "question_id": "Q-01",
@@ -4102,7 +4493,7 @@
       },
       {
         "id": "F-07",
-        "merged_id": "M-042",
+        "merged_id": "M-043",
         "property": "SET-CONS",
         "defect_type": "contradiction",
         "verdict": "violation",
@@ -4136,7 +4527,12 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть B. REST API",
+                "Логика работы метода"
+              ]
             }
           },
           {
@@ -4162,7 +4558,12 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть B. REST API",
+                "Статусы"
+              ]
             }
           }
         ],
@@ -4191,98 +4592,8 @@
             "checklist_item": "API-03"
           }
         ],
-        "witness": {
-          "scenario": "Владелец карты demo-42 с действующей сессией вызывает метод с amount=999, enabled=1",
-          "readings": [
-            {
-              "quote": "{\"result\":\"ERROR\",\"message\":\"Проверьте сумму\"}",
-              "expectation": "HTTP 200 с телом {\"result\":\"ERROR\",\"message\":\"Проверьте сумму\"}",
-              "reading": "",
-              "located": {
-                "text": "{\"result\":\"ERROR\",\"message\":\"Проверьте сумму\"}",
-                "match": "exact",
-                "score": 100.0,
-                "located": "{\"result\":\"ERROR\",\"message\":\"Проверьте сумму\"}",
-                "anchor": {
-                  "char_start": 7114,
-                  "char_end": 7160,
-                  "block_ids": [
-                    "B108"
-                  ],
-                  "sentence_ids": [],
-                  "line_start": 185,
-                  "line_end": 185,
-                  "page": null,
-                  "page_line": null,
-                  "paragraph": 65,
-                  "table": null,
-                  "row": null,
-                  "cell": null,
-                  "column": null,
-                  "extraction": "text"
-                }
-              }
-            },
-            {
-              "quote": "Ответ в случае, если параметры запроса заполнены неверно.",
-              "expectation": "HTTP 400 с телом {\"message\":\"Некорректный запрос\"}",
-              "reading": "",
-              "located": {
-                "text": "Ответ в случае, если параметры запроса заполнены неверно.",
-                "match": "exact",
-                "score": 100.0,
-                "located": "Ответ в случае, если параметры запроса заполнены неверно.",
-                "anchor": {
-                  "char_start": 6975,
-                  "char_end": 7032,
-                  "block_ids": [
-                    "B104"
-                  ],
-                  "sentence_ids": [
-                    "B104.1"
-                  ],
-                  "line_start": 177,
-                  "line_end": 177,
-                  "page": null,
-                  "page_line": null,
-                  "paragraph": 61,
-                  "table": null,
-                  "row": null,
-                  "cell": null,
-                  "column": null,
-                  "extraction": "text"
-                }
-              }
-            }
-          ],
-          "checked": true,
-          "note": ""
-        },
-        "test_draft": {
-          "precondition": "Dev-среда. Пользователь вошёл. На его карте demo-42 сохранена настройка: порог 50000, enabled=1.",
-          "action": "Отправить запрос на сохранение с cardId=demo-42, amount=999, enabled=1.",
-          "expected": "Ответ [?1]; настройка карты остаётся прежней.",
-          "gaps": [
-            "код и тело ответа на сумму вне диапазона: по разделам логики и 200 это 200 с result=ERROR и message=«Проверьте сумму», по статусу 400 и его телу это 400 с message=«Некорректный запрос»"
-          ],
-          "complete": false,
-          "steps": [
-            "Отправить запрос на сохранение с cardId=demo-42, amount=999, enabled=1."
-          ],
-          "values": [],
-          "gap_items": [
-            {
-              "number": 1,
-              "missing": "код и тело ответа на сумму вне диапазона: по разделам логики и 200 это 200 с result=ERROR и message=«Проверьте сумму», по статусу 400 и его телу это 400 с message=«Некорректный запрос»",
-              "part": "ожидаемый результат",
-              "replaced": null,
-              "question_id": "Q-05",
-              "question_withdrawn": false
-            }
-          ],
-          "note": "",
-          "contested": false
-        },
+        "witness": null,
+        "test_draft": null,
         "critic": null,
         "anchor_corrected": false,
         "notes": []
@@ -4321,7 +4632,12 @@
               "row": 6,
               "cell": 2,
               "column": "Значение",
-              "extraction": "table"
+              "extraction": "table",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Общие сведения"
+              ]
             }
           }
         ],
@@ -4443,7 +4759,12 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Цели"
+              ]
             }
           },
           {
@@ -4469,7 +4790,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Требования к изменениям",
+                "Функциональные требования"
+              ]
             }
           }
         ],
@@ -4528,7 +4855,12 @@
                   "row": null,
                   "cell": null,
                   "column": null,
-                  "extraction": "text"
+                  "extraction": "text",
+                  "section": [
+                    "Уведомление о расходах по карте",
+                    "Часть A. Новый функционал",
+                    "Цели"
+                  ]
                 }
               }
             },
@@ -4559,7 +4891,13 @@
                   "row": null,
                   "cell": null,
                   "column": null,
-                  "extraction": "text"
+                  "extraction": "text",
+                  "section": [
+                    "Уведомление о расходах по карте",
+                    "Часть A. Новый функционал",
+                    "Требования к изменениям",
+                    "Функциональные требования"
+                  ]
                 }
               }
             }
@@ -4570,9 +4908,8 @@
         "test_draft": {
           "precondition": "Активная карта KZT, порог 50 000 ₸, уведомление включено, расходы месяца 48 500 ₸.",
           "action": "Оплатить картой покупку на 1 500 ₸ и зафиксировать время оплаты.; Проверить расходы месяца и наличие push сразу после авторизации и после клиринга.",
-          "expected": "[?1] появляются после события [?2]; push приходит не позже [?3] после покупки; после получения события сервис передаёт push на отправку в течение минуты.",
+          "expected": "Итог 50 000 ₸ и один push появляются после события [?1]; push приходит не позже [?2] после покупки; после получения события сервис передаёт push на отправку в течение минуты.",
           "gaps": [
-            "значение «Итог 50 000 ₸ и один push» модель назвала без цитаты из документа, поэтому оно заменено пропуском",
             "какое событие процессинга (авторизация или клиринг) считается проведением, после которого растут расходы и уходит push",
             "допустимая задержка между покупкой и push (цель говорит «в момент покупки», а срок в документе отсчитывается только от получения события сервисом)"
           ],
@@ -4604,21 +4941,46 @@
                 "row": null,
                 "cell": null,
                 "column": null,
-                "extraction": "text"
+                "extraction": "text",
+                "section": [
+                  "Уведомление о расходах по карте",
+                  "Часть A. Новый функционал",
+                  "Нефункциональные требования"
+                ]
+              }
+            },
+            {
+              "value": "Итог 50 000 ₸ и один push",
+              "quote": "Итог 50 000 ₸ и один push",
+              "verified": true,
+              "anchor": {
+                "char_start": 2781,
+                "char_end": 2806,
+                "block_ids": [
+                  "B038"
+                ],
+                "sentence_ids": [],
+                "line_start": 72,
+                "line_end": 72,
+                "page": null,
+                "page_line": null,
+                "paragraph": null,
+                "table": 2,
+                "row": 1,
+                "cell": 3,
+                "column": "Ожидаемый результат",
+                "extraction": "table",
+                "section": [
+                  "Уведомление о расходах по карте",
+                  "Часть A. Новый функционал",
+                  "Критерии приемки"
+                ]
               }
             }
           ],
           "gap_items": [
             {
               "number": 1,
-              "missing": "значение «Итог 50 000 ₸ и один push» модель назвала без цитаты из документа, поэтому оно заменено пропуском",
-              "part": "ожидаемый результат",
-              "replaced": "Итог 50 000 ₸ и один push",
-              "question_id": "Q-02",
-              "question_withdrawn": false
-            },
-            {
-              "number": 2,
               "missing": "какое событие процессинга (авторизация или клиринг) считается проведением, после которого растут расходы и уходит push",
               "part": "ожидаемый результат",
               "replaced": null,
@@ -4626,7 +4988,7 @@
               "question_withdrawn": false
             },
             {
-              "number": 3,
+              "number": 2,
               "missing": "допустимая задержка между покупкой и push (цель говорит «в момент покупки», а срок в документе отсчитывается только от получения события сервисом)",
               "part": "ожидаемый результат",
               "replaced": null,
@@ -4677,7 +5039,12 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Дизайн процесса UI"
+              ]
             }
           }
         ],
@@ -4746,7 +5113,12 @@
                 "row": null,
                 "cell": null,
                 "column": null,
-                "extraction": "text"
+                "extraction": "text",
+                "section": [
+                  "Уведомление о расходах по карте",
+                  "Часть A. Новый функционал",
+                  "Дизайн процесса UI"
+                ]
               }
             }
           ],
@@ -4827,7 +5199,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Требования к изменениям",
+                "BPMN схема процесса"
+              ]
             }
           }
         ],
@@ -4860,11 +5238,10 @@
         "test_draft": {
           "precondition": "Для каждого шага отдельная активная карта KZT: порог 50 000 ₸, расходы месяца 48 500 ₸, уведомление включено (на шаге 1 выключено).",
           "action": "При выключенном уведомлении провести покупку на 1 500 ₸.; Провести перевод на 1 500 ₸.; Провести покупку на 1 500 ₸ при недоступном сервисе push.; Провести покупку на 1 500 ₸ при исправном сервисе, затем повторно доставить то же событие процессинга.; Провести покупку на 1 500 ₸, дождаться push и провести возврат этой покупки.",
-          "expected": "Шаг 1: [?1]. Шаг 2: переводы исключаются, расходы остаются 48 500 ₸, push нет. Шаг 3: [?2]. Шаг 4: [?3], повторная доставка сохраняет исходный итог. Шаг 5: расходы уменьшаются в месяце исходной покупки, а влияние возврата на отправленный push и признак отправки: [?4].",
+          "expected": "Шаг 1: [?1]. Шаг 2: переводы исключаются, расходы остаются 48 500 ₸, push нет. Шаг 3: [?2]. Шаг 4: итог 50 000 ₸ и один push, повторная доставка сохраняет исходный итог. Шаг 5: расходы уменьшаются в месяце исходной покупки, а влияние возврата на отправленный push и признак отправки: [?3].",
           "gaps": [
             "ветка «уведомление выключено»: отправляется ли push и ведётся ли учёт при enabled=0",
             "ветка «ошибка отправки push»: повторы, признак отправки, судьба события",
-            "значение «Итог 50 000 ₸ и один push» модель назвала без цитаты из документа, поэтому оно заменено пропуском",
             "влияние возврата на уже отправленный push и признак отправки"
           ],
           "complete": false,
@@ -4898,7 +5275,41 @@
                 "row": null,
                 "cell": null,
                 "column": null,
-                "extraction": "text"
+                "extraction": "text",
+                "section": [
+                  "Уведомление о расходах по карте",
+                  "Часть A. Новый функционал",
+                  "Требования к изменениям",
+                  "Функциональные требования"
+                ]
+              }
+            },
+            {
+              "value": "Итог 50 000 ₸ и один push",
+              "quote": "Итог 50 000 ₸ и один push",
+              "verified": true,
+              "anchor": {
+                "char_start": 2781,
+                "char_end": 2806,
+                "block_ids": [
+                  "B038"
+                ],
+                "sentence_ids": [],
+                "line_start": 72,
+                "line_end": 72,
+                "page": null,
+                "page_line": null,
+                "paragraph": null,
+                "table": 2,
+                "row": 1,
+                "cell": 3,
+                "column": "Ожидаемый результат",
+                "extraction": "table",
+                "section": [
+                  "Уведомление о расходах по карте",
+                  "Часть A. Новый функционал",
+                  "Критерии приемки"
+                ]
               }
             },
             {
@@ -4923,7 +5334,12 @@
                 "row": null,
                 "cell": null,
                 "column": null,
-                "extraction": "text"
+                "extraction": "text",
+                "section": [
+                  "Уведомление о расходах по карте",
+                  "Часть A. Новый функционал",
+                  "Требования к интеграции"
+                ]
               }
             }
           ],
@@ -4946,14 +5362,6 @@
             },
             {
               "number": 3,
-              "missing": "значение «Итог 50 000 ₸ и один push» модель назвала без цитаты из документа, поэтому оно заменено пропуском",
-              "part": "ожидаемый результат",
-              "replaced": "Итог 50 000 ₸ и один push",
-              "question_id": null,
-              "question_withdrawn": false
-            },
-            {
-              "number": 4,
               "missing": "влияние возврата на уже отправленный push и признак отправки",
               "part": "ожидаемый результат",
               "replaced": null,
@@ -5004,7 +5412,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Требования к изменениям",
+                "Функциональные требования"
+              ]
             }
           }
         ],
@@ -5120,7 +5534,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Требования к изменениям",
+                "Функциональные требования"
+              ]
             }
           }
         ],
@@ -5179,7 +5599,13 @@
                   "row": null,
                   "cell": null,
                   "column": null,
-                  "extraction": "text"
+                  "extraction": "text",
+                  "section": [
+                    "Уведомление о расходах по карте",
+                    "Часть A. Новый функционал",
+                    "Требования к изменениям",
+                    "Функциональные требования"
+                  ]
                 }
               }
             },
@@ -5210,7 +5636,13 @@
                   "row": null,
                   "cell": null,
                   "column": null,
-                  "extraction": "text"
+                  "extraction": "text",
+                  "section": [
+                    "Уведомление о расходах по карте",
+                    "Часть A. Новый функционал",
+                    "Требования к изменениям",
+                    "Функциональные требования"
+                  ]
                 }
               }
             }
@@ -5284,7 +5716,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Требования к изменениям",
+                "Функциональные требования"
+              ]
             }
           }
         ],
@@ -5355,7 +5793,13 @@
                 "row": null,
                 "cell": null,
                 "column": null,
-                "extraction": "text"
+                "extraction": "text",
+                "section": [
+                  "Уведомление о расходах по карте",
+                  "Часть A. Новый функционал",
+                  "Требования к изменениям",
+                  "Функциональные требования"
+                ]
               }
             }
           ],
@@ -5444,7 +5888,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Требования к изменениям",
+                "Функциональные требования"
+              ]
             }
           }
         ],
@@ -5477,9 +5927,8 @@
         "test_draft": {
           "precondition": "Активная карта KZT, порог 20 000 ₸, уведомление включено, расходы месяца 19 900 ₸.",
           "action": "Перевести 500 ₸ и проверить счётчик.; Списать комиссию банка 500 ₸ и проверить счётчик.; Оплатить услугу в приложении на 500 ₸ и проверить счётчик.; Провести покупку на 500 ₸ с кешбэком и проверить счётчик.; Провести quasi-cash операцию на 500 ₸ и пополнение кошелька на 500 ₸, проверяя счётчик после каждой.",
-          "expected": "После перевода [?1]. После комиссии: [?2]. После оплаты услуги: [?3]. После покупки с кешбэком: [?4]. После quasi-cash: [?5]. После пополнения кошелька: [?6].",
+          "expected": "После перевода счётчик показывает 19 900 ₸. После комиссии: [?1]. После оплаты услуги: [?2]. После покупки с кешбэком: [?3]. После quasi-cash: [?4]. После пополнения кошелька: [?5].",
           "gaps": [
-            "значение «Счётчик показывает 19 900 ₸» модель назвала без цитаты из документа, поэтому оно заменено пропуском",
             "учитываются ли комиссии в расходах",
             "учитываются ли оплата услуг и платежи в приложении",
             "учитывается ли покупка с кешбэком и в какой сумме (до или после кешбэка)",
@@ -5494,18 +5943,39 @@
             "Провести покупку на 500 ₸ с кешбэком и проверить счётчик.",
             "Провести quasi-cash операцию на 500 ₸ и пополнение кошелька на 500 ₸, проверяя счётчик после каждой."
           ],
-          "values": [],
+          "values": [
+            {
+              "value": "Счётчик показывает 19 900 ₸",
+              "quote": "Счётчик показывает 19 900 ₸",
+              "verified": true,
+              "anchor": {
+                "char_start": 2975,
+                "char_end": 3002,
+                "block_ids": [
+                  "B040"
+                ],
+                "sentence_ids": [],
+                "line_start": 74,
+                "line_end": 74,
+                "page": null,
+                "page_line": null,
+                "paragraph": null,
+                "table": 2,
+                "row": 3,
+                "cell": 3,
+                "column": "Ожидаемый результат",
+                "extraction": "table",
+                "section": [
+                  "Уведомление о расходах по карте",
+                  "Часть A. Новый функционал",
+                  "Критерии приемки"
+                ]
+              }
+            }
+          ],
           "gap_items": [
             {
               "number": 1,
-              "missing": "значение «Счётчик показывает 19 900 ₸» модель назвала без цитаты из документа, поэтому оно заменено пропуском",
-              "part": "ожидаемый результат",
-              "replaced": "Счётчик показывает 19 900 ₸",
-              "question_id": null,
-              "question_withdrawn": false
-            },
-            {
-              "number": 2,
               "missing": "учитываются ли комиссии в расходах",
               "part": "ожидаемый результат",
               "replaced": null,
@@ -5513,7 +5983,7 @@
               "question_withdrawn": false
             },
             {
-              "number": 3,
+              "number": 2,
               "missing": "учитываются ли оплата услуг и платежи в приложении",
               "part": "ожидаемый результат",
               "replaced": null,
@@ -5521,7 +5991,7 @@
               "question_withdrawn": false
             },
             {
-              "number": 4,
+              "number": 3,
               "missing": "учитывается ли покупка с кешбэком и в какой сумме (до или после кешбэка)",
               "part": "ожидаемый результат",
               "replaced": null,
@@ -5529,7 +5999,7 @@
               "question_withdrawn": false
             },
             {
-              "number": 5,
+              "number": 4,
               "missing": "учитываются ли quasi-cash операции",
               "part": "ожидаемый результат",
               "replaced": null,
@@ -5537,7 +6007,7 @@
               "question_withdrawn": false
             },
             {
-              "number": 6,
+              "number": 5,
               "missing": "учитывается ли пополнение кошелька",
               "part": "ожидаемый результат",
               "replaced": null,
@@ -5588,7 +6058,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Требования к изменениям",
+                "Функциональные требования"
+              ]
             }
           }
         ],
@@ -5673,7 +6149,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Требования к изменениям",
+                "Функциональные требования"
+              ]
             }
           }
         ],
@@ -5732,7 +6214,13 @@
                   "row": null,
                   "cell": null,
                   "column": null,
-                  "extraction": "text"
+                  "extraction": "text",
+                  "section": [
+                    "Уведомление о расходах по карте",
+                    "Часть A. Новый функционал",
+                    "Требования к изменениям",
+                    "Функциональные требования"
+                  ]
                 }
               }
             },
@@ -5763,7 +6251,13 @@
                   "row": null,
                   "cell": null,
                   "column": null,
-                  "extraction": "text"
+                  "extraction": "text",
+                  "section": [
+                    "Уведомление о расходах по карте",
+                    "Часть A. Новый функционал",
+                    "Требования к изменениям",
+                    "Функциональные требования"
+                  ]
                 }
               }
             }
@@ -5811,7 +6305,13 @@
                 "row": null,
                 "cell": null,
                 "column": null,
-                "extraction": "text"
+                "extraction": "text",
+                "section": [
+                  "Уведомление о расходах по карте",
+                  "Часть A. Новый функционал",
+                  "Требования к изменениям",
+                  "Функциональные требования"
+                ]
               }
             }
           ],
@@ -5892,7 +6392,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Требования к изменениям",
+                "Функциональные требования"
+              ]
             }
           }
         ],
@@ -5961,7 +6467,13 @@
                 "row": null,
                 "cell": null,
                 "column": null,
-                "extraction": "text"
+                "extraction": "text",
+                "section": [
+                  "Уведомление о расходах по карте",
+                  "Часть A. Новый функционал",
+                  "Требования к изменениям",
+                  "Функциональные требования"
+                ]
               }
             }
           ],
@@ -6042,7 +6554,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Требования к изменениям",
+                "Функциональные требования"
+              ]
             }
           }
         ],
@@ -6149,7 +6667,12 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Sequence Diagram"
+              ]
             }
           }
         ],
@@ -6264,7 +6787,12 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Sequence Diagram"
+              ]
             }
           }
         ],
@@ -6322,7 +6850,12 @@
                   "row": null,
                   "cell": null,
                   "column": null,
-                  "extraction": "text"
+                  "extraction": "text",
+                  "section": [
+                    "Уведомление о расходах по карте",
+                    "Часть A. Новый функционал",
+                    "Sequence Diagram"
+                  ]
                 }
               }
             },
@@ -6353,7 +6886,12 @@
                   "row": null,
                   "cell": null,
                   "column": null,
-                  "extraction": "text"
+                  "extraction": "text",
+                  "section": [
+                    "Уведомление о расходах по карте",
+                    "Часть A. Новый функционал",
+                    "Sequence Diagram"
+                  ]
                 }
               }
             }
@@ -6399,7 +6937,12 @@
                 "row": null,
                 "cell": null,
                 "column": null,
-                "extraction": "text"
+                "extraction": "text",
+                "section": [
+                  "Уведомление о расходах по карте",
+                  "Часть A. Новый функционал",
+                  "Sequence Diagram"
+                ]
               }
             }
           ],
@@ -6409,7 +6952,7 @@
               "missing": "формат отображения карты (маска): документ называет только «последние четыре цифры»",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-10",
+              "question_id": "Q-11",
               "question_withdrawn": false
             },
             {
@@ -6417,7 +6960,7 @@
               "missing": "какая именно сумма передаётся: покупки (1 500 ₸), расходов месяца (50 000 ₸) или порога",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-10",
+              "question_id": "Q-11",
               "question_withdrawn": false
             },
             {
@@ -6425,7 +6968,7 @@
               "missing": "формат суммы: тенге или тиыны, разделители, символ валюты",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-10",
+              "question_id": "Q-11",
               "question_withdrawn": false
             },
             {
@@ -6433,7 +6976,7 @@
               "missing": "шаблон текста push и язык сообщения",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-10",
+              "question_id": "Q-11",
               "question_withdrawn": false
             }
           ],
@@ -6480,7 +7023,12 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Нефункциональные требования"
+              ]
             }
           }
         ],
@@ -6593,7 +7141,12 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Требования к данным"
+              ]
             }
           }
         ],
@@ -6605,21 +7158,14 @@
           "Часть A. Новый функционал",
           "Требования к данным"
         ],
-        "explanation": "без срока хранения и требований к защите данных о покупках клиента нельзя проверить удаление и защиту.",
-        "suggestion": "Данные операций хранятся [уточнить: срок] и затем удаляются; идентификатор карты — токен, а не номер карты; [уточнить: требования к шифрованию]",
-        "title": "Не заданы срок хранения и защита данных карты",
+        "explanation": "правила Ф-1–Ф-4 и R-12.2 читают данные, для которых в модели нет места.",
+        "suggestion": "Хранить: идентификатор карты, признак включения, порог в тиынах, дату изменения порога; по операции: идентификатор события, тип, дату и время покупки, сумму в тиынах, идентификатор исходной покупки для возврата; по месяцу: расходы и признак отправки",
+        "title": "Модель данных не покрывает правила",
         "scenario": null,
-        "test_gap": "Не заданы: срок хранения операций и месячных итогов; что такое идентификатор карты (номер карты или токен); маскирование; шифрование.",
+        "test_gap": "Не хватает полей: - признак включения уведомления (enabled); - тип операции (покупка или возврат); - ссылка возврата на исходную покупку; - дата и время покупки; - накопленная сумма за месяц; - момент смены порога (для Ф-4); - идентификатор события процессинга для дедупликации.",
         "found_in": 1,
         "of": 1,
         "sources": [
-          {
-            "kind": "pass",
-            "pass_index": 1,
-            "rule_id": null,
-            "call_id": "search.1",
-            "checklist_item": null
-          },
           {
             "kind": "pass",
             "pass_index": 1,
@@ -6668,7 +7214,12 @@
                 "row": null,
                 "cell": null,
                 "column": null,
-                "extraction": "text"
+                "extraction": "text",
+                "section": [
+                  "Уведомление о расходах по карте",
+                  "Часть A. Новый функционал",
+                  "Требования к данным"
+                ]
               }
             }
           ],
@@ -6678,7 +7229,7 @@
               "missing": "срок хранения операций и месячных итогов",
               "part": "предусловие",
               "replaced": null,
-              "question_id": "Q-11",
+              "question_id": "Q-07",
               "question_withdrawn": false
             },
             {
@@ -6686,7 +7237,7 @@
               "missing": "что такое идентификатор карты: номер карты или токен",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-11",
+              "question_id": "Q-07",
               "question_withdrawn": false
             },
             {
@@ -6694,7 +7245,7 @@
               "missing": "требования к маскированию данных карты в хранилище",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-11",
+              "question_id": "Q-07",
               "question_withdrawn": false
             },
             {
@@ -6702,7 +7253,7 @@
               "missing": "требования к шифрованию хранимых данных",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-11",
+              "question_id": "Q-07",
               "question_withdrawn": false
             }
           ],
@@ -6715,7 +7266,108 @@
       },
       {
         "id": "F-24",
-        "merged_id": "M-030",
+        "merged_id": "M-029",
+        "property": "IND-COMPL",
+        "defect_type": "incomplete",
+        "verdict": "violation",
+        "scope": "requirement",
+        "severity": "major",
+        "severity_hint": "major",
+        "severity_basis": "тип «неполнота», мешает написать тест-кейс: «критично»; подсказка модели «важно»: не выше «важно»",
+        "severity_disputed": false,
+        "blocks_testing": true,
+        "quotes": [
+          {
+            "text": "Хранить идентификатор карты, месяц, идентификатор операции, сумму покупки в тиынах, признак отправки и порог в тенге.",
+            "match": "exact",
+            "score": 100.0,
+            "located": "Хранить идентификатор карты, месяц, идентификатор операции, сумму покупки в тиынах, признак отправки и порог в тенге.",
+            "anchor": {
+              "char_start": 2242,
+              "char_end": 2359,
+              "block_ids": [
+                "B031"
+              ],
+              "sentence_ids": [
+                "B031.1"
+              ],
+              "line_start": 57,
+              "line_end": 57,
+              "page": null,
+              "page_line": null,
+              "paragraph": 25,
+              "table": null,
+              "row": null,
+              "cell": null,
+              "column": null,
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Требования к данным"
+              ]
+            }
+          }
+        ],
+        "requirement_ids": [
+          "R-11"
+        ],
+        "section_path": [
+          "Уведомление о расходах по карте",
+          "Часть A. Новый функционал",
+          "Требования к данным"
+        ],
+        "explanation": "без срока хранения и требований к защите данных о покупках клиента нельзя проверить удаление и защиту.",
+        "suggestion": "Данные операций хранятся [уточнить: срок] и затем удаляются; идентификатор карты — токен, а не номер карты; [уточнить: требования к шифрованию]",
+        "title": "Не заданы срок хранения и защита данных карты",
+        "scenario": null,
+        "test_gap": "Не заданы: срок хранения операций и месячных итогов; что такое идентификатор карты (номер карты или токен); маскирование; шифрование.",
+        "found_in": 1,
+        "of": 1,
+        "sources": [
+          {
+            "kind": "pass",
+            "pass_index": 1,
+            "rule_id": null,
+            "call_id": "search.1",
+            "checklist_item": null
+          }
+        ],
+        "witness": null,
+        "test_draft": {
+          "precondition": "Карта активная KZT, уведомление включено, push в этом месяце не отправлялся. Расходы месяца заданы так, что после операции они равны 4 999 999 тиынам.",
+          "action": "Сохранить порог 50 000 (amount=50000, в тенге) при включённом уведомлении.; Провести покупку, после которой расходы месяца равны 4 999 999 тиынам.; Проверить, передан ли push в сервис push.",
+          "expected": "Push [?1].",
+          "gaps": [
+            "в каких единицах сравниваются расходы (хранятся в тиынах) и порог (хранится в тенге): приводится ли порог к тиынам или расходы округляются до тенге; от этого зависит, достигнут ли порог при 4 999 999 тиынах"
+          ],
+          "complete": false,
+          "steps": [
+            "Сохранить порог 50 000 (amount=50000, в тенге) при включённом уведомлении.",
+            "Провести покупку, после которой расходы месяца равны 4 999 999 тиынам.",
+            "Проверить, передан ли push в сервис push."
+          ],
+          "values": [],
+          "gap_items": [
+            {
+              "number": 1,
+              "missing": "в каких единицах сравниваются расходы (хранятся в тиынах) и порог (хранится в тенге): приводится ли порог к тиынам или расходы округляются до тенге; от этого зависит, достигнут ли порог при 4 999 999 тиынах",
+              "part": "ожидаемый результат",
+              "replaced": null,
+              "question_id": "Q-07",
+              "question_withdrawn": false
+            }
+          ],
+          "note": "Входные данные выбраны тестировщиком для проверки границы. Правила сравнения единиц в документе нет.",
+          "contested": false
+        },
+        "critic": null,
+        "anchor_corrected": false,
+        "notes": []
+      },
+      {
+        "id": "F-25",
+        "merged_id": "M-031",
         "property": "IND-UNAMB",
         "defect_type": "ambiguous",
         "verdict": "violation",
@@ -6749,7 +7401,12 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Требования к интеграции"
+              ]
             }
           }
         ],
@@ -6777,64 +7434,15 @@
             "checklist_item": "API-05"
           }
         ],
-        "witness": {
-          "scenario": "",
-          "readings": [],
-          "checked": false,
-          "note": "Свидетель не построен: При повторе итог не меняется, поэтому нет перехода «ниже порога → порог или выше» из Ф-3, и уже действует месячный лимит. Push не отправляется при любом толковании «итога»."
-        },
-        "test_draft": {
-          "precondition": "Карта активная KZT, уведомление включено, порог 50 000 ₸, расходы месяца 48 500 ₸, push в этом месяце не отправлялся.",
-          "action": "Провести покупку на 1 500 ₸; убедиться, что передан [?1].; Повторно доставить то же событие процессинга: [?2].; Повторно доставить событие возврата по этой покупке дважды.",
-          "expected": "Итог расходов остаётся 50 000 ₸ после повторной доставки покупки и не меняется при повторном возврате. Повторный push после повторной доставки покупки: [?3].",
-          "gaps": [
-            "значение «один push» модель назвала без цитаты из документа, поэтому оно заменено пропуском",
-            "по какому ключу событие считается тем же (идентификатор операции, идентификатор события или сочетание полей), в том числе для события возврата",
-            "запрещён ли повторный push при повторной доставке события, после которого уже отправлен push"
-          ],
-          "complete": false,
-          "steps": [
-            "Провести покупку на 1 500 ₸; убедиться, что передан [?1].",
-            "Повторно доставить то же событие процессинга: [?2].",
-            "Повторно доставить событие возврата по этой покупке дважды."
-          ],
-          "values": [],
-          "gap_items": [
-            {
-              "number": 1,
-              "missing": "значение «один push» модель назвала без цитаты из документа, поэтому оно заменено пропуском",
-              "part": "шаги",
-              "replaced": "один push",
-              "question_id": null,
-              "question_withdrawn": false
-            },
-            {
-              "number": 2,
-              "missing": "по какому ключу событие считается тем же (идентификатор операции, идентификатор события или сочетание полей), в том числе для события возврата",
-              "part": "шаги",
-              "replaced": null,
-              "question_id": null,
-              "question_withdrawn": false
-            },
-            {
-              "number": 3,
-              "missing": "запрещён ли повторный push при повторной доставке события, после которого уже отправлен push",
-              "part": "ожидаемый результат",
-              "replaced": null,
-              "question_id": null,
-              "question_withdrawn": false
-            }
-          ],
-          "note": "",
-          "contested": false
-        },
+        "witness": null,
+        "test_draft": null,
         "critic": null,
         "anchor_corrected": false,
         "notes": []
       },
       {
-        "id": "F-25",
-        "merged_id": "M-032",
+        "id": "F-26",
+        "merged_id": "M-033",
         "property": "SET-COMPL",
         "defect_type": "incomplete",
         "verdict": "violation",
@@ -6866,7 +7474,12 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Критерии приемки"
+              ]
             }
           }
         ],
@@ -6894,315 +7507,50 @@
         ],
         "witness": null,
         "test_draft": {
-          "precondition": "Карта активная KZT, у тестировщика есть токен владельца карты и доступ к API сохранения порога. Расходы месяца известны.",
-          "action": "Сохранить порог поочерёдно 999, 1 000, 1 000 000 и 1 000 001 ₸.; При включённом уведомлении довести расходы до порога, вернуть часть покупки так, чтобы расходы упали ниже порога, и снова довести до порога в том же месяце.; После push изменить порог на более высокий и довести расходы до нового порога.; Провести снятие наличных; затем при выключенном уведомлении довести расходы до порога.; Повторно доставить событие покупки; отправить запрос без токена и запрос с чужим cardId.",
-          "expected": "Шаг 1: порог от 1 000 до 1 000 000 ₸ включительно сохраняется (1 000 и 1 000 000), 999 и 1 000 001 отклоняются, форма отклонения [?1]. Шаг 2: второй push не отправляется (максимум один за месяц). Шаг 3: число push [?2]. Шаг 4: снятие наличных не меняет расходы; возврат уменьшает расходы месяца исходной покупки; при выключенном уведомлении push [?3]. Шаг 5: итог расходов не меняется, повторный push [?4]; запрос без токена получает 401 с сообщением «Требуется вход», чужая карта получает 404 с сообщением «Карта не найдена».",
-          "gaps": [
-            "как отклоняется сумма вне диапазона: HTTP 200 с result=ERROR и сообщением «Проверьте сумму» (раздел «Логика работы метода» и пример под заголовком 200) или 400 «Некорректный запрос» (раздел «Статусы»); документ называет оба варианта",
-            "число push после смены порога в том же месяце: Ф-3 и Ф-4 противоречат друг другу",
-            "что происходит при выключенном уведомлении, когда расходы достигают порога: документ задаёт только состояние по умолчанию",
-            "отправляется ли повторный push при повторной доставке события, после которого уже был push"
-          ],
-          "complete": false,
-          "steps": [
-            "Сохранить порог поочерёдно 999, 1 000, 1 000 000 и 1 000 001 ₸.",
-            "При включённом уведомлении довести расходы до порога, вернуть часть покупки так, чтобы расходы упали ниже порога, и снова довести до порога в том же месяце.",
-            "После push изменить порог на более высокий и довести расходы до нового порога.",
-            "Провести снятие наличных; затем при выключенном уведомлении довести расходы до порога.",
-            "Повторно доставить событие покупки; отправить запрос без токена и запрос с чужим cardId."
-          ],
-          "values": [
-            {
-              "value": "от 1 000 до 1 000 000 ₸ включительно",
-              "quote": "Держатель активной карты KZT задаёт целый порог от 1 000 до 1 000 000 ₸ включительно.",
-              "verified": true,
-              "anchor": {
-                "char_start": 1245,
-                "char_end": 1330,
-                "block_ids": [
-                  "B022"
-                ],
-                "sentence_ids": [
-                  "B022.2"
-                ],
-                "line_start": 39,
-                "line_end": 39,
-                "page": null,
-                "page_line": null,
-                "paragraph": 16,
-                "table": null,
-                "row": null,
-                "cell": null,
-                "column": null,
-                "extraction": "text"
-              }
-            },
-            {
-              "value": "максимум один",
-              "quote": "На карту приходится максимум один такой push за календарный месяц.",
-              "verified": true,
-              "anchor": {
-                "char_start": 1668,
-                "char_end": 1734,
-                "block_ids": [
-                  "B024"
-                ],
-                "sentence_ids": [
-                  "B024.3"
-                ],
-                "line_start": 43,
-                "line_end": 43,
-                "page": null,
-                "page_line": null,
-                "paragraph": 18,
-                "table": null,
-                "row": null,
-                "cell": null,
-                "column": null,
-                "extraction": "text"
-              }
-            },
-            {
-              "value": "уменьшает расходы месяца исходной покупки",
-              "quote": "Возврат уменьшает расходы месяца исходной покупки.",
-              "verified": true,
-              "anchor": {
-                "char_start": 1469,
-                "char_end": 1519,
-                "block_ids": [
-                  "B023"
-                ],
-                "sentence_ids": [
-                  "B023.4"
-                ],
-                "line_start": 41,
-                "line_end": 41,
-                "page": null,
-                "page_line": null,
-                "paragraph": 17,
-                "table": null,
-                "row": null,
-                "cell": null,
-                "column": null,
-                "extraction": "text"
-              }
-            },
-            {
-              "value": "401",
-              "quote": "401. Unsuccessful — Unauthorized",
-              "verified": true,
-              "anchor": {
-                "char_start": 7428,
-                "char_end": 7460,
-                "block_ids": [
-                  "B114"
-                ],
-                "sentence_ids": [],
-                "line_start": 195,
-                "line_end": 195,
-                "page": null,
-                "page_line": null,
-                "paragraph": 69,
-                "table": null,
-                "row": null,
-                "cell": null,
-                "column": null,
-                "extraction": "text"
-              }
-            },
-            {
-              "value": "Требуется вход",
-              "quote": "{\"message\":\"Требуется вход\"}",
-              "verified": true,
-              "anchor": {
-                "char_start": 7462,
-                "char_end": 7490,
-                "block_ids": [
-                  "B115"
-                ],
-                "sentence_ids": [],
-                "line_start": 197,
-                "line_end": 197,
-                "page": null,
-                "page_line": null,
-                "paragraph": 70,
-                "table": null,
-                "row": null,
-                "cell": null,
-                "column": null,
-                "extraction": "text"
-              }
-            },
-            {
-              "value": "404",
-              "quote": "Для чужой карты возвращается 404, как и для отсутствующей карты.",
-              "verified": true,
-              "anchor": {
-                "char_start": 7523,
-                "char_end": 7587,
-                "block_ids": [
-                  "B117"
-                ],
-                "sentence_ids": [
-                  "B117.1"
-                ],
-                "line_start": 201,
-                "line_end": 201,
-                "page": null,
-                "page_line": null,
-                "paragraph": 72,
-                "table": null,
-                "row": null,
-                "cell": null,
-                "column": null,
-                "extraction": "text"
-              }
-            },
-            {
-              "value": "Карта не найдена",
-              "quote": "{\"message\":\"Карта не найдена\"}",
-              "verified": true,
-              "anchor": {
-                "char_start": 7593,
-                "char_end": 7623,
-                "block_ids": [
-                  "B118"
-                ],
-                "sentence_ids": [],
-                "line_start": 204,
-                "line_end": 204,
-                "page": null,
-                "page_line": null,
-                "paragraph": 73,
-                "table": null,
-                "row": null,
-                "cell": null,
-                "column": null,
-                "extraction": "text"
-              }
-            }
-          ],
-          "gap_items": [
-            {
-              "number": 1,
-              "missing": "как отклоняется сумма вне диапазона: HTTP 200 с result=ERROR и сообщением «Проверьте сумму» (раздел «Логика работы метода» и пример под заголовком 200) или 400 «Некорректный запрос» (раздел «Статусы»); документ называет оба варианта",
-              "part": "ожидаемый результат",
-              "replaced": null,
-              "question_id": null,
-              "question_withdrawn": false
-            },
-            {
-              "number": 2,
-              "missing": "число push после смены порога в том же месяце: Ф-3 и Ф-4 противоречат друг другу",
-              "part": "ожидаемый результат",
-              "replaced": null,
-              "question_id": null,
-              "question_withdrawn": false
-            },
-            {
-              "number": 3,
-              "missing": "что происходит при выключенном уведомлении, когда расходы достигают порога: документ задаёт только состояние по умолчанию",
-              "part": "ожидаемый результат",
-              "replaced": null,
-              "question_id": null,
-              "question_withdrawn": false
-            },
-            {
-              "number": 4,
-              "missing": "отправляется ли повторный push при повторной доставке события, после которого уже был push",
-              "part": "ожидаемый результат",
-              "replaced": null,
-              "question_id": null,
-              "question_withdrawn": false
-            }
-          ],
-          "note": "Тест сгруппирован по списку отсутствующих критериев из находки. Для сценариев, где документ даёт значение, оно записано.",
-          "contested": false
-        },
-        "critic": null,
-        "anchor_corrected": false,
-        "notes": []
-      },
-      {
-        "id": "F-26",
-        "merged_id": "M-033",
-        "property": "IND-VERIF",
-        "defect_type": "incomplete",
-        "verdict": "violation",
-        "scope": "requirement",
-        "severity": "major",
-        "severity_hint": "major",
-        "severity_basis": "тип «неполнота», мешает написать тест-кейс: «критично»; подсказка модели «важно»: не выше «важно»",
-        "severity_disputed": false,
-        "blocks_testing": true,
-        "quotes": [
-          {
-            "text": "Расходы 48 500 ₸, порог 50 000 ₸",
-            "match": "exact",
-            "score": 100.0,
-            "located": "Расходы 48 500 ₸, порог 50 000 ₸",
-            "anchor": {
-              "char_start": 2716,
-              "char_end": 2748,
-              "block_ids": [
-                "B038"
-              ],
-              "sentence_ids": [],
-              "line_start": 72,
-              "line_end": 72,
-              "page": null,
-              "page_line": null,
-              "paragraph": null,
-              "table": 2,
-              "row": 1,
-              "cell": 1,
-              "column": "Исходные условия",
-              "extraction": "table"
-            }
-          }
-        ],
-        "requirement_ids": [
-          "R-13"
-        ],
-        "section_path": [
-          "Уведомление о расходах по карте",
-          "Часть A. Новый функционал",
-          "Критерии приемки"
-        ],
-        "explanation": "ожидаемый «один push» верен только при условиях, которые в критерии не указаны.",
-        "suggestion": "Исходные условия: уведомление включено, расходы текущего месяца 48 500 ₸, порог 50 000 ₸, push в этом месяце не отправлялся; Действие: провести покупку на 1 500 ₸ в текущем месяце; Ожидаемый результат: расходы 50 000 ₸, передан один push",
-        "title": "В критерии приёмки не хватает исходных условий",
-        "scenario": null,
-        "test_gap": "Не заданы: включено ли уведомление; был ли push в этом месяце; менялся ли порог в этом месяце; тип операции (покупка); месяц покупки.",
-        "found_in": 1,
-        "of": 1,
-        "sources": [
-          {
-            "kind": "pass",
-            "pass_index": 1,
-            "rule_id": null,
-            "call_id": "search.1",
-            "checklist_item": null
-          }
-        ],
-        "witness": null,
-        "test_draft": {
           "precondition": "Карта активная KZT, расходы месяца 48 500 ₸, порог 50 000 ₸. Уведомление [?1]. Push в этом месяце [?2]. Порог в этом месяце [?3]. Месяц и дата совершения покупки: [?4].",
           "action": "Провести покупку на 1 500 ₸.; Проверить итог расходов и число переданных push.",
-          "expected": "Итог 50 000 ₸ и [?5].",
+          "expected": "Итог 50 000 ₸ и один push.",
           "gaps": [
             "включено ли уведомление в исходных условиях критерия: Ф-1 задаёт только состояние по умолчанию (выключено)",
             "был ли уже отправлен push по карте в этом месяце: от этого зависит, верен ли «один push»",
             "менялся ли порог в этом месяце: Ф-3 и Ф-4 противоречат друг другу по числу push после смены порога",
-            "в каком месяце совершена и проведена покупка: без этого неясно, что расходы 48 500 ₸ относятся к тому же месяцу",
-            "значение «один push» модель назвала без цитаты из документа, поэтому оно заменено пропуском"
+            "в каком месяце совершена и проведена покупка: без этого неясно, что расходы 48 500 ₸ относятся к тому же месяцу"
           ],
           "complete": false,
           "steps": [
             "Провести покупку на 1 500 ₸.",
             "Проверить итог расходов и число переданных push."
           ],
-          "values": [],
+          "values": [
+            {
+              "value": "один push",
+              "quote": "Итог 50 000 ₸ и один push",
+              "verified": true,
+              "anchor": {
+                "char_start": 2781,
+                "char_end": 2806,
+                "block_ids": [
+                  "B038"
+                ],
+                "sentence_ids": [],
+                "line_start": 72,
+                "line_end": 72,
+                "page": null,
+                "page_line": null,
+                "paragraph": null,
+                "table": 2,
+                "row": 1,
+                "cell": 3,
+                "column": "Ожидаемый результат",
+                "extraction": "table",
+                "section": [
+                  "Уведомление о расходах по карте",
+                  "Часть A. Новый функционал",
+                  "Критерии приемки"
+                ]
+              }
+            }
+          ],
           "gap_items": [
             {
               "number": 1,
@@ -7235,14 +7583,6 @@
               "replaced": null,
               "question_id": null,
               "question_withdrawn": false
-            },
-            {
-              "number": 5,
-              "missing": "значение «один push» модель назвала без цитаты из документа, поэтому оно заменено пропуском",
-              "part": "ожидаемый результат",
-              "replaced": "один push",
-              "question_id": null,
-              "question_withdrawn": false
             }
           ],
           "note": "Тип операции в критерии задан («Провести покупку»). Не хватает остальных исходных условий.",
@@ -7254,7 +7594,80 @@
       },
       {
         "id": "F-27",
-        "merged_id": "M-037",
+        "merged_id": "M-034",
+        "property": "IND-VERIF",
+        "defect_type": "incomplete",
+        "verdict": "violation",
+        "scope": "requirement",
+        "severity": "major",
+        "severity_hint": "major",
+        "severity_basis": "тип «неполнота», мешает написать тест-кейс: «критично»; подсказка модели «важно»: не выше «важно»",
+        "severity_disputed": false,
+        "blocks_testing": true,
+        "quotes": [
+          {
+            "text": "Расходы 48 500 ₸, порог 50 000 ₸",
+            "match": "exact",
+            "score": 100.0,
+            "located": "Расходы 48 500 ₸, порог 50 000 ₸",
+            "anchor": {
+              "char_start": 2716,
+              "char_end": 2748,
+              "block_ids": [
+                "B038"
+              ],
+              "sentence_ids": [],
+              "line_start": 72,
+              "line_end": 72,
+              "page": null,
+              "page_line": null,
+              "paragraph": null,
+              "table": 2,
+              "row": 1,
+              "cell": 1,
+              "column": "Исходные условия",
+              "extraction": "table",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Критерии приемки"
+              ]
+            }
+          }
+        ],
+        "requirement_ids": [
+          "R-13"
+        ],
+        "section_path": [
+          "Уведомление о расходах по карте",
+          "Часть A. Новый функционал",
+          "Критерии приемки"
+        ],
+        "explanation": "ожидаемый «один push» верен только при условиях, которые в критерии не указаны.",
+        "suggestion": "Исходные условия: уведомление включено, расходы текущего месяца 48 500 ₸, порог 50 000 ₸, push в этом месяце не отправлялся; Действие: провести покупку на 1 500 ₸ в текущем месяце; Ожидаемый результат: расходы 50 000 ₸, передан один push",
+        "title": "В критерии приёмки не хватает исходных условий",
+        "scenario": null,
+        "test_gap": "Не заданы: включено ли уведомление; был ли push в этом месяце; менялся ли порог в этом месяце; тип операции (покупка); месяц покупки.",
+        "found_in": 1,
+        "of": 1,
+        "sources": [
+          {
+            "kind": "pass",
+            "pass_index": 1,
+            "rule_id": null,
+            "call_id": "search.1",
+            "checklist_item": null
+          }
+        ],
+        "witness": null,
+        "test_draft": null,
+        "critic": null,
+        "anchor_corrected": false,
+        "notes": []
+      },
+      {
+        "id": "F-28",
+        "merged_id": "M-038",
         "property": "SET-CONS",
         "defect_type": "contradiction",
         "verdict": "violation",
@@ -7286,7 +7699,12 @@
               "row": 1,
               "cell": 2,
               "column": "Значение",
-              "extraction": "table"
+              "extraction": "table",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть B. REST API",
+                "Общие параметры"
+              ]
             }
           }
         ],
@@ -7314,90 +7732,56 @@
             "checklist_item": null
           }
         ],
-        "witness": {
-          "scenario": "Действующая настройка карты demo-42: порог 30 000 ₸, enabled=0. Клиент вызывает /alerts/saveLimit с cardId=demo-42, amount=50000, enabled=1",
-          "readings": [
-            {
-              "quote": "Сохранение порога. Функциональные требования: чтение порога",
-              "expectation": "настройка заменена: порог 50 000 ₸, enabled=1",
-              "reading": "метод сохраняет порог (Description)",
-              "located": {
-                "text": "Сохранение порога. Функциональные требования: чтение порога",
-                "match": "exact",
-                "score": 100.0,
-                "located": "Сохранение порога. Функциональные требования: чтение порога",
-                "anchor": {
-                  "char_start": 5099,
-                  "char_end": 5158,
-                  "block_ids": [
-                    "B062"
-                  ],
-                  "sentence_ids": [],
-                  "line_start": 108,
-                  "line_end": 108,
-                  "page": null,
-                  "page_line": null,
-                  "paragraph": null,
-                  "table": 5,
-                  "row": 1,
-                  "cell": 2,
-                  "column": "Значение",
-                  "extraction": "table"
-                }
-              }
-            },
-            {
-              "quote": "Сохранение порога. Функциональные требования: чтение порога",
-              "expectation": "настройка не изменилась, в ответе порог 30 000 ₸ и enabled=0",
-              "reading": "метод реализует функциональное требование чтения порога",
-              "located": {
-                "text": "Сохранение порога. Функциональные требования: чтение порога",
-                "match": "exact",
-                "score": 100.0,
-                "located": "Сохранение порога. Функциональные требования: чтение порога",
-                "anchor": {
-                  "char_start": 5099,
-                  "char_end": 5158,
-                  "block_ids": [
-                    "B062"
-                  ],
-                  "sentence_ids": [],
-                  "line_start": 108,
-                  "line_end": 108,
-                  "page": null,
-                  "page_line": null,
-                  "paragraph": null,
-                  "table": 5,
-                  "row": 1,
-                  "cell": 2,
-                  "column": "Значение",
-                  "extraction": "table"
-                }
-              }
-            }
-          ],
-          "checked": false,
-          "note": "Код отклонил свидетеля: у противоречия меньше двух разных мест документа."
-        },
+        "witness": null,
         "test_draft": {
-          "precondition": "Dev-среда. Пользователь вошёл, карта demo-42 принадлежит ему.",
-          "action": "Вызвать метод /alerts/saveLimit с параметрами cardId=demo-42, amount=50000, enabled=1.",
-          "expected": "Метод выполняет операцию [?1]; ответ и состояние настройки карты соответствуют этой операции.",
+          "precondition": "Dev-среда. Пользователь вошёл, на его карте demo-42 порог не задан.",
+          "action": "Отправить GET-запрос на /alerts/saveLimit с параметрами cardId=demo-42, amount=50000, enabled=1.; Запросить настройку карты demo-42 и сравнить с состоянием до запроса.",
+          "expected": "[?1]",
           "gaps": [
-            "назначение метода: в описании написано «Сохранение порога», а в ссылке на функциональные требования «чтение порога»; неизвестно, сохраняет метод порог или возвращает текущий"
+            "каким HTTP-методом вызывается сохранение и должен ли GET менять настройку: в документе указан GET, но операция изменяет состояние, допустимое поведение не определено"
           ],
           "complete": false,
           "steps": [
-            "Вызвать метод /alerts/saveLimit с параметрами cardId=demo-42, amount=50000, enabled=1."
+            "Отправить GET-запрос на /alerts/saveLimit с параметрами cardId=demo-42, amount=50000, enabled=1.",
+            "Запросить настройку карты demo-42 и сравнить с состоянием до запроса."
           ],
-          "values": [],
+          "values": [
+            {
+              "value": "GET",
+              "quote": "REST type | GET",
+              "verified": true,
+              "anchor": {
+                "char_start": 5159,
+                "char_end": 5174,
+                "block_ids": [
+                  "B063"
+                ],
+                "sentence_ids": [],
+                "line_start": 109,
+                "line_end": 109,
+                "page": null,
+                "page_line": null,
+                "paragraph": null,
+                "table": 5,
+                "row": 2,
+                "cell": null,
+                "column": null,
+                "extraction": "table",
+                "section": [
+                  "Уведомление о расходах по карте",
+                  "Часть B. REST API",
+                  "Общие параметры"
+                ]
+              }
+            }
+          ],
           "gap_items": [
             {
               "number": 1,
-              "missing": "назначение метода: в описании написано «Сохранение порога», а в ссылке на функциональные требования «чтение порога»; неизвестно, сохраняет метод порог или возвращает текущий",
+              "missing": "каким HTTP-методом вызывается сохранение и должен ли GET менять настройку: в документе указан GET, но операция изменяет состояние, допустимое поведение не определено",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-08",
+              "question_id": "Q-09",
               "question_withdrawn": false
             }
           ],
@@ -7409,8 +7793,8 @@
         "notes": []
       },
       {
-        "id": "F-28",
-        "merged_id": "M-040",
+        "id": "F-29",
+        "merged_id": "M-041",
         "property": "IND-COMPL",
         "defect_type": "incomplete",
         "verdict": "unclear",
@@ -7442,7 +7826,12 @@
               "row": 7,
               "cell": 2,
               "column": "Значение",
-              "extraction": "table"
+              "extraction": "table",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть B. REST API",
+                "Общие параметры"
+              ]
             }
           }
         ],
@@ -7466,103 +7855,6 @@
             "rule_id": null,
             "call_id": "search.1",
             "checklist_item": "API-07"
-          }
-        ],
-        "witness": null,
-        "test_draft": {
-          "precondition": "Dev-среда с доступом к журналам сервера и прокси. Пользователь вошёл, карта demo-42 принадлежит ему.",
-          "action": "Отправить запрос на сохранение порога с cardId=demo-42, amount=50000, enabled=1.; Найти в журналах сервера и прокси строку этого запроса.",
-          "expected": "Значение cardId в журнале [?1].",
-          "gaps": [
-            "чувствительно ли значение cardId (токен или номер карты) и допустимо ли писать его в журналы открытым или нужно маскировать"
-          ],
-          "complete": false,
-          "steps": [
-            "Отправить запрос на сохранение порога с cardId=demo-42, amount=50000, enabled=1.",
-            "Найти в журналах сервера и прокси строку этого запроса."
-          ],
-          "values": [],
-          "gap_items": [
-            {
-              "number": 1,
-              "missing": "чувствительно ли значение cardId (токен или номер карты) и допустимо ли писать его в журналы открытым или нужно маскировать",
-              "part": "ожидаемый результат",
-              "replaced": null,
-              "question_id": null,
-              "question_withdrawn": false
-            }
-          ],
-          "note": "",
-          "contested": false
-        },
-        "critic": null,
-        "anchor_corrected": false,
-        "notes": [
-          "Цитата не входит ни в одно требование из таблицы нарезки: находка отнесена к разделу «Часть B. REST API › Общие параметры» и проверке всего набора."
-        ]
-      },
-      {
-        "id": "F-29",
-        "merged_id": "M-041",
-        "property": "IND-COMPL",
-        "defect_type": "incomplete",
-        "verdict": "violation",
-        "scope": "requirement",
-        "severity": "major",
-        "severity_hint": "major",
-        "severity_basis": "тип «неполнота», мешает написать тест-кейс: «критично»; подсказка модели «важно»: не выше «важно»",
-        "severity_disputed": false,
-        "blocks_testing": true,
-        "quotes": [
-          {
-            "text": "Проверить сумму и переключатель.",
-            "match": "exact",
-            "score": 100.0,
-            "located": "Проверить сумму и переключатель.",
-            "anchor": {
-              "char_start": 5681,
-              "char_end": 5713,
-              "block_ids": [
-                "B077"
-              ],
-              "sentence_ids": [
-                "B077.1"
-              ],
-              "line_start": 127,
-              "line_end": 127,
-              "page": null,
-              "page_line": null,
-              "paragraph": 42,
-              "table": null,
-              "row": null,
-              "cell": null,
-              "column": null,
-              "extraction": "text"
-            }
-          }
-        ],
-        "requirement_ids": [
-          "R-22"
-        ],
-        "section_path": [
-          "Уведомление о расходах по карте",
-          "Часть B. REST API",
-          "Логика работы метода"
-        ],
-        "explanation": "для недопустимых значений, кроме суммы, реакция не описана.",
-        "suggestion": "При enabled не из {0,1}, отсутствии параметра, amount вне 1 000–1 000 000 или нецелом, неактивной или не-KZT карте метод возвращает 400 с message [уточнить: текст для каждого случая] и не меняет настройку",
-        "title": "Ошибки проверки параметров заданы не полностью",
-        "scenario": null,
-        "test_gap": "Не заданы ответ и текст ошибки для случаев: - enabled не 0 и не 1; - пропущен обязательный параметр; - дробный или нечисловой amount; - cardId длиннее 64 символов; - неактивная карта или карта не в KZT (Ф-1); - нужен ли amount в диапазоне при enabled=0.",
-        "found_in": 1,
-        "of": 1,
-        "sources": [
-          {
-            "kind": "pass",
-            "pass_index": 1,
-            "rule_id": null,
-            "call_id": "search.1",
-            "checklist_item": "MON-06"
           }
         ],
         "witness": null,
@@ -7633,11 +7925,112 @@
         },
         "critic": null,
         "anchor_corrected": false,
-        "notes": []
+        "notes": [
+          "Цитата не входит ни в одно требование из таблицы нарезки: находка отнесена к разделу «Часть B. REST API › Общие параметры» и проверке всего набора."
+        ]
       },
       {
         "id": "F-30",
-        "merged_id": "M-046",
+        "merged_id": "M-042",
+        "property": "IND-COMPL",
+        "defect_type": "incomplete",
+        "verdict": "violation",
+        "scope": "requirement",
+        "severity": "major",
+        "severity_hint": "major",
+        "severity_basis": "тип «неполнота», мешает написать тест-кейс: «критично»; подсказка модели «важно»: не выше «важно»",
+        "severity_disputed": false,
+        "blocks_testing": true,
+        "quotes": [
+          {
+            "text": "Проверить сумму и переключатель.",
+            "match": "exact",
+            "score": 100.0,
+            "located": "Проверить сумму и переключатель.",
+            "anchor": {
+              "char_start": 5681,
+              "char_end": 5713,
+              "block_ids": [
+                "B077"
+              ],
+              "sentence_ids": [
+                "B077.1"
+              ],
+              "line_start": 127,
+              "line_end": 127,
+              "page": null,
+              "page_line": null,
+              "paragraph": 42,
+              "table": null,
+              "row": null,
+              "cell": null,
+              "column": null,
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть B. REST API",
+                "Логика работы метода"
+              ]
+            }
+          }
+        ],
+        "requirement_ids": [
+          "R-22"
+        ],
+        "section_path": [
+          "Уведомление о расходах по карте",
+          "Часть B. REST API",
+          "Логика работы метода"
+        ],
+        "explanation": "для недопустимых значений, кроме суммы, реакция не описана.",
+        "suggestion": "При enabled не из {0,1}, отсутствии параметра, amount вне 1 000–1 000 000 или нецелом, неактивной или не-KZT карте метод возвращает 400 с message [уточнить: текст для каждого случая] и не меняет настройку",
+        "title": "Ошибки проверки параметров заданы не полностью",
+        "scenario": null,
+        "test_gap": "Не заданы ответ и текст ошибки для случаев: - enabled не 0 и не 1; - пропущен обязательный параметр; - дробный или нечисловой amount; - cardId длиннее 64 символов; - неактивная карта или карта не в KZT (Ф-1); - нужен ли amount в диапазоне при enabled=0.",
+        "found_in": 1,
+        "of": 1,
+        "sources": [
+          {
+            "kind": "pass",
+            "pass_index": 1,
+            "rule_id": null,
+            "call_id": "search.1",
+            "checklist_item": "MON-06"
+          }
+        ],
+        "witness": null,
+        "test_draft": {
+          "precondition": "Dev-среда. Пользователь вошёл. На его карте demo-42 сохранена настройка: порог 50000, enabled=1.",
+          "action": "Отправить запрос на сохранение с cardId=demo-42, amount=999, enabled=1.",
+          "expected": "Ответ [?1]; настройка карты остаётся прежней.",
+          "gaps": [
+            "код и тело ответа на сумму вне диапазона: по разделам логики и 200 это 200 с result=ERROR и message=«Проверьте сумму», по статусу 400 и его телу это 400 с message=«Некорректный запрос»"
+          ],
+          "complete": false,
+          "steps": [
+            "Отправить запрос на сохранение с cardId=demo-42, amount=999, enabled=1."
+          ],
+          "values": [],
+          "gap_items": [
+            {
+              "number": 1,
+              "missing": "код и тело ответа на сумму вне диапазона: по разделам логики и 200 это 200 с result=ERROR и message=«Проверьте сумму», по статусу 400 и его телу это 400 с message=«Некорректный запрос»",
+              "part": "ожидаемый результат",
+              "replaced": null,
+              "question_id": null,
+              "question_withdrawn": false
+            }
+          ],
+          "note": "",
+          "contested": false
+        },
+        "critic": null,
+        "anchor_corrected": false,
+        "notes": []
+      },
+      {
+        "id": "F-31",
+        "merged_id": "M-047",
         "property": "SET-CONS",
         "defect_type": "contradiction",
         "verdict": "violation",
@@ -7671,7 +8064,12 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть B. REST API",
+                "Ответ"
+              ]
             }
           },
           {
@@ -7695,7 +8093,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть B. REST API",
+                "Статусы",
+                "200. Successful — Created"
+              ]
             }
           }
         ],
@@ -7721,115 +8125,6 @@
             "rule_id": null,
             "call_id": "search.1",
             "checklist_item": "API-02"
-          }
-        ],
-        "witness": {
-          "scenario": "",
-          "readings": [],
-          "checked": false,
-          "note": "Свидетель не построен: R-35.1, R-35.2 лишь допускает 201 как успешный код и не требует его для первого сохранения. Раздел раздел «200. Successful — Created» описывает ответ 200. Места, которое предписывало бы 201, нет."
-        },
-        "test_draft": {
-          "precondition": "Dev-среда. Пользователь вошёл. Для его карты demo-42 настройка ещё не сохранялась.",
-          "action": "Отправить запрос на сохранение с cardId=demo-42, amount=50000, enabled=1.; Отправить тот же запрос повторно.",
-          "expected": "Первое сохранение: код ответа [?1]. Повторное сохранение: код ответа [?2], действующая настройка заменена.",
-          "gaps": [
-            "код первого сохранения: документ называет успешными 200 и 201, но не говорит, когда возвращается 201; в списке статусов описан только 200",
-            "код повторного сохранения: условие выбора между 200 и 201 не задано"
-          ],
-          "complete": false,
-          "steps": [
-            "Отправить запрос на сохранение с cardId=demo-42, amount=50000, enabled=1.",
-            "Отправить тот же запрос повторно."
-          ],
-          "values": [],
-          "gap_items": [
-            {
-              "number": 1,
-              "missing": "код первого сохранения: документ называет успешными 200 и 201, но не говорит, когда возвращается 201; в списке статусов описан только 200",
-              "part": "ожидаемый результат",
-              "replaced": null,
-              "question_id": "Q-09",
-              "question_withdrawn": false
-            },
-            {
-              "number": 2,
-              "missing": "код повторного сохранения: условие выбора между 200 и 201 не задано",
-              "part": "ожидаемый результат",
-              "replaced": null,
-              "question_id": "Q-09",
-              "question_withdrawn": false
-            }
-          ],
-          "note": "",
-          "contested": false
-        },
-        "critic": null,
-        "anchor_corrected": false,
-        "notes": []
-      },
-      {
-        "id": "F-31",
-        "merged_id": "M-047",
-        "property": "IND-COMPL",
-        "defect_type": "incomplete",
-        "verdict": "violation",
-        "scope": "requirement",
-        "severity": "major",
-        "severity_hint": null,
-        "severity_basis": "тип «неполнота», не мешает написать тест-кейс: «важно»",
-        "severity_disputed": false,
-        "blocks_testing": false,
-        "quotes": [
-          {
-            "text": "Если результат 400, 401 и далее — неуспешный.",
-            "match": "exact",
-            "score": 100.0,
-            "located": "Если результат 400, 401 и далее — неуспешный.",
-            "anchor": {
-              "char_start": 6590,
-              "char_end": 6635,
-              "block_ids": [
-                "B097"
-              ],
-              "sentence_ids": [
-                "B097.2"
-              ],
-              "line_start": 166,
-              "line_end": 166,
-              "page": null,
-              "page_line": null,
-              "paragraph": 59,
-              "table": null,
-              "row": null,
-              "cell": null,
-              "column": null,
-              "extraction": "text"
-            }
-          }
-        ],
-        "requirement_ids": [
-          "R-35.2"
-        ],
-        "section_path": [
-          "Уведомление о расходах по карте",
-          "Часть B. REST API",
-          "Ответ"
-        ],
-        "explanation": "Перечень заканчивается оборотом «400, 401 и далее»: ряд значений обрывается словами «и далее», верхняя граница не названа. Разработчик не знает, что реализовать сверх названного, а тестировщик не знает, что считать выходом за перечень.",
-        "suggestion": "Привести закрытый перечень или сослаться на справочник: [уточнить: полный список значений].",
-        "title": "Открытый перечень «400, 401 и далее»",
-        "scenario": null,
-        "test_gap": null,
-        "found_in": 0,
-        "of": 1,
-        "sources": [
-          {
-            "kind": "lint",
-            "pass_index": null,
-            "rule_id": "L-03",
-            "call_id": null,
-            "checklist_item": null
           }
         ],
         "witness": null,
@@ -7874,7 +8169,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть B. REST API",
+                "Статусы",
+                "200. Successful — Created"
+              ]
             }
           },
           {
@@ -7900,7 +8201,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть B. REST API",
+                "Статусы",
+                "403. Unsuccessful — Forbidden"
+              ]
             }
           }
         ],
@@ -7960,7 +8267,13 @@
                   "row": null,
                   "cell": null,
                   "column": null,
-                  "extraction": "text"
+                  "extraction": "text",
+                  "section": [
+                    "Уведомление о расходах по карте",
+                    "Часть B. REST API",
+                    "Статусы",
+                    "200. Successful — Created"
+                  ]
                 }
               }
             },
@@ -7991,7 +8304,13 @@
                   "row": null,
                   "cell": null,
                   "column": null,
-                  "extraction": "text"
+                  "extraction": "text",
+                  "section": [
+                    "Уведомление о расходах по карте",
+                    "Часть B. REST API",
+                    "Статусы",
+                    "403. Unsuccessful — Forbidden"
+                  ]
                 }
               }
             }
@@ -8017,7 +8336,7 @@
               "missing": "код и тело ответа для чужой карты: раздел «403» и описание статуса 403 дают «доступ запрещен», а правило внутри раздела требует 404 с телом «Карта не найдена»; 404 нет в перечне статусов, условие возврата 403 не определено",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-07",
+              "question_id": "Q-08",
               "question_withdrawn": false
             }
           ],
@@ -8064,7 +8383,12 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Цели"
+              ]
             }
           },
           {
@@ -8090,7 +8414,12 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть B. REST API",
+                "Логика работы метода"
+              ]
             }
           }
         ],
@@ -8161,7 +8490,12 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Цели"
+              ]
             }
           }
         ],
@@ -8193,9 +8527,8 @@
         "test_draft": {
           "precondition": "Активная карта KZT, порог 50 000 ₸, уведомление включено, расходы месяца 48 500 ₸.",
           "action": "Провести покупку на 1 500 ₸ и зафиксировать время покупки.; Зафиксировать время получения push на устройстве клиента.; Сравнить задержку с показателем достижения цели.",
-          "expected": "[?1]; задержка между покупкой и push не больше [?2]; доля клиентов, получивших push в этот срок, не меньше [?3].",
+          "expected": "Итог 50 000 ₸ и один push; задержка между покупкой и push не больше [?1]; доля клиентов, получивших push в этот срок, не меньше [?2].",
           "gaps": [
-            "значение «Итог 50 000 ₸ и один push» модель назвала без цитаты из документа, поэтому оно заменено пропуском",
             "измеримая допустимая задержка между покупкой и push, по которой можно признать цель «в момент покупки» достигнутой",
             "целевая доля клиентов или иной показатель достижения цели и его связь с критериями приёмки"
           ],
@@ -8205,18 +8538,39 @@
             "Зафиксировать время получения push на устройстве клиента.",
             "Сравнить задержку с показателем достижения цели."
           ],
-          "values": [],
+          "values": [
+            {
+              "value": "Итог 50 000 ₸ и один push",
+              "quote": "Итог 50 000 ₸ и один push",
+              "verified": true,
+              "anchor": {
+                "char_start": 2781,
+                "char_end": 2806,
+                "block_ids": [
+                  "B038"
+                ],
+                "sentence_ids": [],
+                "line_start": 72,
+                "line_end": 72,
+                "page": null,
+                "page_line": null,
+                "paragraph": null,
+                "table": 2,
+                "row": 1,
+                "cell": 3,
+                "column": "Ожидаемый результат",
+                "extraction": "table",
+                "section": [
+                  "Уведомление о расходах по карте",
+                  "Часть A. Новый функционал",
+                  "Критерии приемки"
+                ]
+              }
+            }
+          ],
           "gap_items": [
             {
               "number": 1,
-              "missing": "значение «Итог 50 000 ₸ и один push» модель назвала без цитаты из документа, поэтому оно заменено пропуском",
-              "part": "ожидаемый результат",
-              "replaced": "Итог 50 000 ₸ и один push",
-              "question_id": null,
-              "question_withdrawn": false
-            },
-            {
-              "number": 2,
               "missing": "измеримая допустимая задержка между покупкой и push, по которой можно признать цель «в момент покупки» достигнутой",
               "part": "ожидаемый результат",
               "replaced": null,
@@ -8224,7 +8578,7 @@
               "question_withdrawn": false
             },
             {
-              "number": 3,
+              "number": 2,
               "missing": "целевая доля клиентов или иной показатель достижения цели и его связь с критериями приёмки",
               "part": "ожидаемый результат",
               "replaced": null,
@@ -8277,7 +8631,12 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Архитектура решения"
+              ]
             }
           },
           {
@@ -8301,7 +8660,12 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть B. REST API",
+                "Схема"
+              ]
             }
           }
         ],
@@ -8372,7 +8736,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Требования к изменениям",
+                "Функциональные требования"
+              ]
             }
           }
         ],
@@ -8443,7 +8813,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Требования к изменениям",
+                "Функциональные требования"
+              ]
             }
           },
           {
@@ -8467,7 +8843,13 @@
               "row": 3,
               "cell": 6,
               "column": "Description",
-              "extraction": "table"
+              "extraction": "table",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть B. REST API",
+                "Параметры запроса",
+                "Query-параметры"
+              ]
             }
           }
         ],
@@ -8539,7 +8921,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Требования к изменениям",
+                "Функциональные требования"
+              ]
             }
           }
         ],
@@ -8610,7 +8998,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Требования к изменениям",
+                "Функциональные требования"
+              ]
             }
           },
           {
@@ -8634,7 +9028,12 @@
               "row": 2,
               "cell": 3,
               "column": "Ожидаемый результат",
-              "extraction": "table"
+              "extraction": "table",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Критерии приемки"
+              ]
             }
           }
         ],
@@ -8672,7 +9071,7 @@
       },
       {
         "id": "F-40",
-        "merged_id": "M-029",
+        "merged_id": "M-030",
         "property": "SET-CONS",
         "defect_type": "terminology",
         "verdict": "violation",
@@ -8706,7 +9105,12 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Требования к данным"
+              ]
             }
           }
         ],
@@ -8738,33 +9142,71 @@
           "scenario": "",
           "readings": [],
           "checked": false,
-          "note": "Свидетель не построен: Единицы указаны явно. При переводе 50 000 ₸ = 5 000 000 тиынов сравнение даёт один результат. Сравнение без перевода или с округлением — ошибка реализации, а не прочтение документа."
+          "note": "Свидетель не построен: При повторе итог не меняется, поэтому нет перехода «ниже порога → порог или выше» из Ф-3, и уже действует месячный лимит. Push не отправляется при любом толковании «итога»."
         },
         "test_draft": {
-          "precondition": "Карта активная KZT, уведомление включено, push в этом месяце не отправлялся. Расходы месяца заданы так, что после операции они равны 4 999 999 тиынам.",
-          "action": "Сохранить порог 50 000 (amount=50000, в тенге) при включённом уведомлении.; Провести покупку, после которой расходы месяца равны 4 999 999 тиынам.; Проверить, передан ли push в сервис push.",
-          "expected": "Push [?1].",
+          "precondition": "Карта активная KZT, уведомление включено, порог 50 000 ₸, расходы месяца 48 500 ₸, push в этом месяце не отправлялся.",
+          "action": "Провести покупку на 1 500 ₸; убедиться, что передан один push.; Повторно доставить то же событие процессинга: [?1].; Повторно доставить событие возврата по этой покупке дважды.",
+          "expected": "Итог расходов остаётся 50 000 ₸ после повторной доставки покупки и не меняется при повторном возврате. Повторный push после повторной доставки покупки: [?2].",
           "gaps": [
-            "в каких единицах сравниваются расходы (хранятся в тиынах) и порог (хранится в тенге): приводится ли порог к тиынам или расходы округляются до тенге; от этого зависит, достигнут ли порог при 4 999 999 тиынах"
+            "по какому ключу событие считается тем же (идентификатор операции, идентификатор события или сочетание полей), в том числе для события возврата",
+            "запрещён ли повторный push при повторной доставке события, после которого уже отправлен push"
           ],
           "complete": false,
           "steps": [
-            "Сохранить порог 50 000 (amount=50000, в тенге) при включённом уведомлении.",
-            "Провести покупку, после которой расходы месяца равны 4 999 999 тиынам.",
-            "Проверить, передан ли push в сервис push."
+            "Провести покупку на 1 500 ₸; убедиться, что передан один push.",
+            "Повторно доставить то же событие процессинга: [?1].",
+            "Повторно доставить событие возврата по этой покупке дважды."
           ],
-          "values": [],
+          "values": [
+            {
+              "value": "один push",
+              "quote": "Итог 50 000 ₸ и один push",
+              "verified": true,
+              "anchor": {
+                "char_start": 2781,
+                "char_end": 2806,
+                "block_ids": [
+                  "B038"
+                ],
+                "sentence_ids": [],
+                "line_start": 72,
+                "line_end": 72,
+                "page": null,
+                "page_line": null,
+                "paragraph": null,
+                "table": 2,
+                "row": 1,
+                "cell": 3,
+                "column": "Ожидаемый результат",
+                "extraction": "table",
+                "section": [
+                  "Уведомление о расходах по карте",
+                  "Часть A. Новый функционал",
+                  "Критерии приемки"
+                ]
+              }
+            }
+          ],
           "gap_items": [
             {
               "number": 1,
-              "missing": "в каких единицах сравниваются расходы (хранятся в тиынах) и порог (хранится в тенге): приводится ли порог к тиынам или расходы округляются до тенге; от этого зависит, достигнут ли порог при 4 999 999 тиынах",
+              "missing": "по какому ключу событие считается тем же (идентификатор операции, идентификатор события или сочетание полей), в том числе для события возврата",
+              "part": "шаги",
+              "replaced": null,
+              "question_id": null,
+              "question_withdrawn": false
+            },
+            {
+              "number": 2,
+              "missing": "запрещён ли повторный push при повторной доставке события, после которого уже отправлен push",
               "part": "ожидаемый результат",
               "replaced": null,
               "question_id": null,
               "question_withdrawn": false
             }
           ],
-          "note": "Входные данные выбраны тестировщиком для проверки границы. Правила сравнения единиц в документе нет.",
+          "note": "",
           "contested": false
         },
         "critic": null,
@@ -8773,7 +9215,7 @@
       },
       {
         "id": "F-41",
-        "merged_id": "M-031",
+        "merged_id": "M-032",
         "property": "SET-COMPL",
         "defect_type": "placeholder",
         "verdict": "violation",
@@ -8807,7 +9249,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Требования к тестированию",
+                "Тестирование требований"
+              ]
             }
           }
         ],
@@ -8842,7 +9290,7 @@
       },
       {
         "id": "F-42",
-        "merged_id": "M-034",
+        "merged_id": "M-035",
         "property": "IND-TRACE",
         "defect_type": "traceability",
         "verdict": "violation",
@@ -8876,7 +9324,12 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Ревью требований"
+              ]
             }
           }
         ],
@@ -8912,7 +9365,7 @@
       },
       {
         "id": "F-43",
-        "merged_id": "M-035",
+        "merged_id": "M-036",
         "property": "SET-COMPL",
         "defect_type": "placeholder",
         "verdict": "violation",
@@ -8946,7 +9399,12 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Ревью требований"
+              ]
             }
           }
         ],
@@ -8980,7 +9438,7 @@
       },
       {
         "id": "F-44",
-        "merged_id": "M-036",
+        "merged_id": "M-037",
         "property": "SET-COMPL",
         "defect_type": "placeholder",
         "verdict": "violation",
@@ -9012,7 +9470,12 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Блок согласующих"
+              ]
             }
           }
         ],
@@ -9046,7 +9509,7 @@
       },
       {
         "id": "F-45",
-        "merged_id": "M-039",
+        "merged_id": "M-040",
         "property": "SET-COMPL",
         "defect_type": "placeholder",
         "verdict": "violation",
@@ -9078,7 +9541,12 @@
               "row": 6,
               "cell": 2,
               "column": "Значение",
-              "extraction": "table"
+              "extraction": "table",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть B. REST API",
+                "Общие параметры"
+              ]
             }
           }
         ],
@@ -9108,31 +9576,22 @@
         ],
         "witness": null,
         "test_draft": {
-          "precondition": "Есть доступ к Prod-среде, пользователь вошёл, карта принадлежит ему.",
-          "action": "Определить адрес метода сохранения порога на Prod: [?1].; Отправить на него запрос с корректными cardId, amount и enabled.",
-          "expected": "Ответ соответствует контракту Swagger [?2].",
+          "precondition": "Dev-среда с доступом к журналам сервера и прокси. Пользователь вошёл, карта demo-42 принадлежит ему.",
+          "action": "Отправить запрос на сохранение порога с cardId=demo-42, amount=50000, enabled=1.; Найти в журналах сервера и прокси строку этого запроса.",
+          "expected": "Значение cardId в журнале [?1].",
           "gaps": [
-            "Request URL для Prod: в документе стоит «—», задан только Dev-адрес /alerts/saveLimit",
-            "контракт Swagger: в документе стоит «—», схемы запроса и ответа для сверки нет"
+            "чувствительно ли значение cardId (токен или номер карты) и допустимо ли писать его в журналы открытым или нужно маскировать"
           ],
           "complete": false,
           "steps": [
-            "Определить адрес метода сохранения порога на Prod: [?1].",
-            "Отправить на него запрос с корректными cardId, amount и enabled."
+            "Отправить запрос на сохранение порога с cardId=demo-42, amount=50000, enabled=1.",
+            "Найти в журналах сервера и прокси строку этого запроса."
           ],
           "values": [],
           "gap_items": [
             {
               "number": 1,
-              "missing": "Request URL для Prod: в документе стоит «—», задан только Dev-адрес /alerts/saveLimit",
-              "part": "шаги",
-              "replaced": null,
-              "question_id": null,
-              "question_withdrawn": false
-            },
-            {
-              "number": 2,
-              "missing": "контракт Swagger: в документе стоит «—», схемы запроса и ответа для сверки нет",
+              "missing": "чувствительно ли значение cardId (токен или номер карты) и допустимо ли писать его в журналы открытым или нужно маскировать",
               "part": "ожидаемый результат",
               "replaced": null,
               "question_id": null,
@@ -9148,7 +9607,7 @@
       },
       {
         "id": "F-46",
-        "merged_id": "M-043",
+        "merged_id": "M-044",
         "property": "SET-MOD",
         "defect_type": "redundancy",
         "verdict": "violation",
@@ -9182,7 +9641,12 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть B. REST API",
+                "Особые правила"
+              ]
             }
           },
           {
@@ -9208,7 +9672,12 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть B. REST API",
+                "Особые правила"
+              ]
             }
           }
         ],
@@ -9245,7 +9714,7 @@
       },
       {
         "id": "F-47",
-        "merged_id": "M-044",
+        "merged_id": "M-045",
         "property": "SET-CONS",
         "defect_type": "terminology",
         "verdict": "violation",
@@ -9277,7 +9746,13 @@
               "row": 2,
               "cell": 6,
               "column": "Description",
-              "extraction": "table"
+              "extraction": "table",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть B. REST API",
+                "Параметры запроса",
+                "Query-параметры"
+              ]
             }
           }
         ],
@@ -9310,78 +9785,31 @@
           "scenario": "",
           "readings": [],
           "checked": false,
-          "note": "Свидетель не построен: Тип в запросе (integer) и тип в ответе (string, пример \"50000\") заданы явно для разных сообщений и не конфликтуют. Документ предписывает один результат."
+          "note": "Свидетель не построен: Документ не задаёт реакцию сервера на отсутствие Content-Type. Отказ в запросе пришлось бы придумать, поэтому результаты по двум местам не различаются."
         },
         "test_draft": {
           "precondition": "Dev-среда. Пользователь вошёл, карта demo-42 принадлежит ему.",
-          "action": "Отправить запрос на сохранение с cardId=demo-42, amount=50000, enabled=1.",
-          "expected": "Тело ответа {\"result\":\"OK\",\"amount\":\"50000\",\"enabled\":\"1\"}: поля amount и enabled в ответе строковые ([?1]), хотя в запросе они integer.",
+          "action": "Отправить запрос на сохранение с cardId=demo-42, amount=50000, enabled=1 без заголовка Content-Type.",
+          "expected": "Ответ [?1].",
           "gaps": [
-            "значение «string» модель назвала без цитаты из документа, поэтому оно заменено пропуском"
+            "обязателен ли заголовок Content-Type и проверяет ли его сервер: заголовок указан в описании запроса, но тело не используется; ответ на запрос без заголовка не задан"
           ],
           "complete": false,
           "steps": [
-            "Отправить запрос на сохранение с cardId=demo-42, amount=50000, enabled=1."
+            "Отправить запрос на сохранение с cardId=demo-42, amount=50000, enabled=1 без заголовка Content-Type."
           ],
-          "values": [
-            {
-              "value": "\"amount\":\"50000\"",
-              "quote": "{\"result\":\"OK\",\"amount\":\"50000\",\"enabled\":\"1\"}",
-              "verified": true,
-              "anchor": {
-                "char_start": 7061,
-                "char_end": 7107,
-                "block_ids": [
-                  "B106"
-                ],
-                "sentence_ids": [],
-                "line_start": 181,
-                "line_end": 181,
-                "page": null,
-                "page_line": null,
-                "paragraph": 63,
-                "table": null,
-                "row": null,
-                "cell": null,
-                "column": null,
-                "extraction": "text"
-              }
-            },
-            {
-              "value": "\"enabled\":\"1\"",
-              "quote": "{\"result\":\"OK\",\"amount\":\"50000\",\"enabled\":\"1\"}",
-              "verified": true,
-              "anchor": {
-                "char_start": 7061,
-                "char_end": 7107,
-                "block_ids": [
-                  "B106"
-                ],
-                "sentence_ids": [],
-                "line_start": 181,
-                "line_end": 181,
-                "page": null,
-                "page_line": null,
-                "paragraph": 63,
-                "table": null,
-                "row": null,
-                "cell": null,
-                "column": null,
-                "extraction": "text"
-              }
-            }
-          ],
+          "values": [],
           "gap_items": [
             {
               "number": 1,
-              "missing": "значение «string» модель назвала без цитаты из документа, поэтому оно заменено пропуском",
+              "missing": "обязателен ли заголовок Content-Type и проверяет ли его сервер: заголовок указан в описании запроса, но тело не используется; ответ на запрос без заголовка не задан",
               "part": "ожидаемый результат",
-              "replaced": "string",
+              "replaced": null,
               "question_id": null,
               "question_withdrawn": false
             }
           ],
-          "note": "Тип полей ответа в документе назван прямо: в таблице ответа оба поля string, пример ответа это подтверждает. Различие с integer в запросе есть, но для ожидаемого результата теста оно не мешает.",
+          "note": "",
           "contested": false
         },
         "critic": null,
@@ -9390,7 +9818,7 @@
       },
       {
         "id": "F-48",
-        "merged_id": "M-045",
+        "merged_id": "M-046",
         "property": "SET-CONS",
         "defect_type": "contradiction",
         "verdict": "violation",
@@ -9424,7 +9852,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть B. REST API",
+                "Параметры запроса",
+                "Request body"
+              ]
             }
           },
           {
@@ -9450,7 +9884,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть B. REST API",
+                "Параметры запроса",
+                "Request body"
+              ]
             }
           }
         ],
@@ -9484,24 +9924,34 @@
           "scenario": "",
           "readings": [],
           "checked": false,
-          "note": "Свидетель не построен: Документ не задаёт реакцию сервера на отсутствие Content-Type. Отказ в запросе пришлось бы придумать, поэтому результаты по двум местам не различаются."
+          "note": "Свидетель не построен: R-35.1, R-35.2 лишь допускает 201 как успешный код и не требует его для первого сохранения. Раздел раздел «200. Successful — Created» описывает ответ 200. Места, которое предписывало бы 201, нет."
         },
         "test_draft": {
-          "precondition": "Dev-среда. Пользователь вошёл, карта demo-42 принадлежит ему.",
-          "action": "Отправить запрос на сохранение с cardId=demo-42, amount=50000, enabled=1 без заголовка Content-Type.",
-          "expected": "Ответ [?1].",
+          "precondition": "Dev-среда. Пользователь вошёл. Для его карты demo-42 настройка ещё не сохранялась.",
+          "action": "Отправить запрос на сохранение с cardId=demo-42, amount=50000, enabled=1.; Отправить тот же запрос повторно.",
+          "expected": "Первое сохранение: код ответа [?1]. Повторное сохранение: код ответа [?2], действующая настройка заменена.",
           "gaps": [
-            "обязателен ли заголовок Content-Type и проверяет ли его сервер: заголовок указан в описании запроса, но тело не используется; ответ на запрос без заголовка не задан"
+            "код первого сохранения: документ называет успешными 200 и 201, но не говорит, когда возвращается 201; в списке статусов описан только 200",
+            "код повторного сохранения: условие выбора между 200 и 201 не задано"
           ],
           "complete": false,
           "steps": [
-            "Отправить запрос на сохранение с cardId=demo-42, amount=50000, enabled=1 без заголовка Content-Type."
+            "Отправить запрос на сохранение с cardId=demo-42, amount=50000, enabled=1.",
+            "Отправить тот же запрос повторно."
           ],
           "values": [],
           "gap_items": [
             {
               "number": 1,
-              "missing": "обязателен ли заголовок Content-Type и проверяет ли его сервер: заголовок указан в описании запроса, но тело не используется; ответ на запрос без заголовка не задан",
+              "missing": "код первого сохранения: документ называет успешными 200 и 201, но не говорит, когда возвращается 201; в списке статусов описан только 200",
+              "part": "ожидаемый результат",
+              "replaced": null,
+              "question_id": "Q-01",
+              "question_withdrawn": false
+            },
+            {
+              "number": 2,
+              "missing": "код повторного сохранения: условие выбора между 200 и 201 не задано",
               "part": "ожидаемый результат",
               "replaced": null,
               "question_id": "Q-01",
@@ -9553,7 +10003,12 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть B. REST API",
+                "Ответ"
+              ]
             }
           }
         ],
@@ -9579,6 +10034,13 @@
             "rule_id": null,
             "call_id": "search.1",
             "checklist_item": "API-02"
+          },
+          {
+            "kind": "lint",
+            "pass_index": null,
+            "rule_id": "L-03",
+            "call_id": null,
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -9615,7 +10077,13 @@
                 "row": null,
                 "cell": null,
                 "column": null,
-                "extraction": "text"
+                "extraction": "text",
+                "section": [
+                  "Уведомление о расходах по карте",
+                  "Часть B. REST API",
+                  "Статусы",
+                  "401. Unsuccessful — Unauthorized"
+                ]
               }
             }
           ],
@@ -9771,14 +10239,15 @@
       ],
       "R-11": [
         "F-23",
+        "F-24",
         "F-40"
       ],
       "R-12.1": [],
       "R-12.2": [
-        "F-24"
+        "F-25"
       ],
       "R-13": [
-        "F-26"
+        "F-27"
       ],
       "R-14": [
         "F-03",
@@ -9786,7 +10255,7 @@
       ],
       "R-15": [],
       "R-16": [
-        "F-27"
+        "F-28"
       ],
       "R-17": [
         "F-06"
@@ -9798,7 +10267,7 @@
       "R-20": [],
       "R-21": [],
       "R-22": [
-        "F-29",
+        "F-30",
         "F-33"
       ],
       "R-23": [],
@@ -9830,10 +10299,9 @@
         "F-48"
       ],
       "R-35.1": [
-        "F-30"
+        "F-31"
       ],
       "R-35.2": [
-        "F-31",
         "F-49"
       ],
       "R-36": [],
@@ -9889,7 +10357,12 @@
             "row": 2,
             "cell": 2,
             "column": "Значение",
-            "extraction": "table"
+            "extraction": "table",
+            "section": [
+              "Уведомление о расходах по карте",
+              "Часть B. REST API",
+              "Общие параметры"
+            ]
           }
         },
         {
@@ -9915,7 +10388,13 @@
             "row": null,
             "cell": null,
             "column": null,
-            "extraction": "text"
+            "extraction": "text",
+            "section": [
+              "Уведомление о расходах по карте",
+              "Часть B. REST API",
+              "Параметры запроса",
+              "Request body"
+            ]
           }
         },
         {
@@ -9941,7 +10420,13 @@
             "row": null,
             "cell": null,
             "column": null,
-            "extraction": "text"
+            "extraction": "text",
+            "section": [
+              "Уведомление о расходах по карте",
+              "Часть B. REST API",
+              "Параметры запроса",
+              "Request body"
+            ]
           }
         }
       ],
@@ -10024,7 +10509,13 @@
             "row": null,
             "cell": null,
             "column": null,
-            "extraction": "text"
+            "extraction": "text",
+            "section": [
+              "Уведомление о расходах по карте",
+              "Часть A. Новый функционал",
+              "Требования к изменениям",
+              "Функциональные требования"
+            ]
           }
         },
         {
@@ -10050,7 +10541,12 @@
             "row": null,
             "cell": null,
             "column": null,
-            "extraction": "text"
+            "extraction": "text",
+            "section": [
+              "Уведомление о расходах по карте",
+              "Часть A. Новый функционал",
+              "Цели"
+            ]
           }
         }
       ],
@@ -10132,7 +10628,13 @@
             "row": null,
             "cell": null,
             "column": null,
-            "extraction": "text"
+            "extraction": "text",
+            "section": [
+              "Уведомление о расходах по карте",
+              "Часть A. Новый функционал",
+              "Требования к изменениям",
+              "Функциональные требования"
+            ]
           }
         },
         {
@@ -10156,7 +10658,12 @@
             "row": 2,
             "cell": 3,
             "column": "Ожидаемый результат",
-            "extraction": "table"
+            "extraction": "table",
+            "section": [
+              "Уведомление о расходах по карте",
+              "Часть A. Новый функционал",
+              "Критерии приемки"
+            ]
           }
         }
       ],
@@ -10230,7 +10737,12 @@
             "row": null,
             "cell": null,
             "column": null,
-            "extraction": "text"
+            "extraction": "text",
+            "section": [
+              "Уведомление о расходах по карте",
+              "Часть B. REST API",
+              "Логика работы метода"
+            ]
           }
         },
         {
@@ -10256,7 +10768,12 @@
             "row": null,
             "cell": null,
             "column": null,
-            "extraction": "text"
+            "extraction": "text",
+            "section": [
+              "Уведомление о расходах по карте",
+              "Часть B. REST API",
+              "Статусы"
+            ]
           }
         },
         {
@@ -10280,7 +10797,13 @@
             "row": null,
             "cell": null,
             "column": null,
-            "extraction": "text"
+            "extraction": "text",
+            "section": [
+              "Уведомление о расходах по карте",
+              "Часть B. REST API",
+              "Статусы",
+              "200. Successful — Created"
+            ]
           }
         }
       ],
@@ -10310,7 +10833,7 @@
       "related_findings": [
         "F-07"
       ],
-      "origin": "witness_scenario",
+      "origin": "set_check",
       "standard": [
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
         "IEEE 830-1998, п. 4.3.4"
@@ -10362,7 +10885,13 @@
             "row": null,
             "cell": null,
             "column": null,
-            "extraction": "text"
+            "extraction": "text",
+            "section": [
+              "Уведомление о расходах по карте",
+              "Часть A. Новый функционал",
+              "Требования к изменениям",
+              "Функциональные требования"
+            ]
           }
         },
         {
@@ -10388,7 +10917,13 @@
             "row": null,
             "cell": null,
             "column": null,
-            "extraction": "text"
+            "extraction": "text",
+            "section": [
+              "Уведомление о расходах по карте",
+              "Часть A. Новый функционал",
+              "Требования к изменениям",
+              "Функциональные требования"
+            ]
           }
         }
       ],
@@ -10440,6 +10975,116 @@
         "testing"
       ],
       "addressee": [
+        "security"
+      ],
+      "topic": "идентификатор карты",
+      "quotes": [
+        {
+          "text": "Хранить идентификатор карты, месяц, идентификатор операции, сумму покупки в тиынах, признак отправки и порог в тенге.",
+          "match": "exact",
+          "score": 100.0,
+          "located": "Хранить идентификатор карты, месяц, идентификатор операции, сумму покупки в тиынах, признак отправки и порог в тенге.",
+          "anchor": {
+            "char_start": 2242,
+            "char_end": 2359,
+            "block_ids": [
+              "B031"
+            ],
+            "sentence_ids": [
+              "B031.1"
+            ],
+            "line_start": 57,
+            "line_end": 57,
+            "page": null,
+            "page_line": null,
+            "paragraph": 25,
+            "table": null,
+            "row": null,
+            "cell": null,
+            "column": null,
+            "extraction": "text",
+            "section": [
+              "Уведомление о расходах по карте",
+              "Часть A. Новый функционал",
+              "Требования к данным"
+            ]
+          }
+        },
+        {
+          "text": "Идентификатор карты",
+          "match": "exact",
+          "score": 100.0,
+          "located": "идентификатор карты",
+          "anchor": {
+            "char_start": 2250,
+            "char_end": 2269,
+            "block_ids": [
+              "B031"
+            ],
+            "sentence_ids": [
+              "B031.1"
+            ],
+            "line_start": 57,
+            "line_end": 57,
+            "page": null,
+            "page_line": null,
+            "paragraph": 25,
+            "table": null,
+            "row": null,
+            "cell": null,
+            "column": null,
+            "extraction": "text",
+            "section": [
+              "Уведомление о расходах по карте",
+              "Часть A. Новый функционал",
+              "Требования к данным"
+            ]
+          }
+        }
+      ],
+      "question": "Идентификатор карты, который приложение передаёт в запросе как cardId и сервис хранит вместе с покупками, — это номер карты или заменитель номера?",
+      "why": "cardId передаётся в строке запроса и попадает в журналы и прокси. От ответа зависят маскирование в журналах и шифрование хранилища; отдельно открыт срок хранения операций.",
+      "options": [
+        {
+          "label": "A",
+          "text": "Непрозрачный токен, не связанный с номером карты",
+          "change": "Указать в требованиях к данным и в параметре cardId, что это токен; маскирование не требуется",
+          "grounded_in": null
+        },
+        {
+          "label": "B",
+          "text": "Номер карты",
+          "change": "Добавить требования к маскированию в журналах, шифрованию в хранилище и передаче cardId вне строки запроса",
+          "grounded_in": null
+        }
+      ],
+      "if_unanswered": "Команда сочтёт cardId токеном и будет писать его в журналы открыто. Если это номер карты, произойдёт утечка платёжных данных.",
+      "related_findings": [
+        "F-23",
+        "F-24"
+      ],
+      "origin": "uncertain_verdict",
+      "standard": [
+        "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Complete)",
+        "IEEE 830-1998, п. 4.3.3"
+      ],
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
+    },
+    {
+      "id": "Q-08",
+      "priority": "P1",
+      "blocks": [
+        "testing"
+      ],
+      "addressee": [
         "architect",
         "security"
       ],
@@ -10468,7 +11113,13 @@
             "row": null,
             "cell": null,
             "column": null,
-            "extraction": "text"
+            "extraction": "text",
+            "section": [
+              "Уведомление о расходах по карте",
+              "Часть B. REST API",
+              "Статусы",
+              "200. Successful — Created"
+            ]
           }
         },
         {
@@ -10494,7 +11145,13 @@
             "row": null,
             "cell": null,
             "column": null,
-            "extraction": "text"
+            "extraction": "text",
+            "section": [
+              "Уведомление о расходах по карте",
+              "Часть B. REST API",
+              "Статусы",
+              "403. Unsuccessful — Forbidden"
+            ]
           }
         }
       ],
@@ -10534,7 +11191,7 @@
       }
     },
     {
-      "id": "Q-08",
+      "id": "Q-09",
       "priority": "P1",
       "blocks": [
         "testing"
@@ -10567,7 +11224,12 @@
             "row": null,
             "cell": null,
             "column": null,
-            "extraction": "text"
+            "extraction": "text",
+            "section": [
+              "Уведомление о расходах по карте",
+              "Часть A. Новый функционал",
+              "Требования к интеграции"
+            ]
           }
         },
         {
@@ -10591,7 +11253,12 @@
             "row": 1,
             "cell": 2,
             "column": "Значение",
-            "extraction": "table"
+            "extraction": "table",
+            "section": [
+              "Уведомление о расходах по карте",
+              "Часть B. REST API",
+              "Общие параметры"
+            ]
           }
         }
       ],
@@ -10619,7 +11286,7 @@
       ],
       "if_unanswered": "Команда придумает свой метод чтения без согласования. Контракт с приложением и тесты экрана разойдутся.",
       "related_findings": [
-        "F-27"
+        "F-28"
       ],
       "origin": "set_check",
       "standard": [
@@ -10632,12 +11299,12 @@
         "answer_quote": null,
         "common_sense": false,
         "obvious_fix": false,
-        "scenario": true,
+        "scenario": false,
         "errors": []
       }
     },
     {
-      "id": "Q-09",
+      "id": "Q-10",
       "priority": "P1",
       "blocks": [
         "testing"
@@ -10670,7 +11337,12 @@
             "row": null,
             "cell": null,
             "column": null,
-            "extraction": "text"
+            "extraction": "text",
+            "section": [
+              "Уведомление о расходах по карте",
+              "Часть B. REST API",
+              "Ответ"
+            ]
           }
         },
         {
@@ -10694,7 +11366,13 @@
             "row": null,
             "cell": null,
             "column": null,
-            "extraction": "text"
+            "extraction": "text",
+            "section": [
+              "Уведомление о расходах по карте",
+              "Часть B. REST API",
+              "Статусы",
+              "200. Successful — Created"
+            ]
           }
         }
       ],
@@ -10716,7 +11394,7 @@
       ],
       "if_unanswered": "Команда всегда вернёт 200. Если приложение ждёт 201 при первой настройке, оно сочтёт ответ ошибкой.",
       "related_findings": [
-        "F-30"
+        "F-31"
       ],
       "origin": "set_check",
       "standard": [
@@ -10729,12 +11407,12 @@
         "answer_quote": null,
         "common_sense": false,
         "obvious_fix": false,
-        "scenario": false,
+        "scenario": true,
         "errors": []
       }
     },
     {
-      "id": "Q-10",
+      "id": "Q-11",
       "priority": "P1",
       "blocks": [
         "testing"
@@ -10767,7 +11445,12 @@
             "row": null,
             "cell": null,
             "column": null,
-            "extraction": "text"
+            "extraction": "text",
+            "section": [
+              "Уведомление о расходах по карте",
+              "Часть A. Новый функционал",
+              "Sequence Diagram"
+            ]
           }
         }
       ],
@@ -10798,105 +11481,6 @@
         "F-21"
       ],
       "origin": "witness_scenario",
-      "standard": [
-        "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Complete)",
-        "IEEE 830-1998, п. 4.3.3"
-      ],
-      "review": {
-        "answered": false,
-        "answer": "",
-        "answer_quote": null,
-        "common_sense": false,
-        "obvious_fix": false,
-        "scenario": true,
-        "errors": []
-      }
-    },
-    {
-      "id": "Q-11",
-      "priority": "P1",
-      "blocks": [
-        "testing"
-      ],
-      "addressee": [
-        "security"
-      ],
-      "topic": "идентификатор карты",
-      "quotes": [
-        {
-          "text": "Хранить идентификатор карты, месяц, идентификатор операции, сумму покупки в тиынах, признак отправки и порог в тенге.",
-          "match": "exact",
-          "score": 100.0,
-          "located": "Хранить идентификатор карты, месяц, идентификатор операции, сумму покупки в тиынах, признак отправки и порог в тенге.",
-          "anchor": {
-            "char_start": 2242,
-            "char_end": 2359,
-            "block_ids": [
-              "B031"
-            ],
-            "sentence_ids": [
-              "B031.1"
-            ],
-            "line_start": 57,
-            "line_end": 57,
-            "page": null,
-            "page_line": null,
-            "paragraph": 25,
-            "table": null,
-            "row": null,
-            "cell": null,
-            "column": null,
-            "extraction": "text"
-          }
-        },
-        {
-          "text": "Идентификатор карты",
-          "match": "exact",
-          "score": 100.0,
-          "located": "идентификатор карты",
-          "anchor": {
-            "char_start": 2250,
-            "char_end": 2269,
-            "block_ids": [
-              "B031"
-            ],
-            "sentence_ids": [
-              "B031.1"
-            ],
-            "line_start": 57,
-            "line_end": 57,
-            "page": null,
-            "page_line": null,
-            "paragraph": 25,
-            "table": null,
-            "row": null,
-            "cell": null,
-            "column": null,
-            "extraction": "text"
-          }
-        }
-      ],
-      "question": "Идентификатор карты, который приложение передаёт в запросе как cardId и сервис хранит вместе с покупками, — это номер карты или заменитель номера?",
-      "why": "cardId передаётся в строке запроса и попадает в журналы и прокси. От ответа зависят маскирование в журналах и шифрование хранилища; отдельно открыт срок хранения операций.",
-      "options": [
-        {
-          "label": "A",
-          "text": "Непрозрачный токен, не связанный с номером карты",
-          "change": "Указать в требованиях к данным и в параметре cardId, что это токен; маскирование не требуется",
-          "grounded_in": null
-        },
-        {
-          "label": "B",
-          "text": "Номер карты",
-          "change": "Добавить требования к маскированию в журналах, шифрованию в хранилище и передаче cardId вне строки запроса",
-          "grounded_in": null
-        }
-      ],
-      "if_unanswered": "Команда сочтёт cardId токеном и будет писать его в журналы открыто. Если это номер карты, произойдёт утечка платёжных данных.",
-      "related_findings": [
-        "F-23"
-      ],
-      "origin": "uncertain_verdict",
       "standard": [
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Complete)",
         "IEEE 830-1998, п. 4.3.3"
@@ -10952,7 +11536,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Требования к изменениям",
+                "Функциональные требования"
+              ]
             }
           },
           {
@@ -10978,7 +11568,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть A. Новый функционал",
+                "Требования к изменениям",
+                "Функциональные требования"
+              ]
             }
           }
         ],
@@ -11033,7 +11629,13 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": [
+                "Уведомление о расходах по карте",
+                "Часть B. REST API",
+                "Статусы",
+                "403. Unsuccessful — Forbidden"
+              ]
             }
           },
           "common_sense": false,
@@ -11066,7 +11668,13 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": [
+            "Уведомление о расходах по карте",
+            "Часть B. REST API",
+            "Статусы",
+            "403. Unsuccessful — Forbidden"
+          ]
         }
       }
     }
@@ -11092,7 +11700,7 @@
     ]
   },
   "metrics": {
-    "duration_s": 0.33,
+    "duration_s": 0.28,
     "calls_total": 8,
     "calls_failed": 0,
     "calls_cached": 0,
@@ -11133,10 +11741,10 @@
       }
     },
     "evidence": {
-      "witness_requested": 15,
-      "witness_checked": 9,
-      "witness_rejected": 1,
-      "witness_declined": 5,
+      "witness_requested": 11,
+      "witness_checked": 8,
+      "witness_rejected": 0,
+      "witness_declined": 3,
       "critic_reviewed": 0,
       "critic_kept": 0,
       "critic_downgraded": 0,
@@ -11250,12 +11858,7 @@
       {
         "found_in": 1,
         "of": 1,
-        "count": 48
-      },
-      {
-        "found_in": 0,
-        "of": 1,
-        "count": 1
+        "count": 49
       }
     ]
   },
@@ -12477,7 +13080,8 @@
           "IND-COMPL": {
             "state": "violation",
             "finding_ids": [
-              "F-23"
+              "F-23",
+              "F-24"
             ]
           },
           "IND-SING": {
@@ -12585,7 +13189,7 @@
           "IND-UNAMB": {
             "state": "violation",
             "finding_ids": [
-              "F-24"
+              "F-25"
             ]
           },
           "IND-COMPL": {
@@ -12657,7 +13261,7 @@
           "IND-VERIF": {
             "state": "violation",
             "finding_ids": [
-              "F-26"
+              "F-27"
             ]
           },
           "IND-CORR": {
@@ -12845,7 +13449,7 @@
         "set_cell": {
           "state": "violation",
           "finding_ids": [
-            "F-27"
+            "F-28"
           ]
         },
         "searched": true
@@ -13142,7 +13746,7 @@
           "IND-COMPL": {
             "state": "violation",
             "finding_ids": [
-              "F-29"
+              "F-30"
             ]
           },
           "IND-SING": {
@@ -13897,7 +14501,7 @@
         "set_cell": {
           "state": "violation",
           "finding_ids": [
-            "F-30"
+            "F-31"
           ]
         },
         "searched": true
@@ -13920,10 +14524,8 @@
             ]
           },
           "IND-COMPL": {
-            "state": "violation",
-            "finding_ids": [
-              "F-31"
-            ]
+            "state": "clean",
+            "finding_ids": []
           },
           "IND-SING": {
             "state": "clean",
@@ -14517,12 +15119,12 @@
           "F-11",
           "F-18",
           "F-20",
-          "F-25",
+          "F-26",
           "F-41",
           "F-43",
           "F-44",
           "F-45",
-          "F-28"
+          "F-29"
         ],
         "refs": [
           "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Complete)",
@@ -14536,8 +15138,8 @@
           "F-03",
           "F-05",
           "F-07",
-          "F-27",
-          "F-30",
+          "F-28",
+          "F-31",
           "F-32",
           "F-40",
           "F-47",
@@ -14647,7 +15249,7 @@
         "title": "Цитаты в находках сверены с документом",
         "passed": true,
         "integrity": true,
-        "detail": "цитат в находках: 61, все сверены верификатором; заново по тексту документа и якорю: 61",
+        "detail": "цитат в находках: 61, все сверены верификатором; заново по тексту документа и якорю с разделом: 61",
         "failures": []
       },
       {
@@ -14712,7 +15314,7 @@
       "findings": [
         "F-12",
         "F-15",
-        "F-29",
+        "F-30",
         "F-40"
       ]
     },
@@ -14798,9 +15400,9 @@
         "F-06",
         "F-07",
         "F-08",
-        "F-24",
-        "F-28",
-        "F-30",
+        "F-25",
+        "F-29",
+        "F-31",
         "F-32",
         "F-47",
         "F-49"

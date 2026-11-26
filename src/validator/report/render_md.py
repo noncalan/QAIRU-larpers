@@ -149,12 +149,19 @@ def _finding_sections(
 
 
 def _section_resolver(requirements: Sequence[Requirement]) -> Resolver:
-    """Раздел документа для цитаты: раздел самого узкого требования, в которое она попадает."""
+    """Раздел документа для цитаты: путь заголовков из её якоря (#119).
+
+    Якорь хранит раздел блока, где цитата найдена, в том числе блока-примера или шаблона, который
+    не вошёл ни в одно требование. Без раздела в якоре (отчёт старой версии) берём раздел самого
+    узкого требования, в которое попадает цитата, иначе запасной раздел находки.
+    """
     spans = [(r.anchor.char_start, r.anchor.char_end, r.section_path) for r in requirements]
 
     def resolve(quote: Quote, fallback: Sequence[str] = ()) -> list[str]:
         if quote.anchor is None:
             return list(fallback)
+        if quote.anchor.section:
+            return list(quote.anchor.section)
         start = quote.anchor.char_start
         inside = [(end - begin, path) for begin, end, path in spans if begin <= start < end and path]
         return list(min(inside, key=lambda item: item[0])[1]) if inside else list(fallback)
