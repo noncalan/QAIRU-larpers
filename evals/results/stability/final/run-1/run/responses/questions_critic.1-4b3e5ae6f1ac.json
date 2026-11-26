@@ -1,0 +1,231 @@
+{
+ "envelope_version": 1,
+ "key": "4b3e5ae6f1aca8b8c432e888a8b916bf5c39b3bc0bc9545987ea3ab89fe986a9",
+ "call_id": "questions_critic.1",
+ "step": "questions_critic",
+ "call_index": 1,
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T23:00:47.640302+00:00",
+ "payload": {
+  "duration_api_ms": 45486,
+  "stop_reason": "end_turn",
+  "session_id": "8c31c0dd-dc2c-47dd-ab7a-1fa470468bf4",
+  "total_cost_usd": 0.2220306,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 14950,
+   "cache_read_input_tokens": 1813,
+   "output_tokens": 5103,
+   "output_tokens_details": {
+    "thinking_tokens": 2681
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 14950,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 5103,
+     "cache_read_input_tokens": 1813,
+     "cache_creation_input_tokens": 14950,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 14950
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-opus-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 5103,
+    "cacheReadInputTokens": 1813,
+    "cacheCreationInputTokens": 14950,
+    "webSearchRequests": 0,
+    "costUSD": 0.2220306,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2681,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 14950,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n**Q-01.** Ф-1 говорит только, что по умолчанию уведомление выключено. Ф-3 и схема процесса признак включения не учитывают. Ответа нет. Сценарий конкретный, варианты различаются по последствиям. Ошибок нет.\n\n**Q-02.** В требованиях к данным и в описании cardId (Format string, 1–64) природа идентификатора не задана, в CURL — «demo-42». Ответа нет. Конкретной ситуации нет, вопрос абстрактный. Лишние темы есть только в «Почему важно», сам вопрос одно решение. Ошибок нет.\n\n**Q-03.** Ф-2 (дата совершения) противоречит B039 (февральский счётчик). Ответа нет. Сценарий есть, ошибок нет.\n\n**Q-04.** Ф-3 («максимум один push за месяц») противоречит Ф-4 («независимо от истории»). Ответа нет. Сценарий есть, ошибок нет.\n\n**Q-05.** В части B описано только сохранение. B062 противоречив («Сохранение порога. Функциональные требования: чтение порога»). Источника суммы за месяц нигде нет. Ответа нет. Сценарий слабый: открытие экрана без значений. Ошибок нет.\n\n**Q-06.** В Ф-2 сказано «проведённые покупки» без определения события. Ответа нет. Сценарий есть, ошибок нет.\n\n**Q-07.** B114 прямо говорит: для чужой карты возвращается 404. Код 403 в B108 описан общими словами и к чужой карте не привязан. То, что предложение стоит под заголовком 403, — дефект вёрстки, а не второе правило. Ответ есть. Утверждение вопроса, что документ называет для чужой карты и 403, неверно.\n\n**Q-08.** Пример ERROR размещён под 200 (B107). B103 относит неверные параметры к 400. B079 указывает только результат ERROR, без кода. Ответа нет. Сценарий есть, ошибок нет.\n\n**Q-09.** REST type — GET, параметры передаются в query, в B095 сказано «Тело не используется». Документ выбирает GET с параметрами в адресе. Content-Type — очевидный остаток шаблона, его достаточно удалить замечанием. Ответ есть, правка однозначная. Конкретной ситуации нет.\n\n**Q-10.** Ф-1 говорит «держатель», B064 — «сессия владельца карты». Дополнительные карты нигде не упомянуты. Ответа нет. Сценарий есть, ошибок нет.\n\n**Q-11.** В sequence-диаграмме передаётся «сумма» без уточнения. Ответа нет. Сценарий есть, ошибок нет.\n\n**Q-12.** B097 допускает 200 и 201, заголовок «200. Successful — Created», условие для 201 не задано. Ответа нет. Сценарий есть, ошибок нет.\n\n**Q-13.** Ф-2 исключает только переводы и наличные, а учитывает «покупки» без определения. Оплата услуг не определена. Ответа нет. Сценарий есть, ошибок нет.\n\n**Q-14.** Ф-4 покрывает только случай, когда сумма ниже нового порога. Ф-3 говорит о переходе расходов через порог, но неясно, считается ли переходом смена порога. Ответа нет. Сценарий есть, ошибок нет.\n\n**Q-15.** Логика метода безусловно требует проверить сумму, и это прямое правило без исключения для выключенного переключателя. Кроме того, параметр amount обязателен и ограничен диапазоном 1 000–1 000 000 (B091), а при отклонении суммы метод возвращает ERROR (B079). Документ выбирает отклонение. Ответ есть.\n\n## Ответ\n\n```json\n{\n  \"reviews\": [\n    {\"id\": \"Q-01\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-02\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": false, \"errors\": []},\n    {\"id\": \"Q-03\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-04\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-05\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": false, \"errors\": []},\n    {\"id\": \"Q-06\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-07\", \"answered\": true, \"answer\": \"Для чужой карты возвращается 404, как для отсутствующей\", \"answer_quote\": \"Для чужой карты возвращается 404, как и для отсутствующей карты.\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-08\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-09\", \"answered\": true, \"answer\": \"GET с параметрами в адресе, тело не используется\", \"answer_quote\": \"Тело не используется.\", \"common_sense\": false, \"obvious_fix\": true, \"scenario\": false, \"errors\": []},\n    {\"id\": \"Q-10\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-11\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-12\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-13\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-14\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-15\", \"answered\": true, \"answer\": \"Отклоняется: сумма проверяется всегда, без исключения для выключенного переключателя\", \"answer_quote\": \"Проверить сумму и переключатель.\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []}\n  ]\n}\n```",
+  "ttft_ms": 27498,
+  "type": "result",
+  "duration_ms": 49749,
+  "uuid": "e4930d11-ecd9-4f32-930b-011e9ccc201e",
+  "ttft_stream_ms": 1695,
+  "time_to_request_ms": 80,
+  "time_to_request_phases_ms": {
+   "other": 10,
+   "system_prompt": 2,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 10,
+   "input_hooks": 3,
+   "conversation_append": 0,
+   "tool_pool_refresh": 2,
+   "init_message": 8,
+   "init_frame_send": 3,
+   "engine_pickup": 1,
+   "loop_entry": 5,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "request_announcements": 8,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 3,
+   "client_creation": 6,
+   "request_build": 8
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 30,
+  "time_to_request_cpu_ms": 90,
+  "time_to_request_major_faults": 0,
+  "process_rss_mib_turn_start": 200,
+  "process_anon_mib_turn_start": 123,
+  "process_rss_mib_result": 205,
+  "process_anon_mib_result": 120,
+  "process_peak_rss_mib": 219,
+  "process_cpu_ms_turn": 898,
+  "process_wall_ms_turn": 49748,
+  "tool_pool_build_count": 4,
+  "tool_pool_build_lapsed_count": 1,
+  "tool_pool_moved_at_lapse_count": 0,
+  "tool_pool_limit_ms": 30000,
+  "process_cpu_ms_streaming": 510,
+  "process_wall_ms_streaming": 43859,
+  "main_stream_count": 1,
+  "main_stream_event_count": 392,
+  "main_stream_chunk_count": 386,
+  "process_turn_states": {
+   "main_stream": {
+    "cpu_ms": 510,
+    "wall_ms": 43859,
+    "entries": 1
+   },
+   "first_event_wait": {
+    "cpu_ms": 258,
+    "wall_ms": 1614,
+    "entries": 1
+   },
+   "before_first_request": {
+    "cpu_ms": 90,
+    "wall_ms": 79,
+    "entries": 1
+   },
+   "after_last_request": {
+    "cpu_ms": 40,
+    "wall_ms": 4196,
+    "entries": 1
+   }
+  },
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 2,
+   "cpu_ms": 10,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 4,
+   "ambient_wait_ms": 1,
+   "render_ms": 1,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 1,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 2,
+   "images_ms": 0,
+   "post_process_ms": 1,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 2,
+   "headers_ms": 1,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 1,
+   "sent_build_ms": 2,
+   "record_attempt_ms": 0,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 1,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1696,
+  "time_to_request_from_spawn_ms": 830993,
+  "warm_spare_claimed": false,
+  "flag_fetch_kick": "not_asked_warm",
+  "time_origin_ms": 1795733996911.5632,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "process_start_tuning": 0
+ }
+}
