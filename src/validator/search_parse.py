@@ -41,6 +41,11 @@ FINDING_HEAD = re.compile(
     r"(?P<punct>[.:)])?(?P<rest>.*)$"
 )
 """Заголовок находки: «#### Н-12. Суть», «**Н-12.** Суть», «Н-12. Суть»; латинская H и разные дефисы тоже."""
+NUMBERED_HEAD = re.compile(
+    r"^[ \t]{0,3}(?P<hashes>#{1,6}[ \t]*)?(?P<bold>\*+)?[ \t]*(?P<number>\d{1,3})"
+    r"(?P<punct>[.)])\**[ \t]+(?P<rest>\S.*)$"
+)
+"""Заголовок находки без «Н-»: «1) Суть», «2. Суть», «### 3. Суть»; «99.9%» не номер (нужен пробел)."""
 _DASH_TITLE = re.compile(r"^\s+[—–-]\s")
 """«Н-12 — Суть»: без заголовка и звёздочек номер отделён от сути тире."""
 
@@ -101,6 +106,7 @@ _FIELD_NAMES = {
     "чеклист": Key.CHECKLIST,
     "пункт чек-листа": Key.CHECKLIST,
 }
+_FIELD_NAMES.update({"место": Key.BLOCKS, "места": Key.BLOCKS})
 
 SINGLE_FIELDS = (Key.PROPERTY, Key.DEFECT_TYPE, Key.VERDICT, Key.TEST, Key.SEVERITY, Key.FIX)
 """Поля, которые у находки бывают только один раз (цитат и строк «Блоки» может быть несколько)."""
@@ -132,19 +138,48 @@ def _title(text: str, *, numbered: bool) -> str:
     return _LEAD.sub("", title, count=1).strip()
 
 
-def _head(line: str, *, in_field: bool) -> tuple[int, str] | None:
+def _is_field_line(line: str) -> bool:
+    """Строка «- Поле: значение» с известным именем поля (в том числе «1. Цитата: …» с нумерацией полей)."""
+    m = FIELD.match(line)
+    return bool(m and _field_key(m.group(1)))
+
+
+def _head(line: str, *, in_field: bool, numbered: bool = False) -> tuple[int, str] | None:
     """Номер и суть, если строка открывает находку «Н-k».
 
     Строка без «#» и звёздочек («Н-3. Суть») открывает находку, только если за номером знак «.», «:»,
     «)» или тире и строка не продолжает поле: «Н-3 и Н-7 описывают одно место» это текст, а не находка.
+    ``numbered``: ответ без «Н-k», находки нумеруются «1) Суть» или «2. Суть» (см. ``_uses_numbers``).
     """
     m = FINDING_HEAD.match(line)
     if m is None:
-        return None
+        return _numbered_head(line, in_field=in_field) if numbered else None
     marked = bool(m.group("hashes") or m.group("bold"))
     if not marked and (in_field or not (m.group("punct") or _DASH_TITLE.match(m.group("rest")))):
         return None
     return int(m.group("number")), _title(m.group("rest"), numbered=True)
+
+
+def _numbered_head(line: str, *, in_field: bool) -> tuple[int, str] | None:
+    """«1) Суть» или «### 2. Суть»; нумерованное поле («1. Цитата: …») и продолжение поля не заголовок."""
+    m = NUMBERED_HEAD.match(line)
+    if m is None or _is_field_line(line):
+        return None
+    if in_field and not (m.group("hashes") or m.group("bold")):
+        return None
+    return int(m.group("number")), _title(m.group("rest"), numbered=True)
+
+
+def _uses_numbers(lines: list[str]) -> bool:
+    """Находки нумеруются без «Н-»: «Н-k» нигде нет, зато есть заголовок «1) Суть» с полями ниже."""
+    if any(_head(line, in_field=False) for line in lines):
+        return False
+    for i, line in enumerate(lines):
+        if _numbered_head(line, in_field=False) is not None and any(
+            _is_field_line(nxt) for nxt in lines[i + 1 : i + 8]
+        ):
+            return True
+    return False
 
 
 # ---------------------------------------------------------------- находки как текст
@@ -200,7 +235,8 @@ class _Splitter:
     а не теряется; фрагмент без того и другого («Находок нет.») отбрасывается.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, *, numbered: bool = False) -> None:
+        self.numbered = numbered
         self.findings: list[RawFinding] = []
         self.current: RawFinding | None = None
         self.section: Scope | None = None
@@ -223,7 +259,7 @@ class _Splitter:
         return self.current
 
     def feed(self, line: str) -> None:
-        head = _head(line, in_field=self.last_key is not None)
+        head = _head(line, in_field=self.last_key is not None, numbered=self.numbered)
         if head is not None:
             self.open(*head, line)
             return
@@ -271,9 +307,12 @@ def split_findings(answer: str) -> SplitAnswer:
     lines = answer.splitlines()
     start = next((i for i, line in enumerate(lines) if FINDINGS_SECTION.match(line)), None)
     has_section = start is not None
+    numbered = _uses_numbers(lines[start or 0 :])
     if start is None:
-        start = next((i for i, line in enumerate(lines) if _head(line, in_field=False)), len(lines))
-    splitter = _Splitter()
+        start = next(
+            (i for i, line in enumerate(lines) if _head(line, in_field=False, numbered=numbered)), len(lines)
+        )
+    splitter = _Splitter(numbered=numbered)
     for line in lines[start:]:
         splitter.feed(line)
     splitter.close()

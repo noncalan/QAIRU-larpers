@@ -8,8 +8,9 @@ from pathlib import Path
 import pytest
 
 from conftest import REQUIREMENTS
-from validator.errors import IN_ENCODING, IN_ENCODING_UNCERTAIN, IN_HEADINGS_ONLY, IN_NO_TEXT
+from validator.errors import IN_ENCODING, IN_ENCODING_UNCERTAIN, IN_HEADINGS_ONLY, IN_NO_TEXT, InputError
 from validator.ingest import parse
+from validator.ingest.md import decode_text
 from validator.models import Block, BlockKind, DiagLevel, DocKind, ParsedDocument
 from validator.text import span_anchor
 
@@ -196,6 +197,44 @@ def test_short_text_in_ambiguous_encoding_gets_low_confidence_warning(tmp_path: 
     warning = next(d for d in doc.diagnostics if d.code == IN_ENCODING_UNCERTAIN)
     assert warning.level is DiagLevel.WARNING
     assert warning.hint
+
+
+def test_mixed_utf8_and_cp1251_is_read_with_warning_not_rejected(tmp_path: Path) -> None:
+    """Ревью #144: UTF-8-файл с заметной долей строк в cp1251 давал IN-061 и код 4; теперь предупреждение."""
+    path = tmp_path / "mixed.md"
+    good = PROSE.encode("utf-8")
+    foreign = "Система должна хранить настройку не менее года.\n".encode("cp1251")
+    path.write_bytes(good + b"\n" + foreign * 2 + good)
+
+    doc = parse(path, DocKind.MD)
+
+    warning = next(d for d in doc.diagnostics if d.code == IN_ENCODING_UNCERTAIN)
+    assert warning.level is DiagLevel.WARNING
+    assert "UTF-8" in warning.message
+    assert "Требования к системе" in doc.text
+    assert not any(d.level is DiagLevel.ERROR for d in doc.diagnostics)
+
+
+def test_stray_nul_bytes_are_removed_and_reported(tmp_path: Path) -> None:
+    """Ревью #144: нулевой байт из входа попадал в report.md, а диагностика врала про «не UTF-8»."""
+    path = tmp_path / "nul.md"
+    damaged = PROSE.replace("Доступ к", "Доступ\x00 к", 1).replace("Система", "Систе\x00ма", 1)
+    path.write_bytes(damaged.encode("utf-8"))
+
+    doc = parse(path, DocKind.MD)
+
+    assert "\x00" not in doc.text and all("\x00" not in b.text for b in doc.blocks)
+    assert "Доступ к настройкам" in doc.text
+    assert IN_ENCODING not in codes(doc)
+    warning = next(d for d in doc.diagnostics if d.code == IN_ENCODING_UNCERTAIN)
+    assert "нулев" in warning.message and "удалены" in warning.action
+
+
+def test_binary_garbage_still_has_no_encoding() -> None:
+    with pytest.raises(InputError) as excinfo:
+        decode_text(bytes(range(128, 256)) * 8)
+
+    assert excinfo.value.code == IN_ENCODING
 
 
 # ---------------------------------------------------------------- пустые документы

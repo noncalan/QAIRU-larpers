@@ -33,7 +33,11 @@ _IMAGE_MAGIC = {
     b"BM": "BMP",
 }
 _PDF_HEADER = re.compile(rb"%PDF-\d\.\d")
-_HTML = re.compile(rb"\s*(?:<!doctype\s+html|<html)", re.IGNORECASE)
+_HTML = re.compile(
+    rb"\s*(?:<!doctype\s+html|<html\b|<(?:head|body|div|p|table|ul|ol|h[1-6]|title|meta)[\s>/])",
+    re.IGNORECASE,
+)
+"""Страница HTML: ``<!doctype html>``, ``<html>`` или блочный тег в самом начале (фрагменты без doctype)."""
 _TEXT_CONTROLS = frozenset("\t\n\r\f\v\x1b")
 _SPACE = 0x20
 _DEL = 0x7F

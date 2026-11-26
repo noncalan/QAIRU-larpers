@@ -445,3 +445,49 @@ def test_unwrap_only_single_quote() -> None:
     assert unwrap("«Текст [уточнить: N]»") == "Текст [уточнить: N]"
     assert unwrap("«А» или «Б»") == "«А» или «Б»"
     assert unwrap("Текст без кавычек") == "Текст без кавычек"
+
+
+# ---------------------------------------------------------------- отклонения от формата (ревью #144)
+
+
+def test_straight_quotes_around_text_with_guillemets_keep_whole_quote() -> None:
+    value = '"Приложение читает … через документ «Уведомление … REST API»."'
+
+    assert quotes_in(value) == ["Приложение читает … через документ «Уведомление … REST API»."]
+
+
+def test_curly_quotes_around_text_with_guillemets_keep_whole_quote() -> None:
+    assert quotes_in("“Читает данные из «Журнала» ежедневно”") == ["Читает данные из «Журнала» ежедневно"]
+
+
+def test_comment_after_quote_is_not_a_second_quote() -> None:
+    assert quotes_in("«Система должна работать» — см. также «Сохранить»") == ["Система должна работать"]
+
+
+@pytest.mark.parametrize("joiner", [" и ", " или ", ", ", "; "])
+def test_two_quotes_with_plain_joiner_stay_two(joiner: str) -> None:
+    assert quotes_in(f"«первая цитата»{joiner}«вторая цитата»") == ["первая цитата", "вторая цитата"]
+
+
+@pytest.mark.parametrize("template", ["{n})", "{n}.", "### {n}.", "**{n}.**"])
+def test_numbered_headings_without_n_prefix_split_findings(template: str) -> None:
+    answer = CANONICAL
+    for n in (1, 2):
+        answer = answer.replace(f"#### Н-{n}.", template.format(n=n))
+
+    split = split_findings(answer)
+
+    assert [f.number for f in split.findings] == [1, 2]
+    assert [d.defect_type for d in drafts(answer)] == [DefectType.UNVERIFIABLE, DefectType.CONTRADICTION]
+
+
+def test_numbered_fields_are_not_taken_for_headings() -> None:
+    answer = CANONICAL.replace("- ", "1. ")
+
+    assert [f.number for f in split_findings(answer).findings] == [1, 2]
+
+
+def test_place_label_is_read_as_blocks() -> None:
+    first = drafts(CANONICAL.replace("- Блоки:", "- Место:"))[0]
+
+    assert first.block_ids == ("B014.2",)
