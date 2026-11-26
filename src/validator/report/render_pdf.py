@@ -636,7 +636,7 @@ def _questions_body(report: Report, ctx: dict[str, Any]) -> Json:
             mono=[0],
         )
         blocks = [table, *(_question_card(q, ctx) for q in report.questions)]
-        blocks.append(_para("Ответы можно вписать в questions.yaml рядом с отчётом."))
+        blocks.append(_para(f"Ответы можно вписать в {report.questions_file} рядом с отчётом."))
         return {"title": title, "blocks": [*blocks, *_withdrawn_blocks(report, ctx)]}
     failed = [d for d in report.diagnostics if d.step == "questions" and d.level.value != "info"]
     if report.questions_withdrawn:

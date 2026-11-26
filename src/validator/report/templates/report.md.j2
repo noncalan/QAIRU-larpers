@@ -388,7 +388,7 @@
 
 {% endif %}
 {% endfor %}
-Ответы можно вписать в `questions.yaml` рядом с отчётом.
+Ответы можно вписать в `{{ r.questions_file }}` рядом с отчётом.
 {% elif r.questions_withdrawn %}
 Открытых вопросов нет: самопроверка нашла в документе ответы на все вопросы, они перечислены ниже.
 {% elif r.diagnostics | selectattr("step", "equalto", "questions") | rejectattr("level", "equalto", "info") | list %}

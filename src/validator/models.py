@@ -653,6 +653,9 @@ class ReportStatus(StrEnum):
 
 DIAG_CODE_PATTERN = r"^(IN|LLM|CFG|INT|OUT)-\d{3}$"
 
+QUESTIONS_FILE = "questions.yaml"
+"""Вопросы автору рядом с отчётом (схема в ``questions/export.py``)."""
+
 
 class Diagnostic(Contract):
     """Строка раздела «Диагностика»: что увидели, что сделал агент, что сделать человеку (исследование 04)."""
@@ -1473,7 +1476,8 @@ class RunConfig(Contract):
 
     @property
     def questions_path(self) -> Path:
-        return self.out_dir / "questions.yaml"
+        """Обычное место вопросов; если там ответы автора, прогон пишет рядом (``safe_questions_path``)."""
+        return self.out_dir / QUESTIONS_FILE
 
     @property
     def run_dir(self) -> Path:
@@ -1816,6 +1820,10 @@ class Report(Contract):
     checklists: list[ChecklistUse] = Field(
         default_factory=list, description="Доменные чек-листы: включённые и нет, с причиной (#35)"
     )
+    questions_file: str = Field(
+        default=QUESTIONS_FILE,
+        description="Файл вопросов рядом с отчётом: другое имя, если в questions.yaml ответы автора",
+    )
 
 
 class RunContext(Contract):
@@ -1845,6 +1853,7 @@ class RunContext(Contract):
     calls: list[CallRecord] = Field(default_factory=list)
     passport: Passport
     checklists: list[ChecklistUse] = Field(default_factory=list, description="Выбор чек-листов (#35)")
+    questions_file: str = Field(default=QUESTIONS_FILE, description="Куда записаны вопросы этого прогона")
 
 
 class RunOutcome(Contract):
