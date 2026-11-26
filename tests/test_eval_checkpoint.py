@@ -114,7 +114,9 @@ def test_raw_with_three_passes_notes_that_c_raw_was_not_measured() -> None:
 def test_cli_builds_table_from_eval_results(tmp_path: Path, capsys: Any) -> None:
     src = str(BASELINE_RESULT)
 
-    code = main(["--a", src, "--b", src, "--b-raw", src, "--c", src, "--out-dir", str(tmp_path)])
+    args = ["--a", src, "--b", src, "--b-raw", src, "--c", src, "--out-dir", str(tmp_path)]
+
+    code = main([*args, "--note", "C run-1 досчитан из кеша"])
 
     assert code == 0
     [md] = tmp_path.glob("*-checkpoint.md")
@@ -123,4 +125,5 @@ def test_cli_builds_table_from_eval_results(tmp_path: Path, capsys: Any) -> None
     assert "| Recall (found + partial) | 93,3 % | 93,3 % | 93,3 % | 93,3 % |" in text
     assert "Проходов по умолчанию (standard и submit): **1**" in text
     assert "D-011: проходов 1, вход поиска blocks" in capsys.readouterr().out
+    assert "## Заметки о прогонах\n\n- C run-1 досчитан из кеша" in text
     assert list(tmp_path.glob("*-checkpoint.json"))

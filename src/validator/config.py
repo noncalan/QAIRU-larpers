@@ -54,11 +54,13 @@ class ProfileSpec:
     description: str
 
 
-# Число проходов по умолчанию для standard и submit окончательно задаст D-011 (контрольная точка 26.11).
+# Число проходов по умолчанию задало правило D-011 (контрольная точка 26.11, docs/decisions.md): один проход.
+# Три прохода стабильнее (Жаккар находок 0,62 против 0,51), но правило их не включило; они остаются
+# опцией ``--passes 3``. Профили quick и standard сейчас совпадают: quick оставлен для обратной совместимости.
 PROFILES: dict[Profile, ProfileSpec] = {
     Profile.QUICK: ProfileSpec(1, Effort.MEDIUM, "1 проход, Opus medium: отладка и быстрый прогон"),
-    Profile.STANDARD: ProfileSpec(3, Effort.MEDIUM, "3 прохода, Opus medium: обычный прогон"),
-    Profile.SUBMIT: ProfileSpec(3, Effort.XHIGH, "3 прохода, Opus xhigh: отчёт на сдачу и финал"),
+    Profile.STANDARD: ProfileSpec(1, Effort.MEDIUM, "1 проход, Opus medium: обычный прогон (D-011)"),
+    Profile.SUBMIT: ProfileSpec(1, Effort.XHIGH, "1 проход, Opus xhigh: отчёт на сдачу и финал (D-011)"),
 }
 
 SEARCH_INPUT = SearchInput.BLOCKS

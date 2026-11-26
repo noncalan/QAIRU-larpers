@@ -61,7 +61,8 @@ def fake_run(
 ) -> tuple[DocKind, Path, int]:
     kind: DocKind = request.param
     out = tmp_path_factory.mktemp(kind.value) / "report.md"
-    result = run_cli(REQUIREMENTS[kind], out, "--backend", "fake")
+    # Три прохода явно: по умолчанию один (D-011), а smoke проверяет и слияние проходов.
+    result = run_cli(REQUIREMENTS[kind], out, "--backend", "fake", "--passes", "3")
     return kind, out, result.returncode
 
 

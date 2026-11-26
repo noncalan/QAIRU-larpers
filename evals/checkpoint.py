@@ -93,6 +93,7 @@ class CheckpointResult(BaseModel):
     sources: dict[str, str] = Field(description="Конфигурация → файл результата evals.eval")
     configs: dict[str, ConfigScore]
     decision: Decision
+    notes: list[str] = Field(default_factory=list, description="Заметки оператора: как шли прогоны")
 
 
 # ---------------------------------------------------------------- правило
@@ -326,10 +327,14 @@ def render_markdown(result: CheckpointResult) -> str:
         *(f"- {note}" for note in d.notes),
         "",
     ]
+    if result.notes:
+        out += ["## Заметки о прогонах", "", *(f"- {note}" for note in result.notes), ""]
     return "\n".join(out)
 
 
-def build(sources: dict[str, Path], *, name: str, now: datetime | None = None) -> CheckpointResult:
+def build(
+    sources: dict[str, Path], *, name: str, notes: Sequence[str] = (), now: datetime | None = None
+) -> CheckpointResult:
     configs = {
         label: EvalResult.model_validate_json(path.read_text(encoding="utf-8")).config
         for label, path in sources.items()
@@ -340,6 +345,7 @@ def build(sources: dict[str, Path], *, name: str, now: datetime | None = None) -
         sources={label: display_path(path) for label, path in sources.items()},
         configs=configs,
         decision=decide(configs["A"], configs["B"], configs["B′"], configs["C"]),
+        notes=list(notes),
     )
 
 
@@ -363,6 +369,7 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--b-raw", type=Path, required=True, help="результат eval агента, 1 проход без ID блоков")
     p.add_argument("--c", type=Path, required=True, help="результат eval агента, 3 прохода")
     p.add_argument("--name", default="checkpoint")
+    p.add_argument("--note", action="append", default=[], help="заметка о прогонах в отчёт (можно несколько)")
     p.add_argument("--out-dir", type=Path, default=DEFAULT_RESULTS)
     return p
 
@@ -374,7 +381,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 2
     sources = {"A": args.a, "B": args.b, "B′": args.b_raw, "C": args.c}
     try:
-        result = build(sources, name=args.name)
+        result = build(sources, name=args.name, notes=args.note)
         json_path, md_path = write_result(result, args.out_dir)
     except (OSError, ValueError) as exc:
         print(f"Ошибка контрольной точки: {exc}", file=sys.stderr)
