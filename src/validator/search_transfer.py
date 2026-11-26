@@ -54,12 +54,17 @@ def render_fragments(fragments: Sequence[Fragment]) -> str:
     return "\n\n".join(f'<фрагмент номер="{k}">\n{f.text}\n</фрагмент>' for k, f in enumerate(fragments, 1))
 
 
-def transfer_request(rendered: str, findings: str, cfg: RunConfig, index: int, attempt: int) -> LLMRequest:
-    """Запрос переноса в JSON. Номер вызова: проход k это k, повтор это k + число проходов."""
+def transfer_request(
+    rendered: str, findings: str, cfg: RunConfig, index: int, attempt: int, stride: int | None = None
+) -> LLMRequest:
+    """Запрос переноса в JSON. Номер вызова: проход k это k, повтор это k + число проходов.
+
+    ``stride``: число вызовов поиска, если их больше числа проходов (длинный документ по частям, #38).
+    """
     model = cfg.model_for(LLMStep.SEARCH_TRANSFER)
     return LLMRequest(
         step=LLMStep.SEARCH_TRANSFER,
-        call_index=index + attempt * cfg.passes,
+        call_index=index + attempt * (stride or cfg.passes),
         model=model.model,
         effort=model.effort,
         system=load_prompt(TRANSFER_SYSTEM),

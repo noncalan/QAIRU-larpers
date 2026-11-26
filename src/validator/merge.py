@@ -63,6 +63,10 @@ MIN_QUOTE_OVERLAP = 0.6
 TEXT_SIMILARITY = 85.0
 """Минимальный балл rapidfuzz (0–100) для цитат, которых нет в документе, и для находок без цитат."""
 
+_RULE_SOURCES = frozenset({SourceKind.LINT, SourceKind.SET_CHECK})
+"""Источники с ``rule_id``, которые не склеиваются между собой при разных ID: правила линтера и записи
+сверки требований между частями (#38, у каждой записи свой ID)."""
+
 _FAR = 1 << 30
 """Позиция кандидата без найденной цитаты: такие идут после всех привязанных к месту."""
 
@@ -122,7 +126,7 @@ class _Prepared:
     @property
     def lint_rule(self) -> str | None:
         src = self.cand.source
-        return src.rule_id if src.kind is SourceKind.LINT else None
+        return src.rule_id if src.kind in _RULE_SOURCES else None
 
     @property
     def longest_located(self) -> int:
@@ -165,8 +169,14 @@ class _Locator:
         return (a.char_start, a.char_end), tuple(a.block_ids)
 
 
+def quote_hint(quote_blocks: Sequence[Sequence[str]], index: int, block_ids: Sequence[str]) -> list[str]:
+    """Где искать цитату ``index``: в её блоках, если их знает код (#38), иначе в ``block_ids``."""
+    own = quote_blocks[index] if index < len(quote_blocks) else ()
+    return list(own or block_ids)
+
+
 def _prepare(cand: CandidateFinding, locate: _Locator) -> _Prepared:
-    located = [locate(q, cand.block_ids) for q in cand.quotes]
+    located = [locate(q, quote_hint(cand.quote_blocks, i, cand.block_ids)) for i, q in enumerate(cand.quotes)]
     spans = tuple(span for span, _ in located)
     norm_quotes = tuple(normalize(q)[0] for q in cand.quotes)
     blocks = frozenset(cand.block_ids) | {b for _, ids in located for b in ids}
@@ -363,29 +373,44 @@ def _source_key(src: FindingSource) -> tuple[int, int, str]:
     )
 
 
-def _quotes(cluster: Sequence[_Prepared]) -> list[str]:
-    """Все разные цитаты кластера по месту в документе; вложенные в другую цитату и повторы убираем."""
-    seen: dict[str, tuple[str, Span | None]] = {}
-    for p in cluster:
-        for quote, norm, span in zip(p.cand.quotes, p.norm_quotes, p.spans, strict=True):
-            if norm and norm not in seen:
-                seen[norm] = (quote, span)
+@dataclass(frozen=True)
+class _Quote:
+    norm: str
+    text: str
+    span: Span | None
+    blocks: tuple[str, ...]
+    """Блоки цитаты, если место знает код (#38), иначе пусто."""
 
-    def length(item: tuple[str, tuple[str, Span | None]]) -> int:
-        span = item[1][1]
-        return span[1] - span[0] if span else 0
+
+def _quotes(cluster: Sequence[_Prepared]) -> list[_Quote]:
+    """Все разные цитаты кластера по месту в документе; вложенные в другую цитату и повторы убираем.
+
+    Повтор узнаём по тексту. У цитат с местом от кода (сверка между частями, #38) ещё и по месту: один и
+    тот же текст в двух частях документа это две цитаты, иначе находка о повторе указала бы одно место.
+    """
+    seen: dict[tuple[str, Span | None], _Quote] = {}
+    for p in cluster:
+        for i, (quote, norm, span) in enumerate(zip(p.cand.quotes, p.norm_quotes, p.spans, strict=True)):
+            own = tuple(p.cand.quote_blocks[i]) if i < len(p.cand.quote_blocks) else ()
+            key = (norm, span if own else None)
+            if norm and key not in seen:
+                seen[key] = _Quote(norm, quote, span, own)
+
+    def length(q: _Quote) -> int:
+        return q.span[1] - q.span[0] if q.span else 0
 
     # Длинные сначала: короткая цитата внутри уже взятой длинной не нужна.
-    ranked = sorted(seen.items(), key=lambda item: (-length(item), item[0]))
-    kept: list[tuple[str, str, Span | None]] = []
-    for norm, (quote, span) in ranked:
-        if span is not None and any(s and s[0] <= span[0] and span[1] <= s[1] for _, _, s in kept):
+    ranked = sorted(seen.values(), key=lambda q: (-length(q), q.norm))
+    kept: list[_Quote] = []
+    for q in ranked:
+        span = q.span
+        if span is not None and any(k.span and k.span[0] <= span[0] and span[1] <= k.span[1] for k in kept):
             continue
-        if span is None and any(fuzz.partial_ratio(norm, k) >= TEXT_SIMILARITY for k, _, _ in kept):
+        if span is None and any(fuzz.partial_ratio(q.norm, k.norm) >= TEXT_SIMILARITY for k in kept):
             continue
-        kept.append((norm, quote, span))
-    kept.sort(key=lambda t: (t[2][0] if t[2] else _FAR, t[0]))
-    return [quote for _, quote, _ in kept]
+        kept.append(q)
+    kept.sort(key=lambda q: (q.span[0] if q.span else _FAR, q.norm))
+    return kept
 
 
 def _disagreements(cluster: Sequence[_Prepared]) -> list[str]:
@@ -440,6 +465,7 @@ def _build(cluster: Sequence[_Prepared], mid: str, of: int, block_order: dict[st
     defect = _vote([p.cand.defect_type for p in voters], first.defect_type)
     head = _representative(voters, prop, defect).cand
     texts = [p.cand for p in voters], [p.cand for p in cluster]
+    quotes = _quotes(cluster)
     return MergedFinding(
         mid=mid,
         property=prop,
@@ -447,7 +473,8 @@ def _build(cluster: Sequence[_Prepared], mid: str, of: int, block_order: dict[st
         verdict=_vote([p.cand.verdict for p in voters], head.verdict),
         scope=prop.scope,
         block_ids=sorted({b for p in cluster for b in p.blocks}, key=lambda b: (block_order.get(b, _FAR), b)),
-        quotes=_quotes(cluster),
+        quotes=[q.text for q in quotes],
+        quote_blocks=[list(q.blocks) for q in quotes] if any(q.blocks for q in quotes) else [],
         explanation=head.explanation,
         suggestion=_fill(head.suggestion, *([c.suggestion for c in pool] for pool in texts)),
         title=_fill(head.title, *([c.title for c in pool] for pool in texts)),

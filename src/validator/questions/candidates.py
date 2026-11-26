@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, replace
 
 from rapidfuzz import fuzz
@@ -30,11 +30,20 @@ from validator.models import (
     Finding,
     QuestionOrigin,
     Quote,
+    RequirementType,
     SourceKind,
     Verdict,
     Verification,
 )
-from validator.questions.scoring import draft_gaps, is_contradiction, proven_witness, requirement_ids
+from validator.questions.scoring import (
+    draft_gaps,
+    is_contradiction,
+    priority,
+    priority_rank,
+    proven_witness,
+    requirement_ids,
+    value,
+)
 
 CLARIFY = re.compile(r"\[\s*уточнить\b\s*:?\s*([^\]]*)\]", re.IGNORECASE)
 """Плейсхолдер в предложенной формулировке: ``[уточнить: что именно]``."""
@@ -44,6 +53,11 @@ PLACEHOLDER_SIMILARITY = 85.0
 
 MIN_PLACEHOLDER_CHARS = 8
 """Короткие плейсхолдеры («N», «срок») похожи у всех, по ним не склеиваем."""
+
+EDITOR_MAX_CANDIDATES = 80
+"""Сколько кандидатов редактор вопросов разбирает за один вызов. На документе в 30 страниц их 40–60
+(контрольная точка D-011), на длинном (#38) сотни: тогда редактору идут кандидаты с высшим приоритетом
+и ценностью ответа, а вход и ответ редактора остаются размером как на обычном документе."""
 
 ORIGIN_ORDER: tuple[QuestionOrigin, ...] = (
     QuestionOrigin.WITNESS,
@@ -57,7 +71,11 @@ ORIGIN_ORDER: tuple[QuestionOrigin, ...] = (
 """Источники по силе: главный источник карточки это первый из них."""
 
 
-_SOURCE_ORIGIN = {SourceKind.LINT: QuestionOrigin.LINT, SourceKind.CHECKLIST: QuestionOrigin.CHECKLIST}
+_SOURCE_ORIGIN = {
+    SourceKind.LINT: QuestionOrigin.LINT,
+    SourceKind.CHECKLIST: QuestionOrigin.CHECKLIST,
+    SourceKind.SET_CHECK: QuestionOrigin.SET_CHECK,
+}
 
 
 @dataclass(frozen=True)
@@ -203,3 +221,21 @@ def collect_candidates(ver: Verification) -> list[Candidate]:
     built = [_candidate(group) for group in _clusters(eligible)]
     built.sort(key=lambda c: (c.position, c.finding_ids))
     return [replace(c, cid=f"C-{n:02d}") for n, c in enumerate(built, start=1)]
+
+
+def shortlist(
+    cands: Sequence[Candidate],
+    req_types: Mapping[str, RequirementType],
+    limit: int = EDITOR_MAX_CANDIDATES,
+) -> list[Candidate]:
+    """Кандидаты для редактора: все, если их не больше ``limit``, иначе главные по приоритету и ценности.
+
+    Порядок и ID ``C-NN`` не меняются: редактор видит кандидатов в порядке документа.
+    """
+    if len(cands) <= limit:
+        return list(cands)
+    ranked = sorted(
+        cands, key=lambda c: (priority_rank(priority(c.findings, req_types)), -value(c.findings), c.position)
+    )
+    keep = {c.cid for c in ranked[:limit]}
+    return [c for c in cands if c.cid in keep]

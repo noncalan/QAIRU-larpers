@@ -81,6 +81,8 @@ class RawPage:
     height: float
     glyphs: list[Glyph]
     rules: list[Rule] = field(default_factory=list)
+    images: bool = False
+    """На странице есть картинка: страница без текста с картинкой похожа на скан (#38), без неё на пустую."""
 
 
 class PdfSource(Protocol):
@@ -126,34 +128,55 @@ class _MuPdfSource:
         self.repaired: bool = bool(doc.is_repaired)
 
     def pages(self) -> Iterator[RawPage]:
-        # Стандартные флаги rawdict, но без лигатур (ﬁ → «fi»: цитата модели с лигатурой не совпала бы)
-        # и без картинок (нужен только текст).
-        flags = pymupdf.TEXTFLAGS_RAWDICT & ~pymupdf.TEXT_PRESERVE_LIGATURES & ~pymupdf.TEXT_PRESERVE_IMAGES
         for number, page in enumerate(self._doc, start=1):
-            glyphs: list[Glyph] = []
-            # Рамки символов лежат в неповёрнутой странице; для /Rotate переводим их в вид на экране.
             turn = page.rotation_matrix if page.rotation else None
-            try:
-                blocks = page.get_text("rawdict", flags=flags)["blocks"]
-            except (RuntimeError, ValueError):
-                blocks = []  # страница не читается: она считается страницей без текста
-            for block in blocks:
-                if block.get("type") != 0:
-                    continue
-                for line in block["lines"]:
-                    for span in line["spans"]:
-                        bold, italic = _style(span["font"], span["flags"], _MUPDF_BOLD, _MUPDF_ITALIC)
-                        for ch in span["chars"]:
-                            if not ch["c"].strip():
-                                continue
-                            box = pymupdf.Rect(ch["bbox"]) * turn if turn else pymupdf.Rect(ch["bbox"])
-                            size = span["size"] or (box.y1 - box.y0) / _LINE_TO_SIZE or _FALLBACK_SIZE
-                            glyphs.append(Glyph(ch["c"], box.x0, box.x1, box.y0, box.y1, size, bold, italic))
             rect = page.rect
-            yield RawPage(number, rect.width, rect.height, glyphs, _mupdf_rules(page, turn))
+            glyphs = mupdf_glyphs(page)
+            yield RawPage(
+                number, rect.width, rect.height, glyphs, _mupdf_rules(page, turn), _mupdf_images(page)
+            )
 
     def close(self) -> None:
         self._doc.close()
+
+
+MUPDF_TEXT_FLAGS = (
+    pymupdf.TEXTFLAGS_RAWDICT & ~pymupdf.TEXT_PRESERVE_LIGATURES & ~pymupdf.TEXT_PRESERVE_IMAGES
+)
+"""Стандартные флаги rawdict, но без лигатур (ﬁ → «fi»: цитата модели с лигатурой не совпала бы) и без
+картинок (нужен только текст)."""
+
+
+def mupdf_glyphs(page: pymupdf.Page, textpage: pymupdf.TextPage | None = None) -> list[Glyph]:
+    """Символы страницы с координатами на экране. ``textpage``: готовый слой текста (OCR, #38)."""
+    glyphs: list[Glyph] = []
+    # Рамки символов лежат в неповёрнутой странице; для /Rotate переводим их в вид на экране.
+    turn = page.rotation_matrix if page.rotation else None
+    try:
+        blocks = page.get_text("rawdict", flags=MUPDF_TEXT_FLAGS, textpage=textpage)["blocks"]
+    except (RuntimeError, ValueError):
+        return []  # страница не читается: она считается страницей без текста
+    for block in blocks:
+        if block.get("type") != 0:
+            continue
+        for line in block["lines"]:
+            for span in line["spans"]:
+                bold, italic = _style(span["font"], span["flags"], _MUPDF_BOLD, _MUPDF_ITALIC)
+                for ch in span["chars"]:
+                    if not ch["c"].strip():
+                        continue
+                    box = pymupdf.Rect(ch["bbox"]) * turn if turn else pymupdf.Rect(ch["bbox"])
+                    size = span["size"] or (box.y1 - box.y0) / _LINE_TO_SIZE or _FALLBACK_SIZE
+                    glyphs.append(Glyph(ch["c"], box.x0, box.x1, box.y0, box.y1, size, bold, italic))
+    return glyphs
+
+
+def _mupdf_images(page: pymupdf.Page) -> bool:
+    """Есть ли на странице картинки: ``get_image_info`` видит и встроенные (BI/ID/EI), и XObject."""
+    try:
+        return bool(page.get_images(full=False)) or bool(page.get_image_info())
+    except (RuntimeError, ValueError):
+        return False
 
 
 def _mupdf_rules(page: pymupdf.Page, turn: pymupdf.Matrix | None) -> list[Rule]:
@@ -208,7 +231,7 @@ class _PdfiumSource:
                     glyphs = _pdfium_glyphs(page)
                 except (pdfium.PdfiumError, RuntimeError, ValueError):
                     glyphs = []  # страница не читается: она считается страницей без текста
-                yield RawPage(number + 1, width, height, glyphs, _pdfium_rules(page))
+                yield RawPage(number + 1, width, height, glyphs, _pdfium_rules(page), _pdfium_images(page))
             finally:
                 page.close()
 
@@ -300,6 +323,13 @@ def _pdfium_rules(page: pdfium.PdfPage) -> list[Rule]:
     except (pdfium.PdfiumError, RuntimeError, ValueError):
         return []  # объекты не читаются: таблицы без линий остаются обычным текстом
     return rules
+
+
+def _pdfium_images(page: pdfium.PdfPage) -> bool:
+    try:
+        return next(page.get_objects(filter=[pdfium_raw.FPDF_PAGEOBJ_IMAGE]), None) is not None
+    except (pdfium.PdfiumError, RuntimeError, ValueError):
+        return False
 
 
 class PdfiumBackend:

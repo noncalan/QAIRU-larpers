@@ -22,6 +22,7 @@ import typst
 from validator.errors import INT_STEP_DEGRADED, ValidatorError
 from validator.models import (
     Diagnostic,
+    DocumentPart,
     Finding,
     Passport,
     Question,
@@ -36,8 +37,8 @@ from validator.models import (
 )
 from validator.report.clarify_view import CLARIFY_TITLE, CLOSED_NOTE, ClarifyView, clarify_view
 from validator.report.coverage import LEGEND, NOT_CHECKED_NOTE, SHORT_LABELS, STATE_LABELS, cell_text
-from validator.report.fmt import money, pct, plain, quote_plain, status_label, when, where
-from validator.report.render_md import report_context
+from validator.report.fmt import found_text, money, pct, plain, quote_plain, status_label, when, where
+from validator.report.render_md import PARTS_NOTE, report_context
 from validator.report.run_metrics import step_label
 
 PACKAGE_DIR = Path(__file__).resolve().parent
@@ -175,20 +176,12 @@ def _finding_card(f: Finding, ctx: dict[str, Any]) -> Json:
         rows += [(f"{e.item_label} {i}", item) for i, item in enumerate(e.items, 1)]
     if ctx["questions_by_finding"].get(f.id):
         rows.append(("Вопрос автору", ", ".join(ctx["questions_by_finding"][f.id])))
-    rows.append(("Найдено", _found(f)))
+    rows.append(("Найдено", found_text(f)))
     if f.anchor_corrected:
         rows.append(("Примечание", "место цитаты уточнил код (модель указала другой блок)"))
     rows += [("Примечание", plain(n)) for n in f.notes]
     head = f"{f.id} · {f.severity.label} · {f.verdict.label} · {f.property.label}"
     return _card(f.severity.value, head, rows)
-
-
-def _found(f: Finding) -> str:
-    """Как в Markdown: находку только линтера не пишем «в 0 из 3 проходов», а называем, кто её нашёл."""
-    sources = ", ".join(s.label for s in f.sources)
-    if f.found_in:
-        return f"в {f.found_in} из {f.of} проходов" + (f" ({sources})" if sources else "")
-    return f"{sources or 'без модели'}; проходы модели этого не отметили (0 из {f.of})"
 
 
 def _option_table(options: Sequence[QuestionOption]) -> Json:
@@ -361,10 +354,13 @@ def _input_section(report: Report, ctx: dict[str, Any]) -> Json:
     return {"title": SECTION_TITLES["input"], "blocks": blocks}
 
 
-def _unperformed_section(report: Report) -> Json:
+def _unperformed_section(report: Report, ctx: dict[str, Any]) -> Json:
     text = "Разделы о требованиях не сформированы: документ не удалось прочитать. "
     text += "Исправьте вход по таблице выше и запустите проверку снова."
-    return {"title": "Итог", "blocks": [_para(report.conclusion.headline), _para(text)]}
+    blocks = [_para(report.conclusion.headline), _para(text)]
+    if ctx["next_steps"]:
+        blocks += [_para("Что сделать:"), _bullets(plain(step) for step in ctx["next_steps"])]
+    return {"title": "Итог", "blocks": blocks}
 
 
 def _segmentation_section(report: Report) -> Json:
@@ -410,7 +406,34 @@ def _segmentation_section(report: Report) -> Json:
         mono=[0],
         hyph=[1, 2, 3, 5],
     )
-    return {"title": SECTION_TITLES["segmentation"], "blocks": [_para(how), table, _para(tail)]}
+    return {
+        "title": SECTION_TITLES["segmentation"],
+        "blocks": [_para(how), *_parts(report), table, _para(tail)],
+    }
+
+
+def _parts(report: Report) -> list[Json]:
+    """Части длинного документа (#38): как в Markdown, пояснение и таблица."""
+    parts = report.document.parts if report.document else []
+    if not parts:
+        return []
+
+    def blocks(part: DocumentPart) -> str:
+        extra = f", плюс {part.context_blocks} из раздела терминов для справки" if part.context_blocks else ""
+        return f"{part.first_block}–{part.last_block} ({part.blocks}{extra})"
+
+    rows = [
+        [str(p.index), plain("; ".join(p.sections), 300), blocks(p), p.pages or "—", str(p.tokens)]
+        for p in parts
+    ]
+    table = _table(
+        ["Часть", "Разделы", "Блоки", "Страницы", "Токенов, оценка"],
+        rows,
+        [0.08, 0.42, 0.24, 0.12, 0.14],
+        mono=[0],
+        hyph=[1, 2],
+    )
+    return [_para(PARTS_NOTE), table]
 
 
 def _requirements_section(report: Report, ctx: dict[str, Any]) -> Json:
@@ -872,7 +895,7 @@ def build_view(report: Report) -> Json:
     p = report.passport
     sections = [_passport_section(report, ctx), _input_section(report, ctx)]
     if not report.conclusion.performed:
-        sections.append(_unperformed_section(report))
+        sections.append(_unperformed_section(report, ctx))
     else:
         sections += [
             _segmentation_section(report),

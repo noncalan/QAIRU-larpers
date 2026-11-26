@@ -7,13 +7,13 @@
     "document_sha256": "827b313b968e08fe35310bff9dc37687099888e4c9d5bc364e3403f4b2cc66db",
     "document_size_bytes": 205814,
     "document_pages": 8,
-    "started_at": "2026-11-26T07:15:03.507829Z",
-    "finished_at": "2026-11-26T07:15:03.891559Z",
-    "duration_s": 0.38,
-    "agent_version": "cb055cf-dirty",
+    "started_at": "2026-11-26T07:27:00.727123Z",
+    "finished_at": "2026-11-26T07:27:01.055681Z",
+    "duration_s": 0.33,
+    "agent_version": "4f0b8d3-dirty",
     "agent_version_source": "git",
     "agent_dirty": true,
-    "prompts_sha256": "f5ad10a75c7dac02be764e4b5170e2bf788b1b8cba6b001f0ecb1b42bbc557c5",
+    "prompts_sha256": "6127f175db32b3a494edb802cc4d6d0223afdacae91678c7ea0c7cedd9d908d3",
     "os": "Linux 6.18.44-fc-v880 (x86_64)",
     "python": "3.13.18",
     "backend_requested": "replay",
@@ -29,7 +29,8 @@
       "critic": "claude-opus-5-5 · high",
       "test_draft": "claude-sonnet-5-5 · high",
       "questions": "claude-opus-5-5 · high",
-      "questions_critic": "claude-opus-5-5 · high"
+      "questions_critic": "claude-opus-5-5 · high",
+      "set_check": "claude-opus-5-5 · medium"
     },
     "models_actual": [
       "claude-opus-5-5",
@@ -57,7 +58,8 @@
     "pages": 8,
     "chars": 7714,
     "blocks": 120,
-    "extraction": "PyMuPDF 2.1, символы с координатами в порядке чтения, таблицы по ячейкам (7)"
+    "extraction": "PyMuPDF 2.1, символы с координатами в порядке чтения, таблицы по ячейкам (7)",
+    "parts": []
   },
   "input_diagnostics": [],
   "diagnostics": [
@@ -12423,7 +12425,7 @@
     ]
   },
   "metrics": {
-    "duration_s": 0.38,
+    "duration_s": 0.33,
     "calls_total": 7,
     "calls_failed": 0,
     "calls_cached": 0,
