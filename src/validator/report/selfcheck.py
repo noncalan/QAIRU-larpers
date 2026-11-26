@@ -140,7 +140,6 @@ def _check_anchors(findings: Sequence[Finding], doc_text: str | None) -> tuple[l
         rechecked += n
         mismatched += bad
     anchored = sum(_has_anchor(f) for f in findings)
-    share = (sum(q.verified for q in quotes) / len(quotes)) if quotes else None
     items = [
         _item(
             "anchors",

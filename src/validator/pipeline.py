@@ -405,7 +405,9 @@ def _render(state: _State) -> tuple[ExitCode, Report | None, str]:
         if extra:
             ctx = _context(state, finished, exit_code([*state.diagnostics, *extra]), extra)
             report = build_report(ctx)
-            check = _selfcheck(state, report)[0] or check  # итоговый отчёт проверяем ещё раз: диагностика вошла в него
+            check = (
+                _selfcheck(state, report)[0] or check
+            )  # итоговый отчёт проверяем ещё раз: диагностика вошла в него
         if check is not None:
             report = report.model_copy(update={"selfcheck": check})
         return ctx.exit_code, report, render_md(report)

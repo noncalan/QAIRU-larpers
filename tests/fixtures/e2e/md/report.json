@@ -7,12 +7,12 @@
     "document_sha256": "e7dae55e5453a250d93e335f5ff9c7f775f4457ccddd333f4a67e47b20d74381",
     "document_size_bytes": 13507,
     "document_pages": null,
-    "started_at": "2026-11-25T23:13:22.052009Z",
-    "finished_at": "2026-11-25T23:13:22.247108Z",
-    "duration_s": 0.2,
-    "agent_version": "90fd51a-dirty",
+    "started_at": "2026-11-26T02:17:36.182638Z",
+    "finished_at": "2026-11-26T02:17:36.348594Z",
+    "duration_s": 0.17,
+    "agent_version": "0e62e94",
     "agent_version_source": "git",
-    "agent_dirty": true,
+    "agent_dirty": false,
     "prompts_sha256": "52bad12278cec466d777949f2289670997fddbe7dc21ee3cd740cabddfd517ac",
     "os": "Linux 6.18.44-fc-v880 (x86_64)",
     "python": "3.13.18",
@@ -11731,7 +11731,7 @@
     ]
   },
   "metrics": {
-    "duration_s": 0.2,
+    "duration_s": 0.17,
     "calls_total": 6,
     "calls_failed": 0,
     "calls_cached": 0,
@@ -14918,7 +14918,8 @@
         ]
       }
     ],
-    "extra_finding_ids": [
+    "extra_finding_ids": [],
+    "unlinked_finding_ids": [
       "F-69"
     ],
     "checked": true
@@ -14954,7 +14955,7 @@
         "title": "Цитаты в находках сверены с документом",
         "passed": true,
         "integrity": true,
-        "detail": "100 % (114 из 114), заново по тексту документа: 114",
+        "detail": "цитат в находках: 114, все сверены верификатором; заново по тексту документа и якорю: 114",
         "failures": []
       },
       {
@@ -14975,10 +14976,18 @@
       },
       {
         "id": "counters",
-        "title": "Счётчики сводки и метрик равны числу строк в таблицах",
+        "title": "Счётчики сводки равны числу строк в таблицах",
         "passed": true,
         "integrity": true,
-        "detail": "сводка, таблицы, карточки и метрики сходятся",
+        "detail": "сводка, таблицы и карточки сходятся",
+        "failures": []
+      },
+      {
+        "id": "metrics",
+        "title": "Метрики прогона сходятся со сводкой и воронкой находок",
+        "passed": true,
+        "integrity": false,
+        "detail": "находки, отброшенные, цитаты и «найдено в N из K» сходятся",
         "failures": []
       },
       {
