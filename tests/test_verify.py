@@ -14,6 +14,7 @@ from conftest import REQUIREMENTS
 from validator import pipeline
 from validator.config import load_config
 from validator.ingest.blocks import is_empty_cell_quote
+from validator.lint.rules import RULE_BY_ID
 from validator.models import (
     Anchor,
     Backend,
@@ -41,6 +42,7 @@ from validator.models import (
     TrafficLight,
     Verdict,
     Verification,
+    Witness,
 )
 from validator.questions import QuestionsOutcome
 from validator.report.fmt import quote_text
@@ -413,8 +415,10 @@ def test_table_critical_needs_model_hint_to_agree(
     assert ("подсказка модели" in result.severity_basis) is (expected is not Severity.CRITICAL)
 
 
-def lint_source(m: MergedFinding) -> MergedFinding:
-    return m.model_copy(update={"sources": [FindingSource(kind=SourceKind.LINT, rule_id="L-05")]})
+def lint_source(m: MergedFinding, rule_id: str) -> MergedFinding:
+    return m.model_copy(
+        update={"sources": [*m.sources, FindingSource(kind=SourceKind.LINT, rule_id=rule_id)]}
+    )
 
 
 def test_form_defect_found_only_by_model_is_minor_even_if_it_blocks_testing(
@@ -431,40 +435,100 @@ def test_form_defect_found_only_by_model_is_minor_even_if_it_blocks_testing(
     result = only(verify([finding], doc, seg).findings)
 
     assert result.severity is Severity.MINOR
-    assert "дефект формы без правила линтера" in result.severity_basis
+    assert "дефект формы, кодом не подтверждён" in result.severity_basis
 
 
-def test_linter_form_defect_keeps_table_severity(doc: ParsedDocument, seg: Segmentation) -> None:
-    marker = lint_source(
-        merged(LIMIT_FIVE, defect=DefectType.PLACEHOLDER, prop=Property.COMPLETE, blocks_testing=True)
-    )
-    confirmed = lint_source(
-        merged(
-            SAME_DAY,
-            mid="M-002",
-            defect=DefectType.PLACEHOLDER,
-            prop=Property.COMPLETE,
-            blocks_testing=True,
-            hint=Severity.MINOR,
-        )
-    )
+def test_linter_rule_that_blocks_testing_keeps_table_severity(doc: ParsedDocument, seg: Segmentation) -> None:
+    placeholder = {"defect": DefectType.PLACEHOLDER, "prop": Property.COMPLETE, "blocks_testing": True}
+    marker = lint_source(merged(LIMIT_FIVE, **placeholder), "L-05")
+    confirmed = lint_source(merged(SAME_DAY, mid="M-002", hint=Severity.MINOR, **placeholder), "L-05")
 
     ver = verify([marker, confirmed], doc, seg)
 
     assert [f.severity for f in ver.findings] == [Severity.MAJOR, Severity.MAJOR]
 
 
-def test_low_model_hint_caps_major_meaning_defect_at_minor(doc: ParsedDocument, seg: Segmentation) -> None:
-    low = merged(LIMIT_FIVE, defect=DefectType.INCOMPLETE, prop=Property.COMPLETE, hint=Severity.MINOR)
-    medium = merged(
-        SAME_DAY, mid="M-002", defect=DefectType.INCOMPLETE, prop=Property.COMPLETE, hint=Severity.MAJOR
+def test_linter_rule_that_does_not_block_testing_does_not_confirm_models_mark(
+    doc: ParsedDocument, seg: Segmentation
+) -> None:
+    assert not RULE_BY_ID["L-10"].blocks_testing
+    finding = lint_source(
+        merged(LIMIT_FIVE, defect=DefectType.NOT_ATOMIC, prop=Property.SINGULAR, blocks_testing=True),
+        "L-10",
     )
+
+    result = only(verify([finding], doc, seg).findings)
+
+    assert result.severity is Severity.MINOR
+
+
+def test_checked_witness_keeps_form_defect_and_low_hint_finding_at_table_severity(
+    doc: ParsedDocument, seg: Segmentation
+) -> None:
+    witness = Witness(scenario="Один сценарий", checked=True)
+    form = merged(
+        LIMIT_FIVE, defect=DefectType.TERMINOLOGY, prop=Property.SET_CONSISTENT, blocks_testing=True
+    )
+    low = merged(
+        SAME_DAY, mid="M-002", defect=DefectType.INCOMPLETE, prop=Property.COMPLETE, hint=Severity.MINOR
+    )
+    proven = [m.model_copy(update={"witness": witness}) for m in (form, low)]
+
+    ver = verify(proven, doc, seg)
+
+    assert [f.severity for f in ver.findings] == [Severity.MAJOR, Severity.MAJOR]
+
+
+def test_low_model_hint_caps_unconfirmed_finding_at_minor(doc: ParsedDocument, seg: Segmentation) -> None:
+    incomplete = {"defect": DefectType.INCOMPLETE, "prop": Property.COMPLETE}
+    low = merged(LIMIT_FIVE, hint=Severity.MINOR, **incomplete)
+    medium = merged(SAME_DAY, mid="M-002", hint=Severity.MAJOR, **incomplete)
 
     by_mid = {f.merged_id: f for f in verify([low, medium], doc, seg).findings}
 
     assert by_mid["M-001"].severity is Severity.MINOR
-    assert "подсказка модели «незначительно»: не выше «незначительно»" in by_mid["M-001"].severity_basis
+    assert "подсказка модели «низко», кодом не подтверждено" in by_mid["M-001"].severity_basis
     assert by_mid["M-002"].severity is Severity.MAJOR
+
+
+def test_low_hint_on_table_critical_gives_one_basis_line_about_the_hint(
+    doc: ParsedDocument, seg: Segmentation
+) -> None:
+    finding = merged(LIMIT_FIVE, blocks_testing=True, hint=Severity.MINOR)
+
+    result = only(verify([finding], doc, seg).findings)
+
+    assert result.severity is Severity.MINOR
+    assert result.severity_basis.count("подсказка модели") == 1
+    assert result.severity_disputed
+
+
+def test_low_hint_does_not_lower_injected_instruction(doc: ParsedDocument, seg: Segmentation) -> None:
+    finding = merged(
+        LIMIT_FIVE, defect=DefectType.INJECTED_INSTRUCTION, prop=Property.CORRECT, hint=Severity.MINOR
+    )
+
+    result = only(verify([finding], doc, seg).findings)
+
+    assert result.severity is Severity.MAJOR
+
+
+def test_form_defect_that_model_called_critical_is_marked_as_disputed(
+    doc: ParsedDocument, seg: Segmentation
+) -> None:
+    finding = merged(
+        LIMIT_FIVE,
+        defect=DefectType.TERMINOLOGY,
+        prop=Property.SET_CONSISTENT,
+        blocks_testing=True,
+        hint=Severity.CRITICAL,
+    )
+
+    result = only(verify([finding], doc, seg).findings)
+
+    assert result.severity is Severity.MINOR
+    assert result.severity_disputed
+    assert "итог после правил кода «незначительно»" in result.notes[0]
 
 
 def test_model_hint_never_raises_severity(doc: ParsedDocument, seg: Segmentation) -> None:
