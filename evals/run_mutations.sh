@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Живые прогоны агента на мутантах (#50): исходник плюс 8 копий, по два прогона одновременно.
+# Живые прогоны агента на мутантах (#50): 2 исходника и 8 копий, по два прогона одновременно.
 # Код агента берётся из отдельной папки с релиз-кандидатом, мутанты и результаты лежат в этой ветке:
 #   git worktree add --detach ../qairu-rc1 v0.9-rc1 && (cd ../qairu-rc1 && uv sync)
 #   bash evals/run_mutations.sh ../qairu-rc1 rc1-a3e57a1
@@ -21,9 +21,11 @@ run() {
 }
 pair() { run "$1" "$2" & run "$3" "$4" & wait; }
 
+C4="$HERE/data/holdout/c4/c4_tech_task.md"
+# Десять прогонов (предел задачи #50): сначала всё, без чего нет таблицы recall, одиночные копии в конце.
 pair req-original "$HERE/data/input/requirements.md" req-multi-1 "$MUT/req-multi-1.md"
 pair req-multi-2 "$MUT/req-multi-2.md" req-multi-3 "$MUT/req-multi-3.md"
-pair req-multi-4 "$MUT/req-multi-4.md" req-single-1 "$MUT/req-single-1.md"
-pair req-single-2 "$MUT/req-single-2.md" req-single-3 "$MUT/req-single-3.md"
-run req-neutral "$MUT/req-neutral.md"
+pair req-multi-4 "$MUT/req-multi-4.md" c4-original "$C4"
+pair c4-multi-1 "$MUT/c4-multi-1.md" c4-multi-2 "$MUT/c4-multi-2.md"
+pair req-single-1 "$MUT/req-single-1.md" req-single-2 "$MUT/req-single-2.md"
 echo "все прогоны закончены"

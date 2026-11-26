@@ -70,7 +70,11 @@ class Line:
     heading_level: int = 0
 
 
-def parse(text: str) -> list[Line]:
+SECTION_DEPTH = 3
+
+
+def parse(text: str, depth: int = SECTION_DEPTH) -> list[Line]:
+    """Строки документа. ``depth``: до какого уровня заголовков считать раздел (ключ ``section``)."""
     lines: list[Line] = []
     path: dict[int, str] = {}
     in_code = False
@@ -105,7 +109,7 @@ def parse(text: str) -> list[Line]:
             kind = "list"
         else:
             kind = "para"
-        section = " / ".join(path[k] for k in sorted(path) if k <= 3)
+        section = " / ".join(path[k] for k in sorted(path) if k <= depth)
         lines.append(Line(start, end, raw, kind, section, level))
         prev_kind = kind
     return lines

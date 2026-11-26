@@ -15,6 +15,7 @@ from evals.mutation_text import (
     _ORDERED,
     NEUTRAL,
     PROSE,
+    SECTION_DEPTH,
     Edit,
     Line,
     Span,
@@ -32,9 +33,9 @@ TIME_UNIT = (
 )
 UNIT = (
     r"(?:₸|₽|\$|€|%|руб(?:\.|л\w*)?|тенге|KZT|RUB|USD|EUR|" + TIME_UNIT + r"|"
-    r"[КМГТ]Б|[KMGT]B|бит\w*|bits?|байт\w*|bytes?|символ\w*|знак\w*|RPS|TPS|rps|tps|запрос\w*)"
+    r"[КМГТ]Б|[KMGT]B|бит\w*|bits?|байт\w*|bytes?|символ\w*|знак\w*|цифр\w*|RPS|TPS|rps|tps|запрос\w*)"
 )
-_NUM_UNIT = re.compile(rf"(?<![\w.,])({NUM})\s?({UNIT})(?![\w])")
+_NUM_UNIT = re.compile(rf"(?<![\w.,/])({NUM})\s?({UNIT})(?![\w])")
 _WITHIN = re.compile(rf"\bв течение\s+(?:(?:{NUM})\s?)?{TIME_UNIT}(?![\w])", re.IGNORECASE)
 _BOUND = re.compile(
     rf"\b(?P<prep>не более|не менее|не позднее|не ранее|не выше|не ниже|максимум|минимум|до|от|за)\s+"
@@ -59,7 +60,8 @@ _ACTOR = re.compile(
 """Предложение «Актор глагол …» без стрелок схемы: глагол 3-го лица ед. ч. можно сделать возвратным."""
 _ERROR_BRANCH = re.compile(
     r"\b(?:при (?:ошибке|сбое|отказе|отклонении|неудаче|недоступности)|в случае (?:ошибки|отказа|сбоя|"
-    r"неудачи)|если\b[^.]*\bне\b|on error|if\b[^.]*\bnot\b)",
+    r"неудачи)|если\b[^.]*\bне\b|on error|if\b[^.]*\bnot\b|обработк\w+ (?:ошиб|исключ)\w+|"
+    r"HTTP\s+[45]\d\d)",
     re.IGNORECASE,
 )
 _STATUS_CELL = re.compile(r"^`?[45]\d\d`?(?:\s+[A-Za-z][\w -]*)?$")
@@ -284,6 +286,10 @@ def _delete_line(text: str, lines: list[Line], idx: int, tier: int) -> Edit:
 _MIN_ITEM_WORDS = 3
 
 
+def _indent(text: str) -> int:
+    return len(text) - len(text.lstrip())
+
+
 def _strip_item(text: str) -> str:
     m = _LIST_LABEL.match(text)
     return text[m.end() :] if m else text
@@ -293,6 +299,8 @@ def _m6(text: str, lines: list[Line]) -> list[Edit]:
     out: list[Edit] = []
     for first, second in itertools.pairwise(lines):
         if first.kind != "list" or second.kind != "list" or first.section != second.section:
+            continue
+        if _indent(first.text) != _indent(second.text):  # вложенный пункт и пункт уровнем выше не склеиваем
             continue
         head = first.text.rstrip()
         head = head[:-1].rstrip() if head.endswith((".", ";")) else head
@@ -337,7 +345,7 @@ def _m9(text: str, lines: list[Line]) -> list[Edit]:
     for ln in _prose(lines):
         for a, b in sentences(text, ln):
             sent = text[a:b]
-            if m := _SUBJ_MODAL.match(sent):
+            if (m := _SUBJ_MODAL.match(sent)) and not m.group("rest").lower().startswith(("быть ", "be ")):
                 new, tier = IMPERSONAL + m.group("rest"), 0
             elif m := _ACTOR.match(sent):
                 new, tier = _passive(m), 1
@@ -406,9 +414,9 @@ CANDIDATES: dict[str, Candidates] = {
 }
 
 
-def candidates(operator: str, text: str) -> list[Edit]:
+def candidates(operator: str, text: str, depth: int = SECTION_DEPTH) -> list[Edit]:
     """Все места, куда оператор может внести дефект. Пустой список значит «места нет»."""
-    return CANDIDATES[operator](text, parse(text))
+    return CANDIDATES[operator](text, parse(text, depth))
 
 
 # --- Нейтральные мутации -------------------------------------------------------------------------

@@ -20,6 +20,7 @@ from validator.models import DocKind
 
 DOC = REQUIREMENTS[DocKind.MD].read_text(encoding="utf-8")
 MUTATIONS_DIR = ROOT / "evals" / "mutations"
+C4 = ROOT / "data" / "holdout" / "c4" / "c4_tech_task.md"
 MUTATION_CODE = [ROOT / "evals" / n for n in ("mutate.py", "mutation_ops.py", "mutation_text.py")]
 
 # Небольшой документ другой предметной области: операторы не должны зависеть от нашего ТЗ.
@@ -143,6 +144,7 @@ def test_neutral_mutations_keep_every_word() -> None:
 
 def test_committed_mutants_match_generator(tmp_path: Path) -> None:
     generate(REQUIREMENTS[DocKind.MD].relative_to(ROOT), tmp_path, "req")
+    generate(C4.relative_to(ROOT), tmp_path, "c4", multi_only=2, depth=4)
 
     for path in sorted(tmp_path.iterdir()):
         committed = MUTATIONS_DIR / path.name
@@ -156,12 +158,13 @@ def test_committed_manifests_undo_to_source() -> None:
         if manifest["kind"] == "neutral":
             continue
         copy = manifest_path.with_suffix(".md").read_text(encoding="utf-8")
-        assert _undo(copy, manifest["mutations"]) == DOC, manifest_path.name
+        source = (ROOT / manifest["source"]).read_text(encoding="utf-8")
+        assert _undo(copy, manifest["mutations"]) == source, manifest_path.name
 
 
 def test_every_operator_is_in_committed_multi_copies() -> None:
     ops = []
-    for manifest_path in MUTATIONS_DIR.glob("*multi*.json"):
+    for manifest_path in MUTATIONS_DIR.glob("req-multi*.json"):
         ops += [m["operator"] for m in json.loads(manifest_path.read_text(encoding="utf-8"))["mutations"]]
     assert set(ops) == set(OPERATORS)
 
@@ -261,3 +264,15 @@ def test_operator_table_sums_and_recall() -> None:
             "interference": [],
         }
     )
+
+
+def test_nested_list_item_is_not_glued_to_parent_level() -> None:
+    text = "## Р\n\n1. Первый пункт списка здесь.\n   - Вложенный пункт списка здесь.\n"
+
+    assert candidates("M6", text) == []
+
+
+def test_number_after_slash_is_not_a_separate_value() -> None:
+    text = "## Р\n\n* Длина кода 10/12 цифр.\n"
+
+    assert [text[c.start : c.end] for c in candidates("M1", text)] == []

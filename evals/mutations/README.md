@@ -6,10 +6,14 @@
 |---|---|
 | `req-multi-1` … `req-multi-4` | по 5 мутаций в разных разделах, каждый оператор M1–M10 дважды |
 | `req-single-1` … `req-single-3` | одна мутация, та же, что в многомутантной копии (`same_as` в манифесте): проверка, что мутации не мешают друг другу |
+| `c4-multi-1`, `c4-multi-2` | второй документ, `data/holdout/c4/c4_tech_task.md` (MIT, © 2025 Roman Ushakov, лицензия в `data/holdout/c4/LICENSE`): 7 мутаций; для M3, M9 и M10 в документе нет подходящего места, это записано в `skipped` манифеста |
 | `req-neutral` | нейтральные N1–N3 (разделы местами, нумерация, таблица в список): находки не должны меняться |
 
 Манифест `<копия>.json`: оператор, исходный и новый фрагмент, смещения в копии, строка, ожидаемые свойства и `match_spans` (что должна процитировать находка). Пересобрать (результат детерминирован, тест `tests/test_mutate.py` сверяет файлы с генератором):
 
 ```bash
 uv run python -m evals.mutate data/input/requirements.md evals/mutations --prefix req
+uv run python -m evals.mutate data/holdout/c4/c4_tech_task.md evals/mutations --prefix c4 --multi-only 2 --section-depth 4
 ```
+
+У c4 почти весь текст лежит под одним заголовком третьего уровня, поэтому разделом для него считается заголовок четвёртого уровня (`--section-depth 4`).

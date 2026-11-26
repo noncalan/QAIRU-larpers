@@ -12,8 +12,10 @@
 
 Запуск::
 
-    uv run python -m evals.mutations_score evals/mutations evals/results/mutations \\
-        --baseline evals/results/mutations/req-original --out evals/results/2026-11-26-mutations
+    uv run python -m evals.mutations_score evals/mutations evals/results/mutations/<папка прогонов> \\
+        --out evals/results/2026-11-26-mutations
+
+Прогон исходного документа лежит рядом с прогонами копий: ``<папка прогонов>/<документ>-original``.
 """
 
 from __future__ import annotations
@@ -267,24 +269,34 @@ def total(rows: Sequence[OperatorRow]) -> OperatorRow:
     return out
 
 
-def score_all(
-    mutations_dir: Path, results_dir: Path, baseline: Path | None, baseline_doc: Path | None = None
-) -> list[CopyScore]:
-    original = None
-    if baseline is not None:
-        report = _read_json(report_path(baseline))
-        doc = baseline_doc.read_text(encoding="utf-8") if baseline_doc else ""
-        found = load_findings(report, doc)
-        original = Baseline(frozenset(f.key for f in found), frozenset(p for f in found for p in f.places))
+def _baseline(results_dir: Path, source: Path, prefix: str) -> Baseline | None:
+    """Прогон исходного документа той же версией агента: ``<results>/<префикс>-original``."""
+    run_dir = results_dir / f"{prefix}-original"
+    if not (run_dir / "report.json").is_file() or not source.is_file():
+        return None
+    found = load_findings(_read_json(report_path(run_dir)), source.read_text(encoding="utf-8"))
+    return Baseline(frozenset(f.key for f in found), frozenset(p for f in found for p in f.places))
+
+
+def score_all(mutations_dir: Path, results_dir: Path) -> list[CopyScore]:
     out = []
+    baselines: dict[str, Baseline | None] = {}
     for manifest_path in sorted(mutations_dir.glob("*.json")):
         manifest = _read_json(manifest_path)
         run_dir = results_dir / manifest["copy"]
         if not (run_dir / "report.json").is_file():  # прогона нет или он ещё идёт
             continue
+        prefix = document_of(manifest["copy"])
+        if prefix not in baselines:
+            baselines[prefix] = _baseline(results_dir, Path(manifest["source"]), prefix)
         doc = (mutations_dir / f"{manifest['copy']}.md").read_text(encoding="utf-8")
-        out.append(score_copy(manifest, doc, run_dir, original))
+        out.append(score_copy(manifest, doc, run_dir, baselines[prefix]))
     return out
+
+
+def document_of(copy: str) -> str:
+    """Префикс документа в имени копии: ``req-multi-1`` → ``req``."""
+    return copy.split("-", 1)[0]
 
 
 def interference(copies: Sequence[CopyScore], mutations_dir: Path) -> list[dict[str, str]]:
@@ -308,14 +320,23 @@ def interference(copies: Sequence[CopyScore], mutations_dir: Path) -> list[dict[
     return out
 
 
+def _rows(scores: Sequence[MutationScore]) -> dict[str, Any]:
+    rows = by_operator(scores)
+    tot = total(rows)
+    return {
+        "operators": [asdict(r) | {"recall": r.recall, "recall_soft": r.recall_soft} for r in rows],
+        "total": asdict(tot) | {"recall": tot.recall, "recall_soft": tot.recall_soft},
+    }
+
+
 def to_json(copies: Sequence[CopyScore], mutations_dir: Path) -> dict[str, Any]:
     scored = [m for c in copies if c.kind == "multi" for m in c.mutations]
-    rows = by_operator(scored)
+    documents = sorted({document_of(m.copy) for m in scored})
     return {
-        "schema": "mutations-score/1",
+        "schema": "mutations-score/2",
         "copies": [asdict(c) for c in copies],
-        "operators": [asdict(r) | {"recall": r.recall, "recall_soft": r.recall_soft} for r in rows],
-        "total": asdict(total(rows)) | {"recall": total(rows).recall},
+        **_rows(scored),
+        "documents": {d: _rows([m for m in scored if document_of(m.copy) == d]) for d in documents},
         "interference": interference(copies, mutations_dir),
     }
 
@@ -326,18 +347,10 @@ def _pct(x: float) -> str:
 
 def to_markdown(data: dict[str, Any]) -> str:
     """Таблицы для отчёта: recall по операторам, копии, помехи, пропуски."""
-    lines = [
-        "| Оператор | Внесено | Поймано строго | По месту, свойство другое | Линтер | Модель "
-        "| Recall | Recall мягкий | Recall модели |",
-        "|---|---|---|---|---|---|---|---|---|",
-    ]
-    for r in [*data["operators"], data["total"]]:
-        n = r["inserted"] or 1
-        lines.append(
-            f"| {r['operator']} {r['name']} | {r['inserted']} | {r['caught']} | {r['place_only']} | "
-            f"{r['by_lint']} | {r['by_model']} | {_pct(r['caught'] / n)} | "
-            f"{_pct((r['caught'] + r['place_only']) / n)} | {_pct(r['by_model'] / n)} |"
-        )
+    lines: list[str] = []
+    tables = {"все документы": data, **data.get("documents", {})}
+    for name, part in tables.items():
+        lines += ["", f"**Recall по операторам: {name}**", "", *_operator_table(part)]
     lines += [
         "",
         "| Копия | Вид | Мутаций | Поймано | Находок | Только линтер | Новых находок | Из них в новом месте "
@@ -376,6 +389,22 @@ def to_markdown(data: dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _operator_table(part: dict[str, Any]) -> list[str]:
+    lines = [
+        "| Оператор | Внесено | Поймано строго | По месту, свойство другое | Линтер | Модель "
+        "| Recall | Recall мягкий | Recall модели |",
+        "|---|---|---|---|---|---|---|---|---|",
+    ]
+    for r in [*part["operators"], part["total"]]:
+        n = r["inserted"] or 1
+        lines.append(
+            f"| {r['operator']} {r['name']} | {r['inserted']} | {r['caught']} | {r['place_only']} | "
+            f"{r['by_lint']} | {r['by_model']} | {_pct(r['caught'] / n)} | "
+            f"{_pct((r['caught'] + r['place_only']) / n)} | {_pct(r['by_model'] / n)} |"
+        )
+    return lines
+
+
 def _dash(value: float | None) -> str:
     return "—" if value is None or value < 0 else str(value)
 
@@ -391,11 +420,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Подсчёт пойманных мутаций")
     parser.add_argument("mutations", type=Path, help="папка с копиями и манифестами")
     parser.add_argument("results", type=Path, help="папка с прогонами: <results>/<копия>/report.json")
-    parser.add_argument("--baseline", type=Path, help="прогон исходного документа")
-    parser.add_argument("--baseline-doc", type=Path, default=Path("data/input/requirements.md"))
     parser.add_argument("--out", type=Path, required=True, help="путь без расширения для .json")
     args = parser.parse_args(argv)
-    copies = score_all(args.mutations, args.results, args.baseline, args.baseline_doc)
+    copies = score_all(args.mutations, args.results)
     data = to_json(copies, args.mutations)
     args.out.with_suffix(".json").write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", "utf-8")
     args.out.with_suffix(".tables.md").write_text(to_markdown(data), encoding="utf-8")

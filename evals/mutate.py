@@ -26,7 +26,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from evals.mutation_ops import NEUTRAL_OPS, candidates, neutralize
-from evals.mutation_text import Edit, Mutation, apply_edits, to_mutations
+from evals.mutation_text import SECTION_DEPTH, Edit, Mutation, apply_edits, to_mutations
 
 # --- Копия с несколькими мутациями -------------------------------------------------------------
 
@@ -58,6 +58,7 @@ def mutate(
     name: str = "copy",
     pins: Sequence[Pin] = (),
     avoid: frozenset[tuple[str, str, str, str]] = frozenset(),
+    depth: int = SECTION_DEPTH,
 ) -> CopyResult:
     """Вносит мутации в разные разделы. Оператор без свободного места попадает в ``skipped``.
 
@@ -72,16 +73,16 @@ def mutate(
     plan: list[tuple[str, Pin | None]] = [(p.operator, p) for p in pins]
     rest = list(operators)
     # редкие операторы первыми: у них меньше мест, а разделы общие
-    rest.sort(key=lambda op: (len({c.section for c in candidates(op, text) if c.tier == 0}), op))
+    rest.sort(key=lambda op: (len({c.section for c in candidates(op, text, depth) if c.tier == 0}), op))
     plan.extend((op, None) for op in rest)
     for op, pin in plan:
         found = [
             c
-            for c in candidates(op, current)
+            for c in candidates(op, current, depth)
             if c.section and not (set(c.sections_used) & used) and _fits(current, c, pin)
         ]
         if not found:
-            reason = "места нет" if not candidates(op, current) else "свободного раздела нет"
+            reason = "места нет" if not candidates(op, current, depth) else "свободного раздела нет"
             skipped.append(
                 {"operator": op, "reason": reason if pin is None else "закреплённое место не найдено"}
             )
@@ -146,23 +147,29 @@ def manifest(result: CopyResult, source: Path, source_text: str, kind: str) -> d
     }
 
 
-def generate(source: Path, out_dir: Path, prefix: str, seed: int = 50) -> list[Path]:
+def generate(
+    source: Path, out_dir: Path, prefix: str, seed: int = 50, multi_only: int = 0, depth: int = SECTION_DEPTH
+) -> list[Path]:
+    """Пишет копии и манифесты. ``multi_only=N``: только первые N многомутантных копий плана."""
     text = source.read_text(encoding="utf-8")
     out_dir.mkdir(parents=True, exist_ok=True)
     written: list[Path] = []
     multi: list[CopyResult] = []
     taken: set[tuple[str, str, str, str]] = set()
-    for i, ops in enumerate(MULTI_PLAN, start=1):
-        res = mutate(text, ops, seed + i, f"{prefix}-multi-{i}", avoid=frozenset(taken))
+    plan = MULTI_PLAN[:multi_only] if multi_only else MULTI_PLAN
+    for i, ops in enumerate(plan, start=1):
+        res = mutate(text, ops, seed + i, f"{prefix}-multi-{i}", avoid=frozenset(taken), depth=depth)
         taken |= res.sites
         multi.append(res)
         written += _write(out_dir, res, manifest(res, source, text, "multi"))
+    if multi_only:
+        return written
     for k, (copy_no, op) in enumerate(SINGLE_FROM, start=1):
         base = next((m for m in multi[copy_no - 1].mutations if m.operator == op), None)
         if base is None:
             continue
         pin = Pin(op, base.original, base.replacement, base.section)
-        res = mutate(text, [], seed, f"{prefix}-single-{k}", pins=[pin])
+        res = mutate(text, [], seed, f"{prefix}-single-{k}", pins=[pin], depth=depth)
         data = manifest(res, source, text, "single")
         data["same_as"] = base.id
         written += _write(out_dir, res, data)
@@ -198,8 +205,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("out", type=Path, help="папка для копий и манифестов")
     parser.add_argument("--prefix", default="doc", help="префикс имён копий")
     parser.add_argument("--seed", type=int, default=50)
+    parser.add_argument("--section-depth", type=int, default=SECTION_DEPTH, help="уровень заголовков раздела")
+    parser.add_argument("--multi-only", type=int, default=0, help="только первые N копий с мутациями")
     args = parser.parse_args(argv)
-    for path in generate(args.source, args.out, args.prefix, args.seed):
+    for path in generate(args.source, args.out, args.prefix, args.seed, args.multi_only, args.section_depth):
         print(path.as_posix())
     return 0
 

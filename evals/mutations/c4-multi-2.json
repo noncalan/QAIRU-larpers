@@ -1,0 +1,105 @@
+{
+  "schema": "mutations/1",
+  "copy": "c4-multi-2",
+  "kind": "multi",
+  "source": "data/holdout/c4/c4_tech_task.md",
+  "source_sha256": "fe3bf62e887c60fcfd9739bbe248a0c222490d443dafa9e86a0a4955eabe31f6",
+  "copy_sha256": "bbc9b6949188338c423e5c573801950ec0a01e801604d3492538d9eb62d4b957",
+  "seed": 52,
+  "mutations": [
+    {
+      "id": "c4-multi-2-01",
+      "operator": "M2",
+      "name": "Убрать единицу или границу",
+      "expected_properties": [
+        "IND-UNAMB",
+        "IND-VERIF",
+        "IND-COMPL"
+      ],
+      "section": "c4_tech_task_example / **Код (C4)** / **Требования к сущностям**",
+      "original": " цифр",
+      "replacement": "",
+      "start": 1495,
+      "end": 1495,
+      "line": 38,
+      "match_spans": [
+        [
+          1395,
+          1526
+        ]
+      ],
+      "note": "единица"
+    },
+    {
+      "id": "c4-multi-2-02",
+      "operator": "M7",
+      "name": "Решение вместо требования",
+      "expected_properties": [
+        "IND-APPR"
+      ],
+      "section": "c4_tech_task_example / **Контейнеры (C2)**",
+      "original": "",
+      "replacement": " Реализация — с использованием Redis и PostgreSQL 16.",
+      "start": 666,
+      "end": 719,
+      "line": 15,
+      "match_spans": [
+        [
+          666,
+          719
+        ]
+      ],
+      "note": ""
+    },
+    {
+      "id": "c4-multi-2-03",
+      "operator": "M8",
+      "name": "Непроверяемая формулировка",
+      "expected_properties": [
+        "IND-VERIF",
+        "IND-UNAMB"
+      ],
+      "section": "c4_tech_task_example / **Код (C4)** / **Технические требования**",
+      "original": "",
+      "replacement": "\n\nИнтерфейс должен быть интуитивно понятным, а работа системы стабильной.",
+      "start": 3297,
+      "end": 3370,
+      "line": 82,
+      "match_spans": [
+        [
+          3297,
+          3370
+        ]
+      ],
+      "note": ""
+    },
+    {
+      "id": "c4-multi-2-04",
+      "operator": "M5",
+      "name": "Удалить ветку ошибки",
+      "expected_properties": [
+        "IND-COMPL",
+        "SET-COMPL"
+      ],
+      "section": "c4_tech_task_example / **Инструкция для разработчика**",
+      "original": "   - Пример: попытка создания компании с неуникальным ИНН должна возвращать HTTP 409.\n",
+      "replacement": "",
+      "start": 4445,
+      "end": 4445,
+      "line": 120,
+      "match_spans": [
+        [
+          4398,
+          4444
+        ]
+      ],
+      "note": "строка"
+    }
+  ],
+  "skipped": [
+    {
+      "operator": "M3",
+      "reason": "места нет"
+    }
+  ]
+}
