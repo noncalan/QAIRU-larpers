@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+import shutil
 from collections.abc import Callable
 from pathlib import Path
 
@@ -19,6 +21,7 @@ from validator.checklists import (
 )
 from validator.config import load_config
 from validator.errors import LLM_REPLAY_BY_POSITION, LLM_REPLAYED
+from validator.ingest import parse
 from validator.llm import FakeLLM
 from validator.models import (
     Backend,
@@ -32,10 +35,11 @@ from validator.models import (
     RunConfig,
     SourceKind,
 )
+from validator.parts import plan_parts
 from validator.pipeline import run
 from validator.prompting import fill, load_prompt
 from validator.questions.candidates import ORIGIN_ORDER, finding_origins
-from validator.search import SEARCH_USER, search, search_prompt
+from validator.search import SEARCH_USER, first_pass_request, search, search_prompt
 from validator.search_parse import draft_from_raw, split_findings
 
 # Документ без денег, дат, API и уведомлений: читальный зал библиотеки.
@@ -285,22 +289,51 @@ def test_origin_order_knows_checklist() -> None:
     assert QuestionOrigin.CHECKLIST in ORIGIN_ORDER
 
 
-def test_replay_of_recording_without_checklists_switches_them_off(tmp_path: Path) -> None:
-    """Запись контрольной точки B сделана с --no-checklists: replay по умолчанию находит проход по ключу."""
+def _recording_without_checklists(tmp_path: Path) -> Path:
+    """Запись e2e MD, где проход поиска лежит под ключом запроса без раздела чек-листов: так выглядит
+    запись, сделанная до #35 или с ``--no-checklists``."""
+    run_dir = tmp_path / "run"
+    shutil.copytree(ROOT / "tests" / "fixtures" / "e2e" / "md" / "run", run_dir)
+    cfg = load_config(REQUIREMENTS[DocKind.MD], tmp_path / "report.md", checklists=False)
+    doc = parse(REQUIREMENTS[DocKind.MD], DocKind.MD)
+    key = first_pass_request(doc, plan_parts(doc), cfg).key
+    [path] = (run_dir / "responses").glob("search.1-*.json")
+    envelope = json.loads(path.read_text(encoding="utf-8"))
+    envelope["key"] = key
+    path.write_text(json.dumps(envelope, ensure_ascii=False), encoding="utf-8")
+    return run_dir
 
+
+def test_replay_of_recording_without_checklists_switches_them_off(tmp_path: Path) -> None:
     cfg = load_config(
         REQUIREMENTS[DocKind.MD],
-        tmp_path / "report.md",
+        tmp_path / "out" / "report.md",
         backend=Backend.REPLAY,
-        replay_dir=ROOT / "evals" / "results" / "checkpoint" / "b" / "run-1" / "run",
+        replay_dir=_recording_without_checklists(tmp_path),
     )
 
     outcome = run(cfg)
 
     assert outcome.report is not None
-    codes = {d.code for d in outcome.report.diagnostics}
-    assert LLM_REPLAY_BY_POSITION not in codes
-    assert LLM_REPLAYED in codes
+    by_position = [d for d in outcome.report.diagnostics if d.code == LLM_REPLAY_BY_POSITION]
+    assert not any("search" in f"{d.message} {d.location}" for d in by_position), by_position
+    assert [d.code for d in outcome.report.diagnostics if d.step == "checklists"] == [LLM_REPLAYED]
     assert outcome.report.passport.checklists_enabled is False
     assert outcome.report.passport.checklists == []
     assert any(u.triggered and not u.used for u in outcome.report.checklists)
+
+
+def test_replay_of_recording_with_checklists_keeps_them_on(tmp_path: Path) -> None:
+    cfg = load_config(
+        REQUIREMENTS[DocKind.MD],
+        tmp_path / "report.md",
+        backend=Backend.REPLAY,
+        replay_dir=ROOT / "tests" / "fixtures" / "e2e" / "md" / "run",
+    )
+
+    outcome = run(cfg)
+
+    assert outcome.report is not None
+    assert not [d for d in outcome.report.diagnostics if d.step == "checklists"]
+    assert outcome.report.passport.checklists_enabled is True
+    assert outcome.report.passport.checklists

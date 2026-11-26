@@ -7,17 +7,17 @@
  "model": "claude-sonnet-5-5",
  "effort": "medium",
  "backend": "cli",
- "saved_at": "2026-11-26T07:39:13.005571+00:00",
+ "saved_at": "2026-11-26T09:04:10.404693+00:00",
  "payload": {
-  "duration_api_ms": 32563,
+  "duration_api_ms": 33560,
   "stop_reason": "tool_use",
-  "session_id": "186f27ec-5bb8-4351-89f9-14d918483608",
-  "total_cost_usd": 0.130182,
+  "session_id": "c1114030-f865-4dcc-9e54-b7398900d21d",
+  "total_cost_usd": 0.11141210000000001,
   "usage": {
    "input_tokens": 2,
-   "cache_creation_input_tokens": 14347,
-   "cache_read_input_tokens": 0,
-   "output_tokens": 7279,
+   "cache_creation_input_tokens": 9247,
+   "cache_read_input_tokens": 5101,
+   "output_tokens": 7391,
    "output_tokens_details": {
     "thinking_tokens": 0
    },
@@ -27,19 +27,19 @@
    },
    "service_tier": "standard",
    "cache_creation": {
-    "ephemeral_1h_input_tokens": 14347,
+    "ephemeral_1h_input_tokens": 9247,
     "ephemeral_5m_input_tokens": 0
    },
    "inference_geo": "global",
    "iterations": [
     {
      "input_tokens": 2,
-     "output_tokens": 7279,
-     "cache_read_input_tokens": 0,
-     "cache_creation_input_tokens": 14347,
+     "output_tokens": 7391,
+     "cache_read_input_tokens": 5101,
+     "cache_creation_input_tokens": 9247,
      "cache_creation": {
       "ephemeral_5m_input_tokens": 0,
-      "ephemeral_1h_input_tokens": 14347
+      "ephemeral_1h_input_tokens": 9247
      },
      "type": "message"
     }
@@ -50,16 +50,16 @@
   "modelUsage": {
    "claude-sonnet-5-5": {
     "inputTokens": 2,
-    "outputTokens": 7279,
-    "cacheReadInputTokens": 0,
-    "cacheCreationInputTokens": 14347,
+    "outputTokens": 7391,
+    "cacheReadInputTokens": 5101,
+    "cacheCreationInputTokens": 9247,
     "webSearchRequests": 0,
-    "costUSD": 0.130182,
+    "costUSD": 0.11141210000000001,
     "contextWindow": 1000000,
     "maxOutputTokens": 128000,
     "thinkingTokens": 0,
     "cacheCreationEphemeral5mInputTokens": 0,
-    "cacheCreationEphemeral1hInputTokens": 14347,
+    "cacheCreationEphemeral1hInputTokens": 9247,
     "canonicalModel": "claude-sonnet-5-5",
     "provider": "firstParty",
     "costBasis": "list"
@@ -98,7 +98,7 @@
   "num_turns": 2,
   "subtype": "success",
   "api_error_status": null,
-  "result": "{\"requirements\":[{\"refs\":[\"B013\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"goal\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Клиент узнаёт о достижении личного бюджета в момент покупки\",\"entities\":[{\"kind\":\"actor\",\"value\":\"клиент\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B015.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"interaction\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Мобильное приложение обращается к сервису настроек\",\"entities\":[{\"kind\":\"system\",\"value\":\"мобильное приложение\"},{\"kind\":\"system\",\"value\":\"сервис настроек\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B015.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"interaction\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Процессинг передаёт покупки в учёт расходов, затем в сервис push\",\"entities\":[{\"kind\":\"system\",\"value\":\"карточный процессинг\"},{\"kind\":\"system\",\"value\":\"сервис push\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B017.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"ui\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Путь в приложении: Карты, Расходы, Уведомления\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B017.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"ui\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"На экране переключатель, поле порога, сумма за месяц, кнопка «Сохранить»\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"Порог, ₸\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B017.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"ui\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"При ошибке ввода сообщение появляется под полем\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B020\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"process\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Покупка, пересчёт расходов, проверка порога, при достижении push, завершение\",\"entities\":[{\"kind\":\"event\",\"value\":\"проведение покупки\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B022.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"Ф-1\",\"summary\":\"Держатель активной карты KZT задаёт целый порог 1 000–1 000 000 ₸\",\"entities\":[{\"kind\":\"amount\",\"value\":\"1 000–1 000 000 ₸\"},{\"kind\":\"actor\",\"value\":\"держатель карты\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B022.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"Ф-1\",\"summary\":\"По умолчанию уведомление выключено\",\"entities\":[],\"links\":[],\"depends_on\":\"B022.1\"},{\"refs\":[\"B023.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"Ф-2\",\"summary\":\"Месяц определяется по дате покупки в Алматы\",\"entities\":[{\"kind\":\"period\",\"value\":\"месяц\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B023.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"Ф-2\",\"summary\":\"В расходы входят проведённые покупки\",\"entities\":[],\"links\":[],\"depends_on\":\"B023.1\"},{\"refs\":[\"B023.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"Ф-2\",\"summary\":\"Возврат уменьшает расходы месяца исходной покупки\",\"entities\":[],\"links\":[],\"depends_on\":\"B023.1\"},{\"refs\":[\"B023.4\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"Ф-2\",\"summary\":\"Переводы и снятие наличных исключаются из расходов\",\"entities\":[],\"links\":[],\"depends_on\":\"B023.1\"},{\"refs\":[\"B024.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"Ф-3\",\"summary\":\"При переходе расходов к сумме не ниже порога клиент получает push\",\"entities\":[{\"kind\":\"event\",\"value\":\"достижение порога\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B024.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"Ф-3\",\"summary\":\"Не более одного такого push на карту за календарный месяц\",\"entities\":[{\"kind\":\"period\",\"value\":\"календарный месяц\"}],\"links\":[],\"depends_on\":\"B024.1\"},{\"refs\":[\"B025.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"Ф-4\",\"summary\":\"При изменении порога накопленная сумма сохраняется\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B025.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"Ф-4\",\"summary\":\"Если сумма ниже нового порога, следующее достижение вызывает push независимо от истории\",\"entities\":[],\"links\":[],\"depends_on\":\"B025.1\"},{\"refs\":[\"B027.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"interaction\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Процессинг сообщает сервису расходов о проведённой покупке\",\"entities\":[{\"kind\":\"system\",\"value\":\"процессинг\"},{\"kind\":\"system\",\"value\":\"сервис расходов\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B027.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"interaction\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Сервис расходов запрашивает порог карты у настроек\",\"entities\":[{\"kind\":\"system\",\"value\":\"сервис расходов\"},{\"kind\":\"system\",\"value\":\"настройки\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B027.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"interaction\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Сервис расходов передаёт в push последние четыре цифры карты и сумму\",\"entities\":[{\"kind\":\"system\",\"value\":\"push\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B029\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"nfr\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Push передаётся на отправку в течение минуты после события\",\"entities\":[{\"kind\":\"period\",\"value\":\"минута\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B031\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"data\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Хранить идентификатор карты, месяц, операцию, сумму в тиынах, признак отправки, порог\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"сумма покупки в тиынах\"},{\"kind\":\"data_field\",\"value\":\"порог в тенге\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B033.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"integration\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Приложение читает и сохраняет настройки через REST API дочернего документа\",\"entities\":[{\"kind\":\"system\",\"value\":\"REST API\"}],\"links\":[\"B060\"],\"depends_on\":\"\"},{\"refs\":[\"B033.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"nfr\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Повторная доставка события процессинга сохраняет исходный итог\",\"entities\":[{\"kind\":\"event\",\"value\":\"повторная доставка события\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B038\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Расходы 48 500, порог 50 000, покупка 1 500: итог 50 000 и один push\",\"entities\":[{\"kind\":\"amount\",\"value\":\"50 000 ₸\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B039\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Покупка 31 января проведена 1 февраля: февральский счётчик растёт на 4 000 ₸\",\"entities\":[{\"kind\":\"amount\",\"value\":\"4 000 ₸\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B040\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Перевод 500 ₸ не меняет счётчик 19 900 ₸\",\"entities\":[{\"kind\":\"amount\",\"value\":\"19 900 ₸\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B062\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"logic\",\"source_id\":\"\",\"summary\":\"Метод сохраняет порог\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B063\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"method\",\"source_id\":\"\",\"summary\":\"HTTP-метод GET\",\"entities\":[{\"kind\":\"endpoint\",\"value\":\"GET\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B064\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"auth\",\"source_id\":\"\",\"summary\":\"Авторизация Bearer, сессия владельца карты\",\"entities\":[{\"kind\":\"actor\",\"value\":\"владелец карты\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B067\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"url\",\"source_id\":\"\",\"summary\":\"Адрес Dev: /alerts/saveLimit\",\"entities\":[{\"kind\":\"endpoint\",\"value\":\"/alerts/saveLimit\"}],\"links\":[\"B068\"],\"depends_on\":\"\"},{\"refs\":[\"B075\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"logic\",\"source_id\":\"\",\"summary\":\"Проверить пользовательскую сессию\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B076\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"logic\",\"source_id\":\"\",\"summary\":\"Проверить принадлежность карты клиенту\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B077\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"logic\",\"source_id\":\"\",\"summary\":\"Проверить сумму и переключатель\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B078\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"logic\",\"source_id\":\"\",\"summary\":\"Заменить настройку и вернуть результат сохранения\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B079\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"logic\",\"source_id\":\"\",\"summary\":\"При отклонении суммы вернуть прежнее состояние и результат ERROR\",\"entities\":[{\"kind\":\"status\",\"value\":\"ERROR\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B081\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"rule\",\"source_id\":\"\",\"summary\":\"Порог — целое число тенге, границы включены\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B082\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"rule\",\"source_id\":\"\",\"summary\":\"Повторное сохранение заменяет действующую настройку\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B083\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"rule\",\"source_id\":\"\",\"summary\":\"Изменение порога сохраняет накопленные расходы\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B085\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"process\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Приложение, AlertsController, хранилище настроек, обратно в приложение\",\"entities\":[{\"kind\":\"system\",\"value\":\"AlertsController\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B088\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"param\",\"source_id\":\"\",\"summary\":\"Path-параметры не используются\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B090\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"param\",\"source_id\":\"\",\"summary\":\"Обязательный query-параметр cardId, строка 1–64\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"cardId\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B091\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"param\",\"source_id\":\"\",\"summary\":\"Обязательный query-параметр amount, целое, 1 000–1 000 000\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"amount\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B092\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"param\",\"source_id\":\"\",\"summary\":\"Обязательный query-параметр enabled, 0 или 1\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"enabled\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B094\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"body\",\"source_id\":\"\",\"summary\":\"Content-Type application/json\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"Content-Type\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B095\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"body\",\"source_id\":\"\",\"summary\":\"Тело запроса не используется\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B097.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"status\",\"source_id\":\"\",\"summary\":\"Результат 200 или 201 — успешный\",\"entities\":[{\"kind\":\"status\",\"value\":\"200\"},{\"kind\":\"status\",\"value\":\"201\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B097.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"status\",\"source_id\":\"\",\"summary\":\"Результат 400, 401 и далее — неуспешный\",\"entities\":[{\"kind\":\"status\",\"value\":\"400\"},{\"kind\":\"status\",\"value\":\"401\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B098\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"response\",\"source_id\":\"\",\"summary\":\"Поле ответа result: OK / ERROR\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"result\"}],\"links\":[\"B105\",\"B107\"],\"depends_on\":\"\"},{\"refs\":[\"B099\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"response\",\"source_id\":\"\",\"summary\":\"Поле ответа amount при успехе: порог в тенге\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"amount\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B100\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"response\",\"source_id\":\"\",\"summary\":\"Поле ответа enabled: «0» или «1»\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"enabled\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B101\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"response\",\"source_id\":\"\",\"summary\":\"Поле ответа message при ошибке: описание\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"message\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B103.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"status\",\"source_id\":\"\",\"summary\":\"200 — успешное выполнение метода\",\"entities\":[{\"kind\":\"status\",\"value\":\"200\"}],\"links\":[\"B105\",\"B107\"],\"depends_on\":\"\"},{\"refs\":[\"B103.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"status\",\"source_id\":\"\",\"summary\":\"400 — параметры запроса заполнены неверно\",\"entities\":[{\"kind\":\"status\",\"value\":\"400\"}],\"links\":[\"B110\"],\"depends_on\":\"\"},{\"refs\":[\"B108.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"status\",\"source_id\":\"\",\"summary\":\"401 — запрос без необходимой авторизации\",\"entities\":[{\"kind\":\"status\",\"value\":\"401\"}],\"links\":[\"B112\"],\"depends_on\":\"\"},{\"refs\":[\"B108.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"status\",\"source_id\":\"\",\"summary\":\"403 — доступ к ресурсу запрещён\",\"entities\":[{\"kind\":\"status\",\"value\":\"403\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B108.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"status\",\"source_id\":\"\",\"summary\":\"500 — внутренняя ошибка сервера\",\"entities\":[{\"kind\":\"status\",\"value\":\"500\"}],\"links\":[\"B117\"],\"depends_on\":\"\"},{\"refs\":[\"B114.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"status\",\"source_id\":\"\",\"summary\":\"Для чужой или отсутствующей карты возвращается 404\",\"entities\":[{\"kind\":\"status\",\"value\":\"404\"}],\"links\":[\"B115\"],\"depends_on\":\"\"}],\"excluded\":[{\"block\":\"B002\",\"label\":\"metadata\",\"reason\":\"сведения о комплекте документов\"},{\"block\":\"B005\",\"label\":\"metadata\",\"reason\":\"название задачи\"},{\"block\":\"B006\",\"label\":\"metadata\",\"reason\":\"сведения о продукте\"},{\"block\":\"B007\",\"label\":\"metadata\",\"reason\":\"сведения о бизнес-процессе\"},{\"block\":\"B008\",\"label\":\"metadata\",\"reason\":\"роли проекта\"},{\"block\":\"B009\",\"label\":\"metadata\",\"reason\":\"тип работы\"},{\"block\":\"B010\",\"label\":\"metadata\",\"reason\":\"перечень затрагиваемых систем\"},{\"block\":\"B011\",\"label\":\"metadata\",\"reason\":\"ссылка на задачу в трекере\"},{\"block\":\"B036\",\"label\":\"placeholder\",\"reason\":\"раздел заполняется позднее\"},{\"block\":\"B042\",\"label\":\"metadata\",\"reason\":\"сведения о заполнении ревью\"},{\"block\":\"B043\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B044\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B045\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B046\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B047\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B048\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B049\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B050\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B051\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B052\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B053\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B054\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B055\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B056\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B058\",\"label\":\"template\",\"reason\":\"пустая форма согласующих\"},{\"block\":\"B060\",\"label\":\"context\",\"reason\":\"ссылка на родительский документ\"},{\"block\":\"B065\",\"label\":\"metadata\",\"reason\":\"служебные сведения о контроллере\"},{\"block\":\"B066\",\"label\":\"metadata\",\"reason\":\"тип окружения\"},{\"block\":\"B068\",\"label\":\"example\",\"reason\":\"пример вызова метода\"},{\"block\":\"B069\",\"label\":\"placeholder\",\"reason\":\"значение не заполнено\"},{\"block\":\"B070\",\"label\":\"metadata\",\"reason\":\"сведения о проекте\"},{\"block\":\"B071\",\"label\":\"metadata\",\"reason\":\"сведения о проекте\"},{\"block\":\"B072\",\"label\":\"metadata\",\"reason\":\"автор документа\"},{\"block\":\"B073\",\"label\":\"metadata\",\"reason\":\"разработчик\"},{\"block\":\"B105\",\"label\":\"example\",\"reason\":\"пример успешного ответа\"},{\"block\":\"B106\",\"label\":\"context\",\"reason\":\"связка между примерами\"},{\"block\":\"B107\",\"label\":\"example\",\"reason\":\"пример ответа с ошибкой\"},{\"block\":\"B110\",\"label\":\"example\",\"reason\":\"пример ответа 400\"},{\"block\":\"B112\",\"label\":\"example\",\"reason\":\"пример ответа 401\"},{\"block\":\"B114.2\",\"label\":\"context\",\"reason\":\"только код 404 без описания\"},{\"block\":\"B115\",\"label\":\"example\",\"reason\":\"пример ответа 404\"},{\"block\":\"B117\",\"label\":\"example\",\"reason\":\"пример ответа 500\"}]}",
+  "result": "{\"requirements\":[{\"refs\":[\"B013\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"goal\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Клиент может узнать о достижении личного бюджета в момент покупки\",\"entities\":[{\"kind\":\"actor\",\"value\":\"клиент\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B015.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"interaction\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Мобильное приложение обращается к сервису настроек\",\"entities\":[{\"kind\":\"system\",\"value\":\"мобильное приложение\"},{\"kind\":\"system\",\"value\":\"сервис настроек\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B015.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"interaction\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Процессинг передаёт данные в учёт расходов, затем в сервис push\",\"entities\":[{\"kind\":\"system\",\"value\":\"карточный процессинг\"},{\"kind\":\"system\",\"value\":\"сервис push\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B017.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"ui\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Путь навигации: Карты → Расходы → Уведомления\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B017.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"ui\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"На экране переключатель, поле порога, сумма за месяц, кнопка «Сохранить»\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"Порог, ₸\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B017.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"ui\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"При ошибке ввода сообщение показывается под полем\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B020\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"process\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Покупка → пересчёт расходов → проверка порога → push при достижении → завершение\",\"entities\":[{\"kind\":\"event\",\"value\":\"проведение покупки\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B022.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"Ф-1\",\"summary\":\"Держатель активной карты KZT задаёт целый порог 1 000–1 000 000 ₸\",\"entities\":[{\"kind\":\"amount\",\"value\":\"1 000–1 000 000 ₸\"},{\"kind\":\"actor\",\"value\":\"держатель карты\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B022.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"Ф-1\",\"summary\":\"По умолчанию уведомление выключено\",\"entities\":[],\"links\":[],\"depends_on\":\"B022.1\"},{\"refs\":[\"B023.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"Ф-2\",\"summary\":\"Месяц определяется по дате покупки в Алматы\",\"entities\":[{\"kind\":\"period\",\"value\":\"месяц\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B023.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"Ф-2\",\"summary\":\"В расходы входят проведённые покупки\",\"entities\":[],\"links\":[],\"depends_on\":\"B023.1\"},{\"refs\":[\"B023.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"Ф-2\",\"summary\":\"Возврат уменьшает расходы месяца исходной покупки\",\"entities\":[],\"links\":[],\"depends_on\":\"B023.1\"},{\"refs\":[\"B023.4\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"Ф-2\",\"summary\":\"Переводы и снятие наличных исключаются из расходов\",\"entities\":[],\"links\":[],\"depends_on\":\"B023.1\"},{\"refs\":[\"B024.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"Ф-3\",\"summary\":\"При переходе расходов от суммы ниже порога к равной или выше клиент получает push\",\"entities\":[{\"kind\":\"event\",\"value\":\"достижение порога\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B024.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"Ф-3\",\"summary\":\"Максимум один такой push на карту за календарный месяц\",\"entities\":[{\"kind\":\"amount\",\"value\":\"один push\"},{\"kind\":\"period\",\"value\":\"календарный месяц\"}],\"links\":[],\"depends_on\":\"B024.1\"},{\"refs\":[\"B025.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"Ф-4\",\"summary\":\"При изменении порога накопленная сумма сохраняется\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B025.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"Ф-4\",\"summary\":\"Если сумма ниже нового порога, следующее достижение вызывает push независимо от истории\",\"entities\":[],\"links\":[],\"depends_on\":\"B025.1\"},{\"refs\":[\"B027.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"interaction\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Процессинг сообщает сервису расходов о проведённой покупке\",\"entities\":[{\"kind\":\"system\",\"value\":\"процессинг\"},{\"kind\":\"system\",\"value\":\"сервис расходов\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B027.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"interaction\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Сервис расходов получает порог карты из настроек\",\"entities\":[{\"kind\":\"system\",\"value\":\"сервис расходов\"},{\"kind\":\"system\",\"value\":\"настройки\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B027.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"interaction\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Сервис расходов передаёт в push последние четыре цифры карты и сумму\",\"entities\":[{\"kind\":\"system\",\"value\":\"push\"},{\"kind\":\"data_field\",\"value\":\"последние четыре цифры карты\"},{\"kind\":\"data_field\",\"value\":\"сумма\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B029\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"nfr\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Push передаётся на отправку в течение минуты после получения события\",\"entities\":[{\"kind\":\"period\",\"value\":\"в течение минуты\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B031\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"data\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Хранить идентификатор карты, месяц, операцию, сумму в тиынах, признак отправки, порог в тенге\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"идентификатор карты\"},{\"kind\":\"data_field\",\"value\":\"сумма покупки в тиынах\"},{\"kind\":\"data_field\",\"value\":\"порог в тенге\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B033.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"integration\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Приложение читает и сохраняет настройки через REST API дочернего документа\",\"entities\":[{\"kind\":\"system\",\"value\":\"приложение\"}],\"links\":[\"B060\"],\"depends_on\":\"\"},{\"refs\":[\"B033.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Повторная доставка события процессинга сохраняет исходный итог\",\"entities\":[{\"kind\":\"event\",\"value\":\"повторная доставка события\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B038\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Расходы 48 500, порог 50 000, покупка 1 500 → итог 50 000 и один push\",\"entities\":[{\"kind\":\"amount\",\"value\":\"50 000 ₸\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B039\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Покупка 31 января проведена 1 февраля 00:03 — учитывается в феврале\",\"entities\":[{\"kind\":\"amount\",\"value\":\"4 000 ₸\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B040\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Перевод 500 ₸ не меняет счётчик 19 900 ₸\",\"entities\":[{\"kind\":\"amount\",\"value\":\"19 900 ₸\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B062\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"rule\",\"source_id\":\"\",\"summary\":\"Метод сохраняет порог\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B063\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"method\",\"source_id\":\"\",\"summary\":\"Тип REST-метода GET\",\"entities\":[{\"kind\":\"endpoint\",\"value\":\"GET\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B064\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"auth\",\"source_id\":\"\",\"summary\":\"Авторизация Bearer, сессия владельца карты\",\"entities\":[{\"kind\":\"actor\",\"value\":\"владелец карты\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B067\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"url\",\"source_id\":\"\",\"summary\":\"Адрес в Dev: /alerts/saveLimit\",\"entities\":[{\"kind\":\"endpoint\",\"value\":\"/alerts/saveLimit\"}],\"links\":[\"B068\"],\"depends_on\":\"\"},{\"refs\":[\"B075\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"logic\",\"source_id\":\"\",\"summary\":\"Проверить пользовательскую сессию\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B076\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"logic\",\"source_id\":\"\",\"summary\":\"Проверить принадлежность карты клиенту\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B077\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"logic\",\"source_id\":\"\",\"summary\":\"Проверить сумму и переключатель\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B078\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"logic\",\"source_id\":\"\",\"summary\":\"Заменить настройку и вернуть результат сохранения\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B079\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"logic\",\"source_id\":\"\",\"summary\":\"При отклонении суммы вернуть прежнее состояние и результат ERROR\",\"entities\":[{\"kind\":\"status\",\"value\":\"ERROR\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B081\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"rule\",\"source_id\":\"\",\"summary\":\"Порог — целое число тенге, обе границы включены\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B082\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"rule\",\"source_id\":\"\",\"summary\":\"Повторное сохранение заменяет действующую настройку\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B083\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"rule\",\"source_id\":\"\",\"summary\":\"Изменение порога сохраняет накопленные расходы\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B085\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"process\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Приложение → AlertsController → хранилище настроек → AlertsController → приложение\",\"entities\":[{\"kind\":\"system\",\"value\":\"AlertsController\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B088\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"param\",\"source_id\":\"\",\"summary\":\"Path-параметры не используются\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B090\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"param\",\"source_id\":\"\",\"summary\":\"Обязательный query-параметр cardId, string, 1–64\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"cardId\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B091\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"param\",\"source_id\":\"\",\"summary\":\"Обязательный query-параметр amount, integer, 1 000–1 000 000\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"amount\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B092\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"param\",\"source_id\":\"\",\"summary\":\"Обязательный query-параметр enabled, 0 или 1\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"enabled\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B094\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"body\",\"source_id\":\"\",\"summary\":\"Content-Type application/json\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"Content-Type\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B095\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"body\",\"source_id\":\"\",\"summary\":\"Тело запроса не используется\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B097.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"status\",\"source_id\":\"\",\"summary\":\"Результат 200 или 201 — успешный\",\"entities\":[{\"kind\":\"status\",\"value\":\"200\"},{\"kind\":\"status\",\"value\":\"201\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B097.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"status\",\"source_id\":\"\",\"summary\":\"Результат 400, 401 и далее — неуспешный\",\"entities\":[{\"kind\":\"status\",\"value\":\"400\"},{\"kind\":\"status\",\"value\":\"401\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B098\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"response\",\"source_id\":\"\",\"summary\":\"Поле result: OK или ERROR, исход сохранения\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"result\"}],\"links\":[\"B105\",\"B107\"],\"depends_on\":\"\"},{\"refs\":[\"B099\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"response\",\"source_id\":\"\",\"summary\":\"Поле amount при успехе: порог в тенге\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"amount\"}],\"links\":[\"B105\"],\"depends_on\":\"\"},{\"refs\":[\"B100\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"response\",\"source_id\":\"\",\"summary\":\"Поле enabled: «0» или «1»\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"enabled\"}],\"links\":[\"B105\"],\"depends_on\":\"\"},{\"refs\":[\"B101\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"response\",\"source_id\":\"\",\"summary\":\"Поле message при ошибке: описание ошибки\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"message\"}],\"links\":[\"B107\"],\"depends_on\":\"\"},{\"refs\":[\"B103.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"status\",\"source_id\":\"\",\"summary\":\"200 — успешное выполнение метода\",\"entities\":[{\"kind\":\"status\",\"value\":\"200\"}],\"links\":[\"B105\",\"B107\"],\"depends_on\":\"\"},{\"refs\":[\"B103.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"status\",\"source_id\":\"\",\"summary\":\"400 — параметры запроса заполнены неверно\",\"entities\":[{\"kind\":\"status\",\"value\":\"400\"}],\"links\":[\"B110\"],\"depends_on\":\"\"},{\"refs\":[\"B108.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"status\",\"source_id\":\"\",\"summary\":\"401 — запрос без необходимой авторизации\",\"entities\":[{\"kind\":\"status\",\"value\":\"401\"}],\"links\":[\"B112\"],\"depends_on\":\"\"},{\"refs\":[\"B108.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"status\",\"source_id\":\"\",\"summary\":\"403 — доступ к ресурсу запрещён\",\"entities\":[{\"kind\":\"status\",\"value\":\"403\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B108.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"status\",\"source_id\":\"\",\"summary\":\"500 — внутренняя ошибка сервера\",\"entities\":[{\"kind\":\"status\",\"value\":\"500\"}],\"links\":[\"B117\"],\"depends_on\":\"\"},{\"refs\":[\"B114.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"api\",\"subtype\":\"status\",\"source_id\":\"\",\"summary\":\"Для чужой или отсутствующей карты возвращается 404\",\"entities\":[{\"kind\":\"status\",\"value\":\"404\"}],\"links\":[\"B115\"],\"depends_on\":\"\"}],\"excluded\":[{\"block\":\"B002\",\"label\":\"metadata\",\"reason\":\"сведения о комплекте документов\"},{\"block\":\"B005\",\"label\":\"metadata\",\"reason\":\"название задачи\"},{\"block\":\"B006\",\"label\":\"metadata\",\"reason\":\"сведения о продукте проекта\"},{\"block\":\"B007\",\"label\":\"metadata\",\"reason\":\"сведения о бизнес-процессе\"},{\"block\":\"B008\",\"label\":\"metadata\",\"reason\":\"роли и участники\"},{\"block\":\"B009\",\"label\":\"metadata\",\"reason\":\"тип работы\"},{\"block\":\"B010\",\"label\":\"metadata\",\"reason\":\"перечень затронутых систем\"},{\"block\":\"B011\",\"label\":\"metadata\",\"reason\":\"ссылка на задачу в трекере\"},{\"block\":\"B036\",\"label\":\"placeholder\",\"reason\":\"заполняется позднее тестировщиками\"},{\"block\":\"B042\",\"label\":\"metadata\",\"reason\":\"сведения о заполнении ревью\"},{\"block\":\"B043\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B044\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B045\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B046\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B047\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B048\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B049\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B050\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B051\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B052\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B053\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B054\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B055\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B056\",\"label\":\"template\",\"reason\":\"строка чек-листа ревью\"},{\"block\":\"B058\",\"label\":\"template\",\"reason\":\"незаполненная строка согласующих\"},{\"block\":\"B060\",\"label\":\"context\",\"reason\":\"ссылка на дочерний документ\"},{\"block\":\"B065\",\"label\":\"metadata\",\"reason\":\"название контроллера, служебные сведения\"},{\"block\":\"B066\",\"label\":\"metadata\",\"reason\":\"тип окружения URL\"},{\"block\":\"B068\",\"label\":\"example\",\"reason\":\"пример вызова метода\"},{\"block\":\"B069\",\"label\":\"placeholder\",\"reason\":\"Swagger не заполнен\"},{\"block\":\"B070\",\"label\":\"metadata\",\"reason\":\"сведения о проекте\"},{\"block\":\"B071\",\"label\":\"metadata\",\"reason\":\"сведения о проекте\"},{\"block\":\"B072\",\"label\":\"metadata\",\"reason\":\"автор документа\"},{\"block\":\"B073\",\"label\":\"metadata\",\"reason\":\"разработчик\"},{\"block\":\"B105\",\"label\":\"example\",\"reason\":\"пример успешного ответа\"},{\"block\":\"B106\",\"label\":\"context\",\"reason\":\"связка «или» между примерами\"},{\"block\":\"B107\",\"label\":\"example\",\"reason\":\"пример ответа с ошибкой\"},{\"block\":\"B110\",\"label\":\"example\",\"reason\":\"пример ответа 400\"},{\"block\":\"B112\",\"label\":\"example\",\"reason\":\"пример ответа 401\"},{\"block\":\"B114.2\",\"label\":\"context\",\"reason\":\"номер кода без пояснения\"},{\"block\":\"B115\",\"label\":\"example\",\"reason\":\"пример ответа 404\"},{\"block\":\"B117\",\"label\":\"example\",\"reason\":\"пример ответа 500\"}]}",
   "structured_output": {
    "requirements": [
     {
@@ -110,7 +110,7 @@
      "type": "goal",
      "subtype": "",
      "source_id": "",
-     "summary": "Клиент узнаёт о достижении личного бюджета в момент покупки",
+     "summary": "Клиент может узнать о достижении личного бюджета в момент покупки",
      "entities": [
       {
        "kind": "actor",
@@ -152,7 +152,7 @@
      "type": "interaction",
      "subtype": "",
      "source_id": "",
-     "summary": "Процессинг передаёт покупки в учёт расходов, затем в сервис push",
+     "summary": "Процессинг передаёт данные в учёт расходов, затем в сервис push",
      "entities": [
       {
        "kind": "system",
@@ -175,7 +175,7 @@
      "type": "ui",
      "subtype": "",
      "source_id": "",
-     "summary": "Путь в приложении: Карты, Расходы, Уведомления",
+     "summary": "Путь навигации: Карты → Расходы → Уведомления",
      "entities": [],
      "links": [],
      "depends_on": ""
@@ -208,7 +208,7 @@
      "type": "ui",
      "subtype": "",
      "source_id": "",
-     "summary": "При ошибке ввода сообщение появляется под полем",
+     "summary": "При ошибке ввода сообщение показывается под полем",
      "entities": [],
      "links": [],
      "depends_on": ""
@@ -222,7 +222,7 @@
      "type": "process",
      "subtype": "",
      "source_id": "",
-     "summary": "Покупка, пересчёт расходов, проверка порога, при достижении push, завершение",
+     "summary": "Покупка → пересчёт расходов → проверка порога → push при достижении → завершение",
      "entities": [
       {
        "kind": "event",
@@ -238,7 +238,7 @@
      ],
      "part_start": "",
      "part_end": "",
-     "type": "constraint",
+     "type": "functional",
      "subtype": "",
      "source_id": "Ф-1",
      "summary": "Держатель активной карты KZT задаёт целый порог 1 000–1 000 000 ₸",
@@ -339,7 +339,7 @@
      "type": "functional",
      "subtype": "",
      "source_id": "Ф-3",
-     "summary": "При переходе расходов к сумме не ниже порога клиент получает push",
+     "summary": "При переходе расходов от суммы ниже порога к равной или выше клиент получает push",
      "entities": [
       {
        "kind": "event",
@@ -358,8 +358,12 @@
      "type": "constraint",
      "subtype": "",
      "source_id": "Ф-3",
-     "summary": "Не более одного такого push на карту за календарный месяц",
+     "summary": "Максимум один такой push на карту за календарный месяц",
      "entities": [
+      {
+       "kind": "amount",
+       "value": "один push"
+      },
       {
        "kind": "period",
        "value": "календарный месяц"
@@ -428,7 +432,7 @@
      "type": "interaction",
      "subtype": "",
      "source_id": "",
-     "summary": "Сервис расходов запрашивает порог карты у настроек",
+     "summary": "Сервис расходов получает порог карты из настроек",
      "entities": [
       {
        "kind": "system",
@@ -456,6 +460,14 @@
       {
        "kind": "system",
        "value": "push"
+      },
+      {
+       "kind": "data_field",
+       "value": "последние четыре цифры карты"
+      },
+      {
+       "kind": "data_field",
+       "value": "сумма"
       }
      ],
      "links": [],
@@ -470,11 +482,11 @@
      "type": "nfr",
      "subtype": "",
      "source_id": "",
-     "summary": "Push передаётся на отправку в течение минуты после события",
+     "summary": "Push передаётся на отправку в течение минуты после получения события",
      "entities": [
       {
        "kind": "period",
-       "value": "минута"
+       "value": "в течение минуты"
       }
      ],
      "links": [],
@@ -489,8 +501,12 @@
      "type": "data",
      "subtype": "",
      "source_id": "",
-     "summary": "Хранить идентификатор карты, месяц, операцию, сумму в тиынах, признак отправки, порог",
+     "summary": "Хранить идентификатор карты, месяц, операцию, сумму в тиынах, признак отправки, порог в тенге",
      "entities": [
+      {
+       "kind": "data_field",
+       "value": "идентификатор карты"
+      },
       {
        "kind": "data_field",
        "value": "сумма покупки в тиынах"
@@ -516,7 +532,7 @@
      "entities": [
       {
        "kind": "system",
-       "value": "REST API"
+       "value": "приложение"
       }
      ],
      "links": [
@@ -530,7 +546,7 @@
      ],
      "part_start": "",
      "part_end": "",
-     "type": "nfr",
+     "type": "functional",
      "subtype": "",
      "source_id": "",
      "summary": "Повторная доставка события процессинга сохраняет исходный итог",
@@ -552,7 +568,7 @@
      "type": "acceptance",
      "subtype": "",
      "source_id": "",
-     "summary": "Расходы 48 500, порог 50 000, покупка 1 500: итог 50 000 и один push",
+     "summary": "Расходы 48 500, порог 50 000, покупка 1 500 → итог 50 000 и один push",
      "entities": [
       {
        "kind": "amount",
@@ -571,7 +587,7 @@
      "type": "acceptance",
      "subtype": "",
      "source_id": "",
-     "summary": "Покупка 31 января проведена 1 февраля: февральский счётчик растёт на 4 000 ₸",
+     "summary": "Покупка 31 января проведена 1 февраля 00:03 — учитывается в феврале",
      "entities": [
       {
        "kind": "amount",
@@ -607,7 +623,7 @@
      "part_start": "",
      "part_end": "",
      "type": "api",
-     "subtype": "logic",
+     "subtype": "rule",
      "source_id": "",
      "summary": "Метод сохраняет порог",
      "entities": [],
@@ -623,7 +639,7 @@
      "type": "api",
      "subtype": "method",
      "source_id": "",
-     "summary": "HTTP-метод GET",
+     "summary": "Тип REST-метода GET",
      "entities": [
       {
        "kind": "endpoint",
@@ -661,7 +677,7 @@
      "type": "api",
      "subtype": "url",
      "source_id": "",
-     "summary": "Адрес Dev: /alerts/saveLimit",
+     "summary": "Адрес в Dev: /alerts/saveLimit",
      "entities": [
       {
        "kind": "endpoint",
@@ -757,7 +773,7 @@
      "type": "api",
      "subtype": "rule",
      "source_id": "",
-     "summary": "Порог — целое число тенге, границы включены",
+     "summary": "Порог — целое число тенге, обе границы включены",
      "entities": [],
      "links": [],
      "depends_on": ""
@@ -799,7 +815,7 @@
      "type": "process",
      "subtype": "",
      "source_id": "",
-     "summary": "Приложение, AlertsController, хранилище настроек, обратно в приложение",
+     "summary": "Приложение → AlertsController → хранилище настроек → AlertsController → приложение",
      "entities": [
       {
        "kind": "system",
@@ -832,7 +848,7 @@
      "type": "api",
      "subtype": "param",
      "source_id": "",
-     "summary": "Обязательный query-параметр cardId, строка 1–64",
+     "summary": "Обязательный query-параметр cardId, string, 1–64",
      "entities": [
       {
        "kind": "data_field",
@@ -851,7 +867,7 @@
      "type": "api",
      "subtype": "param",
      "source_id": "",
-     "summary": "Обязательный query-параметр amount, целое, 1 000–1 000 000",
+     "summary": "Обязательный query-параметр amount, integer, 1 000–1 000 000",
      "entities": [
       {
        "kind": "data_field",
@@ -968,7 +984,7 @@
      "type": "api",
      "subtype": "response",
      "source_id": "",
-     "summary": "Поле ответа result: OK / ERROR",
+     "summary": "Поле result: OK или ERROR, исход сохранения",
      "entities": [
       {
        "kind": "data_field",
@@ -990,14 +1006,16 @@
      "type": "api",
      "subtype": "response",
      "source_id": "",
-     "summary": "Поле ответа amount при успехе: порог в тенге",
+     "summary": "Поле amount при успехе: порог в тенге",
      "entities": [
       {
        "kind": "data_field",
        "value": "amount"
       }
      ],
-     "links": [],
+     "links": [
+      "B105"
+     ],
      "depends_on": ""
     },
     {
@@ -1009,14 +1027,16 @@
      "type": "api",
      "subtype": "response",
      "source_id": "",
-     "summary": "Поле ответа enabled: «0» или «1»",
+     "summary": "Поле enabled: «0» или «1»",
      "entities": [
       {
        "kind": "data_field",
        "value": "enabled"
       }
      ],
-     "links": [],
+     "links": [
+      "B105"
+     ],
      "depends_on": ""
     },
     {
@@ -1028,14 +1048,16 @@
      "type": "api",
      "subtype": "response",
      "source_id": "",
-     "summary": "Поле ответа message при ошибке: описание",
+     "summary": "Поле message при ошибке: описание ошибки",
      "entities": [
       {
        "kind": "data_field",
        "value": "message"
       }
      ],
-     "links": [],
+     "links": [
+      "B107"
+     ],
      "depends_on": ""
     },
     {
@@ -1178,7 +1200,7 @@
     {
      "block": "B006",
      "label": "metadata",
-     "reason": "сведения о продукте"
+     "reason": "сведения о продукте проекта"
     },
     {
      "block": "B007",
@@ -1188,7 +1210,7 @@
     {
      "block": "B008",
      "label": "metadata",
-     "reason": "роли проекта"
+     "reason": "роли и участники"
     },
     {
      "block": "B009",
@@ -1198,7 +1220,7 @@
     {
      "block": "B010",
      "label": "metadata",
-     "reason": "перечень затрагиваемых систем"
+     "reason": "перечень затронутых систем"
     },
     {
      "block": "B011",
@@ -1208,7 +1230,7 @@
     {
      "block": "B036",
      "label": "placeholder",
-     "reason": "раздел заполняется позднее"
+     "reason": "заполняется позднее тестировщиками"
     },
     {
      "block": "B042",
@@ -1288,22 +1310,22 @@
     {
      "block": "B058",
      "label": "template",
-     "reason": "пустая форма согласующих"
+     "reason": "незаполненная строка согласующих"
     },
     {
      "block": "B060",
      "label": "context",
-     "reason": "ссылка на родительский документ"
+     "reason": "ссылка на дочерний документ"
     },
     {
      "block": "B065",
      "label": "metadata",
-     "reason": "служебные сведения о контроллере"
+     "reason": "название контроллера, служебные сведения"
     },
     {
      "block": "B066",
      "label": "metadata",
-     "reason": "тип окружения"
+     "reason": "тип окружения URL"
     },
     {
      "block": "B068",
@@ -1313,7 +1335,7 @@
     {
      "block": "B069",
      "label": "placeholder",
-     "reason": "значение не заполнено"
+     "reason": "Swagger не заполнен"
     },
     {
      "block": "B070",
@@ -1343,7 +1365,7 @@
     {
      "block": "B106",
      "label": "context",
-     "reason": "связка между примерами"
+     "reason": "связка «или» между примерами"
     },
     {
      "block": "B107",
@@ -1363,7 +1385,7 @@
     {
      "block": "B114.2",
      "label": "context",
-     "reason": "только код 404 без описания"
+     "reason": "номер кода без пояснения"
     },
     {
      "block": "B115",
@@ -1377,75 +1399,75 @@
     }
    ]
   },
-  "ttft_ms": 32583,
+  "ttft_ms": 33580,
   "type": "result",
-  "duration_ms": 32645,
-  "uuid": "012c6857-d463-4559-84d2-6c5a97d029e9",
-  "ttft_stream_ms": 749,
+  "duration_ms": 33642,
+  "uuid": "0369b320-67ea-4d32-848f-88a8132ade57",
+  "ttft_stream_ms": 799,
   "time_to_request_ms": 60,
   "time_to_request_phases_ms": {
-   "other": 8,
+   "other": 7,
    "system_prompt": 2,
    "resume_other": 0,
    "process_user_input": 3,
    "input_attachments": 7,
    "input_hooks": 2,
    "conversation_append": 0,
-   "tool_pool_refresh": 2,
+   "tool_pool_refresh": 1,
    "init_message": 5,
-   "init_frame_send": 3,
+   "init_frame_send": 4,
    "engine_pickup": 1,
    "loop_entry": 3,
    "message_prep": 1,
-   "model_config_wait": 1,
+   "model_config_wait": 2,
    "autocompact": 1,
-   "request_announcements": 5,
+   "request_announcements": 4,
    "query_setup": 1,
    "model_gates": 0,
-   "tool_schema_build": 3,
-   "message_normalization": 2,
-   "client_creation": 4,
+   "tool_schema_build": 2,
+   "message_normalization": 3,
+   "client_creation": 5,
    "request_build": 6
   },
   "turn_start_resume_kind": "none",
   "process_turn_index": 0,
-  "time_to_request_loop_lag_ms": 9,
-  "time_to_request_cpu_ms": 69,
+  "time_to_request_loop_lag_ms": 10,
+  "time_to_request_cpu_ms": 66,
   "time_to_request_major_faults": 0,
-  "process_rss_mib_turn_start": 205,
-  "process_anon_mib_turn_start": 125,
-  "process_rss_mib_result": 215,
-  "process_anon_mib_result": 128,
+  "process_rss_mib_turn_start": 203,
+  "process_anon_mib_turn_start": 124,
+  "process_rss_mib_result": 212,
+  "process_anon_mib_result": 125,
   "process_peak_rss_mib": 224,
-  "process_cpu_ms_turn": 1137,
-  "process_wall_ms_turn": 32644,
+  "process_cpu_ms_turn": 1027,
+  "process_wall_ms_turn": 33641,
   "tool_pool_build_count": 4,
   "tool_pool_build_lapsed_count": 1,
   "tool_pool_moved_at_lapse_count": 0,
   "tool_pool_limit_ms": 30000,
-  "process_cpu_ms_streaming": 906,
-  "process_wall_ms_streaming": 31866,
+  "process_cpu_ms_streaming": 795,
+  "process_wall_ms_streaming": 32812,
   "main_stream_count": 1,
-  "main_stream_event_count": 957,
-  "main_stream_chunk_count": 950,
+  "main_stream_event_count": 985,
+  "main_stream_chunk_count": 978,
   "process_turn_states": {
    "main_stream": {
-    "cpu_ms": 906,
-    "wall_ms": 31866,
+    "cpu_ms": 795,
+    "wall_ms": 32812,
     "entries": 1
    },
    "first_event_wait": {
-    "cpu_ms": 128,
-    "wall_ms": 687,
+    "cpu_ms": 133,
+    "wall_ms": 737,
     "entries": 1
    },
    "before_first_request": {
-    "cpu_ms": 69,
-    "wall_ms": 59,
+    "cpu_ms": 66,
+    "wall_ms": 60,
     "entries": 1
    },
    "after_last_request": {
-    "cpu_ms": 34,
+    "cpu_ms": 33,
     "wall_ms": 32,
     "entries": 1
    }
@@ -1453,9 +1475,9 @@
   "input_attachments_detail": {
    "slowest_producer": "deferred_tools_delta",
    "slowest_producer_ms": 2,
-   "cpu_ms": 8,
+   "cpu_ms": 10,
    "major_faults": 0,
-   "setup_ms": 0,
+   "setup_ms": 1,
    "prompt_producers_ms": 0,
    "ambient_start_ms": 2,
    "ambient_wait_ms": 1,
@@ -1466,9 +1488,9 @@
   "tool_schema_build_detail": {
    "betas_ms": 0,
    "waits_ms": 1,
-   "placement_ms": 1,
-   "render_ms": 0,
-   "after_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 1,
+   "after_ms": 0,
    "other_ms": 0,
    "tools": 1,
    "new_schemas": 1
@@ -1479,14 +1501,14 @@
    "images_ms": 0,
    "post_process_ms": 0,
    "after_ms": 0,
-   "other_ms": 0,
+   "other_ms": 1,
    "messages": 8,
    "wire_messages": 2
   },
   "request_build_detail": {
-   "records_ms": 1,
+   "records_ms": 0,
    "system_ms": 1,
-   "headers_ms": 0,
+   "headers_ms": 1,
    "cache_break_record_ms": 1,
    "plans_ms": 1,
    "retry_setup_ms": 0,
@@ -1497,11 +1519,11 @@
    "sent_build_cache_breakpoints_ms": 0,
    "sent_build_surrogate_scan_ms": 1
   },
-  "first_content_frame_ms": 749,
-  "time_to_request_from_spawn_ms": 106757,
+  "first_content_frame_ms": 799,
+  "time_to_request_from_spawn_ms": 154109,
   "warm_spare_claimed": false,
   "flag_fetch_kick": "not_asked_warm",
-  "time_origin_ms": 1795642721625.9478,
+  "time_origin_ms": 1795648070401.621,
   "queued_turn_count": 0,
   "result_index": 0,
   "process_start_tuning": 0

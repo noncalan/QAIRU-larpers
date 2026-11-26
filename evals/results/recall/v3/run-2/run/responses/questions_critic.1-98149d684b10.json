@@ -1,0 +1,231 @@
+{
+ "envelope_version": 1,
+ "key": "98149d684b10c7edcbae964e352f9a0a02ce1ba0359c29e0d974fd1c35febca6",
+ "call_id": "questions_critic.1",
+ "step": "questions_critic",
+ "call_index": 1,
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T08:47:41.796578+00:00",
+ "payload": {
+  "duration_api_ms": 41291,
+  "stop_reason": "end_turn",
+  "session_id": "befca088-4f44-4e51-ac2b-854a52d0836a",
+  "total_cost_usd": 0.2188426,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 15394,
+   "cache_read_input_tokens": 1813,
+   "output_tokens": 4766,
+   "output_tokens_details": {
+    "thinking_tokens": 2516
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 15394,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 4766,
+     "cache_read_input_tokens": 1813,
+     "cache_creation_input_tokens": 15394,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 15394
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-opus-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 4766,
+    "cacheReadInputTokens": 1813,
+    "cacheCreationInputTokens": 15394,
+    "webSearchRequests": 0,
+    "costUSD": 0.2188426,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2516,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 15394,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n**Q-01.** Ф-логика [B079] и пример в разделе 200 [B107] дают 200 с `result=ERROR`. Статус 400 [B103] описан как ответ на неверные параметры, и его тело [B110] другое. Документ противоречит сам себе, ответа нет. Формулировка корректна.\n\n**Q-02.** Ф-2 говорит о «проведённых покупках», но не уточняет, это авторизация или клиринг. Цель [B013] обещает push «в момент покупки». Ответа нет. Ошибок нет.\n\n**Q-03.** Ф-2 [B023] относит покупку к январю, а критерий [B039] — к февралю. Это прямое противоречие, ответа нет. Исправить можно двумя способами, поэтому правка не однозначна. Ошибок нет.\n\n**Q-04.** Ф-3 [B024] разрешает один push в месяц, а Ф-4 [B025] требует push «независимо от истории». Противоречие, ответа нет. Ошибок нет.\n\n**Q-05.** В [B097] указано «200 или 201», в [B103] только 200, заголовок [B104] — «200 … Created». Условие для 201 нигде не задано. Ответа нет. Ошибок нет.\n\n**Q-06.** В части B описан только метод сохранения [B062], [B067]. Метода чтения и источника суммы за месяц нет. Ответа нет. Ошибок нет.\n\n**Q-07.** Ф-3 [B024] говорит «за календарный месяц», но не уточняет, месяц расходов или месяц отправки. Ответа нет. Ошибок нет.\n\n**Q-08.** В Ф-2 [B023] сказано, что «входят покупки», а исключения перечислены открытым списком, без слова «только». Входит ли комиссия, документ однозначно не решает. Пример с годовой комиссией слабый, но вопрос допустим. Ответа нет.\n\n**Q-09.** В [B027] передаётся «сумма» без уточнения, какая именно. Шаблона push нет. Ответа нет. Ошибок нет.\n\n**Q-10.** В [B090] сказано только «Идентификатор карты», в примере — `demo-42`. Можно ли включать номер карты, не сказано. Ответа нет. Ошибок нет.\n\n**Q-11.** Статус 403 упомянут в [B108], но условие и тело не заданы. Для чужой карты возвращается 404 [B114]. Ответа нет. Ошибок нет.\n\n**Q-12.** Термины «держатель» [B022] и «владелец» [B064] не различены, о дополнительной карте ничего не сказано. Ответа нет. Ошибок нет.\n\n**Q-13.** В [B022] есть только «по умолчанию выключено». Считаются ли расходы при выключенном уведомлении и что происходит при включении, не сказано. Ответа нет. Ошибок нет.\n\n**Q-14.** Ф-3 [B024] прямо ограничивает: максимум один push за календарный месяц. Исключение из этого правила есть только для смены порога (Ф-4), для возврата его нет. Ответ: второй push не приходит. Вопрос лишний.\n\n**Q-15.** Ф-4 [B025] покрывает только случай «ниже нового порога». Случай, когда расходы уже не ниже нового порога, не описан. Буквальное чтение Ф-3 не выбирает однозначно, считается ли смена порога «переходом». Ответа нет. Ошибок нет.\n\n## Ответ\n\n```json\n{\n  \"reviews\": [\n    {\"id\": \"Q-01\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-02\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-03\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-04\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-05\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-06\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-07\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-08\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-09\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-10\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-11\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-12\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-13\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-14\", \"answered\": true, \"answer\": \"Нет, второй push за месяц не приходит: лимит — один push в календарный месяц, исключения для возврата нет\", \"answer_quote\": \"На карту приходится максимум один такой push за календарный месяц.\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-15\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []}\n  ]\n}\n```",
+  "ttft_ms": 24746,
+  "type": "result",
+  "duration_ms": 46516,
+  "uuid": "7e7c710b-ac62-48ae-b409-5ecb788e4704",
+  "ttft_stream_ms": 867,
+  "time_to_request_ms": 86,
+  "time_to_request_phases_ms": {
+   "other": 10,
+   "system_prompt": 2,
+   "resume_other": 0,
+   "process_user_input": 5,
+   "input_attachments": 9,
+   "input_hooks": 3,
+   "conversation_append": 1,
+   "tool_pool_refresh": 2,
+   "init_message": 7,
+   "init_frame_send": 5,
+   "engine_pickup": 1,
+   "loop_entry": 5,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "request_announcements": 7,
+   "query_setup": 1,
+   "model_gates": 1,
+   "tool_schema_build": 2,
+   "message_normalization": 4,
+   "client_creation": 8,
+   "request_build": 9
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 35,
+  "time_to_request_cpu_ms": 94,
+  "time_to_request_major_faults": 0,
+  "process_rss_mib_turn_start": 203,
+  "process_anon_mib_turn_start": 125,
+  "process_rss_mib_result": 205,
+  "process_anon_mib_result": 120,
+  "process_peak_rss_mib": 221,
+  "process_cpu_ms_turn": 936,
+  "process_wall_ms_turn": 46516,
+  "tool_pool_build_count": 4,
+  "tool_pool_build_lapsed_count": 1,
+  "tool_pool_moved_at_lapse_count": 0,
+  "tool_pool_limit_ms": 30000,
+  "process_cpu_ms_streaming": 665,
+  "process_wall_ms_streaming": 40495,
+  "main_stream_count": 1,
+  "main_stream_event_count": 361,
+  "main_stream_chunk_count": 355,
+  "process_turn_states": {
+   "main_stream": {
+    "cpu_ms": 665,
+    "wall_ms": 40495,
+    "entries": 1
+   },
+   "first_event_wait": {
+    "cpu_ms": 137,
+    "wall_ms": 780,
+    "entries": 1
+   },
+   "before_first_request": {
+    "cpu_ms": 94,
+    "wall_ms": 85,
+    "entries": 1
+   },
+   "after_last_request": {
+    "cpu_ms": 40,
+    "wall_ms": 5156,
+    "entries": 1
+   }
+  },
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 2,
+   "cpu_ms": 12,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 4,
+   "ambient_wait_ms": 1,
+   "render_ms": 1,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 1,
+   "waits_ms": 0,
+   "placement_ms": 1,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 3,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 1,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 2,
+   "headers_ms": 1,
+   "cache_break_record_ms": 2,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 3,
+   "record_attempt_ms": 0,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 1,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 867,
+  "time_to_request_from_spawn_ms": 5720684,
+  "warm_spare_claimed": false,
+  "flag_fetch_kick": "not_asked_warm",
+  "time_origin_ms": 1795682814335.829,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "process_start_tuning": 0
+ }
+}
