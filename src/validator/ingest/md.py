@@ -25,6 +25,9 @@ MIN_COHERENCE = 0.3
 MAX_REPLACEMENTS = 0.01
 """Доля символов замены U+FFFD в тексте, выше которой перекодирование считаем неудачным."""
 SAFE_ENCODINGS = frozenset({"ascii", "utf_8"})
+MAX_STRAY_NUL_SHARE = 0.005
+"""Доля нулевых байт, ниже которой они считаются случайной порчей UTF-8-текста, а не признаком UTF-16:
+в UTF-16 нулевой байт стоит у каждой латинской буквы, цифры и пробела."""
 
 
 def _is_confident(match: CharsetMatch, text: str) -> bool:
@@ -35,24 +38,76 @@ def _is_confident(match: CharsetMatch, text: str) -> bool:
     return match.chaos <= MAX_CHAOS and match.coherence >= MIN_COHERENCE and replaced <= MAX_REPLACEMENTS
 
 
+def _stray_nul_text(data: bytes) -> str | None:
+    """UTF-8-текст, в который попало несколько нулевых байт: текст без них, иначе None (это не он)."""
+    if data.count(b"\x00") / len(data) > MAX_STRAY_NUL_SHARE:
+        return None
+    try:
+        return data.replace(b"\x00", b"").decode("utf-8-sig")
+    except UnicodeDecodeError:
+        return None
+
+
+def _mostly_utf8(data: bytes) -> str | None:
+    """Файл, который в основном UTF-8 с вкраплениями другой кодировки: текст с символами замены, иначе None.
+
+    Кириллица в cp1251 или koi8-r почти никогда не складывается в правильные последовательности UTF-8,
+    поэтому «валидных» многобайтовых символов не меньше, чем битых байт, только у настоящего UTF-8.
+    """
+    text = data.decode("utf-8-sig", errors="replace")
+    broken = text.count("�")
+    valid = sum(1 for ch in text if ord(ch) > 127 and ch != "�")
+    return text if valid >= broken else None
+
+
 def decode_text(data: bytes) -> tuple[str, list[Diagnostic]]:
     """UTF-8 (с BOM и без), иначе кодировку угадывает charset-normalizer.
 
-    Нулевые байты бывают только в UTF-16 и UTF-32: такой текст (кириллица в UTF-16LE без BOM) формально
-    проходит как UTF-8 и даёт мусор, поэтому его сразу отдаём charset-normalizer.
+    Нулевые байты бывают в UTF-16 и UTF-32: такой текст (кириллица в UTF-16LE без BOM) формально проходит
+    как UTF-8 и даёт мусор, поэтому его отдаём charset-normalizer. Исключение: несколько одиночных нулевых
+    байт в обычном UTF-8-тексте, их убираем и пишем об этом: иначе нулевой байт попал бы в отчёт.
     """
-    if b"\x00" not in data:
+    diagnostics: list[Diagnostic] = []
+    if b"\x00" in data:
+        text = _stray_nul_text(data)
+        if text is not None:
+            count = data.count(b"\x00")
+            diagnostics.append(
+                Diagnostic(
+                    code=IN_ENCODING_UNCERTAIN,
+                    level=DiagLevel.WARNING,
+                    message=f"В тексте файла есть нулевые байты ({count} шт.), признак порчи при сохранении",
+                    action="Нулевые байты удалены при чтении, проверка выполнена по остальному тексту",
+                    hint="Пересохраните документ в UTF-8 без служебных символов",
+                )
+            )
+            return text, diagnostics
+    else:
         try:
             return data.decode("utf-8-sig"), []
         except UnicodeDecodeError:
             pass
     best = from_bytes(data).best()
     if best is None:
-        raise InputError(
-            "Не удалось определить кодировку текстового файла",
-            code=IN_ENCODING,
-            hint="Сохраните документ в UTF-8 или пришлите PDF или DOCX",
-        )
+        mixed = _mostly_utf8(data) if b"\x00" not in data else None
+        if mixed is None:
+            raise InputError(
+                "Не удалось определить кодировку текстового файла",
+                code=IN_ENCODING,
+                hint="Сохраните документ в UTF-8 или пришлите PDF или DOCX",
+            )
+        return mixed, [
+            Diagnostic(
+                code=IN_ENCODING_UNCERTAIN,
+                level=DiagLevel.WARNING,
+                message=(
+                    f"Файл в основном в UTF-8, но {mixed.count('�')} символов в другой кодировке: "
+                    "они заменены знаком «�», в тексте и цитатах возможны искажения"
+                ),
+                action="Текст прочитан как UTF-8 с заменой битых байт, проверка выполнена по нему",
+                hint="Сохраните документ целиком в UTF-8 и запустите проверку снова",
+            )
+        ]
     text = str(best).lstrip("﻿")
     diagnostics = [
         Diagnostic(

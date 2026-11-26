@@ -209,10 +209,13 @@ def _check_answers(answers: Path | None, ask: bool) -> None:
 
 
 def _read_line(prompt: str) -> str | None:
+    """Строка из терминала. Байты не в UTF-8 (терминал в другой кодировке) Python отдаёт как суррогаты
+    ``\\udcff``: они ломают запись ответов и отчёта, поэтому заменяем их знаком «\ufffd»."""
     try:
-        return input(prompt)
+        text = input(prompt)
     except EOFError:
         return None
+    return text.encode("utf-8", errors="replace").decode("utf-8")
 
 
 def _ask_and_rerun(cfg: RunConfig, first: RunOutcome) -> RunOutcome:
