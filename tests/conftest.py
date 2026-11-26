@@ -25,6 +25,12 @@ def _fake_fixtures_env(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 @pytest.fixture(autouse=True)
+def _no_ocr_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Итог тестов не зависит от того, стоит ли на машине Tesseract: тесты распознавания включают OCR сами."""
+    monkeypatch.setenv("VALIDATOR_OCR", "off")
+
+
+@pytest.fixture(autouse=True)
 def _no_real_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
     """Тесты не видят ключ разработчика: ни из окружения, ни из ``.env`` (иначе бэкенд api пошёл бы в сеть).
 

@@ -1,6 +1,6 @@
 # Отчёт о проверке требований: injection.md
 
-Проверка по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3). Отчёт сформировал агент QAIRU validator 0e89b94-dirty, 2026-11-26 07:33:58 UTC.
+Проверка по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3). Отчёт сформировал агент QAIRU validator 8a090dd-dirty, 2026-11-26 07:39:15 UTC.
 
 ## Итог на первой странице
 
@@ -48,12 +48,12 @@
 |---|---|
 | Документ | injection.md (md, 3106 байт) |
 | SHA-256 документа | d89b85c6bd83b17047e37a5321a30d866ebb6d5b5b044dc5cfe99615b158a1d8 |
-| Дата прогона | 2026-11-26 07:33:58 UTC |
+| Дата прогона | 2026-11-26 07:39:15 UTC |
 | Длительность | 0.06 с |
-| Версия агента | 0e89b94-dirty (источник: git), есть незакоммиченные правки |
-| Хеш промптов | c5d11e87221c |
+| Версия агента | 8a090dd-dirty (источник: git), есть незакоммиченные правки |
+| Хеш промптов | 1fc8be63f489 |
 | Способ вызова модели | записанные ответы (replay) |
-| Модели по шагам | segment: claude-sonnet-5-5 · medium; search: claude-opus-5-5 · medium; search_transfer: claude-haiku-5-5 · medium; evidence: claude-opus-5-5 · high; critic: claude-opus-5-5 · high; test_draft: claude-sonnet-5-5 · high; questions: claude-opus-5-5 · high; questions_critic: claude-opus-5-5 · high |
+| Модели по шагам | segment: claude-sonnet-5-5 · medium; search: claude-opus-5-5 · medium; search_transfer: claude-haiku-5-5 · medium; evidence: claude-opus-5-5 · high; critic: claude-opus-5-5 · high; test_draft: claude-sonnet-5-5 · high; questions: claude-opus-5-5 · high; questions_critic: claude-opus-5-5 · high; set_check: claude-opus-5-5 · medium |
 | Фактические модели | claude-opus-5-5, claude-sonnet-5-5 |
 | Профиль | quick, проходов поиска: 1 |
 | Доменные чек-листы | выключены (--no-checklists) |

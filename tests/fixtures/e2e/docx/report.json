@@ -7,13 +7,13 @@
     "document_sha256": "7fd7c1d145b0c4e01ac8a502856b08eaf0cdbddc896069271687f6a2a16022d5",
     "document_size_bytes": 16072,
     "document_pages": null,
-    "started_at": "2026-11-26T07:30:34.734801Z",
-    "finished_at": "2026-11-26T07:30:35.041695Z",
-    "duration_s": 0.31,
-    "agent_version": "0e89b94-dirty",
+    "started_at": "2026-11-26T07:38:37.505917Z",
+    "finished_at": "2026-11-26T07:38:37.855893Z",
+    "duration_s": 0.35,
+    "agent_version": "8a090dd-dirty",
     "agent_version_source": "git",
     "agent_dirty": true,
-    "prompts_sha256": "c5d11e87221c3adaded42e9a6de595d0ad88bab8e2729e7b4a62151e52902a73",
+    "prompts_sha256": "1fc8be63f4896f7ab48757a68d5cf6b4f78f0a5854a12f78950677184d52b839",
     "os": "Linux 6.18.44-fc-v880 (x86_64)",
     "python": "3.13.18",
     "backend_requested": "replay",
@@ -31,7 +31,8 @@
       "critic": "claude-opus-5-5 · high",
       "test_draft": "claude-sonnet-5-5 · high",
       "questions": "claude-opus-5-5 · high",
-      "questions_critic": "claude-opus-5-5 · high"
+      "questions_critic": "claude-opus-5-5 · high",
+      "set_check": "claude-opus-5-5 · medium"
     },
     "models_actual": [
       "claude-opus-5-5",
@@ -59,7 +60,8 @@
     "pages": null,
     "chars": 7696,
     "blocks": 120,
-    "extraction": "python-docx: абзацы, списки, таблицы по ячейкам, сноски и колонтитулы"
+    "extraction": "python-docx: абзацы, списки, таблицы по ячейкам, сноски и колонтитулы",
+    "parts": []
   },
   "input_diagnostics": [],
   "diagnostics": [
@@ -12298,7 +12300,7 @@
     ]
   },
   "metrics": {
-    "duration_s": 0.31,
+    "duration_s": 0.35,
     "calls_total": 7,
     "calls_failed": 0,
     "calls_cached": 0,

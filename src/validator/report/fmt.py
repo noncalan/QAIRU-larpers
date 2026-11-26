@@ -7,7 +7,7 @@ from collections.abc import Sequence
 from datetime import datetime
 
 from validator.ingest.blocks import is_empty_cell_quote
-from validator.models import Anchor, Extraction, Quote, ReportStatus
+from validator.models import Anchor, Extraction, Finding, Quote, ReportStatus, SourceKind
 
 _SPACES = re.compile(r"\s+")
 _MD_SPECIAL = re.compile(r"[*`<]|(?<!\w)_|_(?!\w)")
@@ -115,3 +115,16 @@ FILTERS = {
     "when": when,
     "status_label": status_label,
 }
+
+
+def found_text(f: Finding) -> str:
+    """Кто нашёл: «в 2 из 3 проходов»; находку только линтера не пишем «в 0 из 3», а называем источник.
+
+    Находка сверки между частями длинного документа (#38) не «пропущена проходами»: проход видит одну часть.
+    """
+    sources = ", ".join(s.label for s in f.sources)
+    if f.found_in:
+        return f"в {f.found_in} из {f.of} проходов" + (f" ({sources})" if sources else "")
+    if f.sources and all(s.kind is SourceKind.SET_CHECK for s in f.sources):
+        return f"{sources}; проходы поиска видят по одной части и такие пары не сравнивают"
+    return f"{sources or 'без модели'}; проходы модели этого не отметили (0 из {f.of})"

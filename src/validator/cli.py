@@ -7,7 +7,10 @@
 
 from __future__ import annotations
 
+import contextlib
+import logging
 import sys
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -18,7 +21,7 @@ from validator.clarify.ask import ANSWERS_FILE, ask_questions, pick_questions, w
 from validator.config import load_config
 from validator.models import Backend, CacheMode, ExitCode, Profile, RunConfig, RunOutcome, SearchInput
 from validator.passport import agent_version
-from validator.pipeline import run
+from validator.pipeline import NOTICE_LOGGER, run
 
 OUTPUT_SUFFIXES = (".md", ".pdf")
 USAGE = (
@@ -62,6 +65,20 @@ app = _App(
     pretty_exceptions_enable=False,
     help="Проверка документа требований по ISO/IEC/IEEE 29148 и IEEE 830, отчёт на русском.",
 )
+
+
+@contextlib.contextmanager
+def _notices() -> Iterator[None]:
+    """Сообщения конвейера человеку до конца прогона (длинный документ, оценка цены) в stderr."""
+    handler = logging.StreamHandler(sys.stderr)
+    handler.setFormatter(logging.Formatter("%(message)s"))
+    log = logging.getLogger(NOTICE_LOGGER)
+    log.addHandler(handler)
+    log.setLevel(logging.INFO)
+    try:
+        yield
+    finally:
+        log.removeHandler(handler)
 
 
 def _version(value: bool) -> None:
@@ -116,6 +133,13 @@ def main(
             show_default="по умолчанию включены",
         ),
     ] = None,
+    ocr: Annotated[
+        bool | None,
+        typer.Option(
+            "--ocr/--no-ocr",
+            help="Распознавать сканы, если есть Tesseract с русским (по умолчанию да; VALIDATOR_OCR=off)",
+        ),
+    ] = None,
     version: Annotated[
         bool, typer.Option("--version", callback=_version, is_eager=True, help="Версия агента")
     ] = False,
@@ -145,11 +169,13 @@ def main(
             critic=critic,
             search_input=search_input,
             checklists=checklists,
+            ocr=ocr,
         )
     except ValueError as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(ExitCode.USAGE) from exc
-    outcome = run(cfg)
+    with _notices():
+        outcome = run(cfg)
     typer.echo(outcome.message, err=outcome.exit_code is not ExitCode.OK)
     if ask:
         outcome = _ask_and_rerun(cfg, outcome)

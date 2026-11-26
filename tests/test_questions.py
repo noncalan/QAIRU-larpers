@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+import validator.questions as questions_step
 from questions_helpers import (
     EXTEND,
     FINE,
@@ -23,7 +24,7 @@ from questions_helpers import (
     segmentation,
     verification,
 )
-from validator.errors import LLM_QUESTIONS_CHECKED, LLM_QUESTIONS_FAILED
+from validator.errors import LLM_QUESTIONS_CHECKED, LLM_QUESTIONS_FAILED, LLM_QUESTIONS_SHORTLIST
 from validator.llm import FakeLLM
 from validator.models import (
     Addressee,
@@ -39,7 +40,7 @@ from validator.models import (
     WorkStage,
 )
 from validator.questions import QuestionsOutcome, ask, build_questions, write_questions_yaml
-from validator.questions.candidates import collect_candidates
+from validator.questions.candidates import collect_candidates, shortlist
 from validator.questions.cards import MAX_QUESTIONS, CardDraft, CheckLog, finalize
 from validator.questions.export import SCHEMA_VERSION
 
@@ -471,6 +472,36 @@ def test_no_candidates_means_no_model_call(doc: ParsedDocument, tmp_path: Path) 
     questions = ask(verification(clean), doc, segmentation(doc), llm, make_cfg(doc, tmp_path))
 
     assert questions == [] and llm.requests == []
+
+
+def test_shortlist_takes_highest_priority_and_keeps_document_order(doc: ParsedDocument) -> None:
+    """Кандидаты C-01 (P1, ценность 6), C-02 (P0, 8), C-03 (P1, 1): сначала приоритет, потом ценность."""
+    cands = collect_candidates(verification(library_findings(doc)))
+    req_types = {r.id: r.type for r in segmentation(doc).requirements}
+
+    assert shortlist(cands, req_types) == cands
+    assert [c.cid for c in shortlist(cands, req_types, limit=1)] == ["C-02"]
+    assert [c.cid for c in shortlist(cands, req_types, limit=2)] == ["C-01", "C-02"]
+
+
+def test_editor_sees_only_the_shortlist_on_a_long_document(
+    doc: ParsedDocument, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Кандидатов больше, чем разбирает редактор (#38): лишние не идут в вызов и не считаются пропущенными."""
+    monkeypatch.setattr(questions_step, "shortlist", lambda cands, types: shortlist(cands, types, limit=2))
+    reply = editor_text(
+        [card(["C-02"], "Сколько секунд допустимо на продление?", quotes=[EXTEND])], dropped("C-01")
+    )
+    llm = editor_llm(reply)
+
+    outcome = run(doc, tmp_path, llm)
+
+    prompt = llm.requests[0].prompt
+    assert "C-01" in prompt and "C-02" in prompt and "C-03" not in prompt
+    assert outcome.candidates == 3
+    (note,) = [d for d in outcome.diagnostics if d.code == LLM_QUESTIONS_SHORTLIST]
+    assert note.level is DiagLevel.INFO and "Кандидатов в вопросы 3" in note.message
+    assert not any("не взял и не отклонил" in d.message for d in outcome.diagnostics)
 
 
 # ---------------------------------------------------------------- questions.yaml

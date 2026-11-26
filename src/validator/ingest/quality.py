@@ -95,7 +95,7 @@ def _garbled(doc: ParsedDocument) -> list[Diagnostic]:
                 action="Проверка не выполнялась: по такому тексту нельзя цитировать требования",
                 hint=(
                     "Пересохраните PDF из исходника (Word: «Сохранить как PDF») или пришлите DOCX; "
-                    "распознавания (OCR) в этой версии агента нет"
+                    "если установить Tesseract с русским языком, агент сам распознает такие страницы (OCR)"
                 ),
                 location=doc.name,
                 step="parse",
@@ -120,7 +120,7 @@ def _garbled(doc: ParsedDocument) -> list[Diagnostic]:
     return []
 
 
-def _ranges(numbers: Iterable[int]) -> str:
+def page_ranges(numbers: Iterable[int]) -> str:
     """[2, 3, 4, 7] → «2–4, 7»."""
     out: list[str] = []
     ordered = sorted(numbers)
@@ -154,7 +154,7 @@ def _name_pages(doc: ParsedDocument, diagnostics: list[Diagnostic]) -> list[Diag
     missing = _missing_pages(doc)
     if missing is None:
         return diagnostics
-    where = f"стр. {_ranges(missing)}"
+    where = f"стр. {page_ranges(missing)}"
     return [
         d.model_copy(
             update={

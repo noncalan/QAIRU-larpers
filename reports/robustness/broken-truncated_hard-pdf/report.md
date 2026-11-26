@@ -1,6 +1,6 @@
 # Отчёт о проверке требований: truncated_hard.pdf
 
-Проверка по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3). Отчёт сформировал агент QAIRU validator 0e89b94-dirty, 2026-11-26 07:33:52 UTC.
+Проверка по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3). Отчёт сформировал агент QAIRU validator 8a090dd-dirty, 2026-11-26 07:39:10 UTC.
 
 ## Итог на первой странице
 
@@ -12,12 +12,12 @@
 |---|---|
 | Документ | truncated_hard.pdf (unknown, 10290 байт) |
 | SHA-256 документа | 02a23806502d4720f624c52896ae6818bd1223e1e6797c3f4aef13ab3e9e4a20 |
-| Дата прогона | 2026-11-26 07:33:52 UTC |
+| Дата прогона | 2026-11-26 07:39:10 UTC |
 | Длительность | 0.0 с |
-| Версия агента | 0e89b94-dirty (источник: git), есть незакоммиченные правки |
-| Хеш промптов | c5d11e87221c |
+| Версия агента | 8a090dd-dirty (источник: git), есть незакоммиченные правки |
+| Хеш промптов | 1fc8be63f489 |
 | Способ вызова модели | модель не вызывалась (запрошено: фикстуры тестов (без модели)) |
-| Модели по шагам | segment: claude-sonnet-5-5 · medium; search: claude-opus-5-5 · medium; search_transfer: claude-haiku-5-5 · medium; evidence: claude-opus-5-5 · high; critic: claude-opus-5-5 · high; test_draft: claude-sonnet-5-5 · high; questions: claude-opus-5-5 · high; questions_critic: claude-opus-5-5 · high |
+| Модели по шагам | segment: claude-sonnet-5-5 · medium; search: claude-opus-5-5 · medium; search_transfer: claude-haiku-5-5 · medium; evidence: claude-opus-5-5 · high; critic: claude-opus-5-5 · high; test_draft: claude-sonnet-5-5 · high; questions: claude-opus-5-5 · high; questions_critic: claude-opus-5-5 · high; set_check: claude-opus-5-5 · medium |
 | Фактические модели | — |
 | Профиль | quick, проходов поиска: 1 |
 | Доменные чек-листы | — |
@@ -47,6 +47,10 @@
 **Проверка не выполнена: В PDF не найдено ни одной страницы; восстановить страницы не удалось**
 
 Разделы о требованиях не сформированы: документ не удалось прочитать. Исправьте вход по таблице выше и запустите проверку снова.
+
+### Что сделать
+
+- Пришлите полный файл или пересохраните PDF из исходника
 
 ## Диагностика прогона
 

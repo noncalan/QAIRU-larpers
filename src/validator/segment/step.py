@@ -10,18 +10,36 @@
 Политика отказа (docs/plan.md, шаг 2): отказ модели или ответ не по схеме даёт один повтор; если и он
 не удался, нарезка идёт запасным путём ``fallback_segmentation`` (каждый содержательный блок становится
 требованием) с диагностикой ``LLM-020``, и отчёт помечает нарезку как упрощённую.
+
+Длинный документ (#38, ``parts.plan_parts``): вызов на каждую часть (не больше ``MAX_PARALLEL_PARTS``
+одновременно), модель видит только блоки части с пометкой ``prompts/part_note.md``. Черновики всех частей
+нумерует код по всему документу сразу, поэтому ``R-NN`` сквозные, а якоря глобальные. Часть, нарезка
+которой не удалась, идёт запасным путём с ``LLM-020``, остальные части остаются нарезкой модели.
+Номер вызова части ``k``: ``(k − 1) · MAX_ATTEMPTS + попытка``, у документа целиком как раньше.
 """
 
 from __future__ import annotations
 
+import logging
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass, field
 from functools import cache
 from pathlib import Path
 from typing import Any
 
-from validator.errors import LLM_BAD_RESPONSE, LLM_SEGMENT_FALLBACK, LLMError
+from validator.config import call_timeout
+from validator.errors import (
+    INT_STEP_DEGRADED,
+    LLM_BAD_RESPONSE,
+    LLM_SEGMENT_FALLBACK,
+    InternalError,
+    LLMError,
+    ValidatorError,
+)
 from validator.ingest.blocks import render_for_model
 from validator.llm.base import LLMClient
 from validator.models import (
+    Block,
     BlockLabel,
     DiagLevel,
     Diagnostic,
@@ -34,14 +52,20 @@ from validator.models import (
     Segmentation,
     SegmentationMode,
 )
+from validator.parts import Part, PartPlan, part_view, render_part
 from validator.segment.answer import API_SUBTYPES, ENTITY_KEYS, EXCLUDE_LABELS, AnswerError, parse_answer
 from validator.segment.build import Draft, block_draft, build_requirements, fallback_label
-from validator.segment.checks import from_answer, no_requirements
+from validator.segment.checks import Notes, assemble, decide, merge_notes, no_requirements
+
+logger = logging.getLogger("validator")
 
 PROMPTS_DIR = Path(__file__).resolve().parents[1] / "prompts"
 SYSTEM_PROMPT = "segment_system.md"
 USER_PROMPT = "segment_user.md"
 DOCUMENT_SLOT = "{document}"
+
+MAX_PARALLEL_PARTS = 3
+"""Не больше трёх вызовов нарезки частей одновременно, как у проходов поиска: лимит подписки."""
 
 MAX_ATTEMPTS = 2
 """Первый вызов и один повтор с пояснением, если по ответу нельзя собрать нарезку (план, шаг 2).
@@ -134,13 +158,17 @@ def _prompt_file(name: str) -> str:
     return (PROMPTS_DIR / name).read_text(encoding="utf-8")
 
 
-def build_prompt(doc: ParsedDocument) -> str:
-    """Пользовательский промпт: описание разметки и документ с ID блоков внутри меток."""
+def build_prompt(doc: ParsedDocument, rendered: str | None = None) -> str:
+    """Пользовательский промпт: описание разметки и документ с ID блоков внутри меток.
+
+    ``rendered``: готовый текст для модели (часть длинного документа с пометкой); по умолчанию весь документ.
+    """
+    text = render_for_model(doc) if rendered is None else rendered
     # replace, а не format: в документе бывают фигурные скобки (JSON-примеры).
-    return _prompt_file(USER_PROMPT).replace(DOCUMENT_SLOT, render_for_model(doc).rstrip("\n"))
+    return _prompt_file(USER_PROMPT).replace(DOCUMENT_SLOT, text.rstrip("\n"))
 
 
-def _request(cfg: RunConfig, prompt: str, index: int) -> LLMRequest:
+def _request(cfg: RunConfig, prompt: str, index: int, timeout_s: int | None = None) -> LLMRequest:
     model = cfg.model_for(LLMStep.SEGMENT)
     return LLMRequest(
         step=LLMStep.SEGMENT,
@@ -150,7 +178,7 @@ def _request(cfg: RunConfig, prompt: str, index: int) -> LLMRequest:
         system=_prompt_file(SYSTEM_PROMPT),
         prompt=prompt,
         json_schema=RESPONSE_SCHEMA,
-        timeout_s=cfg.call_timeout_s,
+        timeout_s=timeout_s or cfg.call_timeout_s,
     )
 
 
@@ -159,16 +187,27 @@ def _ask_model(doc: ParsedDocument, llm: LLMClient, cfg: RunConfig, call_ids: li
 
     ``LLMError`` клиента (отказ, лимит, сбой после его собственного повтора) идёт наружу сразу.
     """
-    base = build_prompt(doc)
+    drafts, kept, notes = _decide_by_model(doc, render_for_model(doc), llm, cfg, call_ids, offset=0)
+    return assemble(doc, drafts, kept, notes)
+
+
+def _decide_by_model(
+    view: ParsedDocument, rendered: str, llm: LLMClient, cfg: RunConfig, call_ids: list[str], offset: int
+) -> tuple[list[Draft], list[ExcludedBlock], Notes]:
+    """Решения модели по блокам ``view`` с одним повтором; номера вызовов ``offset + попытка``."""
+    base = build_prompt(view, rendered)
     prompt = base
-    for index in range(1, MAX_ATTEMPTS + 1):
-        req = _request(cfg, prompt, index)
+    timeout_s = call_timeout(cfg, rendered)
+    for attempt in range(1, MAX_ATTEMPTS + 1):
+        req = _request(cfg, prompt, offset + attempt, timeout_s)
         call_ids.append(req.call_id)
         resp = llm.call(req)
+        notes = Notes()
         try:
-            return from_answer(doc, parse_answer(resp.structured))
+            drafts, kept = decide(view, parse_answer(resp.structured), notes)
+            return drafts, kept, notes
         except AnswerError as exc:
-            if index == MAX_ATTEMPTS:
+            if attempt == MAX_ATTEMPTS:
                 raise LLMError(
                     f"Ответ нарезки не годится: {exc}",
                     code=LLM_BAD_RESPONSE,
@@ -179,16 +218,22 @@ def _ask_model(doc: ParsedDocument, llm: LLMClient, cfg: RunConfig, call_ids: li
     raise AssertionError("unreachable")  # pragma: no cover - цикл всегда возвращает или бросает
 
 
-def fallback_segmentation(doc: ParsedDocument) -> Segmentation:
-    """Запасная нарезка без модели: каждый содержательный блок от 3 слов становится требованием."""
+def _fallback_decisions(doc: ParsedDocument, blocks: list[Block]) -> tuple[list[Draft], list[ExcludedBlock]]:
+    """Решения запасной нарезки по блокам: каждый содержательный блок от 3 слов становится требованием."""
     drafts: list[Draft] = []
     excluded: list[ExcludedBlock] = []
-    for block in doc.blocks:
+    for block in blocks:
         label, reason = fallback_label(block)
         if label is BlockLabel.REQUIREMENT:
             drafts.append(block_draft(doc, block))
         else:
             excluded.append(ExcludedBlock(block_id=block.id, label=label, reason=reason))
+    return drafts, excluded
+
+
+def fallback_segmentation(doc: ParsedDocument) -> Segmentation:
+    """Запасная нарезка без модели: каждый содержательный блок от 3 слов становится требованием."""
+    drafts, excluded = _fallback_decisions(doc, list(doc.blocks))
     requirements = build_requirements(doc, drafts)
     return Segmentation(
         requirements=requirements,
@@ -198,8 +243,98 @@ def fallback_segmentation(doc: ParsedDocument) -> Segmentation:
     )
 
 
-def segment(doc: ParsedDocument, llm: LLMClient, cfg: RunConfig) -> Segmentation:
-    """Нарезка моделью с проверками кодом; если модель не справилась, запасной путь с ``LLM-020``."""
+@dataclass
+class _PartResult:
+    """Решения по одной части длинного документа."""
+
+    drafts: list[Draft] = field(default_factory=list)
+    kept: list[ExcludedBlock] = field(default_factory=list)
+    notes: Notes = field(default_factory=Notes)
+    call_ids: list[str] = field(default_factory=list)
+    failure: Diagnostic | None = None
+
+
+def _segment_part(
+    doc: ParsedDocument, plan: PartPlan, part: Part, llm: LLMClient, cfg: RunConfig
+) -> _PartResult:
+    out = _PartResult()
+    view = part_view(doc, plan, part, with_context=False)
+    rendered = render_part(doc, plan, part, with_context=False)
+    try:
+        out.drafts, out.kept, out.notes = _decide_by_model(
+            view, rendered, llm, cfg, out.call_ids, offset=(part.index - 1) * MAX_ATTEMPTS
+        )
+    except LLMError as exc:
+        _part_fallback(doc, plan, part, out, exc)
+    except Exception as exc:  # граница части: сбой кода на одной части не отменяет нарезку остальных
+        logger.exception("Нарезка части %d: внутренняя ошибка", part.index)
+        failure = InternalError(
+            f"внутренняя ошибка агента при разборе ответа ({type(exc).__name__})",
+            code=INT_STEP_DEGRADED,
+            hint="Подробности в report.log; сообщите команде",
+            location=out.call_ids[-1] if out.call_ids else None,
+        )
+        _part_fallback(doc, plan, part, out, failure)
+    return out
+
+
+def _part_fallback(
+    doc: ParsedDocument, plan: PartPlan, part: Part, out: _PartResult, exc: ValidatorError
+) -> None:
+    """Часть нарезается запасным путём, остальные части остаются нарезкой модели."""
+    out.drafts, out.kept, out.notes = *_fallback_decisions(doc, list(part.blocks)), Notes()
+    sections = "; ".join(part.sections)
+    out.failure = Diagnostic(
+        code=LLM_SEGMENT_FALLBACK if isinstance(exc, LLMError) else exc.code,
+        level=DiagLevel.WARNING,
+        message=(
+            f"Нарезка моделью части {part.index} из {len(plan.parts)} не удалась ({exc.code}): {exc.message}"
+        ),
+        action=(
+            f"Часть {part.index} ({sections}) нарезана упрощённо, без модели: каждый содержательный блок "
+            "стал требованием; остальные части нарезала модель"
+        ),
+        hint=exc.hint or "Повторите прогон; если повторяется, сообщите команде",
+        location=exc.location,
+        step="segment",
+    )
+
+
+def _segment_parts(doc: ParsedDocument, llm: LLMClient, cfg: RunConfig, plan: PartPlan) -> Segmentation:
+    """Нарезка длинного документа по частям, номера ``R-NN`` по всему документу сразу."""
+    with ThreadPoolExecutor(
+        max_workers=min(MAX_PARALLEL_PARTS, len(plan.parts)), thread_name_prefix="segment"
+    ) as pool:
+        results = list(pool.map(lambda part: _segment_part(doc, plan, part, llm, cfg), plan.parts))
+    notes = Notes()
+    drafts: list[Draft] = []
+    kept: list[ExcludedBlock] = []
+    for r in results:
+        merge_notes(notes, r.notes)
+        drafts.extend(r.drafts)
+        kept.extend(r.kept)
+    by_model = any(r.failure is None for r in results)
+    seg = assemble(
+        doc, drafts, kept, notes, SegmentationMode.MODEL if by_model else SegmentationMode.FALLBACK
+    )
+    failures = [r.failure for r in results if r.failure is not None]
+    return seg.model_copy(
+        update={
+            "call_ids": [cid for r in results for cid in r.call_ids],
+            "diagnostics": [*failures, *seg.diagnostics],
+        }
+    )
+
+
+def segment(
+    doc: ParsedDocument, llm: LLMClient, cfg: RunConfig, plan: PartPlan | None = None
+) -> Segmentation:
+    """Нарезка моделью с проверками кодом; если модель не справилась, запасной путь с ``LLM-020``.
+
+    ``plan``: части длинного документа (#38); без него или с одной частью документ идёт одним вызовом.
+    """
+    if plan is not None and plan.split:
+        return _segment_parts(doc, llm, cfg, plan)
     call_ids: list[str] = []
     try:
         seg = _ask_model(doc, llm, cfg, call_ids)

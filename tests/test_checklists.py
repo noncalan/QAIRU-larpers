@@ -230,7 +230,7 @@ def test_search_sends_checklists_and_marks_finding_with_known_item(
     active = select_checklists(doc).active
     llm = FakeLLM(Path("/nonexistent"), {(LLMStep.SEARCH, 1): _envelope(_answer("Сумма заказа", tag))})
 
-    [result] = search(doc, llm, _config(), active)
+    [result] = search(doc, llm, _config(), checklists=active)
 
     [req] = llm.requests
     assert "## Доменные чек-листы" in req.prompt and "MON-01" in req.prompt

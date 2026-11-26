@@ -2,8 +2,13 @@
 
 from __future__ import annotations
 
+import inspect
+import re
+from collections import Counter
+
 import pytest
 
+from validator import errors
 from validator.errors import InputError, exit_code
 from validator.models import DiagLevel, Diagnostic, ExitCode
 
@@ -39,3 +44,19 @@ def test_error_becomes_diagnostic_with_action() -> None:
     d = error.to_diagnostic(action="Проверка не выполнена")
 
     assert (d.code, d.level, d.hint, d.location) == ("IN-001", DiagLevel.ERROR, "Проверьте путь", "x.pdf")
+
+
+_LITERAL_CODE = re.compile(r'^([A-Z_]+) = "([A-Z]{2,3}-\d{3})"', re.MULTILINE)
+
+
+def test_diagnostic_codes_are_unique() -> None:
+    """Два смысла под одним кодом ломают отчёт и eval: коды каталога не повторяются (#38, #96).
+
+    Синоним одного смысла задаётся ссылкой на имя (``IN_NO_REQUIREMENTS = IN_HEADINGS_ONLY``), не строкой.
+    """
+    codes = _LITERAL_CODE.findall(inspect.getsource(errors))
+
+    repeated = {code: k for code, k in Counter(value for _, value in codes).items() if k > 1}
+
+    assert len(codes) > 50, "каталог кодов не найден"
+    assert repeated == {}

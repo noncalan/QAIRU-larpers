@@ -7,7 +7,8 @@
 
 1. ``candidates.py``: кандидатов собирает код из находок верификатора, 0 вызовов модели;
 2. ``editor.py``: один вызов редактора (Opus 5.5 ``high``, рассуждение текстом, затем JSON) переписывает
-   кандидатов в 8–15 карточек по п. 3.1 исследования 17;
+   кандидатов в 8–15 карточек по п. 3.1 исследования 17; если кандидатов больше
+   ``EDITOR_MAX_CANDIDATES`` (длинный документ, #38), редактору идут главные по приоритету и ценности;
 3. ``cards.py``: код сверяет цитаты и основания вариантов, проверяет 2–4 варианта с последствиями,
    отбрасывает карточки без связанных находок, сливает повторы, считает приоритет и ставит ``Q-NN``;
 4. ``fallback.py``: если редактор не ответил, карточки собираются кодом из кандидатов, без редактуры;
@@ -26,7 +27,12 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field, replace
 
-from validator.errors import LLM_QUESTIONS_CHECKED, LLM_QUESTIONS_FAILED, LLMError
+from validator.errors import (
+    LLM_QUESTIONS_CHECKED,
+    LLM_QUESTIONS_FAILED,
+    LLM_QUESTIONS_SHORTLIST,
+    LLMError,
+)
 from validator.llm.base import LLMClient
 from validator.models import (
     DiagLevel,
@@ -40,7 +46,7 @@ from validator.models import (
     WithdrawnQuestion,
 )
 from validator.questions import critic
-from validator.questions.candidates import Candidate, collect_candidates
+from validator.questions.candidates import Candidate, collect_candidates, shortlist
 from validator.questions.cards import CardDraft, CheckLog, draft_from_card, finalize
 from validator.questions.editor import EditorReply, edit, normalize_candidate_id
 from validator.questions.export import questions_payload, write_questions_yaml
@@ -102,6 +108,23 @@ def _fallback(
     )
 
 
+def _shortlist_note(shown: int, total: int) -> list[Diagnostic]:
+    if shown >= total:
+        return []
+    return [
+        Diagnostic(
+            code=LLM_QUESTIONS_SHORTLIST,
+            level=DiagLevel.INFO,
+            message=(
+                f"Кандидатов в вопросы {total}, редактор разбирает за один вызов до {shown}: "
+                "ему отданы кандидаты с высшим приоритетом и ценностью ответа"
+            ),
+            action="Остальные находки остались в отчёте, вопросы по ним не формулировались",
+            step=STEP,
+        )
+    ]
+
+
 def _unanswered(
     reply: EditorReply, cands: list[Candidate], drafts: list[CardDraft], log: CheckLog
 ) -> tuple[set[str], list[Candidate]]:
@@ -128,7 +151,12 @@ def _empty_note(dropped: int, ignored: int) -> Diagnostic:
 
 
 def _from_reply(
-    reply: EditorReply, cands: list[Candidate], doc: ParsedDocument, ver: Verification, seg: Segmentation
+    reply: EditorReply,
+    cands: list[Candidate],
+    doc: ParsedDocument,
+    ver: Verification,
+    seg: Segmentation,
+    total: int | None = None,
 ) -> QuestionsOutcome | None:
     """Карточки редактора после проверок; None, если ответ непригоден и нужен запасной путь.
 
@@ -154,7 +182,7 @@ def _from_reply(
         len(ignored),
         len(questions),
     )
-    diagnostics = _check_diagnostic(log, len(cands), len(questions))
+    diagnostics = _check_diagnostic(log, len(cands) if total is None else total, len(questions))
     if not questions:
         diagnostics.append(_empty_note(len(dropped), len(ignored)))
     return QuestionsOutcome(questions=questions, diagnostics=diagnostics, candidates=len(cands), edited=True)
@@ -187,8 +215,9 @@ def draft_questions(
         logger.info("Вопросы: кандидатов нет, редактор не вызывался")
         return QuestionsOutcome()
     req_types = {r.id: r.type for r in seg.requirements}
+    shown = shortlist(cands, req_types)
     try:
-        outcome = _from_reply(edit(cands, doc, req_types, llm, cfg), cands, doc, ver, seg)
+        outcome = _from_reply(edit(shown, doc, req_types, llm, cfg), shown, doc, ver, seg, len(cands))
     except LLMError as exc:
         return _fallback(cands, ver, seg, exc.message, exc.hint)
     except Exception as exc:  # граница редактора: ответ модели внешний, карточки кода терять нельзя
@@ -208,7 +237,13 @@ def draft_questions(
             "ни одна карточка не прошла проверку кодом",
             "Повторите прогон; если повторяется, сообщите команде",
         )
-    return outcome
+    if len(shown) < len(cands):
+        logger.info("Вопросы: кандидатов %d, редактору отданы главные %d", len(cands), len(shown))
+    return replace(
+        outcome,
+        candidates=len(cands),
+        diagnostics=[*outcome.diagnostics, *_shortlist_note(len(shown), len(cands))],
+    )
 
 
 def ask(

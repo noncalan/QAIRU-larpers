@@ -10,7 +10,9 @@
 | 1 разбор | отчёт-диагностика, код 4 (часть текста: предупреждение, код 3) |
 | 2 нарезка | запасная нарезка без модели, предупреждение |
 | 3 линтер | шаг пропущен, предупреждение |
+| части | план не построился: документ целиком; длинный документ: ИНФО LLM-070 с оценкой цены до вызовов |
 | 4 поиск | упал проход: «K−1 из K»; упали все: отчёт по линтеру, код 5 |
+| 4в сверка между частями | находки частей остаются, предупреждение LLM-072 |
 | 5 слияние, 7 верификатор | внутренняя ошибка, код 1, отчёт из того, что есть |
 | 6 доказательства | упал свидетель или критик: находки без него, предупреждение |
 | 8 вопросы | редактор упал: вопросы кодом без редактуры; шаг упал: раздел без вопросов; предупреждение |
@@ -30,7 +32,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TypeVar
 
-from validator.checklists import Selection, render_section, select_checklists
+from validator.checklists import Selection, select_checklists
 from validator.clarify import AnswersError, AnswersFile, clarify, load_answers
 from validator.errors import (
     CFG_NOT_IMPLEMENTED,
@@ -39,6 +41,8 @@ from validator.errors import (
     INT_STEP_DEGRADED,
     INT_STEP_FAILED,
     LLM_ALL_PASSES_FAILED,
+    LLM_BUDGET_ESTIMATE,
+    LLM_LONG_DOCUMENT,
     LLM_REPLAYED,
     OUT_OVERWRITES_INPUT,
     OUT_WRITE_FAILED,
@@ -46,12 +50,14 @@ from validator.errors import (
     ValidatorError,
     exit_code,
 )
+from validator.estimate import describe_estimate, estimate_run
 from validator.evidence import gather
 from validator.ingest import guard, parse
 from validator.ingest.quality import review
 from validator.lint import lint
 from validator.llm import RecordingClient, align_config, instrument, make_client, write_calls_jsonl
 from validator.llm.base import LLMClient
+from validator.llm.calllog import LIVE_BACKENDS
 from validator.llm.replay import ReplayLLM
 from validator.merge import merge
 from validator.models import (
@@ -77,16 +83,21 @@ from validator.models import (
     Verification,
     WithdrawnQuestion,
 )
+from validator.parts import PartPlan, describe, plan_parts, whole_plan
 from validator.passport import build_passport
 from validator.questions import build_questions, write_questions_yaml
 from validator.refs import humanize
 from validator.report import PdfRenderError, build_report, render_md, render_pdf
 from validator.report.selfcheck import check_report, selfcheck_diagnostics
-from validator.search import search, search_request, search_text
+from validator.search import first_pass_request, search
 from validator.segment import fallback_segmentation, segment
+from validator.set_check import set_check
 from validator.verify import light_with_questions, verify
 
 logger = logging.getLogger("validator")
+NOTICE_LOGGER = "validator.notice"
+notice = logging.getLogger(NOTICE_LOGGER)
+"""Сообщения человеку до конца прогона (длинный документ, оценка цены): CLI печатает их в stderr."""
 T = TypeVar("T")
 LOG_FORMAT = "%(asctime)s %(levelname)s %(name)s: %(message)s"
 
@@ -103,6 +114,8 @@ class _State:
     segmentation: Segmentation | None = None
     lint_hits: list[CandidateFinding] = field(default_factory=list)
     passes: list[PassResult] = field(default_factory=list)
+    plan: PartPlan | None = None
+    set_check: list[CandidateFinding] = field(default_factory=list)
     merged: list[MergedFinding] = field(default_factory=list)
     verification: Verification | None = None
     questions: list[Question] = field(default_factory=list)
@@ -151,13 +164,13 @@ def _step(
 
 def _read_input(state: _State) -> ParsedDocument | None:
     cfg = state.cfg
-    state.guard = g = guard(cfg.input_path, workdir=cfg.run_dir)
+    state.guard = g = guard(cfg.input_path, workdir=cfg.run_dir, ocr=cfg.ocr)
     state.diagnostics.extend(g.diagnostics)
     if g.fatal:
         return None
     source = Path(g.read_path) if g.read_path else cfg.input_path
     try:
-        doc = parse(source, g.kind, pdf_backend=cfg.pdf_backend)
+        doc = parse(source, g.kind, pdf_backend=cfg.pdf_backend, ocr=cfg.ocr)
     except InputError as exc:
         state.diagnostics.append(
             exc.to_diagnostic(action="Проверка не выполнялась: документ не прочитан", step="parse")
@@ -220,6 +233,55 @@ def _check_requests(state: _State) -> None:
         )
 
 
+def _announce(state: _State, plan: PartPlan) -> None:
+    """Длинный документ и оценка цены до первого вызова модели: в диагностику и сразу в stderr (#38)."""
+    cfg = state.cfg
+    estimate = estimate_run(plan, cfg)
+    expected = describe_estimate(estimate)
+    if plan.split:
+        message = (
+            f"Документ длинный (около {plan.tokens // 1000} тыс. токенов): проверен по частям, "
+            f"частей: {len(plan.parts)}"
+        )
+        state.diagnostics.append(
+            Diagnostic(
+                code=LLM_LONG_DOCUMENT,
+                level=DiagLevel.INFO,
+                message=message,
+                action=(
+                    "Нарезка и поиск дефектов шли по каждой части, места в отчёте даны по всему документу; "
+                    f"противоречия и повторы между частями сверены отдельным вызовом. Оценка: {expected}"
+                ),
+                step="parts",
+            )
+        )
+        notice.info(
+            "Документ длинный (около %d тыс. токенов), проверка идёт по частям, частей: %d. Оценка: %s.",
+            plan.tokens // 1000,
+            len(plan.parts),
+            expected,
+        )
+    budget, usd = cfg.max_budget_usd, estimate.usd
+    if budget is None or usd is None or usd <= budget or state.backend_used not in LIVE_BACKENDS:
+        return
+    diag = Diagnostic(
+        code=LLM_BUDGET_ESTIMATE,
+        level=DiagLevel.WARNING,
+        message=f"Оценка цены прогона ${usd:.2f} выше лимита --max-budget-usd ${budget:.2f}",
+        action="Прогон идёт; при исчерпании лимита оставшиеся вызовы не делаются, отчёт будет неполным",
+        hint="Увеличьте --max-budget-usd или возьмите профиль quick (один проход поиска)",
+        step="parts",
+    )
+    state.diagnostics.append(diag)
+    notice.warning("%s. %s.", diag.message, diag.hint)
+
+
+def _cross_parts(state: _State, seg: Segmentation, plan: PartPlan, llm: LLMClient) -> list[CandidateFinding]:
+    outcome = set_check(seg, plan, llm, state.cfg)
+    state.diagnostics.extend(outcome.diagnostics)
+    return outcome.candidates
+
+
 def _load_answers(state: _State) -> AnswersFile | None:
     """Файл ответов автора (--answers). CLI проверяет его до прогона (код 2), здесь сбой не роняет прогон."""
     path = state.cfg.answers_path
@@ -272,55 +334,45 @@ def _execute(state: _State) -> None:
     if doc is None:
         return
     state.doc = doc
+    plan = _step(
+        state,
+        "parts",
+        lambda: plan_parts(doc),
+        lambda: whole_plan(doc),
+        action="Документ проверяется целиком",
+    )
+    state.plan = plan
     client, client_diags = make_client(cfg)
     state.diagnostics.extend(client_diags)
-    cfg, aligned_diags = align_config(cfg, client)
+    cfg, aligned_diags = align_config(cfg, client, parts=len(plan.parts))
     state.cfg = cfg
     state.diagnostics.extend(aligned_diags)
     llm = instrument(cfg, client)
     state.client, state.backend_used = llm, client.backend
-
+    _announce(state, plan)
     seg = _step(
         state,
         "segment",
-        lambda: segment(doc, llm, cfg),
+        lambda: segment(doc, llm, cfg, plan),
         lambda: fallback_segmentation(doc),
         action="Нарезка сделана запасным путём без модели",
     )
     state.segmentation = seg
     state.diagnostics.extend(seg.diagnostics)
     state.lint_hits = _step(state, "lint", lambda: lint(doc, seg), list, action="Линтер пропущен")
-    chosen = _step(
+    cfg = _search_step(state, doc, plan, client, llm)
+    state.set_check = _step(
         state,
-        "checklists",
-        lambda: _choose_checklists(state, doc, client),
-        lambda: None,
-        action="Поиск идёт без доменных чек-листов",
+        "set_check",
+        lambda: _cross_parts(state, seg, plan, llm),
+        list,
+        action="Противоречия и повторы между частями не сверены",
     )
-    cfg = state.cfg
-    state.checklists = list(chosen.uses) if chosen else []
-    active = chosen.active if chosen else ()
-    state.passes = _step(
-        state, "search", lambda: search(doc, llm, cfg, active), list, action="Поиск пропущен"
-    )
-    for p in state.passes:
-        state.diagnostics.extend(p.diagnostics)
-    if not any(p.ok for p in state.passes):
-        state.diagnostics.append(
-            Diagnostic(
-                code=LLM_ALL_PASSES_FAILED,
-                level=DiagLevel.ERROR,
-                message="Ни один проход поиска дефектов не удался",
-                action="Отчёт собран по правилам линтера без модели",
-                hint="Проверьте доступ к модели (см. диагностику выше) и запустите снова",
-                step="search",
-            )
-        )
-    passes, lint_hits = state.passes, state.lint_hits
+    passes, rules = state.passes, [*state.lint_hits, *state.set_check]
     state.merged = _step(
         state,
         "merge",
-        lambda: merge(passes, lint_hits, doc),
+        lambda: merge(passes, rules, doc),
         list,
         action="Находки не слиты",
         level=DiagLevel.ERROR,
@@ -372,16 +424,48 @@ def _execute(state: _State) -> None:
     )
 
 
-def _choose_checklists(state: _State, doc: ParsedDocument, client: LLMClient) -> Selection:
+def _search_step(
+    state: _State, doc: ParsedDocument, plan: PartPlan, client: LLMClient, llm: LLMClient
+) -> RunConfig:
+    """Шаг 4 с выбором доменных чек-листов перед ним; возвращает конфигурацию после выбора (#35)."""
+    chosen = _step(
+        state,
+        "checklists",
+        lambda: _choose_checklists(state, doc, plan, client),
+        lambda: None,
+        action="Поиск идёт без доменных чек-листов",
+    )
+    cfg = state.cfg
+    state.checklists = list(chosen.uses) if chosen else []
+    active = chosen.active if chosen else ()
+    state.passes = _step(
+        state, "search", lambda: search(doc, llm, cfg, plan, active), list, action="Поиск пропущен"
+    )
+    for p in state.passes:
+        state.diagnostics.extend(p.diagnostics)
+    if not any(p.ok for p in state.passes):
+        state.diagnostics.append(
+            Diagnostic(
+                code=LLM_ALL_PASSES_FAILED,
+                level=DiagLevel.ERROR,
+                message="Ни один проход поиска дефектов не удался",
+                action="Отчёт собран по правилам линтера без модели",
+                hint="Проверьте доступ к модели (см. диагностику выше) и запустите снова",
+                step="search",
+            )
+        )
+    return cfg
+
+
+def _choose_checklists(state: _State, doc: ParsedDocument, plan: PartPlan, client: LLMClient) -> Selection:
     """Доменные чек-листы для поиска (#35). Replay записи без них (до #35 или ``--no-checklists``)
     выключает их сам: иначе проход искался бы по другому ключу и брался бы из записи по номеру вызова."""
     cfg = state.cfg
     chosen = select_checklists(doc, enabled=cfg.checklists)
     if not (isinstance(client, ReplayLLM) and chosen.active):
         return chosen
-    text = search_text(doc, cfg)
-    with_lists = search_request(text, cfg, 1, render_section(chosen.active)).key
-    without = search_request(text, cfg, 1).key
+    with_lists = first_pass_request(doc, plan, cfg, chosen.active).key
+    without = first_pass_request(doc, plan, cfg).key
     if client.has_key(with_lists) or not client.has_key(without):
         return chosen
     state.cfg = cfg.model_copy(update={"checklists": False})
@@ -429,6 +513,8 @@ def _context(
         segmentation=state.segmentation,
         lint_hits=state.lint_hits,
         passes=state.passes,
+        set_check=state.set_check,
+        parts=describe(state.plan, doc) if state.plan is not None and doc is not None else [],
         merged=state.merged,
         verification=state.verification,
         questions=state.questions,

@@ -128,7 +128,7 @@ def _metrics(ctx: RunContext) -> RunMetrics:
         calls_cached=sum(c.status is CallStatus.CACHED for c in ctx.calls),
         tokens=ctx.passport.tokens,
         cost_usd=ctx.passport.cost_usd,
-        candidates_total=sum(len(p.candidates) for p in ctx.passes) + lint,
+        candidates_total=sum(len(p.candidates) for p in ctx.passes) + lint + len(ctx.set_check),
         merged_total=len(ctx.merged),
         findings_total=len(ver.findings) if ver else 0,
         discarded_total=len(ver.discarded) if ver else 0,
@@ -165,6 +165,7 @@ def _document(ctx: RunContext) -> DocumentInfo | None:
             chars=len(doc.text),
             blocks=len(doc.blocks),
             extraction=doc.extraction,
+            parts=list(ctx.parts),
         )
     if ctx.guard is not None:
         g = ctx.guard

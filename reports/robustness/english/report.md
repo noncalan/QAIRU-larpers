@@ -1,6 +1,6 @@
 # Отчёт о проверке требований: english.md
 
-Проверка по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3). Отчёт сформировал агент QAIRU validator 0e89b94-dirty, 2026-11-26 07:33:58 UTC.
+Проверка по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3). Отчёт сформировал агент QAIRU validator 8a090dd-dirty, 2026-11-26 07:39:15 UTC.
 
 ## Итог на первой странице
 
@@ -50,12 +50,12 @@
 |---|---|
 | Документ | english.md (md, 1688 байт) |
 | SHA-256 документа | 560a212e4febb85fb94d1c5ba4969865326727ad7dd216c7c2903e8d6d97d344 |
-| Дата прогона | 2026-11-26 07:33:58 UTC |
-| Длительность | 0.14 с |
-| Версия агента | 0e89b94-dirty (источник: git), есть незакоммиченные правки |
-| Хеш промптов | c5d11e87221c |
+| Дата прогона | 2026-11-26 07:39:15 UTC |
+| Длительность | 0.1 с |
+| Версия агента | 8a090dd-dirty (источник: git), есть незакоммиченные правки |
+| Хеш промптов | 1fc8be63f489 |
 | Способ вызова модели | записанные ответы (replay) |
-| Модели по шагам | segment: claude-sonnet-5-5 · medium; search: claude-opus-5-5 · medium; search_transfer: claude-haiku-5-5 · medium; evidence: claude-opus-5-5 · high; critic: claude-opus-5-5 · high; test_draft: claude-sonnet-5-5 · high; questions: claude-opus-5-5 · high; questions_critic: claude-opus-5-5 · high |
+| Модели по шагам | segment: claude-sonnet-5-5 · medium; search: claude-opus-5-5 · medium; search_transfer: claude-haiku-5-5 · medium; evidence: claude-opus-5-5 · high; critic: claude-opus-5-5 · high; test_draft: claude-sonnet-5-5 · high; questions: claude-opus-5-5 · high; questions_critic: claude-opus-5-5 · high; set_check: claude-opus-5-5 · medium |
 | Фактические модели | claude-opus-5-5, claude-sonnet-5-5 |
 | Профиль | quick, проходов поиска: 1 |
 | Доменные чек-листы | Даты, время и периоды, Уведомления (11 пунктов) |
@@ -795,7 +795,7 @@
 | Отброшено верификатором | 0 |
 | Вызовов модели | 5 (с ошибкой 1, из кеша 0) |
 | Токены | вход 8, выход 38015, запись в кеш 33522, чтение из кеша 9860 |
-| Время прогона | 0.14 с |
+| Время прогона | 0.1 с |
 | Цена по тарифу API | $1.00 |
 | Критик находок | выключен в этом прогоне, включается флагом --critic |
 | Вопросов автору | 15 (до самопроверки 15, снято 0: ответ есть в документе) |

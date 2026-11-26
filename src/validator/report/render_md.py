@@ -44,7 +44,7 @@ from validator.report.coverage import (
     cell_text,
     coverage_totals,
 )
-from validator.report.fmt import FILTERS, plain, where
+from validator.report.fmt import FILTERS, found_text, plain, where
 from validator.report.run_metrics import step_label
 
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
@@ -315,6 +315,26 @@ def checklists_passport(report: Report) -> str:
     return f"{', '.join(u.title for u in used)} ({items} пунктов)"
 
 
+def next_steps(report: Report) -> list[str]:
+    """Что сделать человеку, если проверка не выполнена: подсказки ошибок входа без повторов (#38).
+
+    В таблице диагностики подсказка стоит в узкой ячейке; длинную инструкцию (скан: где взять текстовый
+    PDF, как включить распознавание) отчёт повторяет отдельным списком под итогом.
+    """
+    if report.status is not ReportStatus.NOT_PERFORMED:
+        return []
+    hints = (d.hint.strip() for d in report.input_diagnostics if d.level is DiagLevel.ERROR)
+    return list(dict.fromkeys(h for h in hints if h))
+
+
+PARTS_NOTE = (
+    "Документ длинный, поэтому нарезка и поиск дефектов шли по частям: части собраны из целых разделов, "
+    "ID блоков, номера требований и места в отчёте общие для всего документа. Противоречия и повторы "
+    "между частями сверены отдельным вызовом модели по списку всех требований."
+)
+"""Пояснение к таблице частей длинного документа (#38), общее для Markdown и PDF."""
+
+
 def report_context(report: Report) -> dict[str, Any]:
     """Всё, что нужно шаблонам отчёта: готовые списки, связи и подписи. Общий источник для MD и PDF."""
     ver = report.verification
@@ -349,6 +369,9 @@ def report_context(report: Report) -> dict[str, Any]:
         "checklist_reason": checklist_reason,
         "checklist_state": checklist_state,
         "checklists_note": CHECKLISTS_NOTE,
+        "next_steps": next_steps(report),
+        "found": found_text,
+        "parts_note": PARTS_NOTE,
         "no_violations": NO_VIOLATIONS,
         "addressee_label": _addressee_label,
         "clarify": clarify_view(report),

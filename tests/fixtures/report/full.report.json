@@ -55,7 +55,8 @@
     "pages": null,
     "chars": 1300,
     "blocks": 44,
-    "extraction": "Markdown, построчно"
+    "extraction": "Markdown, построчно",
+    "parts": []
   },
   "input_diagnostics": [
     {
@@ -797,6 +798,7 @@
           "scope": "requirement",
           "block_ids": [],
           "quotes": [],
+          "quote_blocks": [],
           "explanation": "Выдуманная цитата.",
           "suggestion": null,
           "title": null,
@@ -827,6 +829,7 @@
           "quotes": [
             "Пользователь бронирует комнату на выбранное время."
           ],
+          "quote_blocks": [],
           "explanation": "Без вместимости нельзя проверить бронь на группу.",
           "suggestion": null,
           "title": "Не задано, сколько человек вмещает комната",
