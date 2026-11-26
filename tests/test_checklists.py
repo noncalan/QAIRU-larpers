@@ -65,8 +65,8 @@ ONE_MONEY_BLOCK = """# Каталог
 """
 
 
-def _uses(doc: ParsedDocument, **kwargs: bool) -> dict[str, ChecklistUse]:
-    return {u.id: u for u in select_checklists(doc, **kwargs).uses}
+def _uses(doc: ParsedDocument, *, enabled: bool = True) -> dict[str, ChecklistUse]:
+    return {u.id: u for u in select_checklists(doc, enabled=enabled).uses}
 
 
 def _config(checklists: bool = True) -> RunConfig:
