@@ -29,6 +29,7 @@ from validator.errors import (
     IN_NO_TEXT,
     IN_OCR_APPLIED,
     IN_PAGES_WITHOUT_TEXT,
+    IN_PDF_COLUMNS_UNCERTAIN,
     IN_SCANNED,
 )
 from validator.ingest.blocks import ParsedLines
@@ -51,6 +52,7 @@ from validator.ingest.pdf_layout import (
     compute_stats,
     find_furniture,
     group_lines,
+    prose_lines,
 )
 from validator.ingest.pdf_table_lines import table_part_lines
 from validator.ingest.pdf_tables import LogicalTable, PageTable, cell_lines, find_tables, link_tables, rejoin
@@ -119,6 +121,7 @@ class _Pages:
     """Из них страницы с картинкой: похоже на скан."""
     ocr: list[int] = field(default_factory=list)
     """Страницы, текст которых распознан OCR."""
+    uncertain_columns: list[int] = field(default_factory=list)
 
 
 def _garbled(glyphs: list[Glyph]) -> bool:
@@ -188,12 +191,17 @@ def _read_pages(source: PdfSource, engine: PdfBackend, ocr: OcrReader | None) ->
             if raw.images:
                 read.scanned.append(raw.number)
         read.heights[raw.number] = raw.height
-        full = build_lines(raw, engine.space_gap_em)
         found = _find_tables(raw, engine.space_gap_em)
-        prose = full
         if found:
+            full = build_lines(raw, engine.space_gap_em)
             rest = [g for g in raw.glyphs if not any(t.contains(g) for t in found)]
-            prose = _renumber(build_lines(replace(raw, glyphs=rest), engine.space_gap_em), full)
+            prose, uncertain = prose_lines(replace(raw, glyphs=rest), engine.space_gap_em, has_tables=True)
+            prose = _renumber(prose, full)
+        else:
+            prose, uncertain = prose_lines(raw, engine.space_gap_em, has_tables=False)
+            full = prose
+        if uncertain:
+            read.uncertain_columns.append(raw.number)
         read.lines.append(full)
         read.prose.append(prose)
         read.tables.extend(found)
@@ -340,6 +348,21 @@ def _empty_diagnostic(pages: int, read: _Pages, note: _OcrNote) -> Diagnostic:
 
 def _diagnostics(pages: int, read: _Pages, furniture: list[Line], note: _OcrNote) -> list[Diagnostic]:
     diagnostics: list[Diagnostic] = []
+    if read.uncertain_columns:
+        where = f"стр. {page_ranges(read.uncertain_columns)}"
+        diagnostics.append(
+            Diagnostic(
+                code=IN_PDF_COLUMNS_UNCERTAIN,
+                level=DiagLevel.WARNING,
+                location=where,
+                message=(
+                    f"На {where} текст похож на две колонки или на таблицу без линеек. "
+                    "Порядок чтения неоднозначен"
+                ),
+                action="Текст прочитан построчно. Фрагменты соседних колонок могли попасть в одну строку",
+                hint="Сверьте цитаты на указанных страницах или пришлите документ в одну колонку",
+            )
+        )
     if pages and read.ocr:
         diagnostics.append(_ocr_diagnostic(pages, read.ocr, note))
     if pages and read.empty:
