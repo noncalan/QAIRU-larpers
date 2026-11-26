@@ -8,6 +8,8 @@
   прослеживаемость) не выше «незначительно», даже если модель написала «мешает тесту»;
 * R2: модель сама дала подсказку важности «низко»: не выше «незначительно».
 
+Находку, которую нашло или подтвердило правило линтера, правила не трогают.
+
 Эталон (``docs/gold``) скрипт не читает. Запуск из корня репозитория:
 ``uv run python experiments/43-severity-calibration/whatif.py``.
 """
@@ -40,8 +42,8 @@ def consensus_real() -> dict[tuple[str, str], bool]:
 
 def severity(finding: dict, rules: set[str]) -> str:
     current = finding["severity"]
-    if current != "major":
-        return current
+    if current != "major" or any(src["kind"] == "lint" for src in finding["sources"]):
+        return current  # находку линтера правила не понижают, как в validator.severity
     if "R1" in rules and finding["defect_type"] in FORM:
         return "minor"
     if "R2" in rules and finding.get("severity_hint") == "minor":

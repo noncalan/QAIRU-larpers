@@ -3,8 +3,10 @@
 Модель даёт только подсказку важности (``severity_hint``), окончательную важность считает код:
 
 1. ``SEVERITY_TABLE``: важность по типу дефекта и тому, мешает ли он написать тест-кейс;
-2. ограничения: «критично» по таблице без подтверждения подсказкой модели не выше «важно»; «неясно»
-   не выше «важно»; противоречие, у которого сверено одно место, не выше «важно»;
+2. ограничения: «критично» по таблице без подтверждения подсказкой модели не выше «важно»; дефект
+   формы, который нашла только модель, и находка с подсказкой модели «низко» не выше «незначительно»
+   (правила линтера это не касается); «неясно» не выше «важно»; противоречие, у которого сверено одно
+   место, не выше «важно»;
 3. решение критика (шаг 6) «понизить»: важность только снижается.
 
 Повысить важность может только таблица: подсказка модели её только подтверждает или ограничивает.
@@ -18,7 +20,7 @@ from collections.abc import Mapping, Sequence
 from types import MappingProxyType
 from typing import Final, NamedTuple
 
-from validator.models import CriticAction, DefectType, MergedFinding, Quote, Severity, Verdict
+from validator.models import CriticAction, DefectType, MergedFinding, Quote, Severity, SourceKind, Verdict
 
 # ---------------------------------------------------------------- таблица и ограничения
 
@@ -65,6 +67,26 @@ UNCONFIRMED_CRITICAL_MAX_SEVERITY: Final = Severity.MAJOR
 сценарий, деньги, безопасность и персональные данные. Промпт ставит «Тест: мешает» большинству находок
 (эксперимент 22: 31–38 из 47–52 за прогон), поэтому одна таблица дала бы десятки «критично». Подсказка
 модели здесь не повышает, а только не даёт «критично» без её согласия. Нет подсказки: решает таблица.
+"""
+
+FORM_DEFECTS: Final = frozenset(t for t, levels in SEVERITY_TABLE.items() if levels == _FORM)
+"""Дефекты формы по таблице: терминология, незаполненное место, дубль, составное требование и т. п."""
+
+MODEL_ONLY_FORM_MAX_SEVERITY: Final = Severity.MINOR
+"""Потолок для дефекта формы, который нашла только модель (нет правила линтера).
+
+Отметку «мешает тесту» модель ставит большинству находок (см. выше), поэтому для дефекта формы её одной
+мало. Разметка двумя моделями вслепую (#49, шесть прогонов, эксперимент 43): из 26 таких «важных»
+находок настоящими признаны 4. Правило линтера ставит «мешает тесту» кодом (например, маркер «TBD»
+в требовании), и его важность остаётся по таблице.
+"""
+
+LOW_HINT_MAX_SEVERITY: Final = Severity.MINOR
+"""Потолок, если модель сама дала подсказку важности «низко» (и находку не подтвердил линтер).
+
+Шкала промпта поиска: «низко» это оформление, прослеживаемость, приоритеты, дубли без расхождения. Если
+автор находки так её оценил, код не поднимает её выше по одной отметке «мешает тесту». Разметка #49
+(эксперимент 43): из 26 «важных» находок с подсказкой «низко» настоящими признаны 6.
 """
 
 UNCLEAR_MAX_SEVERITY: Final = Severity.MAJOR
@@ -130,6 +152,27 @@ def _hint_cap(m: MergedFinding, verified: Sequence[Quote], severity: Severity) -
     return capped, f"подсказка модели «{hint.label}»: не выше «{capped.label}»", None
 
 
+def _from_code_rule(m: MergedFinding) -> bool:
+    """Находку нашло или подтвердило правило линтера: важность по таблице, мнение модели её не снижает."""
+    return any(src.kind is SourceKind.LINT for src in m.sources)
+
+
+def _form_cap(m: MergedFinding, verified: Sequence[Quote], severity: Severity) -> _Step:
+    del verified
+    capped = _milder(severity, MODEL_ONLY_FORM_MAX_SEVERITY)
+    if m.defect_type not in FORM_DEFECTS or capped is severity or _from_code_rule(m):
+        return severity, None, None
+    return capped, f"дефект формы без правила линтера: не выше «{capped.label}»", None
+
+
+def _low_hint_cap(m: MergedFinding, verified: Sequence[Quote], severity: Severity) -> _Step:
+    del verified
+    capped = _milder(severity, LOW_HINT_MAX_SEVERITY)
+    if m.severity_hint is not Severity.MINOR or capped is severity or _from_code_rule(m):
+        return severity, None, None
+    return capped, f"подсказка модели «{m.severity_hint.label}»: не выше «{capped.label}»", None
+
+
 def _unclear_cap(m: MergedFinding, verified: Sequence[Quote], severity: Severity) -> _Step:
     del verified
     if m.verdict is not Verdict.UNCLEAR or severity.rank >= UNCLEAR_MAX_SEVERITY.rank:
@@ -162,7 +205,7 @@ def _critic_downgrade(m: MergedFinding, verified: Sequence[Quote], severity: Sev
     return lowered, f"критик понизил до «{lowered.label}»", note
 
 
-_SEVERITY_STEPS = (_hint_cap, _unclear_cap, _contradiction_cap, _critic_downgrade)
+_SEVERITY_STEPS = (_hint_cap, _form_cap, _low_hint_cap, _unclear_cap, _contradiction_cap, _critic_downgrade)
 """Порядок важен: ограничения кода, затем критик. Повысить важность может только таблица."""
 
 
@@ -203,6 +246,9 @@ def severity_for(m: MergedFinding, verified: Sequence[Quote]) -> SeverityResult:
 
 __all__ = [
     "CONTRADICTION_MIN_PLACES",
+    "FORM_DEFECTS",
+    "LOW_HINT_MAX_SEVERITY",
+    "MODEL_ONLY_FORM_MAX_SEVERITY",
     "SEVERITY_DISPUTE_GAP",
     "SEVERITY_TABLE",
     "UNCLEAR_MAX_SEVERITY",
