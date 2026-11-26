@@ -1,6 +1,6 @@
 # Отчёт о проверке требований: english.md
 
-Проверка по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3). Отчёт сформировал агент QAIRU validator f371c16, 2026-11-26 02:23:44 UTC.
+Проверка по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3). Отчёт сформировал агент QAIRU validator d4f8728, 2026-11-26 02:28:49 UTC.
 
 ## Итог на первой странице
 
@@ -50,9 +50,9 @@
 |---|---|
 | Документ | english.md (md, 1688 байт) |
 | SHA-256 документа | 560a212e4febb85fb94d1c5ba4969865326727ad7dd216c7c2903e8d6d97d344 |
-| Дата прогона | 2026-11-26 02:23:44 UTC |
+| Дата прогона | 2026-11-26 02:28:49 UTC |
 | Длительность | 0.05 с |
-| Версия агента | f371c16 (источник: git) |
+| Версия агента | d4f8728 (источник: git) |
 | Хеш промптов | 52bad12278ce |
 | Способ вызова модели | записанные ответы (replay) |
 | Модели по шагам | segment: claude-sonnet-5-5 · medium; search: claude-opus-5-5 · medium; search_transfer: claude-haiku-5-5 · medium; evidence: claude-opus-5-5 · high; critic: claude-opus-5-5 · high; test_draft: claude-sonnet-5-5 · high; questions: claude-opus-5-5 · high; questions_critic: claude-opus-5-5 · high |

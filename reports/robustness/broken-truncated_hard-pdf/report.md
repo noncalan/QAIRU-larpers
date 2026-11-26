@@ -1,6 +1,6 @@
 # Отчёт о проверке требований: truncated_hard.pdf
 
-Проверка по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3). Отчёт сформировал агент QAIRU validator f371c16, 2026-11-26 02:23:42 UTC.
+Проверка по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3). Отчёт сформировал агент QAIRU validator d4f8728, 2026-11-26 02:28:47 UTC.
 
 ## Итог на первой странице
 
@@ -12,9 +12,9 @@
 |---|---|
 | Документ | truncated_hard.pdf (unknown, 10290 байт) |
 | SHA-256 документа | 02a23806502d4720f624c52896ae6818bd1223e1e6797c3f4aef13ab3e9e4a20 |
-| Дата прогона | 2026-11-26 02:23:42 UTC |
+| Дата прогона | 2026-11-26 02:28:47 UTC |
 | Длительность | 0.0 с |
-| Версия агента | f371c16 (источник: git) |
+| Версия агента | d4f8728 (источник: git) |
 | Хеш промптов | 52bad12278ce |
 | Способ вызова модели | модель не вызывалась (запрошено: фикстуры тестов (без модели)) |
 | Модели по шагам | segment: claude-sonnet-5-5 · medium; search: claude-opus-5-5 · medium; search_transfer: claude-haiku-5-5 · medium; evidence: claude-opus-5-5 · high; critic: claude-opus-5-5 · high; test_draft: claude-sonnet-5-5 · high; questions: claude-opus-5-5 · high; questions_critic: claude-opus-5-5 · high |
