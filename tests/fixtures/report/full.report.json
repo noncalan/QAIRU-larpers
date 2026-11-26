@@ -36,7 +36,7 @@
     ],
     "calls_total": 5,
     "calls_failed": 0,
-    "calls_cached": 0,
+    "calls_cached": 1,
     "tokens": {
       "input_tokens": 30000,
       "output_tokens": 12000,
@@ -44,7 +44,7 @@
       "cache_read_input_tokens": 0
     },
     "cost_usd": 1.62,
-    "exit_code": 0,
+    "exit_code": 3,
     "answers_file": null,
     "answers_sha256": null
   },
@@ -933,14 +933,14 @@
         "quote_not_found": 1,
         "critic_rejected": 1
       },
-      "quotes_total": 6,
-      "quotes_exact": 5,
+      "quotes_total": 7,
+      "quotes_exact": 6,
       "quotes_fuzzy": 1,
       "quotes_not_found": 0,
       "anchors_corrected": 0
     },
     "traffic_light": "red",
-    "traffic_reason": "критичных нарушений: 1",
+    "traffic_reason": "1 критичное нарушение мешает написать тест-кейсы (F-01)",
     "traffic_rule": "",
     "requirement_status": {
       "R-01": [],
@@ -1221,7 +1221,7 @@
   "clarification": null,
   "conclusion": {
     "traffic_light": "red",
-    "headline": "Начинать разработку и тестирование нельзя: критичных нарушений: 1",
+    "headline": "Начинать разработку и тестирование нельзя: 1 критичное нарушение мешает написать тест-кейсы (F-01)",
     "performed": true,
     "fix_first": [
       "F-01",
@@ -1238,7 +1238,7 @@
     "duration_s": 240.5,
     "calls_total": 5,
     "calls_failed": 0,
-    "calls_cached": 0,
+    "calls_cached": 1,
     "tokens": {
       "input_tokens": 30000,
       "output_tokens": 12000,
@@ -1250,8 +1250,8 @@
     "merged_total": 7,
     "findings_total": 5,
     "discarded_total": 2,
-    "quotes_total": 6,
-    "quotes_verified": 6,
+    "quotes_total": 7,
+    "quotes_verified": 7,
     "verified_quote_share": 1.0,
     "questions": {
       "total": 3,
@@ -1868,6 +1868,38 @@
         "passed": true,
         "integrity": true,
         "detail": "6 требований × 11 свойств и колонка «Набор», ячеек: 72; свойств набора: 8; у каждого требования те же находки, что в разделе 4",
+        "failures": []
+      },
+      {
+        "id": "traffic",
+        "title": "Светофор и вывод пересчитаны по находкам и вопросам",
+        "passed": true,
+        "integrity": true,
+        "detail": "🔴 начинать разработку и тестирование нельзя: пересчитан по находкам и вопросам автору, вывод на первой странице тот же",
+        "failures": []
+      },
+      {
+        "id": "first_page",
+        "title": "«Что исправить первым» и «Какие вопросы задать первыми» пересчитаны",
+        "passed": true,
+        "integrity": true,
+        "detail": "исправить первым: 4 (критичных 1, все на месте); вопросов первыми: 2",
+        "failures": []
+      },
+      {
+        "id": "refs",
+        "title": "Каждая ссылка F-, R-, Q- ведёт на объект отчёта",
+        "passed": true,
+        "integrity": true,
+        "detail": "ссылок проверено: 19, все ведут на объекты отчёта",
+        "failures": []
+      },
+      {
+        "id": "passport",
+        "title": "Паспорт сходится с журналом вызовов и кодом завершения",
+        "passed": true,
+        "integrity": true,
+        "detail": "вызовов модели 5, как в журнале по шагам; код 3 и состояние «проверка выполнена частично, смотрите диагностику» сходятся с диагностикой",
         "failures": []
       }
     ],

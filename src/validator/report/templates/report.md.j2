@@ -125,11 +125,15 @@
 ### Какие вопросы задать автору первыми
 
 {% for qid in c.ask_first %}
-{% set q = questions_by_id[qid] %}
+{% set q = questions_by_id.get(qid) %}
+{% if q %}
 {{ loop.index }}. **{{ q.id }}** · {{ q.priority.value }} ({{ q.priority.label }}){% if q.addressee %} · кому: {{ q.addressee | map(attribute="label") | join(", ") }}{% endif %}{% if q.related_findings %} · к {{ q.related_findings | join(", ") }}{% endif %}: {{ q.question | short(260) }}
 {% if q.options %}
    - Варианты: {% for o in q.options %}{{ o.label }}. {{ o.text | short(200) }}{% if not loop.last %}; {% endif %}{% endfor %}
 
+{% endif %}
+{% else %}
+{{ loop.index }}. **{{ qid }}** · вопроса с таким номером нет в списке вопросов: ошибка сборки отчёта, подробности в разделе «Самопроверка отчёта».
 {% endif %}
 {% else %}
 Вопросов, блокирующих разработку или тестирование, нет.

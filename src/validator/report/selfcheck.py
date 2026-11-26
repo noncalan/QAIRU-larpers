@@ -4,6 +4,10 @@
 только проверяет и сообщает. Отчёт задним числом он не правит: если счётчик не сошёлся, это видно в
 паспорте, в разделе «Самопроверка отчёта» и в диагностике, а не спрятано правкой.
 
+Заново считаются светофор и вывод, первые правки и вопросы, разбивка по важности и число цитат.
+По документу сверяются места якорей, цитаты и исходные ID требований. Ссылки ведут на объекты
+отчёта, а числа и код завершения в паспорте сверяются с журналом вызовов и диагностикой.
+
 Проверки делятся на два рода (``SelfCheckItem.integrity``):
 
 - целостность: в отчёт попало неверное (находка без якоря или сверенной цитаты, счётчик сводки не равен
@@ -16,27 +20,37 @@ from __future__ import annotations
 
 import re
 from collections import Counter
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
+from typing import TypeVar
 
-from validator.errors import INT_SELFCHECK_FAILED, INT_SELFCHECK_WARNING
+from validator.clarify import snapshot
+from validator.errors import INT_SELFCHECK_FAILED, INT_SELFCHECK_WARNING, exit_code
 from validator.models import (
+    Anchor,
     Block,
     CellState,
     ClarifyEffect,
     CoverageMatrix,
+    DefectType,
     DiagLevel,
     Diagnostic,
+    ExitCode,
     Finding,
+    ParsedDocument,
+    Property,
     Report,
     ReportStatus,
     Scope,
+    Segmentation,
     SelfCheck,
     SelfCheckItem,
     Severity,
     SourceKind,
+    TrafficLight,
     Verdict,
     Verification,
 )
+from validator.report.build import _ask_first, _fix_first  # Именно их вызывает build_report.
 from validator.report.coverage import (
     SYMBOLS,
     grid_finding_ids,
@@ -44,8 +58,10 @@ from validator.report.coverage import (
     row_cells,
     row_finding_ids,
 )
-from validator.report.fmt import pct
+from validator.report.fmt import pct, status_label
 from validator.report.render_md import NO_VIOLATIONS, NOT_SEARCHED, render_md
+from validator.text import span_anchor
+from validator.verify import light_with_questions, requirement_status, summarize, traffic_light
 
 TZ_SECTIONS: tuple[str, ...] = (
     "Паспорт прогона",
@@ -63,10 +79,18 @@ MAX_FAILURES = 10
 _HEADING = re.compile(r"^##\s+(?:\d+\.\s*)?(?P<title>.+?)\s*$")
 _REQ_ROW = re.compile(r"^\|\s*(?P<id>R-\d+(?:\.\d+)?)\s*\|")
 _FINDING_CARD = re.compile(r"^###\s+(?P<id>F-\d+)\b")
+_CARD_SEVERITY = re.compile(r"^###\s+F-\d+\s+·\s+(?P<severity>[^·]+?)\s+·")
+SEVERITY_LINE = "- По важности:"
+_SEVERITY_ENTRY = re.compile(r"(?P<label>\S+) (?P<n>\d+)")
+_MISSING_QUOTES = re.compile(r"^Цитат модели не найдено в документе: \d+ из (?P<total>\d+)\.")
+"""Примечание ``verify._quote_notes``: сколько цитат дала модель, если часть не нашлась в документе. Других
+следов ненайденных цитат у находки нет. Формулировку закрепляет тест на настоящем результате верификатора."""
+_REQUIREMENT_ID = re.compile(r"R-\d+(?:\.\d+)?")
 _FINDING_ID = re.compile(r"\bF-\d+\b")
 _CELL_SPLIT = re.compile(r"(?<!\\)\|")
 MATRIX_SECTION = "Матрица покрытия критериев"
 REQUIREMENTS_SECTION = "Проверка каждого требования"
+SET_SECTION = "Проверка всего набора требований"
 
 
 def _sections(markdown: str) -> dict[str, list[str]]:
@@ -138,15 +162,48 @@ def _has_anchor(finding: Finding) -> bool:
     return any(q.verified and q.anchor is not None and q.located for q in finding.quotes)
 
 
-def _recheck_quote(
-    finding: Finding, doc_text: str | None, sections: dict[str, list[str]] | None = None
-) -> tuple[int, list[str]]:
-    """Сверка с документом заново: фрагмент по якорю равен тому, что сверил верификатор.
-
-    ``sections``: путь заголовков каждого блока документа. С ним сверяем и раздел якоря: он равен
-    разделу блока, где цитата начинается (#119). Раздел из якоря отчёт показывает рядом с цитатой.
-    """
+def _document_view(
+    report: Report, doc_text: str | None, blocks: Sequence[Block] | None
+) -> ParsedDocument | None:
+    """Представление для span_anchor и line_of: именно они определили места исходных якорей."""
     if doc_text is None:
+        return None
+    info, pp = report.document, report.passport
+    return ParsedDocument(
+        path=info.path if info else "",
+        name=info.name if info else pp.document_name,
+        kind=info.kind if info else pp.document_kind,
+        sha256=(info.sha256 if info else None) or pp.document_sha256 or "",
+        size_bytes=info.size_bytes if info and info.size_bytes is not None else pp.document_size_bytes or 0,
+        text=doc_text,
+        blocks=list(blocks or ()),
+    )
+
+
+def _place_difference(doc: ParsedDocument, anchor: Anchor, blocks_known: bool) -> str:
+    """Строки доступны по одному тексту; страницу, абзац и строку таблицы определяют блоки."""
+    expected = span_anchor(doc, anchor.char_start, anchor.char_end)
+    fields = [
+        ("строка", anchor.line_start, expected.line_start),
+        ("последняя строка", anchor.line_end, expected.line_end),
+    ]
+    if blocks_known:
+        fields.extend(
+            (
+                ("страница", anchor.page, expected.page),
+                ("абзац", anchor.paragraph, expected.paragraph),
+                ("таблица", anchor.table, expected.table),
+                ("строка таблицы", anchor.row, expected.row),
+            )
+        )
+    return "; ".join(
+        f"{label} {value}, а в документе {want}" for label, value, want in fields if value != want
+    )
+
+
+def _recheck_quote(finding: Finding, doc: ParsedDocument | None, blocks_known: bool) -> tuple[int, list[str]]:
+    """Сверяем фрагмент, место и раздел блока, где начинается цитата (#119)."""
+    if doc is None:
         return 0, []
     checked, failures = 0, []
     for q in finding.quotes:
@@ -154,16 +211,18 @@ def _recheck_quote(
             continue
         checked += 1
         short = (q.located or "")[:40]
-        if doc_text[q.anchor.char_start : q.anchor.char_end] != q.located:
+        if doc.text[q.anchor.char_start : q.anchor.char_end] != q.located:
             failures.append(f"{finding.id}: фрагмент по якорю не совпадает с цитатой «{short}»")
-        block = q.anchor.block_ids[0] if q.anchor.block_ids else None
-        if sections is not None and block in sections and q.anchor.section != sections[block]:
+        block = doc.block(q.anchor.block_ids[0]) if q.anchor.block_ids else None
+        if block is not None and q.anchor.section != block.section:
             failures.append(f"{finding.id}: раздел в якоре не совпадает с разделом блока цитаты «{short}»")
+        if diff := _place_difference(doc, q.anchor, blocks_known):
+            failures.append(f"{finding.id}: место цитаты «{short}» не совпадает с документом: {diff}")
     return checked, failures
 
 
 def _check_anchors(
-    findings: Sequence[Finding], doc_text: str | None, blocks: Sequence[Block] | None = None
+    findings: Sequence[Finding], doc: ParsedDocument | None, blocks_known: bool
 ) -> tuple[list[SelfCheckItem], int, int]:
     """У каждой находки есть якорь и сверенная цитата; цитаты находок сверены и заново с документом."""
     unanchored = [f"{f.id}: нет якоря или сверенной цитаты" for f in findings if not _has_anchor(f)]
@@ -171,14 +230,13 @@ def _check_anchors(
     unverified = [
         f"{f.id}: цитата не найдена в документе" for f in findings for q in f.quotes if not q.verified
     ]
-    sections = {b.id: list(b.section) for b in blocks} if blocks is not None else None
     rechecked, mismatched = 0, []
     for f in findings:
-        n, bad = _recheck_quote(f, doc_text, sections)
+        n, bad = _recheck_quote(f, doc, blocks_known)
         rechecked += n
         mismatched += bad
     anchored = sum(_has_anchor(f) for f in findings)
-    by_section = " с разделом" if sections is not None else ""
+    place = "с разделом и местом (строка, страница, абзац)" if blocks_known else "с местом (строка)"
     items = [
         _item(
             "anchors",
@@ -192,7 +250,7 @@ def _check_anchors(
             unverified + mismatched,
             (
                 f"цитат в находках: {len(quotes)}, все сверены верификатором"
-                + (f"; заново по тексту документа и якорю{by_section}: {rechecked}" if doc_text else "")
+                + (f"; заново по тексту документа и якорю {place}: {rechecked}" if doc is not None else "")
                 if quotes
                 else "цитат нет"
             ),
@@ -201,12 +259,35 @@ def _check_anchors(
     return items, rechecked, anchored
 
 
-def _check_requirements(report: Report, sections: dict[str, list[str]] | None) -> SelfCheckItem:
+def _requirement_places(seg: Segmentation, doc: ParsedDocument, blocks_known: bool) -> list[str]:
+    """Таблица нарезки против документа: цитата по якорю дословно, «ID в документе» есть в тексте."""
+    failures: list[str] = []
+    collapsed = " ".join(doc.text.split())
+    for req in seg.requirements:
+        anchor = req.anchor
+        if doc.text[anchor.char_start : anchor.char_end] != req.quote:
+            failures.append(f"{req.id}: цитата в таблице нарезки не совпадает с текстом документа по якорю")
+        if (
+            req.source_id
+            and req.source_id not in doc.text
+            and " ".join(req.source_id.split()) not in collapsed
+        ):
+            failures.append(f"{req.id}: «ID в документе» {req.source_id} в тексте документа нет")
+        if diff := _place_difference(doc, anchor, blocks_known):
+            failures.append(f"{req.id}: место в якоре не совпадает с документом: {diff}")
+    return failures
+
+
+def _check_requirements(
+    report: Report, sections: dict[str, list[str]] | None, doc: ParsedDocument | None, blocks_known: bool
+) -> SelfCheckItem:
     """Каждый ``R-NN`` нарезки есть в таблице раздела «Проверка каждого требования»."""
     seg, ver = report.segmentation, report.verification
-    failures: list[str] = []
+    failures = _requirement_places(seg, doc, blocks_known) if seg is not None and doc is not None else []
     if seg is None or ver is None:
-        return _item("requirements", "Каждое R-NN есть в проверке требований", [], "нарезки или проверки нет")
+        return _item(
+            "requirements", "Каждое R-NN есть в проверке требований", failures, "нарезки или проверки нет"
+        )
     expected = [r.id for r in seg.requirements]
     for rid in expected:
         if rid not in ver.requirement_status:
@@ -261,32 +342,98 @@ def _check_cards(report: Report, sections: dict[str, list[str]] | None) -> SelfC
     )
 
 
+_Level = TypeVar("_Level", Severity, Property, DefectType)
+
+
+def _check_distribution(
+    failures: list[str],
+    name: str,
+    stored: Mapping[_Level, int],
+    actual: Mapping[_Level, int],
+    order: type[_Level],
+) -> None:
+    def labels(counts: Mapping[_Level, int]) -> str:
+        return ", ".join(f"{key.label} {counts[key]}" for key in order if key in counts) or "нет"
+
+    if stored != actual:
+        failures.append(f"{name} в сводке: {labels(stored)}, а по находкам: {labels(actual)}")
+
+
+def _severity_line(sections: dict[str, list[str]]) -> list[str]:
+    """Что видит читатель: строка «По важности» в сводке против важности в заголовках карточек F-NN."""
+    line = next((s for s in sections.get("Сводка", ()) if s.startswith(SEVERITY_LINE)), None)
+    if line is None or REQUIREMENTS_SECTION not in sections or SET_SECTION not in sections:
+        return []
+    shown = line.removeprefix(SEVERITY_LINE).strip().removesuffix(".")
+    in_line = {m["label"]: int(m["n"]) for m in _SEVERITY_ENTRY.finditer(shown)}
+    cards = Counter(
+        m["severity"]
+        for title in (REQUIREMENTS_SECTION, SET_SECTION)
+        for s in sections[title]
+        if (m := _CARD_SEVERITY.match(s))
+    )
+    if in_line == dict(cards):
+        return []
+    by_cards = ", ".join(f"{s.label} {cards[s.label]}" for s in Severity if cards[s.label]) or "нет находок"
+    return [f"строка «По важности»: {shown}, а по карточкам: {by_cards}"]
+
+
+def _model_quotes(f: Finding) -> int:
+    """Сколько цитат дала модель: в находке остались только сверенные, о ненайденных говорит примечание."""
+    for note in f.notes:
+        if match := _MISSING_QUOTES.match(note):
+            return int(match["total"])
+    return len(f.quotes)
+
+
+def _recount_quotes(report: Report, ver: Verification, failures: list[str]) -> None:
+    """«Цитаты: … из N» в сводке: верификатор считает цитаты всех находок, и оставшихся, и отброшенных."""
+    clarification = report.clarification
+    closed = [e.finding for e in clarification.effects if e.finding is not None] if clarification else []
+    recount = sum(_model_quotes(f) for f in [*ver.findings, *closed])
+    recount += sum(len(d.finding.quotes) for d in ver.discarded)
+    total = ver.summary.quotes_total
+    if clarification is None:
+        _equal(failures, "цитат в сводке", total, recount, "по находкам и отброшенным")
+    elif recount > total:
+        # Цитаты повторов и находок сверх лимита после уточнений остались только в сводке.
+        failures.append(f"цитат в сводке {total}, а у находок и отброшенных их больше: {recount}")
+
+
 def _summary_failures(report: Report, sections: dict[str, list[str]] | None) -> list[str]:
     ver, seg = report.verification, report.segmentation
     if ver is None:
         return []
     s, findings = ver.summary, ver.findings
     failures: list[str] = []
-    violations = sum(f.verdict is Verdict.VIOLATION for f in findings)
-    unclear = sum(f.verdict is Verdict.UNCLEAR for f in findings)
-    critical = [f.id for f in findings if f.severity is Severity.CRITICAL and f.verdict is Verdict.VIOLATION]
-    with_findings = sum(bool(ids) for ids in ver.requirement_status.values())
+    actual = summarize(findings, ver.discarded, seg or Segmentation(), status=ver.requirement_status)
+    _check_distribution(failures, "по важности", s.by_severity, actual.by_severity, Severity)
+    _check_distribution(failures, "по свойствам", s.by_property, actual.by_property, Property)
+    _check_distribution(failures, "по типам дефектов", s.by_defect_type, actual.by_defect_type, DefectType)
+    _equal(
+        failures, "исправлено якорей в сводке", s.anchors_corrected, actual.anchors_corrected, "по находкам"
+    )
+    _recount_quotes(report, ver, failures)
     _equal(failures, "находок в сводке", s.findings_total, len(findings), "находок в списке")
-    _equal(failures, "нарушений в сводке", s.violations, violations, "нарушений в списке")
-    _equal(failures, "«неясно» в сводке", s.unclear, unclear, "«неясно» в списке")
+    _equal(failures, "нарушений в сводке", s.violations, actual.violations, "нарушений в списке")
+    _equal(failures, "«неясно» в сводке", s.unclear, actual.unclear, "«неясно» в списке")
     _equal(failures, "нарушений и «неясно»", s.violations + s.unclear, s.findings_total, "всего находок")
     _equal(
         failures,
         "находок набора в сводке",
         s.set_level,
-        sum(f.scope is Scope.SET for f in findings),
+        actual.set_level,
         "в списке",
     )
-    _equal(failures, "критичных в сводке", s.critical, len(critical), "критичных в списке")
-    _equal(failures, "ID критичных в сводке", sorted(s.critical_ids), sorted(critical), "в списке")
+    _equal(failures, "критичных в сводке", s.critical, actual.critical, "критичных в списке")
+    _equal(failures, "ID критичных в сводке", sorted(s.critical_ids), sorted(actual.critical_ids), "в списке")
     _equal(failures, "сумма по важности", sum(s.by_severity.values()), s.findings_total, "всего находок")
     _equal(
-        failures, "требований с находками", s.requirements_with_findings, with_findings, "в таблице статусов"
+        failures,
+        "требований с находками",
+        s.requirements_with_findings,
+        actual.requirements_with_findings,
+        "в таблице статусов",
     )
     _equal(failures, "отброшено в сводке", s.discarded_total, len(ver.discarded), "в списке отброшенных")
     _equal(
@@ -316,6 +463,7 @@ def _summary_failures(report: Report, sections: dict[str, list[str]] | None) -> 
     if sum(q.verified for q in in_report) > s.quotes_exact + s.quotes_fuzzy:
         failures.append("сверенных цитат в находках больше, чем сверенных цитат в сводке")
     if sections is not None:
+        failures.extend(_severity_line(sections))
         cards = sum(
             len(_ids(_FINDING_CARD, sections.get(title, ())))
             for title in ("Проверка каждого требования", "Проверка всего набора требований")
@@ -517,6 +665,218 @@ def _check_matrix(report: Report, sections: dict[str, list[str]] | None) -> Self
     )
 
 
+def _check_traffic(report: Report, markdown: str, sections: dict[str, list[str]]) -> SelfCheckItem:
+    """Светофор теми же ``traffic_light`` и ``light_with_questions``, что в конвейере; итог и первая страница.
+
+    Итог повторяет правило ``build._conclusion``: при ошибке шага или оговорке входа он не зелёный, красный
+    остаётся красным, а причина светофора дословно стоит в выводе.
+    """
+    title = "Светофор и вывод пересчитаны по находкам и вопросам"
+    ver, seg, c = report.verification, report.segmentation, report.conclusion
+    if ver is None:
+        return _item("traffic", title, [], "верификатор не отработал: светофора по находкам нет")
+    light, reason = traffic_light(ver.findings, requirements=len(seg.requirements) if seg else None)
+    base = ver.model_copy(update={"traffic_light": light, "traffic_reason": reason})
+    candidates = [light_with_questions(base, report.questions)]
+    if not report.questions:
+        # Пустой список в отчёте возможен и после сбоя шага вопросов.
+        candidates.append(light_with_questions(base, None))
+    truth = next(
+        (
+            v
+            for v in candidates
+            if (v.traffic_light, v.traffic_reason) == (ver.traffic_light, ver.traffic_reason)
+        ),
+        candidates[0],
+    )
+    failures: list[str] = []
+    _equal(
+        failures,
+        "светофор в отчёте",
+        f"{ver.traffic_light.icon} {ver.traffic_reason}",
+        f"{truth.traffic_light.icon} {truth.traffic_reason}",
+        "по находкам и вопросам",
+    )
+    expected = truth.traffic_light
+    errors = any(d.level is DiagLevel.ERROR for d in report.diagnostics)
+    cautions = any(d.level is DiagLevel.WARNING for d in report.input_diagnostics)
+    if (errors or cautions) and expected is not TrafficLight.RED:
+        expected = TrafficLight.YELLOW
+    _equal(
+        failures,
+        "светофор итога",
+        f"{c.traffic_light.icon} {c.traffic_light.label}",
+        f"{expected.icon} {expected.label}",
+        "по находкам и диагностике",
+    )
+    if truth.traffic_reason not in c.headline:
+        failures.append(f"вывод на первой странице не называет причину светофора: «{truth.traffic_reason}»")
+    if "Итог" in sections and f"**{c.traffic_light.icon} {c.headline}**" not in markdown:
+        failures.append("на первой странице не тот вывод, что в итоге отчёта")
+    if report.clarification and report.clarification.after:
+        after = snapshot(ver, report.questions)
+        if after != report.clarification.after:
+            failures.append(
+                f"раздел «Уточнения»: после ответов {report.clarification.after}, а по отчёту {after}"
+            )
+    return _item(
+        "traffic",
+        title,
+        failures,
+        f"{truth.traffic_light.icon} {truth.traffic_light.label}: пересчитан по находкам и вопросам автору, "
+        "вывод на первой странице тот же",
+    )
+
+
+def _listed(ids: Sequence[str]) -> str:
+    return ", ".join(ids) or "пусто"
+
+
+def _check_first_page(report: Report) -> SelfCheckItem:
+    """«Что исправить первым» и «Какие вопросы задать первыми» заново функциями ``build_report``."""
+    ver, c = report.verification, report.conclusion
+    expected_fix = _fix_first(ver) if ver else []
+    expected_ask = _ask_first(report.questions, expected_fix)
+    critical = (
+        [f.id for f in ver.findings if f.severity is Severity.CRITICAL and f.verdict is Verdict.VIOLATION]
+        if ver
+        else []
+    )
+    failures: list[str] = []
+    _equal(failures, "«Что исправить первым»", _listed(c.fix_first), _listed(expected_fix), "по находкам")
+    missing = [fid for fid in critical if fid not in c.fix_first]
+    if missing:
+        failures.append(f"критичные нарушения не в «Что исправить первым»: {_listed(missing)}")
+    _equal(
+        failures, "«Какие вопросы задать первыми»", _listed(c.ask_first), _listed(expected_ask), "по вопросам"
+    )
+    return _item(
+        "first_page",
+        "«Что исправить первым» и «Какие вопросы задать первыми» пересчитаны",
+        failures,
+        f"исправить первым: {len(expected_fix)} (критичных {len(critical)}, все на месте); "
+        f"вопросов первыми: {len(expected_ask)}",
+    )
+
+
+def _requirement_refs(seg: Segmentation, findings: Sequence[Finding]) -> Iterator[tuple[bool, str]]:
+    requirements = {r.id for r in seg.requirements}
+    for f in findings:
+        for rid in f.requirement_ids:
+            yield rid in requirements, f"{f.id}: требования {rid} нет в нарезке"
+    for r in seg.requirements:
+        linked = [*r.links, r.depends_on] if r.depends_on else r.links
+        for rid in linked:
+            if _REQUIREMENT_ID.fullmatch(rid):  # остальное ссылки на блоки документа
+                yield rid in requirements, f"{r.id}: связанного требования {rid} нет в нарезке"
+
+
+def _finding_refs(
+    report: Report, ver: Verification, findings: set[str], closed: set[str]
+) -> Iterator[tuple[bool, str]]:
+    for rid, ids in ver.requirement_status.items():
+        for fid in ids:
+            yield fid in findings, f"{rid}: в статусе {fid}, а такой находки нет"
+    targets = findings | closed
+    for q in [*report.questions, *(w.question for w in report.questions_withdrawn)]:
+        for fid in q.related_findings:
+            yield fid in targets, f"{q.id}: закрывает {fid}, а такой находки нет"
+    for fid in report.conclusion.fix_first:
+        yield fid in findings, f"«Что исправить первым»: {fid}, а такой находки нет в списке"
+    for checklist in report.checklists:
+        for fid in checklist.findings:
+            yield fid in findings, f"{checklist.id}: в чек-листе {fid}, а такой находки нет"
+
+
+def _report_refs(report: Report) -> Iterator[tuple[bool, str]]:
+    """Каждая ссылка F-, R-, Q- в отчёте: (ведёт ли на объект отчёта, что сказать, если нет)."""
+    ver, seg, clarification = report.verification, report.segmentation, report.clarification
+    findings = ver.findings if ver else []
+    finding_ids = {f.id for f in findings}
+    questions = {q.id for q in report.questions}
+    withdrawn = {w.question.id for w in report.questions_withdrawn}
+    if seg is not None:
+        yield from _requirement_refs(seg, findings)
+    if ver is not None:
+        closed = (
+            {e.finding_id for e in clarification.by_effect(ClarifyEffect.CLOSED)} if clarification else set()
+        )
+        yield from _finding_refs(report, ver, finding_ids, closed)
+    for qid in report.conclusion.ask_first:
+        yield qid in questions, f"«Какие вопросы задать первыми»: {qid}, а такого вопроса нет в списке"
+    for f in findings:
+        for gap in f.test_draft.gap_items if f.test_draft else ():
+            if gap.question_id:
+                targets = withdrawn if gap.question_withdrawn else questions
+                yield (
+                    gap.question_id in targets,
+                    f"{f.id}: пропуск [?{gap.number}] ведёт на {gap.question_id}, а такого вопроса нет",
+                )
+    if clarification:
+        # AuthorAnswer.related_findings — номера первого прогона, их здесь не сверяем.
+        answers = {a.question_id for a in clarification.answers}
+        for e in clarification.effects:
+            if e.effect is ClarifyEffect.CLOSED:
+                yield e.finding is not None, f"{e.finding_id}: нет карточки закрытой находки"
+            elif ver is not None:
+                yield e.finding_id in finding_ids, f"{e.finding_id}: в уточнениях есть, а в находках нет"
+            for qid in e.question_ids:
+                yield qid in answers, f"{e.finding_id}: в уточнениях указан {qid}, а такого ответа нет"
+
+
+def _check_refs(report: Report) -> SelfCheckItem:
+    """Ссылки ведут на существующие объекты, а статус требований равен пересчёту ``requirement_status``."""
+    failures: list[str] = []
+    count = 0
+    for ok, message in _report_refs(report):
+        count += 1
+        if not ok:
+            failures.append(message)
+    ver, seg = report.verification, report.segmentation
+    if ver is not None and seg is not None:
+        actual = requirement_status(ver.findings, seg)
+        for rid, ids in ver.requirement_status.items():
+            if rid in actual and actual[rid] != ids:
+                shown, linked = _listed(ids), _listed(actual[rid])
+                failures.append(f"{rid}: в таблице статусов {shown}, а по требованиям находок {linked}")
+    return _item(
+        "refs",
+        "Каждая ссылка F-, R-, Q- ведёт на объект отчёта",
+        failures,
+        f"ссылок проверено: {count}, все ведут на объекты отчёта",
+    )
+
+
+def _check_passport(report: Report) -> SelfCheckItem:
+    """Паспорт против журнала вызовов (таблица шагов строится из того же ``calls.jsonl``) и диагностики.
+
+    Код завершения заново считает ``errors.exit_code``. Для прочитанного документа «проверка выполнена
+    полностью» ровно тогда, когда нет ни ошибки, ни оговорки входа, то есть ровно при коде 0.
+    """
+    pp, metrics = report.passport, report.metrics
+    steps = metrics.steps
+    failures: list[str] = []
+    for label, passport_n, metrics_n, logged in (
+        ("вызовов модели", pp.calls_total, metrics.calls_total, sum(s.calls for s in steps)),
+        ("вызовов с ошибкой", pp.calls_failed, metrics.calls_failed, sum(s.failed for s in steps)),
+        ("ответов из кеша", pp.calls_cached, metrics.calls_cached, sum(s.cached for s in steps)),
+    ):
+        _equal(failures, f"{label} в паспорте", passport_n, logged, "в журнале вызовов по шагам")
+        _equal(failures, f"{label} в метриках", metrics_n, logged, "в журнале вызовов по шагам")
+    code = exit_code([*report.input_diagnostics, *report.diagnostics])
+    _equal(failures, "код завершения в паспорте", pp.exit_code, code, "по диагностике отчёта")
+    status = status_label(report.status)
+    if (report.status is ReportStatus.COMPLETE) != (pp.exit_code is ExitCode.OK):
+        failures.append(f"состояние проверки «{status}», а код завершения {pp.exit_code}")
+    return _item(
+        "passport",
+        "Паспорт сходится с журналом вызовов и кодом завершения",
+        failures,
+        f"вызовов модели {pp.calls_total}, как в журнале по шагам; "
+        f"код {code} и состояние «{status}» сходятся с диагностикой",
+    )
+
+
 # ---------------------------------------------------------------- сборка
 
 
@@ -564,13 +924,19 @@ def check_report(
     findings = list(report.verification.findings) if report.verification else []
 
     sections_item, found = _check_sections(sections)
-    anchor_items, rechecked, anchored = _check_anchors(findings, doc_text, blocks)
+    doc = _document_view(report, doc_text, blocks)
+    blocks_known = blocks is not None
+    anchor_items, rechecked, anchored = _check_anchors(findings, doc, blocks_known)
     checks: list[Callable[[], SelfCheckItem]] = [
-        lambda: _check_requirements(report, sections),
+        lambda: _check_requirements(report, sections, doc, blocks_known),
         lambda: _check_cards(report, sections),
         lambda: _check_counters(report, sections),
         lambda: _check_metrics(report),
         lambda: _check_matrix(report, sections),
+        lambda: _check_traffic(report, text, sections),
+        lambda: _check_first_page(report),
+        lambda: _check_refs(report),
+        lambda: _check_passport(report),
     ]
     quotes = [q for f in findings for q in f.quotes]
     sc = SelfCheck(

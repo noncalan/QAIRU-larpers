@@ -319,7 +319,7 @@ def _quote(verified: bool) -> Quote:
 
 def _with_findings(found: list[Finding]) -> Report:
     base = factory.full_report()
-    ver = factory._verification(found, factory.REQS, TrafficLight.YELLOW, "есть нарушения")
+    ver = factory._verification(found, factory.REQS)
     return base.model_copy(update={"verification": ver, "questions": []})
 
 

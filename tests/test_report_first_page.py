@@ -20,7 +20,6 @@ from validator.models import (
     StepMetrics,
     TestDraft,
     TokenUsage,
-    TrafficLight,
     Verdict,
 )
 from validator.models import DefectType as D
@@ -46,7 +45,7 @@ def _critical(
 
 def _report(found: list[Finding], questions: list[Question] | None = None) -> Report:
     base = factory.full_report()
-    ver = factory._verification(found, factory.REQS, TrafficLight.RED, "есть критичные")
+    ver = factory._verification(found, factory.REQS)
     return base.model_copy(update={"verification": ver, "questions": questions or []})
 
 

@@ -264,7 +264,19 @@ def _first_page(report: Report, ctx: dict[str, Any]) -> Json:
         ]
         fix = [_fix_item(item) for item in ctx["fix_items"]]
         for qid in c.ask_first:
-            q = ctx["questions_by_id"][qid]
+            q = ctx["questions_by_id"].get(qid)
+            if q is None:
+                ask.append(
+                    {
+                        "id": qid,
+                        "tone": "P2",
+                        "head": "",
+                        "text": "вопроса с таким номером нет в списке вопросов: ошибка сборки отчёта, "
+                        "подробности в разделе «Самопроверка отчёта».",
+                        "options": [],
+                    }
+                )
+                continue
             head = f"{q.priority.value} ({q.priority.label})"
             head += f" · кому: {', '.join(a.label for a in q.addressee)}" if q.addressee else ""
             head += f" · к {', '.join(q.related_findings)}" if q.related_findings else ""

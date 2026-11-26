@@ -94,9 +94,8 @@ def test_questions_yaml_place_names_section(doc: ParsedDocument) -> None:
 
 def test_selfcheck_passes_when_anchor_section_matches_block(doc: ParsedDocument) -> None:
     f = finding(doc, "F-01", [EXAMPLE_QUOTE])
-    sections = {b.id: list(b.section) for b in doc.blocks}
 
-    checked, failures = _recheck_quote(f, doc.text, sections)
+    checked, failures = _recheck_quote(f, doc, blocks_known=True)
 
     assert checked == 1 and failures == []
 
@@ -107,9 +106,8 @@ def test_selfcheck_flags_foreign_section_in_anchor(doc: ParsedDocument) -> None:
     assert q.anchor is not None
     wrong = q.model_copy(update={"anchor": q.anchor.model_copy(update={"section": ["Ответы"]})})
     f = f.model_copy(update={"quotes": [wrong]})
-    sections = {b.id: list(b.section) for b in doc.blocks}
 
-    _, failures = _recheck_quote(f, doc.text, sections)
+    _, failures = _recheck_quote(f, doc, blocks_known=True)
 
     assert len(failures) == 1 and "раздел в якоре" in failures[0]
 

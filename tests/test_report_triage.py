@@ -170,7 +170,10 @@ def test_every_finding_still_has_one_card_and_selfcheck_passes() -> None:
 
     assert MINOR_BLOCK_TITLE in md
     assert sorted(cards) == sorted(f.id for f in findings_of(report))
-    assert all(item.passed for item in sc.items), [i for i in sc.items if not i.passed]
+    # Фикстура убрала незначительную находку из «Что исправить первым» руками: build_report оставил бы её
+    # там. Самопроверка (#141) ловит ровно эту правку, а карточки, счётчики и матрица сходятся.
+    failed = [i for i in sc.items if not i.passed]
+    assert [i.id for i in failed] == ["first_page"], failed
 
 
 def test_no_minor_block_when_there_are_no_minor_findings() -> None:
