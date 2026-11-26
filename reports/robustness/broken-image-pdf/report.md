@@ -1,6 +1,6 @@
 # Отчёт о проверке требований: image.pdf
 
-Проверка по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3). Отчёт сформировал агент QAIRU validator 8a090dd-dirty, 2026-11-26 07:39:11 UTC.
+Проверка по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3). Отчёт сформировал агент QAIRU validator 4ebb9e2, 2026-11-26 07:43:15 UTC.
 
 ## Итог на первой странице
 
@@ -12,9 +12,9 @@
 |---|---|
 | Документ | image.pdf (unknown, 1919 байт) |
 | SHA-256 документа | 564455f5ee3ca1785f96c2e531db4da1221687ed1f83ab5d45b7f271a2c09281 |
-| Дата прогона | 2026-11-26 07:39:11 UTC |
+| Дата прогона | 2026-11-26 07:43:15 UTC |
 | Длительность | 0.0 с |
-| Версия агента | 8a090dd-dirty (источник: git), есть незакоммиченные правки |
+| Версия агента | 4ebb9e2 (источник: git) |
 | Хеш промптов | 1fc8be63f489 |
 | Способ вызова модели | модель не вызывалась (запрошено: фикстуры тестов (без модели)) |
 | Модели по шагам | segment: claude-sonnet-5-5 · medium; search: claude-opus-5-5 · medium; search_transfer: claude-haiku-5-5 · medium; evidence: claude-opus-5-5 · high; critic: claude-opus-5-5 · high; test_draft: claude-sonnet-5-5 · high; questions: claude-opus-5-5 · high; questions_critic: claude-opus-5-5 · high; set_check: claude-opus-5-5 · medium |
