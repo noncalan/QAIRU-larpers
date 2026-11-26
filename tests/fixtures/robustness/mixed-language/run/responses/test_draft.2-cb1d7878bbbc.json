@@ -1,0 +1,231 @@
+{
+ "envelope_version": 1,
+ "key": "cb1d7878bbbc5f3acac0dfe724839b45447c82a8c12e457b1a815c08fbbbb90a",
+ "call_id": "test_draft.2",
+ "step": "test_draft",
+ "call_index": 2,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T22:37:21.724673+00:00",
+ "payload": {
+  "duration_api_ms": 42944,
+  "stop_reason": "end_turn",
+  "session_id": "21e30d21-d136-44ed-bd59-7e38443746c8",
+  "total_cost_usd": 0.0817976,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 4541,
+   "cache_read_input_tokens": 2296,
+   "output_tokens": 6340,
+   "output_tokens_details": {
+    "thinking_tokens": 2736
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 4541,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 6340,
+     "cache_read_input_tokens": 2296,
+     "cache_creation_input_tokens": 4541,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 4541
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 6340,
+    "cacheReadInputTokens": 2296,
+    "cacheCreationInputTokens": 4541,
+    "webSearchRequests": 0,
+    "costUSD": 0.0817976,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2736,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 4541,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n**M-018.** Для результата нужен один порог задержки появления заказа в списке. NFR-02 даёт «не реже раза в 60 секунд», NFR-01 требует «реального времени» без числа. Единого значения нет, поэтому на ожидаемом результате пропуск.\n\n**M-019.** Нужны минимальные версии Android и iOS. Документ называет только платформы, версий нет. Пропуски стоят в подготовке.\n\n**M-021.** Для проверки «удобства» нужны метрика и целевое значение. Документ не даёт ни того, ни другого.\n\n**M-022.** Нужны закон, состав данных, срок и место хранения, защита. В документе есть только «applicable law» без названия закона. Все значения заменены пропусками.\n\n**M-023.** Тест на непокрытые требования: в документе нет критериев приёмки ни для оплаты, ни для переназначения, ни для верного кода, ни для принятия недоступного заказа, ни для нефункциональных требований. На каждом месте пропуск.\n\n**M-024.** Нужен срок, за который заказ исчезает у остальных курьеров. FR-02 говорит «as soon as» без числа. NFR-02 задаёт период обновления списка 60 с, но NFR-01 ему противоречит. Срока нет, поэтому пропуск.\n\n**M-025.** Документ задаёт только «доставка не подтверждена». Текст сообщения, статус заказа и расход попытки не названы, на них пропуски.\n\n## Ответ\n\n```json\n{\n  \"drafts\": [\n    {\n      \"finding\": \"M-018\",\n      \"can_write\": false,\n      \"precondition\": \"Курьер вошёл в приложение и открыл список доступных заказов. Диспетчер готов создать новый заказ.\",\n      \"steps\": [\n        \"Зафиксировать время и создать новый заказ, доступный курьеру.\",\n        \"Не обновляя список вручную, ждать появления нового заказа и засечь время появления.\"\n      ],\n      \"expected\": \"Новый заказ появился в списке не позже чем через [?1] после создания.\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"единая допустимая задержка обновления списка в секундах: один пункт требует «реального времени» без числа, другой — обновления не реже раза в 60 секунд, и общего порога у них нет\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-019\",\n      \"can_write\": false,\n      \"precondition\": \"Есть тестовое устройство на Android с версией ОС [?1] и тестовое устройство на iOS с версией ОС [?2].\",\n      \"steps\": [\n        \"Установить мобильное приложение на устройство.\",\n        \"Запустить приложение и открыть список заказов.\"\n      ],\n      \"expected\": \"Приложение устанавливается и работает на обеих платформах, Android and iOS, начиная с минимальных версий ОС.\",\n      \"values\": [\n        {\"value\": \"Android and iOS\", \"quote\": \"Мобильное приложение должно быть удобным и поддерживать Android and iOS.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"минимальная поддерживаемая версия Android: в документе названа только платформа\", \"part\": \"precondition\"},\n        {\"number\": 2, \"missing\": \"минимальная поддерживаемая версия iOS: в документе названа только платформа\", \"part\": \"precondition\"}\n      ],\n      \"note\": \"Без минимальных версий нельзя составить матрицу устройств и выбрать устройства на границе поддержки.\"\n    },\n    {\n      \"finding\": \"M-021\",\n      \"can_write\": false,\n      \"precondition\": \"Мобильное приложение установлено. Выбрана группа тестовых пользователей-курьеров.\",\n      \"steps\": [\n        \"Попросить курьера выполнить типовой сценарий: открыть список заказов и принять заказ.\",\n        \"Измерить показатель удобства [?1].\"\n      ],\n      \"expected\": \"Значение показателя удобства не хуже [?2], приложение считается удобным.\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"измеримый показатель удобства (например, время выполнения сценария, число ошибок или оценка по шкале): в документе есть только слово «удобным»\", \"part\": \"steps\"},\n        {\"number\": 2, \"missing\": \"целевое значение этого показателя, при котором приложение считается удобным\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-022\",\n      \"can_write\": false,\n      \"precondition\": \"В системе есть заказ с данными клиента (например, телефон и адрес) и геопозицией курьера. Доставка по заказу завершена.\",\n      \"steps\": [\n        \"Проверить, где хранятся персональные данные клиента и курьера.\",\n        \"Проверить способ защиты этих данных и доступ к ним.\",\n        \"Проверить, что с данными происходит по истечении срока хранения.\"\n      ],\n      \"expected\": \"Хранение соответствует закону [?1]. К персональным данным относятся [?2]. Они хранятся в [?3] в течение [?4] и защищены [?5].\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"название закона и юрисдикции: в документе только «applicable law»\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"перечень данных, которые считаются персональными (телефон, адрес, геопозиция, коды и т. д.)\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"место хранения данных (страна, система)\", \"part\": \"expected\"},\n        {\"number\": 4, \"missing\": \"срок хранения данных и действие по его истечении\", \"part\": \"expected\"},\n        {\"number\": 5, \"missing\": \"требования к шифрованию и разграничению доступа\", \"part\": \"expected\"}\n      ],\n      \"note\": \"В документе нет ни одного проверяемого требования к хранению, поэтому у теста нет значений, с которыми можно сравнить результат.\"\n    },\n    {\n      \"finding\": \"M-023\",\n      \"can_write\": false,\n      \"precondition\": \"Есть курьер, назначенный на заказ, и второй курьер. Тариф оплаты, переназначение и коды подтверждения настроены в тестовой среде.\",\n      \"steps\": [\n        \"Завершить доставку и проверить рассчитанную оплату курьера.\",\n        \"Оставить заказ без ответа курьера и попробовать переназначить его другому курьеру.\",\n        \"Подтвердить доставку верным одноразовым кодом клиента.\",\n        \"Попытаться принять заказ, который уже принял другой курьер.\",\n        \"Проверить нефункциональные требования: обновление списка, платформы, удобство, хранение данных.\"\n      ],\n      \"expected\": \"Оплата курьера равна [?1]. Переназначение возможно после [?2] без ответа. После верного кода заказ получает статус [?3]. При принятии недоступного заказа курьер видит [?4]. Для нефункциональных требований приёмка проходит по [?5].\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"критерий приёмки расчёта оплаты: тариф «утверждается позже», формулы и значений нет\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"критерий приёмки переназначения: сколько длится «долгое время» без ответа курьера\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"критерий приёмки верного кода: в документе описан только неверный код, статус заказа после верного не назван\", \"part\": \"expected\"},\n        {\"number\": 4, \"missing\": \"критерий приёмки принятия недоступного заказа: сообщение или состояние после попытки\", \"part\": \"expected\"},\n        {\"number\": 5, \"missing\": \"критерии приёмки для всех четырёх нефункциональных требований: в разделе критериев их нет\", \"part\": \"expected\"}\n      ],\n      \"note\": \"В разделе критериев приёмки только два критерия. Они покрывают принятие заказа и неверный код.\"\n    },\n    {\n      \"finding\": \"M-024\",\n      \"can_write\": false,\n      \"precondition\": \"Два курьера, A и B, вошли в приложение. Один и тот же заказ виден в списке доступных заказов у обоих.\",\n      \"steps\": [\n        \"Курьер A принимает заказ и фиксируется время принятия.\",\n        \"Курьер B, не обновляя список вручную, наблюдает свой список заказов.\",\n        \"Зафиксировать, через какое время заказ исчез из списка курьера B.\"\n      ],\n      \"expected\": \"Заказ исчез из списка курьера B не позже чем через [?1] после принятия заказом курьером A.\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"срок, в который заказ должен исчезнуть у остальных курьеров: в требовании сказано «as soon as» без числа, период обновления списка (60 секунд) спорит с требованием «реального времени», и в критерии приёмки не сказано, к чему относится срок\", \"part\": \"expected\"}\n      ],\n      \"note\": \"Число курьеров для теста выбирает тестировщик, достаточно двух.\"\n    },\n    {\n      \"finding\": \"M-025\",\n      \"can_write\": false,\n      \"precondition\": \"Курьер прибыл к клиенту. Клиент получил по SMS одноразовый код, заказ ожидает подтверждения доставки.\",\n      \"steps\": [\n        \"Курьер вводит код, который не совпадает с кодом клиента.\",\n        \"Проверить сообщение курьеру, статус заказа и число оставшихся попыток ввода.\"\n      ],\n      \"expected\": \"«the delivery is not confirmed» — доставка не подтверждена. Курьер видит сообщение [?1]. Статус заказа [?2]. Попытка ввода [?3].\",\n      \"values\": [\n        {\"value\": \"the delivery is not confirmed\", \"quote\": \"Code entered by the courier does not match the customer's code: the delivery is not confirmed.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"текст сообщения курьеру при несовпадении кода\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"статус заказа после неверного ввода кода\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"расходуется ли попытка и есть ли лимит попыток: в документе их нет\", \"part\": \"expected\"}\n      ],\n      \"note\": \"Случаи истёкшего кода и пустого ввода в документе не описаны вовсе, для них нужны отдельные тесты после уточнения.\"\n    }\n  ]\n}\n```",
+  "ttft_ms": 22424,
+  "type": "result",
+  "duration_ms": 45431,
+  "uuid": "0bbcc075-c236-4e24-9e2a-4577345e9b46",
+  "ttft_stream_ms": 939,
+  "time_to_request_ms": 77,
+  "time_to_request_phases_ms": {
+   "other": 9,
+   "system_prompt": 2,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 7,
+   "input_hooks": 3,
+   "conversation_append": 1,
+   "tool_pool_refresh": 1,
+   "init_message": 6,
+   "init_frame_send": 3,
+   "engine_pickup": 1,
+   "loop_entry": 4,
+   "message_prep": 1,
+   "model_config_wait": 10,
+   "autocompact": 1,
+   "request_announcements": 5,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 2,
+   "message_normalization": 3,
+   "client_creation": 5,
+   "request_build": 8
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 27,
+  "time_to_request_cpu_ms": 81,
+  "time_to_request_major_faults": 0,
+  "process_rss_mib_turn_start": 200,
+  "process_anon_mib_turn_start": 122,
+  "process_rss_mib_result": 205,
+  "process_anon_mib_result": 120,
+  "process_peak_rss_mib": 219,
+  "process_cpu_ms_turn": 1179,
+  "process_wall_ms_turn": 45430,
+  "tool_pool_build_count": 4,
+  "tool_pool_build_lapsed_count": 1,
+  "tool_pool_moved_at_lapse_count": 0,
+  "tool_pool_limit_ms": 30000,
+  "process_cpu_ms_streaming": 920,
+  "process_wall_ms_streaming": 42072,
+  "main_stream_count": 1,
+  "main_stream_event_count": 644,
+  "main_stream_chunk_count": 638,
+  "process_turn_states": {
+   "main_stream": {
+    "cpu_ms": 920,
+    "wall_ms": 42072,
+    "entries": 1
+   },
+   "first_event_wait": {
+    "cpu_ms": 137,
+    "wall_ms": 860,
+    "entries": 1
+   },
+   "before_first_request": {
+    "cpu_ms": 81,
+    "wall_ms": 77,
+    "entries": 1
+   },
+   "after_last_request": {
+    "cpu_ms": 41,
+    "wall_ms": 2421,
+    "entries": 1
+   }
+  },
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 2,
+   "cpu_ms": 10,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 1,
+   "render_ms": 1,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 1,
+   "waits_ms": 0,
+   "placement_ms": 1,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 2,
+   "images_ms": 0,
+   "post_process_ms": 1,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 2,
+   "headers_ms": 1,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 2,
+   "record_attempt_ms": 1,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 1,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 939,
+  "time_to_request_from_spawn_ms": 1437988,
+  "warm_spare_claimed": false,
+  "flag_fetch_kick": "not_asked_warm",
+  "time_origin_ms": 1795732595389.0068,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "process_start_tuning": 0
+ }
+}

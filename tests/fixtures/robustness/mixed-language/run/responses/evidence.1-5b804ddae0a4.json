@@ -1,0 +1,231 @@
+{
+ "envelope_version": 1,
+ "key": "5b804ddae0a419b1bc0478f5ca27b8e845dbdbc75dfbd3a20e5d6744b924bf0a",
+ "call_id": "evidence.1",
+ "step": "evidence",
+ "call_index": 1,
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T22:36:35.379297+00:00",
+ "payload": {
+  "duration_api_ms": 16995,
+  "stop_reason": "end_turn",
+  "session_id": "719ac447-eda7-4d1d-8aa5-fb115e77bcdb",
+  "total_cost_usd": 0.0678234,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 3825,
+   "cache_read_input_tokens": 2077,
+   "output_tokens": 1840,
+   "output_tokens_details": {
+    "thinking_tokens": 689
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 3825,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 1840,
+     "cache_read_input_tokens": 2077,
+     "cache_creation_input_tokens": 3825,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 3825
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-opus-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 1840,
+    "cacheReadInputTokens": 2077,
+    "cacheCreationInputTokens": 3825,
+    "webSearchRequests": 0,
+    "costUSD": 0.0678234,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 689,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 3825,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n**M-018.** Сопоставил NFR-01 («в реальном времени») и NFR-02 (не реже раза в 60 с). Их разводит сценарий, в котором новый заказ появляется в списке через 50 с. По NFR-02 требование выполнено. Задержка в 50 с не похожа на «реальное время», поэтому по NFR-01 оно нарушено.\n\n**M-008.** FR-02 требует скрыть заказ сразу после принятия. NFR-02 задаёт только нижнюю границу частоты обновления и не разрешает показывать уже принятый заказ, так что эти места не противоречат друг другу. Что получит курьер B, если нажмёт «принять» на уже чужом заказе, не сказано нигде. Это неполнота без второго места, поэтому свидетеля нет.\n\n**M-014.** Одно место FR-05 допускает два правдоподобных толкования «не отвечает». Их разводит сценарий: курьер в сети, приложение шлёт геопозицию, но статус заказа не меняется 40 минут, и на звонки диспетчера курьер не отвечает.\n\n## Ответ\n\n```json\n{\n  \"witnesses\": [\n    {\n      \"id\": \"M-018\",\n      \"scenario\": \"Новый заказ создан в 12:00:00 и появился в списке у курьера в 12:00:50, после очередного периодического обновления\",\n      \"readings\": [\n        {\n          \"quote\": \"The order list shall refresh at least once every 60 seconds.\",\n          \"reading\": \"\",\n          \"expectation\": \"задержка 50 с не превышает 60 с, требование выполнено\"\n        },\n        {\n          \"quote\": \"Список заказов должен обновляться в реальном времени.\",\n          \"reading\": \"\",\n          \"expectation\": \"задержка 50 с не является реальным временем, требование нарушено\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-008\",\n      \"scenario\": null,\n      \"readings\": [],\n      \"reason\": \"FR-02 требует скрыть заказ сразу, NFR-02 задаёт лишь минимальную частоту обновления, и эти места не противоречат. Результат запоздалого или одновременного принятия не задан ни одним местом: требование просто неполное, второго места нет\"\n    },\n    {\n      \"id\": \"M-014\",\n      \"scenario\": \"Курьер принял заказ в 14:00, приложение в сети и каждые 30 с передаёт геопозицию, но статус заказа до 14:40 не меняется. На три звонка диспетчера в 14:20, 14:30 и 14:40 курьер не ответил. В 14:40 диспетчер пытается переназначить заказ\",\n      \"readings\": [\n        {\n          \"quote\": \"Диспетчер может переназначить заказ другому курьеру, если курьер не отвечает долгое время.\",\n          \"reading\": \"«не отвечает» значит, что приложение курьера не подаёт сигналов\",\n          \"expectation\": \"приложение на связи, переназначение недоступно\"\n        },\n        {\n          \"quote\": \"Диспетчер может переназначить заказ другому курьеру, если курьер не отвечает долгое время.\",\n          \"reading\": \"«не отвечает» значит, что курьер не реагирует на запросы диспетчера и не меняет статус\",\n          \"expectation\": \"заказ переназначен другому курьеру\"\n        }\n      ],\n      \"reason\": \"\"\n    }\n  ]\n}\n```",
+  "ttft_ms": 8373,
+  "type": "result",
+  "duration_ms": 19680,
+  "uuid": "64e3df60-1e2c-47bc-82bb-0a1ec9758e8b",
+  "ttft_stream_ms": 1781,
+  "time_to_request_ms": 57,
+  "time_to_request_phases_ms": {
+   "other": 6,
+   "system_prompt": 2,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 7,
+   "input_hooks": 2,
+   "conversation_append": 1,
+   "tool_pool_refresh": 1,
+   "init_message": 5,
+   "init_frame_send": 3,
+   "engine_pickup": 1,
+   "loop_entry": 4,
+   "message_prep": 1,
+   "model_config_wait": 0,
+   "autocompact": 2,
+   "request_announcements": 5,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 2,
+   "message_normalization": 2,
+   "client_creation": 4,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 7,
+  "time_to_request_cpu_ms": 63,
+  "time_to_request_major_faults": 0,
+  "process_rss_mib_turn_start": 200,
+  "process_anon_mib_turn_start": 123,
+  "process_rss_mib_result": 204,
+  "process_anon_mib_result": 119,
+  "process_peak_rss_mib": 219,
+  "process_cpu_ms_turn": 725,
+  "process_wall_ms_turn": 19680,
+  "tool_pool_build_count": 3,
+  "tool_pool_build_lapsed_count": 0,
+  "tool_pool_moved_at_lapse_count": 0,
+  "tool_pool_limit_ms": 30000,
+  "process_cpu_ms_streaming": 366,
+  "process_wall_ms_streaming": 15262,
+  "main_stream_count": 1,
+  "main_stream_event_count": 188,
+  "main_stream_chunk_count": 182,
+  "process_turn_states": {
+   "main_stream": {
+    "cpu_ms": 366,
+    "wall_ms": 15262,
+    "entries": 1
+   },
+   "first_event_wait": {
+    "cpu_ms": 226,
+    "wall_ms": 1722,
+    "entries": 1
+   },
+   "before_first_request": {
+    "cpu_ms": 63,
+    "wall_ms": 58,
+    "entries": 1
+   },
+   "after_last_request": {
+    "cpu_ms": 70,
+    "wall_ms": 2638,
+    "entries": 1
+   }
+  },
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 1,
+   "cpu_ms": 10,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 1,
+   "render_ms": 1,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 1,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 2,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 2,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 0,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 1
+  },
+  "first_content_frame_ms": 1782,
+  "time_to_request_from_spawn_ms": 1417526,
+  "warm_spare_claimed": false,
+  "flag_fetch_kick": "not_asked_warm",
+  "time_origin_ms": 1795732574928.4377,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "process_start_tuning": 0
+ }
+}

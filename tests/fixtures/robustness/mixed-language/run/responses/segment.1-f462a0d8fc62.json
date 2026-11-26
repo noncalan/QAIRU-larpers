@@ -7,17 +7,17 @@
  "model": "claude-sonnet-5-5",
  "effort": "medium",
  "backend": "cli",
- "saved_at": "2026-11-26T07:23:47.635912+00:00",
+ "saved_at": "2026-11-26T22:34:27.761416+00:00",
  "payload": {
-  "duration_api_ms": 8475,
+  "duration_api_ms": 8087,
   "stop_reason": "tool_use",
-  "session_id": "fe29e8a7-77fb-4190-a051-3bd0d4138691",
-  "total_cost_usd": 0.0308281,
+  "session_id": "6f41eaee-4c96-4dcd-85f2-e8e7a3206a3a",
+  "total_cost_usd": 0.029580099999999998,
   "usage": {
    "input_tokens": 2,
-   "cache_creation_input_tokens": 2986,
+   "cache_creation_input_tokens": 2984,
    "cache_read_input_tokens": 5101,
-   "output_tokens": 1837,
+   "output_tokens": 1713,
    "output_tokens_details": {
     "thinking_tokens": 0
    },
@@ -27,19 +27,19 @@
    },
    "service_tier": "standard",
    "cache_creation": {
-    "ephemeral_1h_input_tokens": 2986,
+    "ephemeral_1h_input_tokens": 2984,
     "ephemeral_5m_input_tokens": 0
    },
    "inference_geo": "global",
    "iterations": [
     {
      "input_tokens": 2,
-     "output_tokens": 1837,
+     "output_tokens": 1713,
      "cache_read_input_tokens": 5101,
-     "cache_creation_input_tokens": 2986,
+     "cache_creation_input_tokens": 2984,
      "cache_creation": {
       "ephemeral_5m_input_tokens": 0,
-      "ephemeral_1h_input_tokens": 2986
+      "ephemeral_1h_input_tokens": 2984
      },
      "type": "message"
     }
@@ -50,16 +50,16 @@
   "modelUsage": {
    "claude-sonnet-5-5": {
     "inputTokens": 2,
-    "outputTokens": 1837,
+    "outputTokens": 1713,
     "cacheReadInputTokens": 5101,
-    "cacheCreationInputTokens": 2986,
+    "cacheCreationInputTokens": 2984,
     "webSearchRequests": 0,
-    "costUSD": 0.0308281,
+    "costUSD": 0.029580099999999998,
     "contextWindow": 1000000,
     "maxOutputTokens": 128000,
     "thinkingTokens": 0,
     "cacheCreationEphemeral5mInputTokens": 0,
-    "cacheCreationEphemeral1hInputTokens": 2986,
+    "cacheCreationEphemeral1hInputTokens": 2984,
     "canonicalModel": "claude-sonnet-5-5",
     "provider": "firstParty",
     "costBasis": "list"
@@ -98,7 +98,7 @@
   "num_turns": 2,
   "subtype": "success",
   "api_error_status": null,
-  "result": "{\"requirements\":[{\"refs\":[\"B004\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"FR-01\",\"summary\":\"Курьер может принять заказ из списка доступных заказов\",\"entities\":[{\"kind\":\"actor\",\"value\":\"курьер\"},{\"kind\":\"data_field\",\"value\":\"список доступных заказов\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B005\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"FR-02\",\"summary\":\"Заказ скрывается от других курьеров, как только один курьер его принял\",\"entities\":[{\"kind\":\"actor\",\"value\":\"courier\"},{\"kind\":\"event\",\"value\":\"accepts order\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B006\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"FR-03\",\"summary\":\"Система рассчитывает оплату курьера по тарифу, утверждаемому позже\",\"entities\":[{\"kind\":\"system\",\"value\":\"система\"},{\"kind\":\"actor\",\"value\":\"курьер\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B007\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"FR-04\",\"summary\":\"Курьер подтверждает доставку вводом одноразового кода из SMS клиента\",\"entities\":[{\"kind\":\"actor\",\"value\":\"courier\"},{\"kind\":\"data_field\",\"value\":\"one-time code\"},{\"kind\":\"event\",\"value\":\"SMS\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B008\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"FR-05\",\"summary\":\"Диспетчер может переназначить заказ другому курьеру, если курьер долго не отвечает\",\"entities\":[{\"kind\":\"actor\",\"value\":\"диспетчер\"},{\"kind\":\"actor\",\"value\":\"курьер\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B010.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"nfr\",\"subtype\":\"\",\"source_id\":\"NFR-01\",\"summary\":\"Список заказов обновляется в реальном времени\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"список заказов\"},{\"kind\":\"period\",\"value\":\"реальное время\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B011.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"nfr\",\"subtype\":\"\",\"source_id\":\"NFR-02\",\"summary\":\"Список заказов обновляется не реже раза в 60 секунд\",\"entities\":[{\"kind\":\"period\",\"value\":\"60 seconds\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B012.2\"],\"part_start\":\"Мобильное приложение должно быть удобным\",\"part_end\":\"удобным\",\"type\":\"nfr\",\"subtype\":\"\",\"source_id\":\"NFR-03\",\"summary\":\"Мобильное приложение удобное\",\"entities\":[{\"kind\":\"system\",\"value\":\"мобильное приложение\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B012.2\"],\"part_start\":\"поддерживать Android and iOS\",\"part_end\":\"Android and iOS\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"NFR-03\",\"summary\":\"Мобильное приложение поддерживает Android и iOS\",\"entities\":[{\"kind\":\"system\",\"value\":\"Android\"},{\"kind\":\"system\",\"value\":\"iOS\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B013.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"nfr\",\"subtype\":\"\",\"source_id\":\"NFR-04\",\"summary\":\"Персональные данные хранятся в соответствии с применимым законодательством\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"personal data\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B015.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"AC-01\",\"summary\":\"После принятия заказа курьером он пропадает из списка у остальных курьеров\",\"entities\":[{\"kind\":\"actor\",\"value\":\"курьер\"},{\"kind\":\"event\",\"value\":\"принятие заказа\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B016.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"AC-02\",\"summary\":\"При несовпадении введённого кода с кодом клиента доставка не подтверждается\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"code\"},{\"kind\":\"status\",\"value\":\"delivery not confirmed\"}],\"links\":[],\"depends_on\":\"\"}],\"excluded\":[{\"block\":\"B002.1\",\"label\":\"metadata\",\"reason\":\"версия документа\"},{\"block\":\"B002.2\",\"label\":\"context\",\"reason\":\"пояснение о языках документа\"},{\"block\":\"B010.1\",\"label\":\"metadata\",\"reason\":\"метка требования\"},{\"block\":\"B011.1\",\"label\":\"metadata\",\"reason\":\"метка требования\"},{\"block\":\"B012.1\",\"label\":\"metadata\",\"reason\":\"метка требования\"},{\"block\":\"B013.1\",\"label\":\"metadata\",\"reason\":\"метка требования\"},{\"block\":\"B015.1\",\"label\":\"metadata\",\"reason\":\"метка критерия\"},{\"block\":\"B016.1\",\"label\":\"metadata\",\"reason\":\"метка критерия\"}]}",
+  "result": "{\"requirements\":[{\"refs\":[\"B004\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"FR-01\",\"summary\":\"Курьер может принять заказ из списка доступных заказов\",\"entities\":[{\"kind\":\"actor\",\"value\":\"курьер\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B005\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"FR-02\",\"summary\":\"Система скрывает заказ от других курьеров, как только один курьер его принял\",\"entities\":[{\"kind\":\"system\",\"value\":\"система\"},{\"kind\":\"actor\",\"value\":\"courier\"},{\"kind\":\"event\",\"value\":\"принятие заказа\"}],\"links\":[\"B015\"],\"depends_on\":\"\"},{\"refs\":[\"B006\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"FR-03\",\"summary\":\"Система рассчитывает оплату курьера по тарифу, утверждаемому позже\",\"entities\":[{\"kind\":\"system\",\"value\":\"система\"},{\"kind\":\"actor\",\"value\":\"курьер\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B007\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"FR-04\",\"summary\":\"Курьер подтверждает доставку вводом одноразового кода из SMS клиента\",\"entities\":[{\"kind\":\"actor\",\"value\":\"courier\"},{\"kind\":\"data_field\",\"value\":\"one-time code\"},{\"kind\":\"actor\",\"value\":\"customer\"}],\"links\":[\"B016\"],\"depends_on\":\"\"},{\"refs\":[\"B008\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"FR-05\",\"summary\":\"Диспетчер может переназначить заказ другому курьеру, если курьер долго не отвечает\",\"entities\":[{\"kind\":\"actor\",\"value\":\"диспетчер\"},{\"kind\":\"actor\",\"value\":\"курьер\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B010.1\",\"B010.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"nfr\",\"subtype\":\"\",\"source_id\":\"NFR-01\",\"summary\":\"Список заказов обновляется в реальном времени\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"список заказов\"},{\"kind\":\"period\",\"value\":\"реальное время\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B011.1\",\"B011.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"nfr\",\"subtype\":\"\",\"source_id\":\"NFR-02\",\"summary\":\"Список заказов обновляется не реже раза в 60 секунд\",\"entities\":[{\"kind\":\"period\",\"value\":\"60 seconds\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B012.1\",\"B012.2\"],\"part_start\":\"Мобильное приложение должно быть удобным\",\"part_end\":\"быть удобным\",\"type\":\"nfr\",\"subtype\":\"\",\"source_id\":\"NFR-03\",\"summary\":\"Мобильное приложение удобное\",\"entities\":[{\"kind\":\"system\",\"value\":\"мобильное приложение\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B012.1\",\"B012.2\"],\"part_start\":\"поддерживать Android and iOS\",\"part_end\":\"Android and iOS\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"NFR-03\",\"summary\":\"Мобильное приложение поддерживает Android и iOS\",\"entities\":[{\"kind\":\"system\",\"value\":\"Android\"},{\"kind\":\"system\",\"value\":\"iOS\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B013.1\",\"B013.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"nfr\",\"subtype\":\"\",\"source_id\":\"NFR-04\",\"summary\":\"Персональные данные хранятся в соответствии с применимым законодательством\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"personal data\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B015.1\",\"B015.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"AC-01\",\"summary\":\"Курьер принял заказ — заказ пропадает из списка у остальных курьеров\",\"entities\":[{\"kind\":\"actor\",\"value\":\"курьер\"},{\"kind\":\"event\",\"value\":\"принятие заказа\"}],\"links\":[\"B005\"],\"depends_on\":\"\"},{\"refs\":[\"B016.1\",\"B016.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"AC-02\",\"summary\":\"Код курьера не совпал с кодом клиента — доставка не подтверждается\",\"entities\":[{\"kind\":\"actor\",\"value\":\"courier\"},{\"kind\":\"data_field\",\"value\":\"code\"}],\"links\":[\"B007\"],\"depends_on\":\"\"}],\"excluded\":[{\"block\":\"B002.1\",\"label\":\"metadata\",\"reason\":\"версия документа\"},{\"block\":\"B002.2\",\"label\":\"context\",\"reason\":\"пояснение о языках документа\"}]}",
   "structured_output": {
    "requirements": [
     {
@@ -115,10 +115,6 @@
       {
        "kind": "actor",
        "value": "курьер"
-      },
-      {
-       "kind": "data_field",
-       "value": "список доступных заказов"
       }
      ],
      "links": [],
@@ -133,18 +129,24 @@
      "type": "functional",
      "subtype": "",
      "source_id": "FR-02",
-     "summary": "Заказ скрывается от других курьеров, как только один курьер его принял",
+     "summary": "Система скрывает заказ от других курьеров, как только один курьер его принял",
      "entities": [
+      {
+       "kind": "system",
+       "value": "система"
+      },
       {
        "kind": "actor",
        "value": "courier"
       },
       {
        "kind": "event",
-       "value": "accepts order"
+       "value": "принятие заказа"
       }
      ],
-     "links": [],
+     "links": [
+      "B015"
+     ],
      "depends_on": ""
     },
     {
@@ -190,11 +192,13 @@
        "value": "one-time code"
       },
       {
-       "kind": "event",
-       "value": "SMS"
+       "kind": "actor",
+       "value": "customer"
       }
      ],
-     "links": [],
+     "links": [
+      "B016"
+     ],
      "depends_on": ""
     },
     {
@@ -222,6 +226,7 @@
     },
     {
      "refs": [
+      "B010.1",
       "B010.2"
      ],
      "part_start": "",
@@ -245,6 +250,7 @@
     },
     {
      "refs": [
+      "B011.1",
       "B011.2"
      ],
      "part_start": "",
@@ -264,10 +270,11 @@
     },
     {
      "refs": [
+      "B012.1",
       "B012.2"
      ],
      "part_start": "Мобильное приложение должно быть удобным",
-     "part_end": "удобным",
+     "part_end": "быть удобным",
      "type": "nfr",
      "subtype": "",
      "source_id": "NFR-03",
@@ -283,6 +290,7 @@
     },
     {
      "refs": [
+      "B012.1",
       "B012.2"
      ],
      "part_start": "поддерживать Android and iOS",
@@ -306,6 +314,7 @@
     },
     {
      "refs": [
+      "B013.1",
       "B013.2"
      ],
      "part_start": "",
@@ -325,6 +334,7 @@
     },
     {
      "refs": [
+      "B015.1",
       "B015.2"
      ],
      "part_start": "",
@@ -332,7 +342,7 @@
      "type": "acceptance",
      "subtype": "",
      "source_id": "AC-01",
-     "summary": "После принятия заказа курьером он пропадает из списка у остальных курьеров",
+     "summary": "Курьер принял заказ — заказ пропадает из списка у остальных курьеров",
      "entities": [
       {
        "kind": "actor",
@@ -343,11 +353,14 @@
        "value": "принятие заказа"
       }
      ],
-     "links": [],
+     "links": [
+      "B005"
+     ],
      "depends_on": ""
     },
     {
      "refs": [
+      "B016.1",
       "B016.2"
      ],
      "part_start": "",
@@ -355,18 +368,20 @@
      "type": "acceptance",
      "subtype": "",
      "source_id": "AC-02",
-     "summary": "При несовпадении введённого кода с кодом клиента доставка не подтверждается",
+     "summary": "Код курьера не совпал с кодом клиента — доставка не подтверждается",
      "entities": [
+      {
+       "kind": "actor",
+       "value": "courier"
+      },
       {
        "kind": "data_field",
        "value": "code"
-      },
-      {
-       "kind": "status",
-       "value": "delivery not confirmed"
       }
      ],
-     "links": [],
+     "links": [
+      "B007"
+     ],
      "depends_on": ""
     }
    ],
@@ -380,116 +395,86 @@
      "block": "B002.2",
      "label": "context",
      "reason": "пояснение о языках документа"
-    },
-    {
-     "block": "B010.1",
-     "label": "metadata",
-     "reason": "метка требования"
-    },
-    {
-     "block": "B011.1",
-     "label": "metadata",
-     "reason": "метка требования"
-    },
-    {
-     "block": "B012.1",
-     "label": "metadata",
-     "reason": "метка требования"
-    },
-    {
-     "block": "B013.1",
-     "label": "metadata",
-     "reason": "метка требования"
-    },
-    {
-     "block": "B015.1",
-     "label": "metadata",
-     "reason": "метка критерия"
-    },
-    {
-     "block": "B016.1",
-     "label": "metadata",
-     "reason": "метка критерия"
     }
    ]
   },
-  "ttft_ms": 8519,
+  "ttft_ms": 8116,
   "type": "result",
-  "duration_ms": 8551,
-  "uuid": "54343a2e-3405-4eb2-b9a8-d0cd2ccb07ff",
-  "ttft_stream_ms": 617,
-  "time_to_request_ms": 71,
+  "duration_ms": 8156,
+  "uuid": "96faaf35-2ee5-4639-8d9b-7452276ef4b2",
+  "ttft_stream_ms": 607,
+  "time_to_request_ms": 61,
   "time_to_request_phases_ms": {
-   "other": 8,
+   "other": 7,
    "system_prompt": 2,
    "resume_other": 0,
-   "process_user_input": 3,
-   "input_attachments": 6,
+   "process_user_input": 2,
+   "input_attachments": 8,
    "input_hooks": 2,
    "conversation_append": 0,
-   "tool_pool_refresh": 2,
-   "init_message": 4,
+   "tool_pool_refresh": 1,
+   "init_message": 5,
    "init_frame_send": 3,
-   "engine_pickup": 2,
-   "loop_entry": 3,
+   "engine_pickup": 1,
+   "loop_entry": 4,
    "message_prep": 1,
-   "model_config_wait": 7,
-   "autocompact": 1,
-   "request_announcements": 7,
-   "query_setup": 1,
+   "model_config_wait": 0,
+   "autocompact": 2,
+   "request_announcements": 5,
+   "query_setup": 0,
    "model_gates": 1,
    "tool_schema_build": 3,
-   "message_normalization": 3,
-   "client_creation": 4,
-   "request_build": 8
+   "message_normalization": 2,
+   "client_creation": 6,
+   "request_build": 6
   },
   "turn_start_resume_kind": "none",
   "process_turn_index": 0,
-  "time_to_request_loop_lag_ms": 20,
-  "time_to_request_cpu_ms": 78,
+  "time_to_request_loop_lag_ms": 11,
+  "time_to_request_cpu_ms": 68,
   "time_to_request_major_faults": 0,
-  "process_rss_mib_turn_start": 203,
-  "process_anon_mib_turn_start": 124,
-  "process_rss_mib_result": 211,
-  "process_anon_mib_result": 124,
+  "process_rss_mib_turn_start": 204,
+  "process_anon_mib_turn_start": 125,
+  "process_rss_mib_result": 210,
+  "process_anon_mib_result": 123,
   "process_peak_rss_mib": 223,
-  "process_cpu_ms_turn": 482,
-  "process_wall_ms_turn": 8551,
+  "process_cpu_ms_turn": 559,
+  "process_wall_ms_turn": 8155,
   "tool_pool_build_count": 3,
   "tool_pool_build_lapsed_count": 0,
   "tool_pool_moved_at_lapse_count": 0,
   "tool_pool_limit_ms": 30000,
-  "process_cpu_ms_streaming": 293,
-  "process_wall_ms_streaming": 7921,
+  "process_cpu_ms_streaming": 319,
+  "process_wall_ms_streaming": 7532,
   "main_stream_count": 1,
-  "main_stream_event_count": 239,
-  "main_stream_chunk_count": 232,
+  "main_stream_event_count": 226,
+  "main_stream_chunk_count": 218,
   "process_turn_states": {
    "main_stream": {
-    "cpu_ms": 293,
-    "wall_ms": 7921,
+    "cpu_ms": 319,
+    "wall_ms": 7532,
     "entries": 1
    },
    "first_event_wait": {
-    "cpu_ms": 96,
+    "cpu_ms": 150,
     "wall_ms": 544,
     "entries": 1
    },
    "before_first_request": {
-    "cpu_ms": 78,
-    "wall_ms": 71,
+    "cpu_ms": 68,
+    "wall_ms": 61,
     "entries": 1
    },
    "after_last_request": {
-    "cpu_ms": 15,
-    "wall_ms": 15,
+    "cpu_ms": 22,
+    "wall_ms": 18,
     "entries": 1
    }
   },
   "input_attachments_detail": {
    "slowest_producer": "deferred_tools_delta",
    "slowest_producer_ms": 2,
-   "cpu_ms": 7,
+   "cpu_ms": 9,
    "major_faults": 0,
    "setup_ms": 0,
    "prompt_producers_ms": 0,
@@ -500,8 +485,8 @@
    "token_counts": 0
   },
   "tool_schema_build_detail": {
-   "betas_ms": 0,
-   "waits_ms": 1,
+   "betas_ms": 1,
+   "waits_ms": 0,
    "placement_ms": 1,
    "render_ms": 1,
    "after_ms": 0,
@@ -513,7 +498,7 @@
    "before_ms": 0,
    "normalize_ms": 2,
    "images_ms": 0,
-   "post_process_ms": 1,
+   "post_process_ms": 0,
    "after_ms": 0,
    "other_ms": 0,
    "messages": 8,
@@ -522,22 +507,22 @@
   "request_build_detail": {
    "records_ms": 0,
    "system_ms": 2,
-   "headers_ms": 1,
+   "headers_ms": 0,
    "cache_break_record_ms": 1,
    "plans_ms": 1,
-   "retry_setup_ms": 1,
+   "retry_setup_ms": 0,
    "sent_build_ms": 2,
    "record_attempt_ms": 0,
    "other_ms": 0,
    "sent_build_safety_context_ms": 0,
-   "sent_build_cache_breakpoints_ms": 1,
-   "sent_build_surrogate_scan_ms": 0
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 1
   },
-  "first_content_frame_ms": 617,
-  "time_to_request_from_spawn_ms": 28678,
+  "first_content_frame_ms": 607,
+  "time_to_request_from_spawn_ms": 1301447,
   "warm_spare_claimed": false,
   "flag_fetch_kick": "not_asked_warm",
-  "time_origin_ms": 1795659120836.787,
+  "time_origin_ms": 1795732458601.817,
   "queued_turn_count": 0,
   "result_index": 0,
   "process_start_tuning": 0
