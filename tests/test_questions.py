@@ -24,10 +24,13 @@ from questions_helpers import (
     segmentation,
     verification,
 )
+from validator.clarify.answers import load_answers, resolve_answer
 from validator.errors import LLM_QUESTIONS_CHECKED, LLM_QUESTIONS_FAILED, LLM_QUESTIONS_SHORTLIST
 from validator.llm import FakeLLM
 from validator.models import (
     Addressee,
+    AnswerKind,
+    AuthorAnswer,
     DefectType,
     DiagLevel,
     ParsedDocument,
@@ -662,6 +665,41 @@ def test_questions_yaml_under_new_name_points_to_kept_file(tmp_path: Path) -> No
     text = path.read_text(encoding="utf-8")
     assert "Ответы в questions.yaml не тронуты" in text
     assert yaml.safe_load(text)["questions"] == []
+
+
+def test_questions_yaml_carries_answers_of_previous_round(tmp_path: Path) -> None:
+    """#142: круг 3 с ``--answers questions-2.yaml`` терял ответы круга 1. Теперь они в конце файла."""
+    answered = [
+        AuthorAnswer(
+            question_id="Q-01",
+            question="Какой лимит?",
+            kind=AnswerKind.OPTION,
+            option="B",
+            text="Второе правило",
+            change="Поправить",
+            where=["лимит в день"],
+            related_findings=["F-02"],
+        ),
+        AuthorAnswer(
+            question_id="Q-02", question="Кто платит?", kind=AnswerKind.TEXT, text="Клиент", comment="ок"
+        ),
+        AuthorAnswer(question_id="Q-03", question="Срок?", kind=AnswerKind.SKIPPED, comment="не знаю"),
+    ]
+    path = tmp_path / "questions-2.yaml"
+
+    write_questions_yaml(path, [], "doc.md", None, answered=answered, answers_file="questions.yaml")
+    text = path.read_text(encoding="utf-8")
+    loaded = load_answers(path)
+
+    assert "отвеченные вопросы (2)" in text and "questions.yaml" in text
+    assert [(a.question_id, a.answer, a.comment) for a in loaded.answers] == [
+        ("Q-01", "B", ""),
+        ("Q-02", "Клиент", "ок"),
+    ]
+    option, _ = resolve_answer(loaded.answers[0])
+    assert option.option == "B" and option.text == "Второе правило" and option.change == "Поправить"
+    assert loaded.answers[0].where == ["лимит в день"]
+    assert all(q["answered_in"] == "questions.yaml" for q in yaml.safe_load(text)["questions"])
 
 
 def test_questions_yaml_without_questions_is_valid(tmp_path: Path) -> None:

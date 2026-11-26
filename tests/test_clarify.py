@@ -421,13 +421,53 @@ def test_cli_answers_in_same_folder_keep_author_file(tmp_path: Path) -> None:
     assert filled.read_bytes() == before
     remaining = yaml.safe_load((out / "questions-2.yaml").read_text(encoding="utf-8"))
     report = Report.model_validate_json((out / "report.json").read_text(encoding="utf-8"))
-    assert [q["id"] for q in remaining["questions"]] == [q.id for q in report.questions]
-    assert all(q["answer"] is None for q in remaining["questions"])
+    still_open = [q for q in remaining["questions"] if "answered_in" not in q]
+    assert [q["id"] for q in still_open] == [q.id for q in report.questions]
+    assert all(q["answer"] is None for q in still_open)
     assert report.questions_file == "questions-2.yaml"
     assert "Ответы можно вписать в `questions-2.yaml`" in (out / "report.md").read_text(encoding="utf-8")
     keep = next(d for d in report.diagnostics if d.code == OUT_KEEPS_ANSWERS)
     assert keep.level is DiagLevel.INFO and "questions-2.yaml" in keep.action
     assert "questions-2.yaml" in result.stdout + result.stderr
+
+
+def test_cli_third_round_keeps_answers_of_the_first(tmp_path: Path) -> None:
+    """#142: круг 3 с ``--answers questions-2.yaml`` видел только ответы круга 2, ответы круга 1 терялись."""
+    out = tmp_path / "out"
+    out.mkdir()
+    shutil.copyfile(ANSWERS, out / "questions.yaml")
+    second = _cli(
+        REQUIREMENTS[DocKind.MD], out / "report.md", "--backend", "fake", "--answers", out / "questions.yaml"
+    )
+    assert second.returncode == ExitCode.OK, second.stderr
+    round2 = Report.model_validate_json((out / "report.json").read_text(encoding="utf-8"))
+    assert round2.clarification is not None and round2.questions
+    first_answers = {a.question_id for a in round2.clarification.answered}
+    data = yaml.safe_load((out / "questions-2.yaml").read_text(encoding="utf-8"))
+    carried = {q["id"] for q in data["questions"] if q.get("answered_in") == "questions.yaml"}
+    assert carried == first_answers
+    new_answer = round2.questions[0].id
+    for q in data["questions"]:
+        if q["id"] == new_answer:
+            q["answer"] = "Свой ответ круга 2"
+    (out / "questions-2.yaml").write_text(yaml.safe_dump(data, allow_unicode=True), encoding="utf-8")
+
+    third = _cli(
+        REQUIREMENTS[DocKind.MD],
+        out / "report.md",
+        "--backend",
+        "fake",
+        "--answers",
+        out / "questions-2.yaml",
+    )
+
+    assert third.returncode == ExitCode.OK, third.stderr
+    round3 = Report.model_validate_json((out / "report.json").read_text(encoding="utf-8"))
+    assert round3.clarification is not None
+    assert {a.question_id for a in round3.clarification.answered} == first_answers | {new_answer}
+    assert all(a.asked_again for a in round3.clarification.answered)
+    assert new_answer not in {q.id for q in round3.questions}
+    assert (out / "questions-3.yaml").is_file()
 
 
 def test_cli_second_ask_keeps_answers_of_the_first(tmp_path: Path) -> None:

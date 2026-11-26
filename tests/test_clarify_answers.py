@@ -131,6 +131,65 @@ def test_answer_kinds(answer: str, kind: AnswerKind, option: str | None) -> None
     assert warning is None
 
 
+@pytest.mark.parametrize(
+    "answer",
+    [
+        "?",
+        "??",
+        "...",
+        "не знаю",
+        "Не знаю.",
+        "незнаю",
+        "TBD",
+        "todo",
+        "n/a",
+        "уточню позже",
+        "Уточню у бизнеса к пятнице",
+        "нет ответа",
+        "позже",
+        "Не уверена",
+        "не знаю, спрошу у бизнеса",
+    ],
+)
+def test_dont_know_keeps_question_open(answer: str) -> None:
+    """#142: «не знаю» и «?» закрывали вопрос как свой ответ, и светофор мог стать зелёным."""
+    resolved, warning = resolve_answer(_raw(answer, OPTIONS))
+
+    assert resolved.kind is AnswerKind.SKIPPED
+    assert not resolved.kind.answered
+    assert warning is None
+
+
+@pytest.mark.parametrize(
+    "answer",
+    ["потом отправляем письмо", "позже 18:00 платежи не принимаем", "Нет", "2", "незнакомый получатель"],
+)
+def test_real_answer_that_looks_like_deferral_stays_text(answer: str) -> None:
+    resolved, _ = resolve_answer(_raw(answer, OPTIONS))
+
+    assert resolved.kind is AnswerKind.TEXT
+    assert resolved.text == answer
+
+
+def test_deferral_words_stay_visible_as_comment() -> None:
+    resolved, _ = resolve_answer(_raw("не знаю, спрошу у бизнеса", OPTIONS))
+    bare, _ = resolve_answer(_raw("?", OPTIONS))
+
+    assert resolved.comment == "не знаю, спрошу у бизнеса"
+    assert bare.comment == ""
+
+
+@pytest.mark.parametrize("answer", ["вариант B", "Вариант: b", "(B)", "B)", "B.", "вариант 2", "Option (B)"])
+def test_option_written_with_word_or_brackets_is_option(answer: str) -> None:
+    """#142: «вариант B» и «(B)» были своим текстом, и правка из варианта не попадала в сверку."""
+    resolved, warning = resolve_answer(_raw(answer, OPTIONS))
+
+    assert resolved.kind is AnswerKind.OPTION
+    assert resolved.option == "B"
+    assert resolved.text == "Второе правило"
+    assert warning is None
+
+
 def test_option_answer_takes_rule_and_change_from_option() -> None:
     resolved, _ = resolve_answer(_raw("A", OPTIONS))
 
