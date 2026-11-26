@@ -249,7 +249,8 @@ def test_judges_receive_identical_blinded_inputs(
         }
         for q in report.questions
     ]
-    assert result.settings.n_agent == result.settings.n_kickoff == 13
+    assert result.settings.n_kickoff == 13
+    assert result.settings.n_agent == len(report.questions)
     assert result.settings.document_sha256 == sha256_text(document)
     assert result.settings.questions_sha256 == sha256_text(questions_text)
     assert result.settings.run == display_path(RUN)
@@ -277,7 +278,11 @@ def test_cached_answers_reproduce_labels_without_a_client(
         [req] = stubs[call.labeler].requests
         assert call.key == verdict_key(req)
         record = json.loads((tmp_path / f"{call.key}.json").read_text(encoding="utf-8"))
-        assert record["meta"] == {"labeler": call.labeler.value, "kickoff": 13, "agent": 13}
+        assert record["meta"] == {
+            "labeler": call.labeler.value,
+            "kickoff": 13,
+            "agent": first.settings.n_agent,
+        }
 
 
 def test_cache_miss_is_an_error(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:

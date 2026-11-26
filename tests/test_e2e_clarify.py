@@ -20,7 +20,7 @@ from pathlib import Path
 import pytest
 
 from conftest import REQUIREMENTS, ROOT
-from test_e2e_replay import E2E, STALE_RECORDINGS, UPDATE_ENV, _differences, _normalize, _rel
+from test_e2e_replay import E2E, UPDATE_ENV, _differences, _normalize, _rel
 from validator.errors import LLM_REPLAY_BY_POSITION
 from validator.models import ClarifyEffect, DocKind, ExitCode, Report
 
@@ -42,7 +42,6 @@ def replayed(tmp_path_factory: pytest.TempPathFactory) -> tuple[Path, int]:
         _rel(E2E / "md" / "run"),
         "--answers",
         _rel(ANSWERS),
-        *(["--replay-by-position"] if DocKind.MD in STALE_RECORDINGS else []),
     ]
     result = subprocess.run(
         [sys.executable, "-m", "validator", *args],
@@ -62,16 +61,6 @@ def _report(out: Path) -> Report:
     return Report.model_validate_json((out / "report.json").read_text(encoding="utf-8"))
 
 
-STALE = pytest.mark.xfail(
-    DocKind.MD in STALE_RECORDINGS,
-    reason=f"запись MD отстала: {STALE_RECORDINGS.get(DocKind.MD)}; examples/answers.yaml под старые номера",
-    strict=True,
-)
-"""Пока MD-запись в ``STALE_RECORDINGS``, вопросы проигрываются по номеру вызова и ответы примера не совпадают
-с номерами вопросов: проверки ключей и смысла ответов ожидаемо падают, снапшот сравнивается."""
-
-
-@STALE
 def test_replay_with_answers_finds_every_answer_by_key(replayed: tuple[Path, int]) -> None:
     out, code = replayed
     report = _report(out)
@@ -81,7 +70,6 @@ def test_replay_with_answers_finds_every_answer_by_key(replayed: tuple[Path, int
     assert report.passport.calls_failed == 0
 
 
-@STALE
 def test_answers_close_findings_and_leave_unanswered_questions_open(replayed: tuple[Path, int]) -> None:
     out, _ = replayed
     report = _report(out)
