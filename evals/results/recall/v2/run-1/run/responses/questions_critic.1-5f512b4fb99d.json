@@ -1,0 +1,231 @@
+{
+ "envelope_version": 1,
+ "key": "5f512b4fb99dfbc65dea5864cd6b93e0fa268d874f03468e3a4a214a4f4f655b",
+ "call_id": "questions_critic.1",
+ "step": "questions_critic",
+ "call_index": 1,
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T07:55:30.572218+00:00",
+ "payload": {
+  "duration_api_ms": 55236,
+  "stop_reason": "end_turn",
+  "session_id": "066c25eb-a1c5-457f-bbb1-85cabc632e7c",
+  "total_cost_usd": 0.2487826,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 15489,
+   "cache_read_input_tokens": 1813,
+   "output_tokens": 6225,
+   "output_tokens_details": {
+    "thinking_tokens": 3516
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 15489,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 6225,
+     "cache_read_input_tokens": 1813,
+     "cache_creation_input_tokens": 15489,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 15489
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-opus-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 6225,
+    "cacheReadInputTokens": 1813,
+    "cacheCreationInputTokens": 15489,
+    "webSearchRequests": 0,
+    "costUSD": 0.2487826,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3516,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 15489,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n**Q-01.** Ответ есть. B063 задаёт GET, B095 говорит «Тело не используется», CURL в B068 передаёт параметры через `-G`, есть таблица Query-параметров. Заголовок `application/json` в B094 — лишняя строка шаблона, и исправить её можно только одним способом.\n\n**Q-02.** Ответа нет. Неясно, считается ли дополнительная карта «чужой» (B114), а условие для 403 нигде не задано. Ошибок нет.\n\n**Q-03.** Ответа нет. B103 (400 при неверных параметрах) противоречит B079 и B107 (200 с ERROR). В «Почему важно» добавлены отдельные решения: возврат прежнего порога и обработка `enabled=2`. Это ошибка 2.\n\n**Q-04.** Ответ есть. Ф-2 (B023) прямо говорит, что в расходы входят проведённые покупки. Sequence (B027) запускает учёт событием «проведена покупка». Значит, покупка учитывается и push отправляется 12 марта. Цель в B013 сформулирована общими словами и с этим не спорит.\n\n**Q-05.** Ответа нет. Ф-3 описывает переход через порог при изменении расходов. Ф-4 решает только случай, когда сумма ниже нового порога, а случай «уже выше» не описан. Также не сказано, ведётся ли учёт при выключенном уведомлении. В вопросе два сценария (включение и снижение порога) и ещё одно решение во фразе «Отдельно». Это ошибка 2.\n\n**Q-06.** Ответа нет, документ о таком случае молчит. Блок «Отдельно архитектору» о полях события и порядке доставки — ошибка 2.\n\n**Q-07.** Ответа нет. В B075–B079 нет проверки статуса и валюты карты. Фраза «Отдельно бизнесу» о блокировке и перевыпуске — ошибка 2.\n\n**Q-08.** Ответа нет. Ф-2 (B023) противоречит критерию приёмки B039, и это противоречие — предмет вопроса. Какое из двух мест верное, автор должен выбрать сам.\n\n**Q-09.** Ответа нет. Ф-3 («максимум один push за месяц») противоречит Ф-4 («независимо от истории»). Ошибок нет.\n\n**Q-10.** Ответа нет. Природа `cardId` не задана: в B090 указаны только string 1–64 и пример demo-42. Фраза «Отдельно не задан срок хранения» — ошибка 2.\n\n**Q-11.** Ответ есть. В «Статусах» (B103.1) успех описан только кодом 200, раздела 201 нет. Упоминание 201 в B097 и заголовок «Created» — шаблонные огрехи, исправить их можно только одним способом.\n\n**Q-12.** Ответа нет. В части B описан только метод сохранения, B062 смешивает сохранение и чтение, источник суммы за месяц не указан. Ошибок нет.\n\n**Q-13.** Ответа нет. Не сказано, к какому месяцу относится «календарный месяц» в Ф-3: к месяцу расходов или к месяцу отправки. Ошибок нет.\n\n**Q-14.** Ответа нет. Sequence (B027) показывает запрос к «настройкам», но не уточняет, сервис это или хранилище. В архитектуре (B015) связи учёта расходов с настройками нет. Ошибок нет.\n\n**Q-15.** Ответ есть. В таблице ответа (B099, B100) и в примере (B105) поля — строки, это согласовано. То, что в запросе другой тип, не противоречие.\n\n## Ответ\n\n```json\n{\n  \"reviews\": [\n    {\n      \"id\": \"Q-01\",\n      \"answered\": true,\n      \"answer\": \"GET, параметры передаются в строке запроса, тело не используется\",\n      \"answer_quote\": \"Тело не используется.\",\n      \"common_sense\": false,\n      \"obvious_fix\": true,\n      \"scenario\": false,\n      \"errors\": []\n    },\n    {\n      \"id\": \"Q-02\",\n      \"answered\": false,\n      \"answer\": \"\",\n      \"answer_quote\": \"\",\n      \"common_sense\": false,\n      \"obvious_fix\": false,\n      \"scenario\": true,\n      \"errors\": []\n    },\n    {\n      \"id\": \"Q-03\",\n      \"answered\": false,\n      \"answer\": \"\",\n      \"answer_quote\": \"\",\n      \"common_sense\": false,\n      \"obvious_fix\": false,\n      \"scenario\": true,\n      \"errors\": [2]\n    },\n    {\n      \"id\": \"Q-04\",\n      \"answered\": true,\n      \"answer\": \"Покупка попадает в расходы и вызывает push при проведении, то есть 12 марта\",\n      \"answer_quote\": \"В расходы входят проведённые покупки.\",\n      \"common_sense\": false,\n      \"obvious_fix\": false,\n      \"scenario\": true,\n      \"errors\": []\n    },\n    {\n      \"id\": \"Q-05\",\n      \"answered\": false,\n      \"answer\": \"\",\n      \"answer_quote\": \"\",\n      \"common_sense\": false,\n      \"obvious_fix\": false,\n      \"scenario\": true,\n      \"errors\": [2]\n    },\n    {\n      \"id\": \"Q-06\",\n      \"answered\": false,\n      \"answer\": \"\",\n      \"answer_quote\": \"\",\n      \"common_sense\": false,\n      \"obvious_fix\": false,\n      \"scenario\": true,\n      \"errors\": [2]\n    },\n    {\n      \"id\": \"Q-07\",\n      \"answered\": false,\n      \"answer\": \"\",\n      \"answer_quote\": \"\",\n      \"common_sense\": false,\n      \"obvious_fix\": false,\n      \"scenario\": true,\n      \"errors\": [2]\n    },\n    {\n      \"id\": \"Q-08\",\n      \"answered\": false,\n      \"answer\": \"\",\n      \"answer_quote\": \"\",\n      \"common_sense\": false,\n      \"obvious_fix\": false,\n      \"scenario\": true,\n      \"errors\": []\n    },\n    {\n      \"id\": \"Q-09\",\n      \"answered\": false,\n      \"answer\": \"\",\n      \"answer_quote\": \"\",\n      \"common_sense\": false,\n      \"obvious_fix\": false,\n      \"scenario\": true,\n      \"errors\": []\n    },\n    {\n      \"id\": \"Q-10\",\n      \"answered\": false,\n      \"answer\": \"\",\n      \"answer_quote\": \"\",\n      \"common_sense\": false,\n      \"obvious_fix\": false,\n      \"scenario\": false,\n      \"errors\": [2]\n    },\n    {\n      \"id\": \"Q-11\",\n      \"answered\": true,\n      \"answer\": \"В обоих случаях 200: в статусах успех описан только кодом 200\",\n      \"answer_quote\": \"Ответ в случае успешного выполнения метода.\",\n      \"common_sense\": false,\n      \"obvious_fix\": true,\n      \"scenario\": true,\n      \"errors\": []\n    },\n    {\n      \"id\": \"Q-12\",\n      \"answered\": false,\n      \"answer\": \"\",\n      \"answer_quote\": \"\",\n      \"common_sense\": false,\n      \"obvious_fix\": false,\n      \"scenario\": true,\n      \"errors\": []\n    },\n    {\n      \"id\": \"Q-13\",\n      \"answered\": false,\n      \"answer\": \"\",\n      \"answer_quote\": \"\",\n      \"common_sense\": false,\n      \"obvious_fix\": false,\n      \"scenario\": true,\n      \"errors\": []\n    },\n    {\n      \"id\": \"Q-14\",\n      \"answered\": false,\n      \"answer\": \"\",\n      \"answer_quote\": \"\",\n      \"common_sense\": false,\n      \"obvious_fix\": false,\n      \"scenario\": false,\n      \"errors\": []\n    },\n    {\n      \"id\": \"Q-15\",\n      \"answered\": true,\n      \"answer\": \"Строками: таблица ответа и пример согласованно задают string\",\n      \"answer_quote\": \"{\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}\",\n      \"common_sense\": false,\n      \"obvious_fix\": false,\n      \"scenario\": true,\n      \"errors\": []\n    }\n  ]\n}\n```",
+  "ttft_ms": 35553,
+  "type": "result",
+  "duration_ms": 59438,
+  "uuid": "0cc4ac26-2030-4b74-9888-e7ef53538035",
+  "ttft_stream_ms": 779,
+  "time_to_request_ms": 97,
+  "time_to_request_phases_ms": {
+   "other": 10,
+   "system_prompt": 3,
+   "resume_other": 0,
+   "process_user_input": 5,
+   "input_attachments": 12,
+   "input_hooks": 4,
+   "conversation_append": 1,
+   "tool_pool_refresh": 2,
+   "init_message": 10,
+   "init_frame_send": 5,
+   "engine_pickup": 2,
+   "loop_entry": 5,
+   "message_prep": 3,
+   "model_config_wait": 0,
+   "autocompact": 3,
+   "request_announcements": 8,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 3,
+   "message_normalization": 4,
+   "client_creation": 6,
+   "request_build": 10
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 47,
+  "time_to_request_cpu_ms": 105,
+  "time_to_request_major_faults": 0,
+  "process_rss_mib_turn_start": 200,
+  "process_anon_mib_turn_start": 122,
+  "process_rss_mib_result": 206,
+  "process_anon_mib_result": 121,
+  "process_peak_rss_mib": 220,
+  "process_cpu_ms_turn": 1121,
+  "process_wall_ms_turn": 59437,
+  "tool_pool_build_count": 4,
+  "tool_pool_build_lapsed_count": 1,
+  "tool_pool_moved_at_lapse_count": 0,
+  "tool_pool_limit_ms": 30000,
+  "process_cpu_ms_streaming": 823,
+  "process_wall_ms_streaming": 54542,
+  "main_stream_count": 1,
+  "main_stream_event_count": 433,
+  "main_stream_chunk_count": 427,
+  "process_turn_states": {
+   "main_stream": {
+    "cpu_ms": 823,
+    "wall_ms": 54542,
+    "entries": 1
+   },
+   "first_event_wait": {
+    "cpu_ms": 151,
+    "wall_ms": 680,
+    "entries": 1
+   },
+   "before_first_request": {
+    "cpu_ms": 104,
+    "wall_ms": 97,
+    "entries": 1
+   },
+   "after_last_request": {
+    "cpu_ms": 43,
+    "wall_ms": 4118,
+    "entries": 1
+   }
+  },
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 2,
+   "cpu_ms": 15,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 4,
+   "ambient_wait_ms": 2,
+   "render_ms": 2,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 1,
+   "waits_ms": 0,
+   "placement_ms": 2,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 3,
+   "images_ms": 0,
+   "post_process_ms": 1,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 2,
+   "headers_ms": 1,
+   "cache_break_record_ms": 2,
+   "plans_ms": 1,
+   "retry_setup_ms": 1,
+   "sent_build_ms": 2,
+   "record_attempt_ms": 1,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 1,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 779,
+  "time_to_request_from_spawn_ms": 2576524,
+  "warm_spare_claimed": false,
+  "flag_fetch_kick": "not_asked_warm",
+  "time_origin_ms": 1795679670052.4067,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "process_start_tuning": 0
+ }
+}

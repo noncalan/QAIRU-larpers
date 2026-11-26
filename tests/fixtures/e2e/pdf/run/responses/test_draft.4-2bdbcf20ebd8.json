@@ -1,0 +1,231 @@
+{
+ "envelope_version": 1,
+ "key": "2bdbcf20ebd8ccf0c02e87e261dd40e6201b709163b37ae1716503dbe09e3026",
+ "call_id": "test_draft.4",
+ "step": "test_draft",
+ "call_index": 4,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T08:15:39.420365+00:00",
+ "payload": {
+  "duration_api_ms": 38369,
+  "stop_reason": "end_turn",
+  "session_id": "6a92b5e9-2790-47b6-ba5c-b86be911b6b6",
+  "total_cost_usd": 0.0941076,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 10391,
+   "cache_read_input_tokens": 2296,
+   "output_tokens": 5231,
+   "output_tokens_details": {
+    "thinking_tokens": 3903
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 10391,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 5231,
+     "cache_read_input_tokens": 2296,
+     "cache_creation_input_tokens": 10391,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 10391
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 5231,
+    "cacheReadInputTokens": 2296,
+    "cacheCreationInputTokens": 10391,
+    "webSearchRequests": 0,
+    "costUSD": 0.0941076,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3903,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 10391,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n**M-055.** Для теста нужны код и тело ответа на запрос с чужой картой. B117.1 прямо говорит, что для чужой карты возвращается 404. B118 стоит сразу после строки «404» и задаёт тело `{\"message\":\"Карта не найдена\"}`. B110 только в общем виде описывает 403 и про чужую карту ничего не говорит. Условие, при котором возвращается 403, документ не называет. Но этот тест оно не меняет, оно нужно только для отдельного теста на 403. Тест писать можно.\n\n**M-056.** Находка о перечне статусов: 404 описан только внутри раздела 403, а 401, 403 и 500 стоят под заголовком 200. Для запроса с несуществующей картой ожидаемый результат в документе задан: 404 по B117.1 и то же тело по B118. Расхождение в перечне статусов не меняет этот результат. Тест писать можно.\n\n## Ответ\n\n```json\n{\n  \"drafts\": [\n    {\n      \"finding\": \"M-055\",\n      \"can_write\": true,\n      \"precondition\": \"Dev-контур. Есть два клиента: A и Б. У клиента Б есть карта, у клиента A её нет. Клиент A вошёл в приложение, у него есть действующий Bearer-токен сессии.\",\n      \"steps\": [\n        \"Отправить GET /alerts/saveLimit с заголовком Authorization: Bearer и токеном клиента A.\",\n        \"В запросе передать cardId = идентификатор карты клиента Б, amount=50000, enabled=1.\"\n      ],\n      \"expected\": \"Ответ с кодом 404 и телом {\\\"message\\\":\\\"Карта не найдена\\\"}.\",\n      \"values\": [\n        {\"value\": \"404\", \"quote\": \"Для чужой карты возвращается 404, как и для отсутствующей карты.\"},\n        {\"value\": \"{\\\"message\\\":\\\"Карта не найдена\\\"}\", \"quote\": \"{\\\"message\\\":\\\"Карта не найдена\\\"}\"}\n      ],\n      \"gaps\": [],\n      \"note\": \"Противоречия для чужой карты нет: B117.1 задаёт код прямо, а B110 описывает 403 в общем виде и чужую карту не упоминает. Условие возврата 403 в документе не названо, поэтому отдельный тест на 403 написать нельзя. На этот тест это не влияет.\"\n    },\n    {\n      \"finding\": \"M-056\",\n      \"can_write\": true,\n      \"precondition\": \"Dev-контур. Клиент вошёл в приложение, у него есть действующий Bearer-токен сессии. Выбран идентификатор карты допустимого формата, которого нет в системе.\",\n      \"steps\": [\n        \"Отправить GET /alerts/saveLimit с заголовком Authorization: Bearer и токеном клиента.\",\n        \"В запросе передать cardId = несуществующий идентификатор карты, amount=50000, enabled=1.\"\n      ],\n      \"expected\": \"Ответ с кодом 404 и телом {\\\"message\\\":\\\"Карта не найдена\\\"}. Клиент должен обработать 404 как неуспешный ответ.\",\n      \"values\": [\n        {\"value\": \"404\", \"quote\": \"Для чужой карты возвращается 404, как и для отсутствующей карты.\"},\n        {\"value\": \"{\\\"message\\\":\\\"Карта не найдена\\\"}\", \"quote\": \"{\\\"message\\\":\\\"Карта не найдена\\\"}\"},\n        {\"value\": \"неуспешный\", \"quote\": \"Если результат 400, 401 и далее — неуспешный.\"}\n      ],\n      \"gaps\": [],\n      \"note\": \"Отсутствие 404 в перечне статусов и неверное место кодов 401, 403 и 500 под заголовком 200 — дефект оформления. Ожидаемый результат для несуществующей карты он не меняет. Тело ответа привязано к 404 только положением в тексте: оно стоит сразу после строки «404».\"\n    }\n  ]\n}\n```",
+  "ttft_ms": 30814,
+  "type": "result",
+  "duration_ms": 40688,
+  "uuid": "cd74284c-d221-4cf8-b788-67f3ee32d320",
+  "ttft_stream_ms": 1253,
+  "time_to_request_ms": 68,
+  "time_to_request_phases_ms": {
+   "other": 8,
+   "system_prompt": 2,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 7,
+   "input_hooks": 2,
+   "conversation_append": 1,
+   "tool_pool_refresh": 1,
+   "init_message": 6,
+   "init_frame_send": 4,
+   "engine_pickup": 1,
+   "loop_entry": 3,
+   "message_prep": 2,
+   "model_config_wait": 0,
+   "autocompact": 2,
+   "request_announcements": 11,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 1,
+   "message_normalization": 3,
+   "client_creation": 4,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 17,
+  "time_to_request_cpu_ms": 68,
+  "time_to_request_major_faults": 0,
+  "process_rss_mib_turn_start": 202,
+  "process_anon_mib_turn_start": 124,
+  "process_rss_mib_result": 206,
+  "process_anon_mib_result": 121,
+  "process_peak_rss_mib": 221,
+  "process_cpu_ms_turn": 821,
+  "process_wall_ms_turn": 40688,
+  "tool_pool_build_count": 4,
+  "tool_pool_build_lapsed_count": 1,
+  "tool_pool_moved_at_lapse_count": 0,
+  "tool_pool_limit_ms": 30000,
+  "process_cpu_ms_streaming": 489,
+  "process_wall_ms_streaming": 37174,
+  "main_stream_count": 1,
+  "main_stream_event_count": 262,
+  "main_stream_chunk_count": 256,
+  "process_turn_states": {
+   "main_stream": {
+    "cpu_ms": 489,
+    "wall_ms": 37174,
+    "entries": 1
+   },
+   "first_event_wait": {
+    "cpu_ms": 225,
+    "wall_ms": 1184,
+    "entries": 1
+   },
+   "before_first_request": {
+    "cpu_ms": 68,
+    "wall_ms": 68,
+    "entries": 1
+   },
+   "after_last_request": {
+    "cpu_ms": 39,
+    "wall_ms": 2262,
+    "entries": 1
+   }
+  },
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 1,
+   "cpu_ms": 10,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 1,
+   "render_ms": 1,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 2,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 1,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 2,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 2,
+   "record_attempt_ms": 0,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 1,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1253,
+  "time_to_request_from_spawn_ms": 3804089,
+  "warm_spare_claimed": false,
+  "flag_fetch_kick": "not_asked_warm",
+  "time_origin_ms": 1795680897741.2454,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "process_start_tuning": 0
+ }
+}

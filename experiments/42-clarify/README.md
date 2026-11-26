@@ -17,7 +17,7 @@ uv run validator data/input/requirements.md out/report.md --backend replay --rep
 uv run validator data/input/requirements.md out2/report.md --backend replay --replay tests/fixtures/e2e/md/run --answers examples/answers.yaml
 ```
 
-Первая команда даёт прогон 1 и `out/questions.yaml`; `examples/answers.yaml` это тот же файл с ответами (12 ответов на 15 вопросов, Q-13 отложен, Q-06 и Q-14 без ответа). Ответы правдоподобные и придуманы для демо, эталон `docs/gold/` не открывался.
+Первая команда даёт прогон 1 и `out/questions.yaml`; `examples/answers.yaml` это тот же файл с ответами (после перезаписи e2e на правке поиска 26.11: 12 ответов на 15 вопросов, Q-10 отложен, Q-14 и Q-15 без ответа). Ответы правдоподобные и придуманы для демо, эталон `docs/gold/` не открывался.
 
 Вживую прогон 2 стоит один вызов: нарезка, три прохода поиска, свидетель, вопросы и критик вопросов берутся из кеша прогона 1 (для записи кеш заполнен ответами `tests/fixtures/e2e/md/run/responses/`, запуск с `--passes 3`, как в записи).
 
