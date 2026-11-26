@@ -35,6 +35,7 @@ from validator.models import (
     Scope,
     Witness,
 )
+from validator.report import triage
 from validator.report.clarify_view import CLARIFY_TITLE, CLOSED_NOTE, clarify_view
 from validator.report.coverage import (
     LEGEND,
@@ -347,13 +348,31 @@ def report_context(report: Report) -> dict[str, Any]:
     }
     sections = _finding_sections(findings, requirements)
     resolve = _section_resolver(requirements)
+    parent = {r.id: r.parent_id for r in requirements}
+    keep = set(report.conclusion.fix_first) | {
+        fid for q in report.questions if q.priority in blocking for fid in q.related_findings
+    }
+    req_main, req_minor = triage.split_minor(
+        triage.reading_order([f for f in findings if f.scope is Scope.REQUIREMENT], parent), keep
+    )
+    set_main, set_minor = triage.split_minor(
+        triage.reading_order([f for f in findings if f.scope is Scope.SET], parent), keep
+    )
     return {
         "report": report,
         "findings_by_id": {f.id: f for f in findings},
         "requirements_by_id": {r.id: r for r in requirements},
         "requirement_rows": requirement_rows(report),
-        "req_findings": [f for f in findings if f.scope is Scope.REQUIREMENT],
-        "set_findings": [f for f in findings if f.scope is Scope.SET],
+        "req_findings": req_main,
+        "req_minor": req_minor,
+        "set_findings": set_main,
+        "set_minor": set_minor,
+        "minor_title": triage.MINOR_BLOCK_TITLE,
+        "minor_note_req": triage.MINOR_BLOCK_NOTE_REQ,
+        "minor_note_set": triage.MINOR_BLOCK_NOTE_SET,
+        "empty_req": triage.NO_REQ_MAIN if req_minor else triage.NO_REQ_FINDINGS,
+        "empty_set": triage.NO_SET_MAIN if set_minor else triage.NO_SET_FINDINGS,
+        "review_line": triage.review_line(ver.summary, len(req_minor) + len(set_minor)) if ver else None,
         "critical_classes": [f for f in findings if f.defect_type in _CRITICAL_CLASSES],
         "questions_by_id": {q.id: q for q in report.questions},
         "finding_sections": sections,
