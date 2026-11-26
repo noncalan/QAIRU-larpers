@@ -14,6 +14,12 @@
    перекрытие, потому что на одной фразе бывают два разных дефекта. Линтеру хватает вложенности.
 3. **Свойство:** то же свойство стандарта, тот же тип дефекта или свойство из одной группы
    (``PROPERTY_GROUPS``: проходы путают однозначность и проверяемость одной расплывчатой фразы).
+   Срабатывание линтера присоединяется ещё и к находке модели со свойством из ``Rule.merges_with``
+   своего правила: открытый перечень модель называет и неполнотой, и неоднозначностью (#124).
+
+Две находки **одного прохода** сливаются, только если у них ещё и одна суть (заголовок и объяснение
+похожи не меньше ``SAME_PASS_GIST``): модель сама записала их отдельно, и на одной цитате у неё обычно два
+разных дефекта («нет полей для правил» и «нет срока хранения» на одном перечне данных, #124).
 
 Кластеры собираем жадно по рёбрам «похожих» пар, от самой похожей к наименее похожей, но сначала рёбра
 между находками проходов: срабатывания линтера присоединяются к собранным кластерам и не мешают двум
@@ -41,6 +47,7 @@ from typing import TypeVar
 
 from rapidfuzz import fuzz
 
+from validator.lint.rules import RULE_BY_ID
 from validator.models import (
     CandidateFinding,
     DefectType,
@@ -62,6 +69,12 @@ MIN_QUOTE_OVERLAP = 0.6
 
 TEXT_SIMILARITY = 85.0
 """Минимальный балл rapidfuzz (0–100) для цитат, которых нет в документе, и для находок без цитат."""
+
+SAME_PASS_GIST = 85.0
+"""Минимальный ``token_set_ratio`` сути (заголовок и объяснение) двух находок одного прохода, чтобы слить их.
+
+На 15 записанных прогонах (RC1, e2e, eval) все пары одного прохода на общей цитате были разными дефектами,
+и их суть совпадала не больше чем на 56. Повтор одной находки моделью дал бы почти тот же текст."""
 
 _RULE_SOURCES = frozenset({SourceKind.LINT, SourceKind.SET_CHECK})
 """Источники с ``rule_id``, которые не склеиваются между собой при разных ID: правила линтера и записи
@@ -273,6 +286,27 @@ def _same_place(a: _Prepared, b: _Prepared) -> bool:
     return True
 
 
+def _rule_relates(a: _Prepared, b: _Prepared) -> bool:
+    """Срабатывание линтера и находка прохода со свойством из ``Rule.merges_with`` этого правила."""
+    for lint, other in ((a, b), (b, a)):
+        rule = (
+            RULE_BY_ID.get(lint.cand.source.rule_id or "")
+            if lint.cand.source.kind is SourceKind.LINT
+            else None
+        )
+        if rule is not None and other.pass_index is not None and other.cand.property in rule.merges_with:
+            return True
+    return False
+
+
+def _same_pass(a: _Prepared, b: _Prepared) -> bool:
+    return a.pass_index is not None and a.pass_index == b.pass_index
+
+
+def _same_gist(a: _Prepared, b: _Prepared) -> bool:
+    return fuzz.token_set_ratio(_gist(a), _gist(b)) >= SAME_PASS_GIST
+
+
 def _distinct_lint_rules(a: _Prepared, b: _Prepared) -> bool:
     """Два срабатывания разных правил линтера: это разные дефекты, даже на одной фразе и с одним свойством."""
     return a.lint_rule is not None and b.lint_rule is not None and a.lint_rule != b.lint_rule
@@ -280,7 +314,12 @@ def _distinct_lint_rules(a: _Prepared, b: _Prepared) -> bool:
 
 def _similarity(a: _Prepared, b: _Prepared) -> float:
     """0, если кандидаты разные; иначе похожесть цитат (не меньше ``MIN_QUOTE_OVERLAP``)."""
-    if _distinct_lint_rules(a, b) or not compatible(a.cand, b.cand) or not _same_place(a, b):
+    if _distinct_lint_rules(a, b) or not _same_place(a, b):
+        return 0.0
+    if not (compatible(a.cand, b.cand) or _rule_relates(a, b)):
+        return 0.0
+    # Две находки одного прохода модель записала отдельно: общая цитата их не склеивает, нужна одна суть.
+    if _same_pass(a, b) and not _same_gist(a, b):
         return 0.0
     # Фраза внутри полной формулировки считается той же находкой, только если совпало свойство или
     # тип; для свойств из одной группы нужно взаимное перекрытие: на одной фразе бывают два дефекта.
@@ -297,8 +336,9 @@ def _needs_direct_edge(a: _Prepared, b: _Prepared) -> bool:
     """Пары, которые нельзя склеить через третьего: находки одного прохода, срабатывания разных правил
     линтера и две находки с несколькими цитатами (противоречия «A и B» и «A и C» не сливаются через
     находку только про A)."""
-    same_pass = a.pass_index is not None and a.pass_index == b.pass_index
-    return same_pass or _distinct_lint_rules(a, b) or (len(a.norm_quotes) > 1 and len(b.norm_quotes) > 1)
+    return (
+        _same_pass(a, b) or _distinct_lint_rules(a, b) or (len(a.norm_quotes) > 1 and len(b.norm_quotes) > 1)
+    )
 
 
 def _cluster(items: Sequence[_Prepared]) -> list[list[_Prepared]]:
@@ -509,4 +549,4 @@ def merge(
     return [_build(cl, f"M-{n:03d}", of, block_order) for n, cl in enumerate(clusters, start=1)]
 
 
-__all__ = ["MIN_QUOTE_OVERLAP", "PROPERTY_GROUPS", "TEXT_SIMILARITY", "compatible", "merge"]
+__all__ = ["MIN_QUOTE_OVERLAP", "PROPERTY_GROUPS", "SAME_PASS_GIST", "TEXT_SIMILARITY", "compatible", "merge"]
