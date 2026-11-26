@@ -7,7 +7,7 @@
     на запасной нарезке без модели. Для отладки промпта на чужих документах: печатает находки и, если дан
     манифест мутаций, какие мутации процитированы.
 
-``paired DOC OUT --seed-run RUN [--no-gaps]``
+``paired DOC OUT --seed-run RUN [--no-gaps] [--passes K]``
     Конвейер агента до верификатора включительно (без свидетеля, попытки теста и вопросов: находки от них
     не зависят). Ответы нарезки и поиска берутся из записанного прогона ``RUN`` через кеш, поэтому
     сравнение «с проходом и без» парное: поиск один и тот же, живой только новый вызов. Пишет
@@ -55,8 +55,10 @@ def seed_cache(cache_dir: Path, run_dir: Path, steps: tuple[str, ...] = ("segmen
     return copied
 
 
-def _config(doc: Path, out: Path, *, gaps: bool) -> RunConfig:
-    cfg = load_config(doc, out / "report.md", backend=Backend.CLI, max_budget_usd=MAX_BUDGET_USD, gaps=gaps)
+def _config(doc: Path, out: Path, *, gaps: bool, passes: int | None = None) -> RunConfig:
+    cfg = load_config(
+        doc, out / "report.md", backend=Backend.CLI, max_budget_usd=MAX_BUDGET_USD, gaps=gaps, passes=passes
+    )
     return cfg.model_copy(update={"cache_dir": (out / ".cache").resolve()})
 
 
@@ -67,7 +69,7 @@ def _skipped(*_args: Any, **_kwargs: Any) -> Any:
 def paired(args: argparse.Namespace) -> int:
     out: Path = args.out
     out.mkdir(parents=True, exist_ok=True)
-    cfg = _config(args.doc, out, gaps=not args.no_gaps)
+    cfg = _config(args.doc, out, gaps=not args.no_gaps, passes=args.passes)
     seeded = seed_cache(cfg.cache_dir, args.seed_run)
     # Шаги после слияния не меняют состав находок (критик выключен): стенд их пропускает, конвейер пишет
     # об этом предупреждения в отчёт и идёт дальше.
@@ -153,6 +155,7 @@ def main() -> int:
     p_pair.add_argument("out", type=Path)
     p_pair.add_argument("--seed-run", type=Path, required=True, help="папка run/ записанного прогона")
     p_pair.add_argument("--no-gaps", action="store_true")
+    p_pair.add_argument("--passes", type=int, help="контроль: K обычных проходов поиска (первый из записи)")
     p_pair.set_defaults(fn=paired)
     args = parser.parse_args()
     return int(args.fn(args))

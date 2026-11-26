@@ -40,3 +40,4 @@ CLAUDE.local.md
 *.swp
 .DS_Store
 Thumbs.db
+experiments/50-gaps-pass/runs/
