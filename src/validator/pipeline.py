@@ -740,6 +740,8 @@ def _write(state: _State, report: Report | None, markdown: str) -> dict[str, Pat
         doc.name if doc else cfg.input_path.name,
         doc.sha256 if doc else None,
         kept=cfg.questions_path if questions_path != cfg.questions_path else None,
+        answered=state.clarification.answers if state.clarification else (),
+        answers_file=state.clarification.answers_file if state.clarification else None,
     )
     outputs["questions"] = questions_path
     calls_path = cfg.run_dir / "calls.jsonl"

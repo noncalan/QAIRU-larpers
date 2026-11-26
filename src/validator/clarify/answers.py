@@ -38,8 +38,30 @@ SKIP_WORDS = frozenset({"skip", "пропустить", "пропуск", "от�
 """Ответ «пропустить»: автор видел вопрос и отложил его, вопрос остаётся открытым."""
 
 _SKIP_PUNCT = " .,;:!?«»\"'"
+_TAIL = r"(?:\s+\S+){0,5}"
+"""До пяти слов после «не знаю» или «уточню»: «не знаю, спрошу у бизнеса», «уточню у юристов к пятнице»."""
+_DEFER_PHRASES = (
+    r"(?:я\s+)?не\s*знаю|не\s*знаем|не\s+уверен[аы]?|затрудняюсь(?:\s+ответить)?"
+    r"|нет\s+ответа|ответа\s+(?:пока\s+)?нет|не\s+решено|не\s+решили"
+    r"|(?:решим|ответим|отвечу|скажу|скажем)\s+(?:позже|потом)"
+    r"|уточню|уточним|уточняем|уточняю|уточняется|уточнят|(?:нужно|надо)\s+уточнить"
+    r"|tbd|tba|todo|unknown|idk|(?:i\s+)?don\s?t\s+know|not\s+sure"
+)
+_DEFER_ALONE = r"позже|потом|later|n\s*a"
+"""Только как весь ответ: «потом отправляем письмо» это уже правило, а не отсрочка."""
+_DEFERRED = re.compile(rf"(?:пока\s+)?(?:(?:{_DEFER_PHRASES}){_TAIL}|{_DEFER_ALONE})")
+"""Ответ-отсрочка: автор ответа не знает. Вопрос остаётся открытым, как при «пропустить» (#142).
+
+Ошибиться в эту сторону безопасно: открытый вопрос не даёт ложного зелёного светофора, а текст автора виден
+в отчёте рядом с пометкой «отложен». Наоборот, «не знаю» как ответ закрыл бы вопрос и мог сделать светофор
+зелёным: «можно начинать разработку».
+"""
 _QUESTION_ID = re.compile(r"Q\s*-?\s*0*(\d+)", re.IGNORECASE)
-_OPTION_LETTER = re.compile(r"([A-Za-zА-Яа-яЁё])\s*[.)]?")
+_OPTION_PREFIX = r"(?:(?:вариант|variant|option)\s*[:№#-]?\s*)?"
+_OPTION_LETTER = re.compile(rf"{_OPTION_PREFIX}\(?\s*([A-Za-zА-Яа-яЁё])\s*[.):]?", re.IGNORECASE)
+"""«B», «b.», «B)», «(B)», «вариант B», «Вариант: B»."""
+_OPTION_NUMBER = re.compile(r"(?:вариант|variant|option)\s*[:№#-]?\s*\(?\s*([1-9])\s*[.):]?", re.IGNORECASE)
+"""«вариант 2» → второй вариант (B). Голое «2» остаётся своим ответом: это значение («2 попытки»)."""
 _LOOKALIKES = str.maketrans("АВСЕавсе", "ABCEABCE")
 """Кириллические буквы, неотличимые от латинских: автор мог набрать вариант «А» в русской раскладке."""
 
@@ -159,8 +181,25 @@ def _options(raw: object) -> dict[str, tuple[str, str]]:
 
 
 def _option_letter(answer: str) -> str | None:
-    m = _OPTION_LETTER.fullmatch(answer)
-    return m.group(1).translate(_LOOKALIKES).upper() if m else None
+    text = answer.strip()
+    m = _OPTION_LETTER.fullmatch(text)
+    if m:
+        return m.group(1).translate(_LOOKALIKES).upper()
+    n = _OPTION_NUMBER.fullmatch(text)
+    return chr(ord("A") + int(n.group(1)) - 1) if n else None
+
+
+def _plain_words(answer: str) -> str:
+    """Ответ без знаков препинания и регистра: «Не знаю...» → «не знаю», «?» → пустая строка."""
+    return " ".join(re.sub(r"[^\w]+", " ", answer.lower().replace("ё", "е")).split())
+
+
+def is_deferred(answer: str) -> bool:
+    """Ответ откладывает вопрос: «пропустить», «не знаю», «?», «TBD», «уточню позже» и т. п."""
+    if answer.lower().strip(_SKIP_PUNCT) in SKIP_WORDS:
+        return True
+    words = _plain_words(answer)
+    return not words or _DEFERRED.fullmatch(words) is not None
 
 
 @dataclass(frozen=True)
@@ -196,6 +235,17 @@ def _raw(entry: Mapping[str, Any], qid: str, path: Path) -> RawAnswer:
     )
 
 
+def _deferral_note(raw: RawAnswer) -> str:
+    """Пояснение к отложенному ответу: слова автора («не знаю, спрошу у бизнеса») не теряются в отчёте.
+
+    Голое «пропустить» и «?» ничего не добавляют, поэтому пояснение остаётся как в файле.
+    """
+    bare = raw.answer.lower().strip(_SKIP_PUNCT) in SKIP_WORDS or not _plain_words(raw.answer)
+    if bare:
+        return raw.comment
+    return f"{raw.answer}; {raw.comment}" if raw.comment else raw.answer
+
+
 def resolve_answer(
     raw: RawAnswer, options: Mapping[str, tuple[str, str]] | None = None
 ) -> tuple[AuthorAnswer, str | None]:
@@ -213,8 +263,8 @@ def resolve_answer(
     }
     if raw.empty:
         return AuthorAnswer(kind=AnswerKind.NONE, **base), None
-    if raw.answer.lower().strip(_SKIP_PUNCT) in SKIP_WORDS:
-        return AuthorAnswer(kind=AnswerKind.SKIPPED, **base), None
+    if is_deferred(raw.answer):
+        return AuthorAnswer(kind=AnswerKind.SKIPPED, **(base | {"comment": _deferral_note(raw)})), None
     letter = _option_letter(raw.answer)
     if letter is None:
         return AuthorAnswer(kind=AnswerKind.TEXT, text=raw.answer, **base), None
@@ -275,6 +325,7 @@ __all__ = [
     "AnswersError",
     "AnswersFile",
     "RawAnswer",
+    "is_deferred",
     "load_answers",
     "normalize_question_id",
     "resolve_answer",
