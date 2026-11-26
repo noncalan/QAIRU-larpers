@@ -197,11 +197,12 @@ def test_auto_backend_with_key_uses_the_api_even_without_claude(
     assert not any(d.level is DiagLevel.ERROR for d in diagnostics)
 
 
-def test_unimplemented_options_are_reported(tmp_path: Path) -> None:
+def test_clarify_options_are_not_reported_as_unimplemented(tmp_path: Path) -> None:
+    """Цикл уточнения сделан (#42): ``--ask`` ведёт CLI, конвейер его не помечает как «ещё не работает»."""
     outcome, _ = _run(REQUIREMENTS[DocKind.MD], tmp_path, ask=True)
 
     assert outcome.exit_code is ExitCode.OK
-    assert any(d.code == "CFG-010" and "--ask" in d.message for d in outcome.diagnostics)
+    assert not [d for d in outcome.diagnostics if d.code == "CFG-010"]
 
 
 def test_budget_and_cache_options_are_not_reported_as_unimplemented(tmp_path: Path) -> None:

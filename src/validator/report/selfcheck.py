@@ -20,6 +20,7 @@ from collections.abc import Callable, Iterable, Sequence
 
 from validator.errors import INT_SELFCHECK_FAILED, INT_SELFCHECK_WARNING
 from validator.models import (
+    ClarifyEffect,
     DiagLevel,
     Diagnostic,
     Finding,
@@ -29,6 +30,7 @@ from validator.models import (
     SelfCheck,
     SelfCheckItem,
     Severity,
+    SourceKind,
     Verdict,
 )
 from validator.report.coverage import grid_finding_ids
@@ -288,6 +290,21 @@ def _summary_failures(report: Report, sections: dict[str, list[str]] | None) -> 
     return failures
 
 
+def _clarify_delta(report: Report) -> int:
+    """На сколько ответы автора изменили число «в отчёте + отброшено» против числа после слияния.
+
+    Сверка с ответами (#42) убирает закрытые находки и добавляет свои: новые в отчёт, без сверенной
+    цитаты в отброшенные. Повторы и находки сверх лимита не попадают ни туда, ни туда.
+    """
+    c, ver = report.clarification, report.verification
+    if c is None or ver is None:
+        return 0
+    added = len(c.by_effect(ClarifyEffect.NEW)) + sum(
+        any(src.kind is SourceKind.ANSWER for src in d.finding.sources) for d in ver.discarded
+    )
+    return added - len(c.by_effect(ClarifyEffect.CLOSED))
+
+
 def _metrics_failures(report: Report) -> list[str]:
     ver, m = report.verification, report.metrics
     if ver is None:
@@ -302,8 +319,8 @@ def _metrics_failures(report: Report) -> list[str]:
     )
     _equal(
         failures,
-        "находок после слияния",
-        m.merged_total,
+        "находок после слияния и сверки с ответами автора",
+        m.merged_total + _clarify_delta(report),
         m.findings_total + m.discarded_total,
         "в отчёте и отброшенных вместе",
     )

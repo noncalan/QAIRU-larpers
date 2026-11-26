@@ -116,7 +116,7 @@ class DraftReplySchema(_Lenient):
 
 @dataclass
 class CheckLog:
-    """Что код сделал с черновиками: из этого собирается строка диагностики LLM-061."""
+    """Что код сделал с черновиками: из этого собирается строка диагностики LLM-045."""
 
     drafts: int = 0
     values_total: int = 0

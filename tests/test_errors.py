@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import re
+
 import pytest
 
+from validator import errors
 from validator.errors import InputError, exit_code
 from validator.models import DiagLevel, Diagnostic, ExitCode
 
@@ -39,3 +42,19 @@ def test_error_becomes_diagnostic_with_action() -> None:
     d = error.to_diagnostic(action="Проверка не выполнена")
 
     assert (d.code, d.level, d.hint, d.location) == ("IN-001", DiagLevel.ERROR, "Проверьте путь", "x.pdf")
+
+
+def test_diagnostic_codes_are_unique() -> None:
+    """Один код диагностики значит одно: слияние веток не должно дать два смысла на один номер."""
+    codes = {
+        name: value
+        for name, value in vars(errors).items()
+        if name.isupper() and isinstance(value, str) and re.fullmatch(r"[A-Z]+-\d{3}", value)
+    }
+    by_value: dict[str, list[str]] = {}
+    for name, value in codes.items():
+        by_value.setdefault(value, []).append(name)
+    # IN_NO_REQUIREMENTS намеренный псевдоним IN_HEADINGS_ONLY (один «пустой шаблон»).
+    by_value["IN-081"] = [n for n in by_value.get("IN-081", []) if n != "IN_NO_REQUIREMENTS"]
+    clashes = {value: names for value, names in by_value.items() if len(names) > 1}
+    assert not clashes, f"Коды диагностики повторяются: {clashes}"

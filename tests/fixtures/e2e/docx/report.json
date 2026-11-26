@@ -7,13 +7,13 @@
     "document_sha256": "7fd7c1d145b0c4e01ac8a502856b08eaf0cdbddc896069271687f6a2a16022d5",
     "document_size_bytes": 16072,
     "document_pages": null,
-    "started_at": "2026-11-26T07:12:19.216868Z",
-    "finished_at": "2026-11-26T07:12:19.557930Z",
-    "duration_s": 0.34,
-    "agent_version": "e967c13-dirty",
+    "started_at": "2026-11-26T07:36:55.913270Z",
+    "finished_at": "2026-11-26T07:36:56.217321Z",
+    "duration_s": 0.3,
+    "agent_version": "e94e244-dirty",
     "agent_version_source": "git",
     "agent_dirty": true,
-    "prompts_sha256": "e9382132d0d782e14ff06ff1028d810a2f07b0d8bb15404e60e8a09d3fb856fb",
+    "prompts_sha256": "94983fa3a42a3224793118b33a0f03dfe0e730ea83b37029478ad3890a013a73",
     "os": "Linux 6.18.44-fc-v880 (x86_64)",
     "python": "3.13.18",
     "backend_requested": "replay",
@@ -44,7 +44,9 @@
       "cache_read_input_tokens": 40015
     },
     "cost_usd": 4.4546,
-    "exit_code": 0
+    "exit_code": 0,
+    "answers_file": null,
+    "answers_sha256": null
   },
   "document": {
     "name": "requirements.docx",
@@ -87,7 +89,7 @@
       "step": "evidence"
     },
     {
-      "code": "LLM-061",
+      "code": "LLM-045",
       "level": "info",
       "message": "Код проверил черновики теста: готово 48 из 48",
       "action": "значений без цитаты заменено пропуском: 4; чисел ожидаемого результата без цитаты заменено пропуском: 4",
@@ -3314,7 +3316,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -3455,7 +3458,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -3570,7 +3574,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -3791,7 +3796,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -3979,7 +3985,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": "Покупки в иностранной валюте вынесены в отдельный случай."
+          "note": "Покупки в иностранной валюте вынесены в отдельный случай.",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -4118,7 +4125,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -4321,7 +4329,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -4520,7 +4529,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -4685,7 +4695,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -4879,7 +4890,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -5003,7 +5015,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -5152,7 +5165,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -5298,7 +5312,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -5453,7 +5468,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -5675,7 +5691,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -5794,7 +5811,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -5914,7 +5932,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -6040,7 +6059,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": "Единственное, что документ задаёт: возврат уменьшает расходы месяца исходной покупки."
+          "note": "Единственное, что документ задаёт: возврат уменьшает расходы месяца исходной покупки.",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -6153,7 +6173,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -6327,7 +6348,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -6472,7 +6494,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": "Проверяемый факт на стороне системы (вызов сервиса push) в документе есть. Мешает только неопределённая «сумма»."
+          "note": "Проверяемый факт на стороне системы (вызов сервиса push) в документе есть. Мешает только неопределённая «сумма».",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -6572,7 +6595,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -6756,7 +6780,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -6867,7 +6892,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -6995,7 +7021,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -7228,7 +7255,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -7388,7 +7416,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -7517,7 +7546,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -7651,7 +7681,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -7765,7 +7796,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -7929,7 +7961,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": "Число push следует из ограничения «один за месяц». Ключ повтора в документе не задан, поэтому нельзя проверить повтор, у которого часть полей отличается."
+          "note": "Число push следует из ограничения «один за месяц». Ключ повтора в документе не задан, поэтому нельзя проверить повтор, у которого часть полей отличается.",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -8225,7 +8258,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": "Возврат, снятие наличных, второй переход в месяце и повторная доставка в этот тест не вошли, это отдельные тесты. Значение по умолчанию (уведомление выключено) задано в Ф-1, но в таблицу критериев приёмки не вынесено."
+          "note": "Возврат, снятие наличных, второй переход в месяце и повторная доставка в этот тест не вошли, это отдельные тесты. Значение по умолчанию (уведомление выключено) задано в Ф-1, но в таблицу критериев приёмки не вынесено.",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -8436,7 +8470,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": "Для варианта «push в этом месяце уже был» Ф-3 даёт результат (повторного push нет). Пропуск относится к состоянию переключателя."
+          "note": "Для варианта «push в этом месяце уже был» Ф-3 даёт результат (повторного push нет). Пропуск относится к состоянию переключателя.",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -8560,7 +8595,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -8753,7 +8789,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": "Строка описания «чтение порога» противоречит остальному тексту. Логика метода, особые правила, обязательные параметры и пример ответа однозначно описывают сохранение с заменой настройки, поэтому результат определён."
+          "note": "Строка описания «чтение порога» противоречит остальному тексту. Логика метода, особые правила, обязательные параметры и пример ответа однозначно описывают сохранение с заменой настройки, поэтому результат определён.",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -8893,7 +8930,8 @@
             }
           ],
           "gap_items": [],
-          "note": "Документ задаёт GET и в таблице параметров, и в примере curl -G, поэтому метод для проверки известен. Замечание о том, что GET не должен менять состояние, касается дизайна и не мешает написать тест."
+          "note": "Документ задаёт GET и в таблице параметров, и в примере curl -G, поэтому метод для проверки известен. Замечание о том, что GET не должен менять состояние, касается дизайна и не мешает написать тест.",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -9005,7 +9043,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -9114,7 +9153,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -9329,7 +9369,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -9561,7 +9602,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": "HTTP-статус ответа здесь не проверяется: для недопустимой суммы документ называет разные статусы."
+          "note": "HTTP-статус ответа здесь не проверяется: для недопустимой суммы документ называет разные статусы.",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -9787,7 +9829,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": "Тип integer относится к запросу, в ответе тип string задан и в таблице, и в примере, так что ожидаемый тип поля в ответе известен."
+          "note": "Тип integer относится к запросу, в ответе тип string задан и в таблице, и в примере, так что ожидаемый тип поля в ответе известен.",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -9934,7 +9977,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -10123,7 +10167,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -10310,7 +10355,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -10603,7 +10649,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": "Единого перечня статусов с условиями нет: в списке только 200 и 400, остальные коды разбросаны по разделу 200 и тексту под заголовком 403. 500 здесь не проверяется: способ вызвать внутреннюю ошибку в документе не описан."
+          "note": "Единого перечня статусов с условиями нет: в списке только 200 и 400, остальные коды разбросаны по разделу 200 и тексту под заголовком 403. 500 здесь не проверяется: способ вызвать внутреннюю ошибку в документе не описан.",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -10803,7 +10850,8 @@
               "question_withdrawn": false
             }
           ],
-          "note": ""
+          "note": "",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -10934,7 +10982,8 @@
             }
           ],
           "gap_items": [],
-          "note": "Кода 404 нет в списке статусов, но условие (отсутствующая карта), код и тело заданы в тексте раздела. Поведение для чужой карты в этом тесте не проверяется."
+          "note": "Кода 404 нет в списке статусов, но условие (отсутствующая карта), код и тело заданы в тексте раздела. Поведение для чужой карты в этом тесте не проверяется.",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -11349,7 +11398,8 @@
             }
           ],
           "gap_items": [],
-          "note": "Параметр amount в запросе и ответе описан как «Порог в тенге», а срабатывание push задано через порог (Ф-3). Слова «личный бюджет» в цели ожидаемый результат не меняют."
+          "note": "Параметр amount в запросе и ответе описан как «Порог в тенге», а срабатывание push задано через порог (Ф-3). Слова «личный бюджет» в цели ожидаемый результат не меняют.",
+          "contested": false
         },
         "critic": null,
         "anchor_corrected": false,
@@ -14767,6 +14817,7 @@
     }
   ],
   "questions_withdrawn": [],
+  "clarification": null,
   "conclusion": {
     "traffic_light": "red",
     "headline": "Начинать разработку и тестирование нельзя: 10 критичных нарушений мешают написать тест-кейсы (F-01, F-02, F-03, F-04, F-05 и ещё 5)",
@@ -14787,7 +14838,7 @@
     ]
   },
   "metrics": {
-    "duration_s": 0.34,
+    "duration_s": 0.3,
     "calls_total": 11,
     "calls_failed": 0,
     "calls_cached": 0,

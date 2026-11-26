@@ -28,6 +28,7 @@ from validator.config import load_config
 from validator.errors import LLM_NO_FIXTURE, LLM_TEST_DRAFT_CHECKED, LLM_TEST_DRAFT_FAILED, LLMError
 from validator.evidence_testdraft import (
     BATCH_SIZE,
+    CONTESTED_NOTE,
     SYSTEM_PROMPT,
     build_request,
     draft_tests,
@@ -58,6 +59,7 @@ from validator.models import (
     TestDraft,
     Verification,
     WithdrawnQuestion,
+    Witness,
 )
 from validator.pipeline import run as run_pipeline
 from validator.refs import RefNamer, humanize_finding
@@ -78,11 +80,14 @@ def merged(
     blocks_testing: bool = False,
     test_gap: str | None = None,
     critic: CriticDecision | None = None,
+    defect_type: DefectType = DefectType.UNVERIFIABLE,
+    witness: Witness | None = None,
 ) -> MergedFinding:
     return MergedFinding(
         mid=mid,
         property=prop,
-        defect_type=DefectType.UNVERIFIABLE,
+        defect_type=defect_type,
+        witness=witness,
         quotes=list(quotes or [FINE]),
         explanation="Пояснение находки.",
         blocks_testing=blocks_testing,
@@ -265,6 +270,50 @@ def test_complete_draft_clears_blocks_testing(doc: ParsedDocument, tmp_path: Pat
     findings, _ = run(doc, [merged("M-001", TERM, blocks_testing=True)], llm_with(d), tmp_path)
 
     assert not findings[0].blocks_testing and only_draft(findings).complete
+
+
+def _writable() -> dict[str, Any]:
+    return draft(
+        expected="Срок выдачи составляет четырнадцать дней.",
+        can_write=True,
+        gaps=[],
+        values=[{"value": "четырнадцать дней", "quote": TERM}],
+    )
+
+
+@pytest.mark.parametrize(
+    ("defect_type", "witness"),
+    [
+        (DefectType.CONTRADICTION, None),
+        (DefectType.AMBIGUOUS, Witness(scenario="Сценарий.", checked=True)),
+    ],
+    ids=["contradiction", "accepted-witness"],
+)
+def test_contested_finding_keeps_blocks_testing_after_complete_draft(
+    doc: ParsedDocument, tmp_path: Path, defect_type: DefectType, witness: Witness | None
+) -> None:
+    m = merged("M-001", TERM, blocks_testing=True, defect_type=defect_type, witness=witness)
+
+    findings, _ = run(doc, [m], llm_with(_writable()), tmp_path)
+
+    t = only_draft(findings)
+    assert findings[0].blocks_testing and t.contested and CONTESTED_NOTE in t.note
+    assert "по-прежнему мешает" in draft_view(findings[0]).status  # type: ignore[union-attr]
+    assert draft_stats([findings[0]]).complete == 0  # type: ignore[union-attr]
+
+
+def test_unchecked_witness_does_not_keep_blocks_testing(doc: ParsedDocument, tmp_path: Path) -> None:
+    m = merged(
+        "M-001",
+        TERM,
+        blocks_testing=True,
+        defect_type=DefectType.AMBIGUOUS,
+        witness=Witness(scenario="Сценарий.", checked=False),
+    )
+
+    findings, _ = run(doc, [m], llm_with(_writable()), tmp_path)
+
+    assert not findings[0].blocks_testing and not only_draft(findings).contested
 
 
 def test_can_write_without_confirmed_values_is_not_accepted(doc: ParsedDocument, tmp_path: Path) -> None:

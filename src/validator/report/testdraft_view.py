@@ -52,6 +52,8 @@ def _gap_line(g: DraftGap) -> str:
 
 def _status(draft: TestDraft) -> str:
     replaced = sum(1 for g in draft.gap_items if g.replaced)
+    if draft.contested:
+        return "тест написан по одному из двух прочтений документа: находка по-прежнему мешает тестированию"
     if draft.complete:
         return "тест написать можно: все значения результата взяты из документа, у каждого есть цитата"
     if draft.gap_items:
@@ -98,7 +100,7 @@ def draft_stats(findings: Sequence[Finding]) -> DraftStats | None:
     return DraftStats(
         drafts=len(drafts),
         with_gaps=sum(1 for d in drafts if d.gap_items),
-        complete=sum(1 for d in drafts if d.complete),
+        complete=sum(1 for d in drafts if d.complete and not d.contested),
         gaps=len(gaps),
         linked=sum(1 for g in gaps if g.question_id),
         values=sum(1 for v in values if v.verified),

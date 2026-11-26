@@ -13,7 +13,7 @@ Sonnet 5.5 ``high``) пытается написать тест-кейс: пре
 
 Формат ответа: рассуждение текстом, затем один блок ```json (без ``--json-schema``: в строгом JSON модель
 думает меньше, исследование 21). Находки идут пачками по ``BATCH_SIZE``; сбой пачки не роняет отчёт:
-её находки остаются без черновика, в диагностике ``LLM-060``.
+её находки остаются без черновика, в диагностике ``LLM-044``.
 """
 
 from __future__ import annotations
@@ -36,6 +36,7 @@ from validator.ingest.blocks import render_for_model
 from validator.llm.base import LLMClient
 from validator.models import (
     CriticAction,
+    DefectType,
     DiagLevel,
     Diagnostic,
     LLMRequest,
@@ -63,6 +64,11 @@ BATCH_SIZE = 13
 MAX_PARALLEL_BATCHES = 4
 """Пачки идут параллельно, как проходы поиска (``search.MAX_PARALLEL_PASSES``)."""
 
+CONTESTED_NOTE = (
+    "Код: черновик выбрал одно прочтение, а в документе их два (противоречие или принятый свидетель), "
+    "поэтому находка по-прежнему мешает тестированию."
+)
+
 TARGET_PROPERTIES = frozenset({Property.VERIFIABLE, Property.UNAMBIGUOUS})
 """Свойства, по которым попытку теста делаем всегда; остальные находки только если мешают тесту."""
 
@@ -83,6 +89,11 @@ def needs_draft(m: MergedFinding) -> bool:
     if m.critic is not None and m.critic.action is CriticAction.DROP:
         return False
     return m.property in TARGET_PROPERTIES or m.blocks_testing
+
+
+def is_contested(m: MergedFinding) -> bool:
+    """Противоречие или находка с принятым свидетелем: у документа два прочтения, черновик берёт одно."""
+    return m.defect_type is DefectType.CONTRADICTION or (m.witness is not None and m.witness.checked)
 
 
 def _one_line(text: str) -> str:
@@ -180,8 +191,14 @@ def _apply(
         if draft is None:
             continue
         # Тест написать можно: код подтвердил все значения, находка больше не мешает тестированию.
+        # Исключение: противоречие и находка с принятым свидетелем. Там два разных ожидания уже доказаны
+        # кодом по цитатам, и черновик, выбравший одно из них, «мешает тесту» не снимает.
         update: dict[str, object] = {"test_draft": draft}
-        if draft.complete and m.blocks_testing:
+        if draft.complete and is_contested(m):
+            update["test_draft"] = draft.model_copy(
+                update={"contested": True, "note": f"{draft.note} {CONTESTED_NOTE}".strip()}
+            )
+        elif draft.complete and m.blocks_testing:
             update["blocks_testing"] = False
         out[m.mid] = m.model_copy(update=update)
     return out
@@ -268,4 +285,12 @@ def draft_tests(
     )
 
 
-__all__ = ["BATCH_SIZE", "MAX_PARALLEL_BATCHES", "TestDraftOutcome", "draft_tests", "needs_draft"]
+__all__ = [
+    "BATCH_SIZE",
+    "CONTESTED_NOTE",
+    "MAX_PARALLEL_BATCHES",
+    "TestDraftOutcome",
+    "draft_tests",
+    "is_contested",
+    "needs_draft",
+]

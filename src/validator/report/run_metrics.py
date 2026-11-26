@@ -30,6 +30,7 @@ STEP_LABELS: dict[str, str] = {
     LLMStep.TEST_DRAFT.value: "Попытка тест-кейса",
     LLMStep.QUESTIONS.value: "Вопросы автору",
     LLMStep.QUESTIONS_CRITIC.value: "Критик вопросов",
+    LLMStep.CLARIFY.value: "Сверка с ответами автора",
     LLMStep.JUDGE.value: "Судья eval",
 }
 """Шаги по-русски; порядок словаря это порядок шагов конвейера."""
