@@ -18,6 +18,9 @@
 - Вход поиска задаёт ``cfg.search_input`` (#37, D-011, п. 2): ``blocks`` это документ с ID блоков
   (``render_for_model``), ``raw`` это канонический текст ``doc.text`` без разметки. В режиме ``raw``
   блоки, которые назвала модель, не берутся (ID ей не показывали): их находит код по цитатам находки.
+  Цитата, которая встречается дословно несколько раз, привязывается к первому месту (это видно в
+  диагностике ``LLM-034``). Перенос в JSON и в режиме ``raw`` видит документ с ID блоков: так его промпт
+  описывает вход. Запись прогона ``raw`` пересобирается replay с тем же флагом ``--search-input raw``.
 - Упавший проход это ``PassResult(ok=False)`` с диагностикой ``LLM-030`` «Проход k из K не удался»
   (``INT-002``, если упал код разбора), остальные идут дальше («K−1 из K»). Если упали все, шаг
   возвращает упавшие проходы без находок, а конвейер собирает отчёт без находок модели (``LLM-031``).
@@ -53,6 +56,7 @@ from validator.models import (
     LLMStep,
     ParsedDocument,
     PassResult,
+    QuoteMatch,
     RunConfig,
     SearchInput,
     SourceKind,
@@ -69,7 +73,7 @@ from validator.search_transfer import (
     transfer_request,
     transferred,
 )
-from validator.text import locate_quote
+from validator.text import locate_quote, normalize
 
 logger = logging.getLogger(__name__)
 
@@ -109,6 +113,10 @@ def search_request(rendered: str, cfg: RunConfig, index: int) -> LLMRequest:
 class _Context:
     doc: ParsedDocument
     rendered: str
+    """Текст для проходов: с ID блоков или сырой (``search_text``)."""
+    marked: str
+    """Документ с ID блоков для переноса в JSON: его промпт описывает разметку, а ID переноса в режиме
+    ``raw`` всё равно не берутся."""
     llm: LLMClient
     cfg: RunConfig
 
@@ -133,7 +141,7 @@ def _transfer(ctx: _Context, index: int, fragments: Sequence[Fragment], out: _Ou
     """
     findings = render_fragments(fragments)
     for attempt in range(TRANSFER_ATTEMPTS):
-        req = transfer_request(ctx.rendered, findings, ctx.cfg, index, attempt)
+        req = transfer_request(ctx.marked, findings, ctx.cfg, index, attempt)
         out.call_ids.append(req.call_id)
         resp = ctx.llm.call(req)
         try:
@@ -272,36 +280,92 @@ def _known_blocks(
     return kept
 
 
-def _quote_blocks(doc: ParsedDocument, quotes: Sequence[str]) -> list[str]:
-    """Блоки, где лежат цитаты находки (режим ``raw``). Ненайденная цитата блоков не даёт."""
+@dataclass
+class _Placement:
+    """Что не вышло при поиске ID блоков: для диагностики прохода."""
+
+    unknown: list[str] = field(default_factory=list)
+    """Режим ``blocks``: ID, которых нет в документе."""
+    coarse: list[str] = field(default_factory=list)
+    """Режим ``blocks``: ID несуществующих предложений, заменённые ID блока."""
+    unplaced: list[str] = field(default_factory=list)
+    """Режим ``raw``: находки, ни одна цитата которых не найдена (``cid``)."""
+    ambiguous: list[str] = field(default_factory=list)
+    """Режим ``raw``: цитаты, которые встречаются в документе несколько раз (взято первое место)."""
+
+
+def _quote_blocks(doc: ParsedDocument, quotes: Sequence[str], cid: str, notes: _Placement) -> list[str]:
+    """Блоки, где лежат цитаты находки (режим ``raw``). Ненайденная цитата блоков не даёт.
+
+    Цитата, которая встречается дословно несколько раз, привязывается к первому месту: в режиме
+    ``blocks`` место выбирала бы модель. Такие цитаты считаются в диагностике прохода.
+    """
     ids: list[str] = []
+    norm_doc = normalize(doc.text)[0]
     for quote in quotes:
         found = locate_quote(doc, quote)
-        if found.verified and found.anchor is not None:
-            ids.extend(found.anchor.block_ids)
+        if not (found.verified and found.anchor is not None):
+            continue
+        ids.extend(found.anchor.block_ids)
+        norm_quote = normalize(quote)[0]
+        if found.match is QuoteMatch.EXACT and norm_doc.count(norm_quote) > 1:
+            notes.ambiguous.append(quote)
+    if not ids:
+        notes.unplaced.append(cid)
     return list(dict.fromkeys(ids))
 
 
-def _block_ids(ctx: _Context, d: Draft, unknown: list[str], coarse: list[str]) -> list[str]:
+def _block_ids(ctx: _Context, d: Draft, cid: str, notes: _Placement) -> list[str]:
     if ctx.cfg.search_input is SearchInput.RAW:
-        return _quote_blocks(ctx.doc, d.quotes)
-    return _known_blocks(ctx.doc, d.block_ids, unknown, coarse)
+        return _quote_blocks(ctx.doc, d.quotes, cid, notes)
+    return _known_blocks(ctx.doc, d.block_ids, notes.unknown, notes.coarse)
+
+
+def _placement_note(index: int, call_id: str, notes: _Placement) -> Diagnostic | None:
+    parts = []
+    if notes.unknown:
+        parts.append(
+            f"отброшены ID блоков, которых нет в документе: {len(notes.unknown)} ({_examples(notes.unknown)})"
+        )
+    if notes.coarse:
+        coarse = f"{len(notes.coarse)} ({_examples(notes.coarse)})"
+        parts.append(f"ID несуществующих предложений заменены ID блока: {coarse}")
+    if notes.unplaced:
+        parts.append(
+            f"текст без ID блоков: у {len(notes.unplaced)} находок ни одна цитата не найдена, блок не "
+            f"определён ({_examples(notes.unplaced)})"
+        )
+    if notes.ambiguous:
+        parts.append(
+            f"текст без ID блоков: {len(notes.ambiguous)} цитат встречаются в документе несколько раз, "
+            "взято первое место"
+        )
+    if not parts:
+        return None
+    return Diagnostic(
+        code=LLM_UNKNOWN_BLOCKS,
+        level=DiagLevel.INFO,
+        message=f"Проход {index}: " + "; ".join(parts),
+        action="Находки оставлены: место в документе по цитате найдёт верификатор",
+        location=call_id,
+        step="search",
+    )
 
 
 def _candidates(ctx: _Context, index: int, call_id: str, drafts: Sequence[Draft], out: _Outcome) -> None:
-    unknown: list[str] = []
-    coarse: list[str] = []
+    notes = _Placement()
     source = FindingSource(kind=SourceKind.PASS, pass_index=index, call_id=call_id)
     for seq, d in enumerate(drafts, 1):
+        cid = f"p{index}.{seq:03d}"
         out.candidates.append(
             CandidateFinding(
-                cid=f"p{index}.{seq:03d}",
+                cid=cid,
                 source=source,
                 property=d.property,
                 defect_type=d.defect_type,
                 verdict=d.verdict,
                 scope=d.scope,
-                block_ids=_block_ids(ctx, d, unknown, coarse),
+                block_ids=_block_ids(ctx, d, cid, notes),
                 quotes=list(d.quotes),
                 explanation=d.explanation,
                 suggestion=d.suggestion,
@@ -312,26 +376,9 @@ def _candidates(ctx: _Context, index: int, call_id: str, drafts: Sequence[Draft]
                 test_gap=d.test_gap,
             )
         )
-    if unknown or coarse:
-        parts = []
-        if unknown:
-            parts.append(
-                f"отброшены ID блоков, которых нет в документе: {len(unknown)} ({_examples(unknown)})"
-            )
-        if coarse:
-            parts.append(
-                f"ID несуществующих предложений заменены ID блока: {len(coarse)} ({_examples(coarse)})"
-            )
-        out.diagnostics.append(
-            Diagnostic(
-                code=LLM_UNKNOWN_BLOCKS,
-                level=DiagLevel.INFO,
-                message=f"Проход {index}: " + "; ".join(parts),
-                action="Находки оставлены: место в документе по цитате найдёт верификатор",
-                location=call_id,
-                step="search",
-            )
-        )
+    note = _placement_note(index, call_id, notes)
+    if note is not None:
+        out.diagnostics.append(note)
 
 
 def _examples(ids: Sequence[str]) -> str:
@@ -420,7 +467,9 @@ def search(doc: ParsedDocument, llm: LLMClient, cfg: RunConfig) -> list[PassResu
     """``cfg.passes`` проходов по документу. Упавший проход это ``PassResult(ok=False)``, а не исключение."""
     for name in (SEARCH_SYSTEM, SEARCH_USER, TRANSFER_SYSTEM, TRANSFER_USER):
         load_prompt(name)
-    ctx = _Context(doc=doc, rendered=search_text(doc, cfg), llm=llm, cfg=cfg)
+    marked = render_for_model(doc)
+    rendered = marked if cfg.search_input is SearchInput.BLOCKS else search_text(doc, cfg)
+    ctx = _Context(doc=doc, rendered=rendered, marked=marked, llm=llm, cfg=cfg)
     indexes = range(1, cfg.passes + 1)
     with ThreadPoolExecutor(
         max_workers=min(MAX_PARALLEL_PASSES, cfg.passes), thread_name_prefix="search"

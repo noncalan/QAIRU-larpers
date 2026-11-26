@@ -7,10 +7,10 @@
     "document_sha256": "7fd7c1d145b0c4e01ac8a502856b08eaf0cdbddc896069271687f6a2a16022d5",
     "document_size_bytes": 16072,
     "document_pages": null,
-    "started_at": "2026-11-26T02:17:39.936762Z",
-    "finished_at": "2026-11-26T02:17:40.091473Z",
-    "duration_s": 0.15,
-    "agent_version": "0e62e94-dirty",
+    "started_at": "2026-11-26T02:25:29.039620Z",
+    "finished_at": "2026-11-26T02:25:29.273838Z",
+    "duration_s": 0.23,
+    "agent_version": "eacf04b-dirty",
     "agent_version_source": "git",
     "agent_dirty": true,
     "prompts_sha256": "52bad12278cec466d777949f2289670997fddbe7dc21ee3cd740cabddfd517ac",
@@ -20,6 +20,7 @@
     "backend_used": "replay",
     "profile": "standard",
     "passes": 3,
+    "search_input": "blocks",
     "models": {
       "segment": "claude-sonnet-5-5 · medium",
       "search": "claude-opus-5-5 · medium",
@@ -11141,7 +11142,7 @@
     ]
   },
   "metrics": {
-    "duration_s": 0.15,
+    "duration_s": 0.23,
     "calls_total": 6,
     "calls_failed": 0,
     "calls_cached": 0,

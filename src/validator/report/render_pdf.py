@@ -23,6 +23,7 @@ from validator.errors import INT_STEP_DEGRADED, ValidatorError
 from validator.models import (
     Diagnostic,
     Finding,
+    Passport,
     Question,
     QuestionMetrics,
     QuestionOption,
@@ -30,6 +31,7 @@ from validator.models import (
     Report,
     Requirement,
     Scope,
+    SearchInput,
     SelfCheck,
 )
 from validator.report.coverage import LEGEND, NOT_CHECKED_NOTE, SHORT_LABELS, STATE_LABELS, cell_text
@@ -276,6 +278,11 @@ def _first_page(report: Report, ctx: dict[str, Any]) -> Json:
 # ---------------------------------------------------------------- разделы
 
 
+def _search_input(p: Passport) -> str:
+    """Хвост строки «Профиль»: вход поиска виден, только если он не по умолчанию (как в Markdown)."""
+    return ", поиск по тексту без ID блоков" if p.search_input is SearchInput.RAW else ""
+
+
 def _passport_section(report: Report, ctx: dict[str, Any]) -> Json:
     p = report.passport
     doc = f"{p.document_name} ({p.document_kind.value}"
@@ -302,7 +309,7 @@ def _passport_section(report: Report, ctx: dict[str, Any]) -> Json:
         ("Способ вызова модели", backend),
         ("Модели по шагам", "; ".join(f"{k}: {v}" for k, v in p.models.items()) or "—"),
         ("Фактические модели", ", ".join(p.models_actual) or "—"),
-        ("Профиль", f"{p.profile.value}, проходов поиска: {p.passes}"),
+        ("Профиль", f"{p.profile.value}, проходов поиска: {p.passes}{_search_input(p)}"),
         ("Вызовов модели", f"{p.calls_total} (с ошибкой: {p.calls_failed})"),
         (
             "Токены",
