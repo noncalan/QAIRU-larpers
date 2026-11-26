@@ -257,6 +257,7 @@ class _Builder:
         start, end = self.span(first, last)
         line = self.lines[first]
         bid = f"B{len(self.blocks) + 1:03d}"
+        section = [title for _, title in self.section]
         anchor = Anchor(
             char_start=start,
             char_end=end,
@@ -269,13 +270,14 @@ class _Builder:
             table=table,
             row=row,
             extraction=line.extraction,
+            section=section,
         )
         block = Block(
             id=bid,
             kind=kind,
             text=self.full[start:end],
             anchor=anchor,
-            section=[title for _, title in self.section],
+            section=list(section),
             serialized=serialized,
             cells=cells or [],
         )

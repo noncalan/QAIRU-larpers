@@ -167,13 +167,17 @@ def _has_value(located: str, value: str) -> bool:
 
 
 def check_value(raw: DraftValueIn, finding: MergedFinding, doc: ParsedDocument) -> DraftValue:
-    """Значение черновика: подтверждено, если цитата найдена в документе и значение есть в ней."""
+    """Значение черновика: подтверждено, если цитата найдена в документе и значение есть в ней.
+
+    Цитату ищем как верификатор, включая строки таблиц в виде «Колонка: значение» (#120). У подтверждённого
+    значения в отчёт идёт фрагмент документа, а не пересказ модели: у ячейки таблицы без названия колонки.
+    """
     quote = verify_quote(doc, raw.quote, finding.block_ids)
     shown = (quote.located or quote.text) if quote is not None else raw.quote
     confirmed = quote is not None and quote.anchor is not None and _has_value(shown, raw.value)
     return DraftValue(
         value=raw.value.strip(),
-        quote=" ".join(raw.quote.split()),
+        quote=" ".join((shown if confirmed else raw.quote).split()),
         verified=confirmed,
         anchor=quote.anchor if confirmed and quote is not None else None,
     )

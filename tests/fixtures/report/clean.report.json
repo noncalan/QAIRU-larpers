@@ -85,7 +85,8 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": []
         },
         "atomic_parts": [],
         "entities": {},
@@ -120,7 +121,8 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": []
         },
         "atomic_parts": [],
         "entities": {},
@@ -155,7 +157,8 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": []
         },
         "atomic_parts": [],
         "entities": {},
