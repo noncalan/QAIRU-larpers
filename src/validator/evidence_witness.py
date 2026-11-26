@@ -175,9 +175,9 @@ def parse_reply(resp: LLMResponse) -> list[ReplyWitness]:
 
 
 def expectation_key(text: str) -> str:
-    """Ожидание для сравнения: без регистра, «ё», знаков и порядка слов."""
-    words = _PUNCT.sub(" ", text.lower().replace("ё", "е")).split()
-    return " ".join(sorted(words))
+    """Ожидание для сравнения: без регистра, «ё» и знаков. Порядок слов важен: «не» относится к соседнему
+    слову, и «штраф начислен, письмо не отправлено» не то же, что «штраф не начислен, письмо отправлено»."""
+    return " ".join(_PUNCT.sub(" ", text.lower().replace("ё", "е")).split())
 
 
 @dataclass

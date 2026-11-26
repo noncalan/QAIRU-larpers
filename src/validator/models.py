@@ -1341,7 +1341,9 @@ class QuestionMetrics(Contract):
 class EvidenceMetrics(Contract):
     """Шаг 6 в цифрах: примеры-свидетели и решения критика (считает код по находкам после шага)."""
 
-    witness_requested: int = Field(default=0, description="Находок, для которых просили свидетеля")
+    witness_requested: int = Field(
+        default=0, description="Находок, по которым модель ответила: свидетель построен или сценария нет"
+    )
     witness_checked: int = Field(default=0, description="Свидетель построен и проверен кодом")
     witness_rejected: int = Field(default=0, description="Свидетель построен, но код его отклонил")
     witness_declined: int = Field(default=0, description="Модель не нашла сценария, где места расходятся")

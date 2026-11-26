@@ -16,7 +16,7 @@ from pydantic import BaseModel, ConfigDict
 
 from validator.models import MergedFinding, ParsedDocument, Quote, SourceKind
 from validator.questions.quotes import span, verify_quote
-from validator.text import MIN_FUZZY_CHARS, normalize
+from validator.text import MIN_FUZZY_CHARS, locate_quote, normalize
 from validator.verify import empty_cell_quote, locate
 
 MIN_QUOTE_CHARS: Final = 3
@@ -69,18 +69,17 @@ def top_blocks(quotes: Sequence[Quote]) -> list[str]:
 def locate_model_quote(doc: ParsedDocument, raw: str, within: Sequence[str]) -> Quote | None:
     """Цитата из ответа модели после сверки с документом или None.
 
-    Короткую цитату (значение ячейки «OK / ERROR», «0 или 1») принимаем только дословной: нечёткий поиск
-    коротких строк найдёт их почти в любом документе и ничего не докажет.
+    Короткую цитату (значение ячейки «OK / ERROR», «0 или 1») принимаем, только если она дословно стоит в
+    блоках ``within`` (местах самой находки): такая строка найдётся почти в любом месте документа, и вне мест
+    находки ничего не докажет.
     """
     text = (raw or "").strip()
     if sum(ch.isalnum() for ch in text) < MIN_QUOTE_CHARS:
         return None
-    found = verify_quote(doc, text, within)
-    if found is not None:
-        return found
     if len(normalize(text)[0]) < MIN_FUZZY_CHARS:
-        return None
-    return empty_cell_quote(doc, text, within)
+        found = locate_quote(doc, text, within=within) if within else None
+        return found if found is not None and found.verified else None
+    return verify_quote(doc, text, within) or empty_cell_quote(doc, text, within)
 
 
 def new_chars(quote: Quote, own: Sequence[Quote]) -> int:

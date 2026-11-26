@@ -209,6 +209,16 @@ def test_witness_with_invented_quote_is_rejected_and_invented_quote_is_dropped(
     assert [r.quote for r in w.readings] == [HOUR]
 
 
+def test_expectations_with_same_words_in_other_order_are_different(
+    doc: ParsedDocument, tmp_path: Path
+) -> None:
+    readings = [(HOUR, "отмена отклонена, бронь не снята"), (ANYTIME, "отмена не отклонена, бронь снята")]
+
+    w = run(doc, tmp_path, [contradiction()], llm([witness_rec("M-001", readings)])).findings[0].witness
+
+    assert w is not None and w.checked, w.note
+
+
 def test_witness_with_same_expectations_is_rejected(doc: ParsedDocument, tmp_path: Path) -> None:
     client = llm([witness_rec("M-001", [(HOUR, "Бронь отменена."), (ANYTIME, "бронь  ОТМЕНЕНА")])])
 
@@ -320,7 +330,7 @@ def test_critic_is_off_by_default_and_report_says_so(doc: ParsedDocument, tmp_pa
     assert all(f.critic is None for f in out.findings)
     metrics = evidence_metrics(out.findings, critic_enabled=False)
     assert metrics is not None and not metrics.critic_enabled and metrics.witness_checked == 1
-    assert evidence_metrics([], critic_enabled=False) is not None
+    assert evidence_metrics([], critic_enabled=False) is None  # нечитаемый документ: строки о критике нет
 
 
 def test_critic_drop_based_on_the_findings_own_quote_only_downgrades(
@@ -351,21 +361,25 @@ def test_critic_proposal_without_verified_basis_keeps_finding_as_is(
     assert finding.severity is Severity.CRITICAL
 
 
-def test_short_basis_is_accepted_only_when_it_is_verbatim(doc: ParsedDocument, tmp_path: Path) -> None:
+def test_short_basis_counts_only_verbatim_and_inside_the_findings_own_places(
+    doc: ParsedDocument, tmp_path: Path
+) -> None:
     client = llm(
         [],
         [
             decision("M-002", "понизить", "четыре часа", severity="важно"),
             decision("M-003", "понизить", "пять часов", severity="важно"),
+            decision("M-004", "понизить", "свободные", severity="важно"),
         ],
     )
 
-    out = run(doc, tmp_path, [missing_capacity(2), missing_capacity(3)], client)
+    out = run(doc, tmp_path, [missing_capacity(2), missing_capacity(3), missing_capacity(4)], client)
 
-    verbatim, invented = (f.critic for f in out.findings)
+    verbatim, invented, elsewhere = (f.critic for f in out.findings)
     assert verbatim is not None and verbatim.action is CriticAction.DOWNGRADE
     assert verbatim.basis is not None and verbatim.basis.located == "четыре часа"
     assert invented is not None and invented.action is CriticAction.KEEP and invented.basis is None
+    assert elsewhere is not None and elsewhere.action is CriticAction.KEEP and elsewhere.basis is None
 
 
 def test_critic_downgrade_lowers_severity_through_verifier(doc: ParsedDocument, tmp_path: Path) -> None:
@@ -523,6 +537,24 @@ def test_block_ids_in_witness_and_critic_texts_become_requirement_ids(
     assert hour_block not in finding.critic.reason
 
 
+def test_block_ids_in_critic_downgrade_reason_do_not_reach_severity_note(
+    doc: ParsedDocument, tmp_path: Path
+) -> None:
+    seg = fallback_segmentation(doc)
+    block = next(b.id for b in doc.blocks if CAPACITY in b.text)
+    reply = decision("M-002", "понизить", FOUR_HOURS, severity="важно") | {
+        "reason": f"Место {block} уточняет"
+    }
+
+    out = run(doc, tmp_path, [missing_capacity()], llm([], [reply]))
+    ver, _, _ = humanize(verify(out.findings, doc, seg), [], [], doc, seg)
+
+    assert ver is not None
+    [finding] = ver.findings
+    assert any("Критик понизил" in n for n in finding.notes)
+    assert not any(block in n for n in finding.notes)
+
+
 def test_only_checked_witness_makes_a_question_and_raises_priority(
     doc: ParsedDocument, tmp_path: Path
 ) -> None:
@@ -602,7 +634,7 @@ def test_witness_critic_and_dropped_findings_appear_in_markdown_and_pdf() -> Non
         "Ночное окно задаёт администратор, это не дефект требования",
         "Находки, снятые критиком",
         "Вместимость задана в разделе об ограничениях",
-        "запрошен для",
+        "модель ответила по",
         "Критик находок",
     ):
         assert needle in markdown, needle
@@ -640,3 +672,23 @@ def test_pipeline_runs_step_6_on_fake_backend(tmp_path: Path, critic: bool) -> N
     markdown = (tmp_path / "report.md").read_text(encoding="utf-8")
     assert "Пример-свидетель (код сверил цитаты и различие ожиданий)" in markdown
     assert ("**Критик:**" in markdown) is critic
+
+
+def test_replay_of_a_critic_run_turns_the_critic_on(tmp_path: Path) -> None:
+    recorded = pipeline.run(
+        load_config(REQUIREMENTS[DocKind.MD], tmp_path / "a" / "report.md", backend=Backend.FAKE, critic=True)
+    )
+    replayed = pipeline.run(
+        load_config(
+            REQUIREMENTS[DocKind.MD],
+            tmp_path / "b" / "report.md",
+            backend=Backend.REPLAY,
+            replay_dir=tmp_path / "a" / "run",
+        )
+    )
+
+    assert recorded.report is not None and replayed.report is not None
+    assert replayed.report.verification == recorded.report.verification
+    ev = replayed.report.metrics.evidence
+    assert ev is not None and ev.critic_enabled and ev.critic_reviewed >= 1
+    assert any("критиком находок" in d.message for d in replayed.report.diagnostics)

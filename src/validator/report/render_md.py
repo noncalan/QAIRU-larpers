@@ -213,8 +213,8 @@ def evidence_metric_rows(m: EvidenceMetrics | None) -> list[tuple[str, str]]:
         rows.append(
             (
                 "Пример-свидетель",
-                f"запрошен для {m.witness_requested}: проверен кодом {m.witness_checked}, отклонён кодом "
-                f"{m.witness_rejected}, сценария нет {m.witness_declined}",
+                f"модель ответила по {m.witness_requested} находкам: проверен кодом {m.witness_checked}, "
+                f"отклонён кодом {m.witness_rejected}, сценария нет {m.witness_declined}",
             )
         )
     if not m.critic_enabled:

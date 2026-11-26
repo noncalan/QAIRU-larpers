@@ -152,8 +152,18 @@ def _evidence_changes(finding: Finding | MergedFinding, namer: RefNamer) -> dict
     return changes
 
 
+def _notes_changes(finding: Finding, namer: RefNamer) -> dict[str, object]:
+    """Пометки карточки: в пометку о понижении критиком попадают его слова, в них бывают ID блоков."""
+    notes = [namer.text(n) for n in finding.notes]
+    return {"notes": notes} if notes != finding.notes else {}
+
+
 def humanize_finding(finding: Finding, namer: RefNamer) -> Finding:
-    changes = _replace(finding, FINDING_TEXT_FIELDS, namer) | _evidence_changes(finding, namer)
+    changes = (
+        _replace(finding, FINDING_TEXT_FIELDS, namer)
+        | _evidence_changes(finding, namer)
+        | _notes_changes(finding, namer)
+    )
     return finding.model_copy(update=changes) if changes else finding
 
 

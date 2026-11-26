@@ -16,11 +16,12 @@ def evidence_metrics(
 ) -> EvidenceMetrics | None:
     """Шаг 6 в цифрах по находкам после шага; None, если ни свидетеля, ни решения критика нет.
 
-    Критик выключен (``--critic`` не задан): метрики есть всегда, чтобы отчёт об этом сказал.
+    Критик выключен (``--critic`` не задан): метрики есть всегда, когда были находки, чтобы отчёт сказал
+    об этом.
     """
     witnesses = [m.witness for m in found if m.witness is not None]
     decisions = [m.critic for m in found if m.critic is not None]
-    if not witnesses and not decisions and critic_enabled:
+    if not found or (not witnesses and not decisions and critic_enabled):
         return None
     checked = sum(w.checked for w in witnesses)
     declined = sum(not w.checked and not w.scenario.strip() for w in witnesses)
