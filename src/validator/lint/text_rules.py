@@ -10,9 +10,9 @@ import re
 from collections.abc import Callable
 
 from validator.lint.hits import Hit
-from validator.lint.lexicon import Match, find_terms
+from validator.lint.lexicon import Match, find_terms, fold
 from validator.lint.rules import RULE_BY_ID, Rule
-from validator.lint.units import Unit, has_number, quote_span
+from validator.lint.units import Unit, has_number, mask_quoted, quote_span
 
 UnitCheck = Callable[[Unit, str], Hit | None]
 """Проверка единицы: ``(единица, весь текст документа) -> срабатывание``."""
@@ -67,6 +67,18 @@ _FUNCTION_WORDS = frozenset(
 )
 """После этих слов единицы нет: «не более 5 и менее 2», «до 3 при отказе». Существительное это единица."""
 
+_COUNTED = re.compile(r"(?<!\w)(?:(в\s+том\s+числе)|количеств\w*|кол-?во|число|number\s+of|count\s+of)(?!\w)")
+"""L-06: «количество заявок — не более 40», «в количестве не менее 12»: что считаем, названо до предела,
+число означает штуки. «В том числе» (группа 1) это «включая», а не счёт."""
+_BY_NUMBER = re.compile(rf"\s*(?:на|x|х|×|by)\s*{_NUMBER}", re.IGNORECASE)
+"""L-06: размер «1920 на 1080 точек», «20 × 30 см»: единица стоит после последнего числа."""
+_NO_LETTERS = re.compile(r"[\W\d_]*")
+_USER_ACTOR = re.compile(
+    r"\s+(?:of\s+(?:the\s+|an?\s+)?)?(?:пользовател|оператор|администратор|user|operator|administrator)",
+    re.IGNORECASE,
+)
+"""L-02: «по усмотрению пользователя»: решающий назван, и это пользователь системы, а не исполнитель."""
+
 
 def _terms(unit: Unit, section: str, *, masked: bool = True) -> list[Match]:
     return find_terms(unit.masked if masked else unit.folded, section)
@@ -109,9 +121,23 @@ def check_vague(unit: Unit, doc_text: str) -> Hit | None:
     )
 
 
+def _is_loophole(unit: Unit, match: Match) -> bool:
+    """Оборот оставляет решение исполнителю, а не объявляет пожелание и не отдаёт выбор пользователю.
+
+    Слово предпочтения в начале фразы («Рекомендуется ежедневно …») делает всю фразу пожеланием:
+    по ISO/IEC/IEEE 29148, п. 5.2.4 это явно необязательное положение, а не требование с лазейкой.
+    Оборот «чьё решение» с пользователем следом («по усмотрению пользователя») называет решающего.
+    """
+    if match.term.role == "preference":
+        return _NO_LETTERS.fullmatch(unit.masked, 0, match.start) is None
+    if match.term.role == "discretion":
+        return _USER_ACTOR.match(unit.masked, match.end) is None
+    return True
+
+
 def check_loophole(unit: Unit, doc_text: str) -> Hit | None:
     """L-02: оборот, который оставляет условие или обязательность на усмотрение исполнителя."""
-    matches = _terms(unit, "loopholes")
+    matches = [m for m in _terms(unit, "loopholes") if _is_loophole(unit, m)]
     if not matches:
         return None
     reasons = "; ".join(dict.fromkeys(m.term.why for m in matches))
@@ -187,16 +213,45 @@ def _unit_follows(tail: str) -> bool:
     return word.group(0).lower() not in _FUNCTION_WORDS
 
 
+def _continuation(unit: Unit, doc_text: str) -> str:
+    """Продолжение требования после единицы, если оно не начинается новой фразой (перенос страницы PDF)."""
+    if unit.context_end <= unit.end:
+        return ""
+    rest = doc_text[unit.end : unit.context_end].lstrip()
+    if not rest or (rest[:1].isupper() and rest[1:2].islower()):
+        return ""  # «Система …»: новая фраза, а не единица («МБ», «точек»)
+    return fold(mask_quoted(rest))
+
+
+def _counted_before(text: str, lo: int, hi: int) -> bool:
+    """Между прошлым пределом и этим назван счёт («количество …»): число означает штуки названного."""
+    return any(m.group(1) is None for m in _COUNTED.finditer(text, lo, hi))
+
+
+def _unitless_after(unit: Unit, doc_text: str, end: int) -> bool:
+    """После числа предела, кончающегося на ``end``, нет единицы."""
+    tail = unit.masked[end:]
+    while by := _BY_NUMBER.match(tail):  # размер «N на M точек»: смотрим после последнего числа
+        tail = tail[by.end() :]
+    if re.match(
+        r"\s*[:./\-–‑]\d", tail
+    ):  # время 15:00, дата 15.03, диапазон 10-20: единица может быть дальше
+        return False
+    if not tail.strip():  # единица фразы кончилась на числе: продолжение может быть на следующей странице
+        tail = _continuation(unit, doc_text)
+        if tail and _TAIL_WORD.match(tail) is None:
+            return True  # продолжение без слова («— пункт»): единицу не нашли
+    return not _unit_follows(tail)
+
+
 def check_unitless(unit: Unit, doc_text: str) -> Hit | None:
     """L-06: «не более 5», «в течение 30» без единицы измерения."""
     found: list[re.Match[str]] = []
+    previous_end = 0
     for m in _LIMIT.finditer(unit.masked):
-        tail = unit.masked[m.end() :]
-        if re.match(
-            r"\s*[:./\-–‑]\d", tail
-        ):  # время 15:00, дата 15.03, диапазон 10-20: единица может быть дальше
-            continue
-        if not _unit_follows(tail):
+        counted = _counted_before(unit.masked, previous_end, m.start())
+        previous_end = m.end()
+        if not counted and _unitless_after(unit, doc_text, m.end()):
             found.append(m)
     if not found:
         return None
