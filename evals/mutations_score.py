@@ -46,8 +46,12 @@ class FoundItem:
 
     @property
     def key(self) -> str:
-        quotes = sorted(normalize(q)[0] for q in self.quotes)
-        return self.prop + "|" + "|".join(quotes)
+        return self.prop + "|" + "|".join(sorted(self.places))
+
+    @property
+    def places(self) -> frozenset[str]:
+        """Процитированные места без свойства: нормализованный текст каждой цитаты."""
+        return frozenset(normalize(q)[0] for q in self.quotes)
 
 
 @dataclass
@@ -62,6 +66,7 @@ class MutationScore:
     by_model_place: bool
     findings: list[str]
     properties: list[str]
+    titles: list[str]
     replacement: str
     original: str
     line: int
@@ -75,7 +80,9 @@ class CopyScore:
     findings: int
     findings_lint_only: int
     noise: int
+    noise_new_place: int
     jaccard_with_original: float | None
+    jaccard_places: float | None
     cost_usd: float | None
     duration_s: float | None
     agent_version: str | None
@@ -159,6 +166,7 @@ def score_mutation(copy: str, m: dict[str, Any], findings: Sequence[FoundItem]) 
         by_model_place=any(MODEL in f.sources for f in hits),
         findings=[f.id for f in hits],
         properties=sorted({f.prop for f in hits}),
+        titles=[f"{f.id} {f.prop}: {f.title}" for f in hits],
         replacement=m["replacement"],
         original=m["original"],
         line=m["line"],
@@ -169,9 +177,15 @@ def jaccard(a: set[str], b: set[str]) -> float:
     return len(a & b) / len(a | b) if a | b else 1.0
 
 
-def score_copy(
-    manifest: dict[str, Any], doc: str, run_dir: Path, original_keys: set[str] | None
-) -> CopyScore:
+@dataclass(frozen=True)
+class Baseline:
+    """Находки прогона исходного документа: с ними сравниваем копии."""
+
+    keys: frozenset[str]
+    places: frozenset[str]
+
+
+def score_copy(manifest: dict[str, Any], doc: str, run_dir: Path, original: Baseline | None) -> CopyScore:
     if hashlib.sha256(doc.encode("utf-8")).hexdigest() != manifest["copy_sha256"]:
         raise ValueError(f"{manifest['copy']}: копия документа не совпадает с манифестом")
     report = _read_json(report_path(run_dir))
@@ -181,19 +195,25 @@ def score_copy(
     scores = [score_mutation(copy, m, findings) for m in manifest["mutations"]]
     touched = {fid for s in scores for fid in s.findings}
     keys = {f.key for f in findings}
-    noise = None
-    jac = None
-    if original_keys is not None:
-        noise = sum(1 for f in findings if f.id not in touched and f.key not in original_keys)
-        jac = round(jaccard(keys, original_keys), 3)
+    places = {p for f in findings for p in f.places}
+    noise = new_place = -1
+    jac = jac_places = None
+    if original is not None:
+        rest = [f for f in findings if f.id not in touched]
+        noise = sum(1 for f in rest if f.key not in original.keys)
+        new_place = sum(1 for f in rest if not f.places & original.places)
+        jac = round(jaccard(keys, set(original.keys)), 3)
+        jac_places = round(jaccard(places, set(original.places)), 3)
     return CopyScore(
         copy=copy,
         kind=manifest["kind"],
         run_dir=run_dir.as_posix(),
         findings=len(findings),
         findings_lint_only=sum(1 for f in findings if f.sources == {LINT}),
-        noise=noise if noise is not None else -1,
+        noise=noise,
+        noise_new_place=new_place,
         jaccard_with_original=jac,
+        jaccard_places=jac_places,
         cost_usd=passport.get("cost_usd"),
         duration_s=passport.get("duration_s"),
         agent_version=passport.get("agent_version"),
@@ -250,19 +270,20 @@ def total(rows: Sequence[OperatorRow]) -> OperatorRow:
 def score_all(
     mutations_dir: Path, results_dir: Path, baseline: Path | None, baseline_doc: Path | None = None
 ) -> list[CopyScore]:
-    original_keys = None
+    original = None
     if baseline is not None:
         report = _read_json(report_path(baseline))
         doc = baseline_doc.read_text(encoding="utf-8") if baseline_doc else ""
-        original_keys = {f.key for f in load_findings(report, doc)}
+        found = load_findings(report, doc)
+        original = Baseline(frozenset(f.key for f in found), frozenset(p for f in found for p in f.places))
     out = []
     for manifest_path in sorted(mutations_dir.glob("*.json")):
         manifest = _read_json(manifest_path)
         run_dir = results_dir / manifest["copy"]
-        if not run_dir.is_dir():
+        if not (run_dir / "report.json").is_file():  # прогона нет или он ещё идёт
             continue
         doc = (mutations_dir / f"{manifest['copy']}.md").read_text(encoding="utf-8")
-        out.append(score_copy(manifest, doc, run_dir, original_keys))
+        out.append(score_copy(manifest, doc, run_dir, original))
     return out
 
 
@@ -319,18 +340,18 @@ def to_markdown(data: dict[str, Any]) -> str:
         )
     lines += [
         "",
-        "| Копия | Вид | Мутаций | Поймано | Находок | Только линтер | Шум | Жаккар с исходником "
-        "| Цена, $ | Время, мин | Версия |",
-        "|---|---|---|---|---|---|---|---|---|---|---|",
+        "| Копия | Вид | Мутаций | Поймано | Находок | Только линтер | Новых находок | Из них в новом месте "
+        "| Жаккар находок | Жаккар мест | Цена, $ | Время, мин | Версия |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     for c in data["copies"]:
         caught = sum(m["status"] == CAUGHT for m in c["mutations"])
         minutes = f"{c['duration_s'] / 60:.1f}" if c["duration_s"] else "—"
-        jac = c["jaccard_with_original"]
         lines.append(
             f"| {c['copy']} | {c['kind']} | {len(c['mutations'])} | {caught} | {c['findings']} | "
-            f"{c['findings_lint_only']} | {c['noise'] if c['noise'] >= 0 else '—'} | "
-            f"{jac if jac is not None else '—'} | {c['cost_usd'] or '—'} | {minutes} | {c['agent_version']} |"
+            f"{c['findings_lint_only']} | {_dash(c['noise'])} | {_dash(c['noise_new_place'])} | "
+            f"{_dash(c['jaccard_with_original'])} | {_dash(c['jaccard_places'])} | "
+            f"{c['cost_usd'] or '—'} | {minutes} | {c['agent_version']} |"
         )
     if data["interference"]:
         lines += [
@@ -342,16 +363,21 @@ def to_markdown(data: dict[str, Any]) -> str:
             f"| {i['operator']} | {i['single']} | {i['single_status']} | {i['multi']} | {i['multi_status']} |"
             for i in data["interference"]
         ]
-    missed = [m for c in data["copies"] for m in c["mutations"] if m["status"] != CAUGHT]
-    if missed:
-        lines += ["", "| Мутация | Оператор | Статус | Строка | Было | Стало | Свойства находок на месте |"]
+    every = [m for c in data["copies"] for m in c["mutations"]]
+    if every:
+        lines += ["", "| Мутация | Оператор | Статус | Строка | Было | Стало | Находки на месте |"]
         lines += ["|---|---|---|---|---|---|---|"]
-        for m in missed:
+        for m in every:
+            titles = "<br>".join(_cell(t, 120) for t in m["titles"]) or "—"
             lines.append(
                 f"| {m['id']} | {m['operator']} | {m['status']} | {m['line']} | {_cell(m['original'])} | "
-                f"{_cell(m['replacement'])} | {', '.join(m['properties']) or '—'} |"
+                f"{_cell(m['replacement'])} | {titles} |"
             )
     return "\n".join(lines) + "\n"
+
+
+def _dash(value: float | None) -> str:
+    return "—" if value is None or value < 0 else str(value)
 
 
 def _cell(text: str, limit: int = 90) -> str:

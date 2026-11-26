@@ -1,0 +1,189 @@
+{
+ "envelope_version": 1,
+ "key": "5a85c8af9dec29eb6f2b8730393a6d76b312e40b319da5a2f71168e23e329882",
+ "call_id": "test_draft.4",
+ "step": "test_draft",
+ "call_index": 4,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T13:55:59.777288+00:00",
+ "payload": {
+  "duration_api_ms": 82600,
+  "stop_reason": "end_turn",
+  "session_id": "8d017125-2348-4468-98ad-f09a2ac5155f",
+  "total_cost_usd": 0.16697,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 12064,
+   "cache_read_input_tokens": 0,
+   "output_tokens": 11871,
+   "output_tokens_details": {
+    "thinking_tokens": 9025
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 12064,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 11871,
+     "cache_read_input_tokens": 0,
+     "cache_creation_input_tokens": 12064,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 12064
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 11871,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 12064,
+    "webSearchRequests": 0,
+    "costUSD": 0.16697,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 9025,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 12064,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n**M-054.** Нужно знать, принимается ли GET без Content-Type и чем отвечает система, если нет. Документ требует `application/json` и тут же говорит, что тело не используется. Правила для запроса без заголовка нет, поэтому на результате стоит пропуск.\n\n**M-056.** Нужно знать, какой код приходит при первом и при повторном сохранении. Документ называет успешными 200 и 201, но условие для 201 не задаёт. Код каждого сохранения остаётся пропуском.\n\n**M-057.** Нужно знать, возвращается ли `enabled` в ответе. Логика поля — TBD. Пример ответа есть только для `enabled=1`, а условия присутствия нет, поэтому проверяю успешное сохранение с `enabled=0`. Значения `result` и `amount` берутся из примера ответа.\n\n**M-058.** Нужно знать код при первом сохранении. Заголовок говорит «200 … Created», а текст допускает 200 или 201. Единого значения нет, на коде стоит пропуск. Тело `result` = «OK» взято из примера.\n\n**M-059.** Нужен единый перечень кодов с условиями. Для запроса без авторизации код и тело в документе заданы. Полного перечня нет: 201 без условия, раздел 403 без своего кода, перечень ошибок открыт оборотом «и далее». Сверка с перечнем становится пропуском.\n\n**M-060.** Нужен один код для чужой карты. Заголовок говорит 403, текст — 404, поэтому на коде стоит пропуск. Тело «Карта не найдена» в документе однозначно.\n\n## Ответ\n\n```json\n{\n  \"drafts\": [\n    {\n      \"finding\": \"M-054\",\n      \"can_write\": false,\n      \"precondition\": \"Dev-контур. Есть сессия владельца карты с токеном, у карты demo-42 порог ещё не задан.\",\n      \"steps\": [\n        \"Отправить GET на /alerts/saveLimit с токеном владельца и параметрами cardId=demo-42, amount=50000, enabled=1, без заголовка Content-Type и без тела.\"\n      ],\n      \"expected\": \"Система отвечает так: [?1].\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"результат для запроса без заголовка Content-Type: принимается он или отклоняется, и если отклоняется, то с каким кодом и сообщением. Документ одновременно указывает Content-Type application/json и говорит, что тело не используется\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-056\",\n      \"can_write\": false,\n      \"precondition\": \"Dev-контур. Есть сессия владельца карты с токеном, для карты demo-42 порог ещё не сохранялся.\",\n      \"steps\": [\n        \"Отправить запрос сохранения порога: cardId=demo-42, amount=50000, enabled=1.\",\n        \"Отправить повторный запрос для той же карты: cardId=demo-42, amount=60000, enabled=1.\"\n      ],\n      \"expected\": \"Оба ответа успешные, код 200 или 201. Код первого ответа: [?1]. Код второго ответа: [?2].\",\n      \"values\": [\n        {\"value\": \"200 или 201\", \"quote\": \"Если результат 200 или 201 — успешный.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"какой код, 200 или 201, возвращается при первом сохранении порога: условие, при котором возвращается 201, в документе не описано\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"какой код, 200 или 201, возвращается при повторном сохранении, которое заменяет действующую настройку: условие для 201 не описано\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-057\",\n      \"can_write\": false,\n      \"precondition\": \"Dev-контур. Есть сессия владельца карты с токеном, карта demo-42 принадлежит этому клиенту.\",\n      \"steps\": [\n        \"Отправить запрос сохранения порога: cardId=demo-42, amount=50000, enabled=0.\"\n      ],\n      \"expected\": \"В теле ответа result равен «OK» и amount равен «50000». Поле enabled в ответе: [?1].\",\n      \"values\": [\n        {\"value\": \"OK\", \"quote\": \"{\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}\"},\n        {\"value\": \"50000\", \"quote\": \"{\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"условие присутствия поля enabled в ответе (колонка Logic содержит TBD) и его значение при enabled=0; пример ответа есть только для enabled=1, для ответа с ошибкой условия нет\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-058\",\n      \"can_write\": false,\n      \"precondition\": \"Dev-контур. Есть сессия владельца карты с токеном, для карты demo-42 настройка ещё не сохранялась.\",\n      \"steps\": [\n        \"Отправить запрос сохранения порога: cardId=demo-42, amount=50000, enabled=1.\"\n      ],\n      \"expected\": \"Код ответа [?1]. В теле ответа result равен «OK».\",\n      \"values\": [\n        {\"value\": \"OK\", \"quote\": \"{\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"код успешного первого сохранения: заголовок раздела «200. Successful — Created» называет 200 и одновременно Created, а текст допускает 200 или 201 без условия выбора\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-059\",\n      \"can_write\": false,\n      \"precondition\": \"Dev-контур. Клиент приложения обрабатывает ответы метода сохранения порога. Есть карта demo-42.\",\n      \"steps\": [\n        \"Отправить запрос сохранения порога cardId=demo-42, amount=50000, enabled=1 без заголовка Authorization.\",\n        \"Сверить все коды ответа, которые метод возвращает в тестах, с перечнем ответов метода.\"\n      ],\n      \"expected\": \"На шаге 1 код ответа 401, в теле сообщение «Требуется вход». На шаге 2 каждый код входит в единый перечень ответов метода с условием возврата: [?1].\",\n      \"values\": [\n        {\"value\": \"401\", \"quote\": \"Если результат 400, 401 и далее — неуспешный.\"},\n        {\"value\": \"Требуется вход\", \"quote\": \"{\\\"message\\\":\\\"Требуется вход\\\"}\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"единый перечень кодов ответа метода с условием каждого: 200 и 400 перечислены в одном месте, 401 и 500 описаны внутри раздела 200, 404 только под заголовком 403, 201 без условия, перечень неуспешных кодов открыт оборотом «и далее»\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-060\",\n      \"can_write\": false,\n      \"precondition\": \"Dev-контур. Есть две карты разных клиентов: карта A у клиента 1, карта B у клиента 2. У тестировщика токен клиента 1.\",\n      \"steps\": [\n        \"Отправить запрос сохранения порога с токеном клиента 1 и идентификатором карты B: amount=50000, enabled=1.\"\n      ],\n      \"expected\": \"Код ответа [?1]. В теле сообщение «Карта не найдена». Настройка карты B не изменилась.\",\n      \"values\": [\n        {\"value\": \"Карта не найдена\", \"quote\": \"{\\\"message\\\":\\\"Карта не найдена\\\"}\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"код ответа для чужой карты: заголовок раздела говорит 403, текст под ним говорит, что для чужой карты возвращается 404, как и для отсутствующей\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    }\n  ]\n}\n```",
+  "ttft_ms": 77526,
+  "type": "result",
+  "duration_ms": 87408,
+  "uuid": "0a22f5db-9c01-47c2-b5cb-9ed364191714",
+  "ttft_stream_ms": 1338,
+  "time_to_request_ms": 563,
+  "time_to_request_phases_ms": {
+   "other": 3,
+   "system_prompt": 1,
+   "resume_other": 0,
+   "process_user_input": 1,
+   "input_attachments": 4,
+   "input_hooks": 1,
+   "conversation_append": 0,
+   "tool_pool_refresh": 2,
+   "init_message": 4,
+   "init_frame_send": 2,
+   "engine_pickup": 1,
+   "loop_entry": 2,
+   "message_prep": 1,
+   "model_config_wait": 0,
+   "autocompact": 1,
+   "request_announcements": 1,
+   "query_setup": 1,
+   "model_gates": 525,
+   "tool_schema_build": 3,
+   "message_normalization": 2,
+   "client_creation": 2,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 2,
+  "time_to_request_cpu_ms": 135,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "model",
+   "slowest_producer_ms": 2,
+   "cpu_ms": 7,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 1,
+   "ambient_wait_ms": 1,
+   "render_ms": 0,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 2,
+   "placement_ms": 1,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 1,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 7,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 1,
+   "cache_break_record_ms": 0,
+   "plans_ms": 1,
+   "retry_setup_ms": 1,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 0,
+   "other_ms": 1,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1338,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "credential_expires_at": "2026-12-24T20:08:56.233Z"
+ }
+}
