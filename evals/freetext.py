@@ -74,13 +74,18 @@ def extract_quotes(text: str) -> list[str]:
     return quotes
 
 
+def quote_segments(quote: str) -> list[str]:
+    """Сегменты цитаты, склеенной через «…», « / », « | »; короткие (< ``MIN_SEGMENT_CHARS``) отброшены."""
+    return [s for s in _SEGMENT_SPLIT.split(quote) if len(normalize(s)[0]) >= MIN_SEGMENT_CHARS]
+
+
 def check_quote(doc: ParsedDocument | str, quote: str) -> QuoteMatch | None:
     """Сверка цитаты свободного текста тем же ``locate_quote``, что у агента.
 
     Модель склеивает куски через «…», « / », « | », поэтому цитата режется на сегменты; вердикт
     по худшему сегменту (исследование 11). ``None``: проверять нечего (все сегменты короткие).
     """
-    segments = [s for s in _SEGMENT_SPLIT.split(quote) if len(normalize(s)[0]) >= MIN_SEGMENT_CHARS]
+    segments = quote_segments(quote)
     if not segments:
         return None
     matches = [locate_quote(doc, s).match for s in segments]
