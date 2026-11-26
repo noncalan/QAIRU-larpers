@@ -161,12 +161,12 @@ def test_calls_log_has_every_model_call(fake_run: tuple[DocKind, Path, int]) -> 
     records = [CallRecord.model_validate(json.loads(line)) for line in lines]
 
     ids = [r.call_id for r in records]
-    # Проходы поиска идут параллельно (#18): между собой они в порядке завершения вызовов.
-    # Шаг 6 (#39): свидетель между поиском и вопросами; критик находок по умолчанию выключен.
-    # Попытка теста (#40) идёт после свидетеля и перед вопросами.
-    assert ids[0] == "segment.1" and ids[-2:] == ["questions.1", "questions_critic.1"]
+    # Проходы поиска идут параллельно (#18) и в фоне вместе с нарезкой: в начале лога они в порядке
+    # завершения вызовов. Шаг 6 (#39): свидетель между поиском и вопросами; критик находок по умолчанию
+    # выключен. Попытка теста (#40) идёт после свидетеля и перед вопросами.
+    assert ids[-2:] == ["questions.1", "questions_critic.1"]
     assert ids[-4:-2] == ["evidence.1", "test_draft.1"]
-    assert sorted(ids[1:-4]) == ["search.1", "search.2", "search.3"]
+    assert sorted(ids[:-4]) == ["search.1", "search.2", "search.3", "segment.1"]
 
 
 def test_missing_input_gives_diagnostic_report(tmp_path: Path) -> None:

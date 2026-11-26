@@ -727,7 +727,10 @@ def test_cli_timeout_is_retried_then_reported(tmp_path: Path, monkeypatch: pytes
     assert outcome.exit_code is ExitCode.MODEL
     assert any(d.code == "LLM-012" for d in outcome.diagnostics)
     log = read_calls_jsonl(tmp_path / "out" / "run" / "calls.jsonl")
-    assert [r.attempt for r in log][:2] == [1, 2]
+    # Поиск идёт в фоне параллельно с нарезкой, поэтому записи разных вызовов в логе чередуются:
+    # смотрим попытки одного вызова.
+    first = log[0].call_id
+    assert [r.attempt for r in log if r.call_id == first][:2] == [1, 2]
 
 
 @POSIX_ONLY

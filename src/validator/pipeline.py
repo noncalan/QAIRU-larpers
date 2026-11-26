@@ -27,12 +27,13 @@ import contextlib
 import logging
 import time
 from collections.abc import Callable, Sequence
+from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import TypeVar
 
-from validator.checklists import Selection, select_checklists
+from validator.checklists import Checklist, Selection, select_checklists
 from validator.clarify import AnswersError, AnswersFile, clarify, load_answers
 from validator.errors import (
     CFG_NOT_IMPLEMENTED,
@@ -96,7 +97,7 @@ from validator.report import PdfRenderError, build_report, render_md, render_pdf
 from validator.report.selfcheck import check_report, selfcheck_diagnostics
 from validator.search import first_pass_request, search
 from validator.segment import fallback_segmentation, segment
-from validator.set_check import set_check
+from validator.set_check import SetCheckOutcome, set_check
 from validator.verify import light_with_questions, verify
 
 logger = logging.getLogger("validator")
@@ -105,6 +106,8 @@ notice = logging.getLogger(NOTICE_LOGGER)
 """Сообщения человеку до конца прогона (длинный документ, оценка цены): CLI печатает их в stderr."""
 T = TypeVar("T")
 LOG_FORMAT = "%(asctime)s %(levelname)s %(name)s: %(message)s"
+BACKGROUND_STEPS = 2
+"""Фоновые задачи конвейера одновременно: поиск и сверка между частями (нарезка идёт в главном потоке)."""
 
 
 @dataclass
@@ -283,8 +286,8 @@ def _announce(state: _State, plan: PartPlan) -> None:
     notice.warning("%s. %s.", diag.message, diag.hint)
 
 
-def _cross_parts(state: _State, seg: Segmentation, plan: PartPlan, llm: LLMClient) -> list[CandidateFinding]:
-    outcome = set_check(seg, plan, llm, state.cfg)
+def _cross_parts(state: _State, checking: Future[SetCheckOutcome]) -> list[CandidateFinding]:
+    outcome = checking.result()
     state.diagnostics.extend(outcome.diagnostics)
     return outcome.candidates
 
@@ -383,24 +386,7 @@ def _execute(state: _State) -> None:
     llm = instrument(cfg, client)
     state.client, state.backend_used = llm, client.backend
     _announce(state, plan)
-    seg = _step(
-        state,
-        "segment",
-        lambda: segment(doc, llm, cfg, plan),
-        lambda: fallback_segmentation(doc),
-        action="Нарезка сделана запасным путём без модели",
-    )
-    state.segmentation = seg
-    state.diagnostics.extend(seg.diagnostics)
-    state.lint_hits = _step(state, "lint", lambda: lint(doc, seg), list, action="Линтер пропущен")
-    cfg = _search_step(state, doc, plan, client, llm)
-    state.set_check = _step(
-        state,
-        "set_check",
-        lambda: _cross_parts(state, seg, plan, llm),
-        list,
-        action="Противоречия и повторы между частями не сверены",
-    )
+    seg, cfg = _segment_and_search(state, doc, plan, client, llm)
     passes, rules = state.passes, [*state.lint_hits, *state.set_check]
     state.merged = _step(
         state,
@@ -455,10 +441,51 @@ def _execute(state: _State) -> None:
     )
 
 
-def _search_step(
+def _segment_and_search(
     state: _State, doc: ParsedDocument, plan: PartPlan, client: LLMClient, llm: LLMClient
-) -> RunConfig:
-    """Шаг 4 с выбором доменных чек-листов перед ним; возвращает конфигурацию после выбора (#35)."""
+) -> tuple[Segmentation, RunConfig]:
+    """Шаги 2–4в: поиск идёт в фоне, пока работают нарезка, линтер и сверка между частями.
+
+    Поиску нарезка не нужна (он видит документ с ID блоков), а сверке между частями нужна только она.
+    Поэтому самый долгий вызов прогона не ждёт нарезку, а сверка не ждёт поиск. Запросы к моделям, их
+    ключи и номера вызовов те же, что при последовательном порядке, поэтому ответы и качество не меняются,
+    а записи replay подходят. Состояние прогона меняет только этот поток, в прежнем порядке шагов.
+    С лимитом цены (``--max-budget-usd``) шаги идут по очереди, как раньше: лимит проверяется перед каждым
+    вызовом, и вызовы, начатые одновременно, могли бы вместе перейти его.
+    Возвращает нарезку и конфигурацию после выбора чек-листов (#35).
+    """
+    pre_cfg = state.cfg
+    cfg, active = _choose(state, doc, plan, client)
+    parallel = pre_cfg.max_budget_usd is None
+    with ThreadPoolExecutor(max_workers=BACKGROUND_STEPS, thread_name_prefix="pipeline") as pool:
+        searching = pool.submit(search, doc, llm, cfg, plan, active) if parallel else None
+        seg = _step(
+            state,
+            "segment",
+            lambda: segment(doc, llm, pre_cfg, plan),
+            lambda: fallback_segmentation(doc),
+            action="Нарезка сделана запасным путём без модели",
+        )
+        checking = pool.submit(set_check, seg, plan, llm, cfg) if parallel else None
+        state.segmentation = seg
+        state.diagnostics.extend(seg.diagnostics)
+        state.lint_hits = _step(state, "lint", lambda: lint(doc, seg), list, action="Линтер пропущен")
+        _collect_passes(state, plan, searching or pool.submit(search, doc, llm, cfg, plan, active))
+        checking = checking or pool.submit(set_check, seg, plan, llm, cfg)
+        state.set_check = _step(
+            state,
+            "set_check",
+            lambda: _cross_parts(state, checking),
+            list,
+            action="Противоречия и повторы между частями не сверены",
+        )
+    return seg, cfg
+
+
+def _choose(
+    state: _State, doc: ParsedDocument, plan: PartPlan, client: LLMClient
+) -> tuple[RunConfig, tuple[Checklist, ...]]:
+    """Выбор доменных чек-листов перед поиском (#35): конфигурация после выбора и активные чек-листы."""
     chosen = _step(
         state,
         "checklists",
@@ -466,12 +493,14 @@ def _search_step(
         lambda: None,
         action="Поиск идёт без доменных чек-листов",
     )
-    cfg = state.cfg
     state.checklists = list(chosen.uses) if chosen else []
-    active = chosen.active if chosen else ()
-    state.passes = _step(
-        state, "search", lambda: search(doc, llm, cfg, plan, active), list, action="Поиск пропущен"
-    )
+    return state.cfg, (chosen.active if chosen else ())
+
+
+def _collect_passes(state: _State, plan: PartPlan, searching: Future[list[PassResult]]) -> None:
+    """Шаг 4: проходы поиска из фоновой задачи. Сбой идёт по прежней политике отказа: исключение задачи
+    ``Future.result`` бросает здесь, и ``_step`` превращает его в диагностику."""
+    state.passes = _step(state, "search", searching.result, list, action="Поиск пропущен")
     for p in state.passes:
         state.diagnostics.extend(p.diagnostics)
     if not any(p.ok for p in state.passes):
@@ -487,7 +516,6 @@ def _search_step(
         )
     else:
         state.diagnostics.extend(_unsearched_parts(plan, state.passes))
-    return cfg
 
 
 def _unsearched_parts(plan: PartPlan, passes: Sequence[PassResult]) -> list[Diagnostic]:
