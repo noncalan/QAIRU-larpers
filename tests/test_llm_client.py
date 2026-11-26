@@ -797,3 +797,8 @@ def test_subscription_limit_with_status_429_is_llm_002_and_not_retried(message: 
 
     assert failure.code == LLM_LIMIT
     assert not failure.retryable
+
+
+def test_transient_429_with_reset_wording_stays_retryable() -> None:
+    """Подписка узнаётся по «hit your … limit», а не по любому «resets at»: обычная 429 повторяется."""
+    assert classify_error("rate limit exceeded, resets at 10:00", status=429).retryable

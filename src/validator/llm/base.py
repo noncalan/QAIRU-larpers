@@ -47,10 +47,7 @@ _USAGE_LIMIT = re.compile(
     r"\bresets? at\b|\bresets? \d{1,2}(?::\d\d)?\s*(?:am|pm)|credit balance is too low|"
     r"out of (?:extra )?usage"
 )
-_SUBSCRIPTION_LIMIT = re.compile(
-    r"hit your [\w -]{0,20}limit|limit will reset|\bresets? (?:at\b|\d{1,2}(?::\d\d)?\s*(?:am|pm))|usage limit|"
-    r"credit balance is too low|out of (?:extra )?usage"
-)
+_SUBSCRIPTION_LIMIT = re.compile(r"hit your [\w -]{0,20}limit")
 """Лимит подписки или баланса: ``claude -p`` отдаёт его со статусом 429, но повтор не поможет."""
 _TRANSIENT = re.compile(
     r"overloaded|rate[ _-]?limit|too many requests|api error:?\s*(?:429|5\d\d)\b|connection error|"

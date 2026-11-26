@@ -27,55 +27,74 @@ QUOTE_CHARS = 140
 
 _FLAGS = re.IGNORECASE | re.MULTILINE
 _GAP = r"[^.\n]{0,60}"
+_START = r"(?:^|[.!?:;|]\s*|\bplease\s+|\bпожалуйста,?\s+)"
+"""Приказ стоит в начале предложения («Ignore all…», «Напиши, что…»), а не после подлежащего: «Система должна
+игнорировать…» и «The system must not report…» это требования, а не команды."""
+_DOC_WORD = (
+    r"\b(?:document|requirements?|specification|spec|report|review|criteria|findings?|everything|"
+    r"документ\w*|требовани\w*|тз|отчёт\w*|отчет\w*|спецификаци\w*|критери\w*|всё|все)\b"
+)
 
 _OVERRIDE_EN = (
-    r"\b(?:ignore|disregard|forget|override)\s+(?:all\s+|any\s+|the\s+|your\s+)*"
-    r"(?:previous|prior|above|earlier|preceding|system)\s+(?:instructions?|prompts?|rules|directions?|messages?)"
+    _START + r"(?:ignore|disregard|forget|override)\s+(?:all\s+|any\s+|the\s+|your\s+)*"
+    r"(?:previous|prior|above|earlier|preceding|system)\s+(?:instructions?|prompts?|rules|directions?)"
 )
 _OVERRIDE_RU = (
-    r"\b(?:игнорир\w+|забуд\w+|отмени\w*|не\s+учитывай\w*)\s+(?:все\s+|всё\s+|любые\s+|свои\s+)*"
-    r"(?:предыдущ|прежн|прошл|вышесто\w+|системн|имевш)\w*\s+(?:инструкци|указани|правил|команд|промпт|сообщени)\w*"
+    r"\b(?:игнорируй(?:те)?|забудь(?:те)?|отмени(?:те)?)\s+(?:все\s+|всё\s+|любые\s+|свои\s+)*"
+    r"(?:предыдущ|прежн|прошл|вышесто\w+|системн|имевш)\w*\s+(?:инструкци|указани|промпт)\w*"
 )
 _SUPPRESS_EN = (
-    r"\b(?:do\s+not|don'?t|never|must\s+not)\s+(?:report|list|mention|flag|include|enumerate)\b"
+    _START
+    + r"(?:do\s+not|don'?t|never)\s+(?:report|list|mention|flag|include|enumerate)\b"
     + _GAP
-    + r"\b(?:defects?|problems?|findings?|issues?|violations?|errors?|remarks?)\b"
+    + r"\b(?:defects?|problems?|findings?|issues?|violations?|remarks?)\b"
 )
 _SUPPRESS_RU = (
-    r"\bне\s+(?:сообщай|перечисляй|указывай|упоминай|включай|пиши|отмечай|выводи)\w*\b"
+    r"\bне\s+(?:сообщай(?:те)?|перечисляй(?:те)?|указывай(?:те)?|упоминай(?:те)?|включай(?:те)?|отмечай(?:те)?)\b"
     + _GAP
-    + r"\b(?:находк|дефект|нарушени|замечани|проблем|ошибк)\w*"
+    + r"\b(?:находк|дефект|нарушени|замечани|проблем)\w*"
 )
-_VERDICT_EN = (
-    r"\b(?:write|state|report|answer|say|respond|reply|conclude|mark|confirm|declare)\b"
-    + _GAP
-    + r"\b(?:no\s+(?:defects?|issues?|problems?|violations?)|"
+_VERDICT_PHRASE_EN = (
+    r"(?:no\s+(?:defects?|issues?|problems?|violations?)|"
     r"(?:fully|completely|entirely)\s+(?:complies|compliant|conforms?)|"
-    r"is\s+(?:perfect|flawless|compliant)|are\s+(?:all\s+)?(?:compliant|met|satisfied|fulfilled)|"
-    r"(?:every|all)\s+(?:requirements?|criteria)\s+(?:are\s+)?(?:compliant|met|satisfied|fulfilled)|"
+    r"(?:is|are)\s+(?:perfect|flawless|compliant|met|satisfied|fulfilled)|"
     r"as\s+(?:compliant|conforming|passed|correct))"
 )
+_VERDICT_EN = (
+    _START
+    + r"(?:write|state|answer|say|respond|reply|conclude|confirm|declare|mark)\b(?="
+    + _GAP
+    + _DOC_WORD
+    + r")"
+    + _GAP
+    + r"\b"
+    + _VERDICT_PHRASE_EN
+)
 _VERDICT_RU = (
-    r"\b(?:напиши\w*|укажи\w*|сообщи\w*|ответь\w*|скажи\w*|отметь\w*|считай\w*|подтверди\w*|признай\w*)\b"
+    r"\b(?:напиши(?:те)?|укажи(?:те)?|сообщи(?:те)?|ответь(?:те)?|скажи(?:те)?|отметь(?:те)?|"
+    r"считай(?:те)?|подтверди(?:те)?|признай(?:те)?)\b(?="
+    + _GAP
+    + _DOC_WORD
+    + r")"
     + _GAP
     + r"\b(?:(?:дефектов|нарушений|замечаний|проблем|ошибок)\s+нет|"
     r"(?:полностью\s+)?соответству\w+\s+(?:стандарт|требовани|норм)\w*|"
-    r"(?:идеален|идеальн\w+|безупречен|безупречн\w+)|"
-    r"(?:выполнен\w*|соответству\w+)\b)"
+    r"идеальн\w+|безупречн\w+|выполнен\w*)"
 )
 _ROLE_LINE = (
-    r"^\W{0,4}(?:system|assistant|developer|системн\w+\s+(?:сообщени|инструкци|команд)\w*|система)\s*[:>\]]"
+    r"^\W{0,4}(?:system|assistant|developer|системн\w+\s+(?:сообщени|инструкци|команд)\w*)\s*[:>\]]"
     r"|^\s*\[(?:system|assistant|developer|inst)\]|^\s*<(?:system|assistant)>"
 )
 _REASSIGN = (
-    r"(?:\bс\s+этого\s+момента\s+(?:ты|вы)\b|\bтеперь\s+ты\s+(?:не\b|—|-|мой|помощник|ассистент)|"
+    r"(?:\bс\s+этого\s+момента\s+(?:ты|вы)\b|\b(?:теперь\s+ты|ты\s+теперь)\s+(?:не\b|—|-|мой|помощник|ассистент|другой)|"
     r"\bты\s+больше\s+не\b|\bfrom\s+now\s+on,?\s+you\s+(?:are|will|must|should)\b|"
     r"\byou\s+are\s+no\s+longer\b|\bnew\s+instructions\s*:|\bновые\s+инструкции\s*:)"
 )
 _ADDRESSEE = (
     r"(?:^|(?<=[.!?]\s)|(?<=\|\s))\W{0,3}(?:(?:уважаемый|уважаемая|dear|hey|hello|attention|внимание)[, ]+)?"
-    r"(?:ии[- ]\w+|ai[- ]?\w*|llm|ассистент\w*|assistant|нейросеть|языков\w+\s+модел\w+|language\s+model|"
-    r"reviewer\s+model|(?:проверяющая|проверяющей)\s+модел\w+)\s*[!:,]"
+    r"(?:ии[- ]\w+|ai[- ](?:assistant|reviewer|model|agent|ревьюер|ассистент)|llm|ассистент\w*|assistant|"
+    r"нейросеть|языков\w+\s+модел\w+|language\s+model|reviewer\s+model|(?:проверяющая|проверяющей)\s+модел\w+)"
+    r"\s*[!:,]"
 )
 
 _PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = tuple(
@@ -89,9 +108,9 @@ _PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = tuple(
         ("addressee", _ADDRESSEE),
     )
 )
-# Приказ к модели почти всегда ещё и обращение или отмена правил; одно обращение («Модель: …») без приказа
-# не показатель, поэтому обращение считаем, только если рядом сработал ещё один признак.
-_NEEDS_COMPANION = frozenset({"addressee"})
+# Одно обращение («Модель: …») или строка «System: …» без приказа не показатель: глоссарий пишет так же
+# («System: программный комплекс…»). Их считаем, только если в блоке сработал ещё один признак.
+_NEEDS_COMPANION = frozenset({"addressee", "role"})
 
 
 @dataclass(frozen=True)

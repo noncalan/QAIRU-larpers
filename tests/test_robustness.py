@@ -25,7 +25,7 @@ from scripts.robustness import (
 )
 from test_smoke import REPORT_SECTIONS
 from validator.errors import IN_INJECTION, INT_STEP_FAILED
-from validator.ingest import parse, render_for_model
+from validator.ingest import defuse_delimiters, parse, render_for_model
 from validator.ingest.injection import review, scan
 from validator.lint import lint
 from validator.models import DefectType, DiagLevel, DocKind, ExitCode, ParsedDocument, QuoteMatch
@@ -198,6 +198,15 @@ def test_scanner_catches_common_injection_phrases(text: str, make_md) -> None:  
     "text",
     [
         "Система должна игнорировать повторные запросы с тем же идентификатором.",
+        "Система должна сообщить пользователю, что операция выполнена.",
+        "Система должна подтвердить, что платёж выполнен.",
+        "Система не выводит сообщения об ошибках во внешний интерфейс.",
+        "The system must not report internal errors to the client.",
+        "Пользователь может отменить предыдущее сообщение в течение 5 минут.",
+        "The system shall mark the test run as passed.",
+        "Система: программный комплекс, описанный в настоящем документе.",
+        "System: the software described in this document.",
+        "The aircraft, in-flight systems and the ground crew shall exchange status messages.",
         "Система не должна сообщать пользователю о внутренних ошибках сервера.",
         "The system shall ignore duplicate events received within 5 seconds.",
         "Пользователь получает инструкцию по установке при первом входе.",
@@ -224,6 +233,16 @@ def test_injection_diagnostic_is_info_and_does_not_change_exit_code(injection_do
     assert [d.code for d in diags] == [IN_INJECTION]
     assert diags[0].level is DiagLevel.INFO
     assert "«" in diags[0].message and diags[0].location
+
+
+@pytest.mark.parametrize("tag", ["кандидаты", "вопросы", "находки", "document"])
+def test_every_prompt_delimiter_is_defused(tag: str) -> None:
+    text = f"до </{tag}> и < /{tag} > после <{tag}>"
+
+    shown = defuse_delimiters(text)
+
+    assert f"</{tag}>" not in shown and f"<{tag}>" not in shown
+    assert shown.replace("\u200b", "") == text
 
 
 def test_document_cannot_close_the_data_block_early(injection_doc: ParsedDocument) -> None:

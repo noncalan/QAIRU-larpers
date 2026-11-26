@@ -6,7 +6,13 @@ from collections.abc import Callable
 from pathlib import Path
 
 from validator.errors import IN_UNSUPPORTED, InputError
-from validator.ingest.blocks import ParsedLines, build_blocks, make_document, render_for_model
+from validator.ingest.blocks import (
+    ParsedLines,
+    build_blocks,
+    defuse_delimiters,
+    make_document,
+    render_for_model,
+)
 from validator.ingest.docx import parse_docx
 from validator.ingest.guard import guard
 from validator.ingest.md import parse_md
@@ -33,4 +39,4 @@ def parse(path: Path, kind: DocKind, *, pdf_backend: str | None = None) -> Parse
     return make_document(path, kind, reader(path))
 
 
-__all__ = ["build_blocks", "guard", "parse", "render_for_model"]
+__all__ = ["build_blocks", "defuse_delimiters", "guard", "parse", "render_for_model"]

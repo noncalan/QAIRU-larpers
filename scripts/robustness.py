@@ -213,6 +213,15 @@ def check(case: Case, outcome: RunOutcome, *, record: bool = False) -> list[str]
     return problems
 
 
+def _replace_recording(new: Path, target: Path) -> None:
+    """Запись заменяется целиком и только после успешного копирования: старая не пропадёт при сбое."""
+    staging = target.with_name(target.name + ".new")
+    shutil.rmtree(staging, ignore_errors=True)
+    shutil.copytree(new, staging)
+    shutil.rmtree(target, ignore_errors=True)
+    staging.rename(target)
+
+
 def _cell(text: str) -> str:
     return " ".join(text.split()).replace("|", "\\|")
 
@@ -286,8 +295,7 @@ def _main(argv: list[str] | None = None) -> int:
             mark = "ok " if not result.problems else "ОШИБКА"
             print(f"{mark} {case.slug:34} код {int(result.outcome.exit_code)} {'; '.join(result.problems)}")
             if record and not result.problems:
-                shutil.rmtree(FIXTURES / case.slug / "run", ignore_errors=True)
-                shutil.copytree(work / case.slug / "run", FIXTURES / case.slug / "run")
+                _replace_recording(work / case.slug / "run", FIXTURES / case.slug / "run")
         out: Path = args.out
         for r in results:
             target = out / r.case.slug
