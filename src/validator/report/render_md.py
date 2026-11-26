@@ -29,7 +29,16 @@ from validator.models import (
     Requirement,
     Scope,
 )
+from validator.report.coverage import (
+    LEGEND,
+    NOT_CHECKED_NOTE,
+    SHORT_LABELS,
+    STATE_LABELS,
+    cell_text,
+    coverage_totals,
+)
 from validator.report.fmt import FILTERS
+from validator.report.run_metrics import step_label
 
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
 NO_VIOLATIONS = "нарушений нет"
@@ -156,6 +165,15 @@ def report_context(report: Report) -> dict[str, Any]:
         "input_status": _input_status(report),
         "no_violations": NO_VIOLATIONS,
         "addressee_label": _addressee_label,
+        "step_label": step_label,
+        "coverage_text": cell_text,
+        "coverage_short": SHORT_LABELS,
+        "coverage_legend": LEGEND,
+        "coverage_not_checked_note": NOT_CHECKED_NOTE,
+        "coverage_state_label": STATE_LABELS,
+        "coverage_totals": {k.value: n for k, n in coverage_totals(report.coverage).items()}
+        if report.coverage
+        else {},
     }
 
 
