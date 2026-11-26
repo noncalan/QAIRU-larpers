@@ -78,6 +78,7 @@
     "quotes_verified": 0,
     "verified_quote_share": null,
     "questions": null,
+    "evidence": null,
     "steps": [],
     "passes_total": 0,
     "passes_ok": 0,

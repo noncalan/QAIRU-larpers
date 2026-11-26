@@ -62,6 +62,12 @@ def proven_contradiction(f: Finding) -> bool:
     return f.witness is not None and f.witness.checked and len(f.witness.readings) >= 2
 
 
+def proven_witness(f: Finding) -> bool:
+    """Свидетель есть и прошёл проверку кода. Отклонённый или не построенный свидетель (шаг 6а) не повод
+    для вопроса: его цитаты не сверены или места документа не расходятся."""
+    return f.witness is not None and f.witness.checked
+
+
 def draft_gaps(f: Finding) -> tuple[str, ...]:
     """Пропуски ``[?]`` черновика тест-кейса: каких значений не хватает для ожидаемого результата."""
     draft = f.test_draft
@@ -82,8 +88,8 @@ def _touches_contract(f: Finding, req_types: Mapping[str, RequirementType]) -> b
 
 
 def _blocks_testing(f: Finding) -> bool:
-    witness_open = f.witness is not None and not f.witness.checked
-    return f.blocks_testing or bool(draft_gaps(f)) or witness_open
+    # Отклонённый кодом свидетель (шаг 6а) не держит тест: его сценарий не подтверждён документом.
+    return f.blocks_testing or bool(draft_gaps(f))
 
 
 def priority(findings: Sequence[Finding], req_types: Mapping[str, RequirementType]) -> QuestionPriority:

@@ -384,9 +384,97 @@
             "call_id": null
           }
         ],
-        "witness": null,
+        "witness": {
+          "scenario": "Встреча начинается в 15:00, пользователь отменяет бронь в 14:30",
+          "readings": [
+            {
+              "quote": "Бронь можно отменить за час до начала.",
+              "expectation": "отмена отклонена",
+              "reading": "",
+              "located": {
+                "text": "Бронь можно отменить за час до начала.",
+                "match": "exact",
+                "score": 100.0,
+                "located": "Бронь можно отменить за час до начала.",
+                "anchor": {
+                  "char_start": 160,
+                  "char_end": 198,
+                  "block_ids": [],
+                  "sentence_ids": [],
+                  "line_start": 5,
+                  "line_end": 5,
+                  "page": null,
+                  "page_line": null,
+                  "paragraph": null,
+                  "table": null,
+                  "row": null,
+                  "cell": null,
+                  "column": null,
+                  "extraction": "text"
+                }
+              }
+            },
+            {
+              "quote": "Отмена брони возможна в любое время до начала.",
+              "expectation": "бронь отменена",
+              "reading": "",
+              "located": {
+                "text": "Отмена брони возможна в любое время до начала.",
+                "match": "exact",
+                "score": 100.0,
+                "located": "Отмена брони возможна в любое время до начала.",
+                "anchor": {
+                  "char_start": 700,
+                  "char_end": 746,
+                  "block_ids": [],
+                  "sentence_ids": [],
+                  "line_start": 31,
+                  "line_end": 31,
+                  "page": null,
+                  "page_line": null,
+                  "paragraph": null,
+                  "table": null,
+                  "row": null,
+                  "cell": null,
+                  "column": null,
+                  "extraction": "text"
+                }
+              }
+            }
+          ],
+          "checked": true,
+          "note": ""
+        },
         "test_draft": null,
-        "critic": null,
+        "critic": {
+          "action": "keep",
+          "reason": "Два места задают разный срок отмены, общего правила в документе нет",
+          "severity": null,
+          "basis": {
+            "text": "Отмена брони возможна в любое время до начала.",
+            "match": "exact",
+            "score": 100.0,
+            "located": "Отмена брони возможна в любое время до начала.",
+            "anchor": {
+              "char_start": 700,
+              "char_end": 746,
+              "block_ids": [],
+              "sentence_ids": [],
+              "line_start": 31,
+              "line_end": 31,
+              "page": null,
+              "page_line": null,
+              "paragraph": null,
+              "table": null,
+              "row": null,
+              "cell": null,
+              "column": null,
+              "extraction": "text"
+            }
+          },
+          "proposed": null,
+          "note": ""
+        },
         "anchor_corrected": false,
         "notes": []
       },
@@ -514,7 +602,35 @@
         ],
         "witness": null,
         "test_draft": null,
-        "critic": null,
+        "critic": {
+          "action": "downgrade",
+          "reason": "Ночное окно задаёт администратор, это не дефект требования",
+          "severity": "minor",
+          "basis": {
+            "text": "по возможности ночью",
+            "match": "exact",
+            "score": 100.0,
+            "located": "по возможности ночью",
+            "anchor": {
+              "char_start": 416,
+              "char_end": 436,
+              "block_ids": [],
+              "sentence_ids": [],
+              "line_start": 13,
+              "line_end": 13,
+              "page": null,
+              "page_line": null,
+              "paragraph": null,
+              "table": null,
+              "row": null,
+              "cell": null,
+              "column": null,
+              "extraction": "text"
+            }
+          },
+          "proposed": "drop",
+          "note": "Основание повторяет цитату самой находки, а не показывает ответ в другом месте документа. Код не снял находку, а понизил её важность на уровень."
+        },
         "anchor_corrected": false,
         "notes": []
       },
@@ -643,7 +759,12 @@
             "call_id": null
           }
         ],
-        "witness": null,
+        "witness": {
+          "scenario": "",
+          "readings": [],
+          "checked": false,
+          "note": "Свидетель не построен: второго места о правах ролей в документе нет."
+        },
         "test_draft": null,
         "critic": null,
         "anchor_corrected": false,
@@ -678,6 +799,64 @@
         },
         "reason": "quote_not_found",
         "detail": ""
+      },
+      {
+        "finding": {
+          "mid": "M-011",
+          "property": "IND-COMPL",
+          "defect_type": "incomplete",
+          "verdict": "violation",
+          "scope": "requirement",
+          "block_ids": [],
+          "quotes": [
+            "Пользователь бронирует комнату на выбранное время."
+          ],
+          "explanation": "Без вместимости нельзя проверить бронь на группу.",
+          "suggestion": null,
+          "title": "Не задано, сколько человек вмещает комната",
+          "scenario": null,
+          "test_gap": null,
+          "blocks_testing": false,
+          "severity_hint": null,
+          "sources": [],
+          "members": [],
+          "found_in": 1,
+          "of": 1,
+          "disagreements": [],
+          "witness": null,
+          "test_draft": null,
+          "critic": {
+            "action": "drop",
+            "reason": "Вместимость задана в разделе об ограничениях",
+            "severity": null,
+            "basis": {
+              "text": "В комнате не больше 12 мест.",
+              "match": "exact",
+              "score": 100.0,
+              "located": "В комнате не больше 12 мест.",
+              "anchor": {
+                "char_start": 820,
+                "char_end": 848,
+                "block_ids": [],
+                "sentence_ids": [],
+                "line_start": 36,
+                "line_end": 36,
+                "page": null,
+                "page_line": null,
+                "paragraph": null,
+                "table": null,
+                "row": null,
+                "cell": null,
+                "column": null,
+                "extraction": "text"
+              }
+            },
+            "proposed": null,
+            "note": ""
+          }
+        },
+        "reason": "critic_rejected",
+        "detail": "Вместимость задана в разделе об ограничениях"
       }
     ],
     "summary": {
@@ -710,9 +889,10 @@
         "not_atomic": 1
       },
       "set_level": 2,
-      "discarded_total": 1,
+      "discarded_total": 2,
       "discarded_by_reason": {
-        "quote_not_found": 1
+        "quote_not_found": 1,
+        "critic_rejected": 1
       },
       "quotes_total": 6,
       "quotes_exact": 5,
@@ -1022,10 +1202,10 @@
       "cache_read_input_tokens": 0
     },
     "cost_usd": 1.62,
-    "candidates_total": 8,
-    "merged_total": 6,
+    "candidates_total": 9,
+    "merged_total": 7,
     "findings_total": 5,
-    "discarded_total": 1,
+    "discarded_total": 2,
     "quotes_total": 6,
     "quotes_verified": 6,
     "verified_quote_share": 1.0,
@@ -1051,6 +1231,18 @@
         "architect": 1,
         "business": 1
       }
+    },
+    "evidence": {
+      "witness_requested": 2,
+      "witness_checked": 1,
+      "witness_rejected": 0,
+      "witness_declined": 1,
+      "critic_reviewed": 3,
+      "critic_kept": 1,
+      "critic_downgraded": 1,
+      "critic_dropped": 1,
+      "critic_overruled": 1,
+      "critic_enabled": true
     },
     "steps": [
       {
@@ -1101,10 +1293,11 @@
     ],
     "passes_total": 3,
     "passes_ok": 3,
-    "candidates_passes": 6,
+    "candidates_passes": 7,
     "candidates_lint": 2,
     "discarded_by_reason": {
-      "quote_not_found": 1
+      "quote_not_found": 1,
+      "critic_rejected": 1
     },
     "critic_reviewed": 0,
     "critic_downgraded": 0,

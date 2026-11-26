@@ -169,6 +169,9 @@ def _finding_card(f: Finding, ctx: dict[str, Any]) -> Json:
     rows.append(("Почему это проблема", plain(f.explanation)))
     if f.suggestion:
         rows.append(("Предложенная формулировка", plain(f.suggestion)))
+    for e in ctx["evidence_lines"].get(f.id, []):
+        rows.append((e.head, e.text))
+        rows += [(f"{e.item_label} {i}", item) for i, item in enumerate(e.items, 1)]
     if ctx["questions_by_finding"].get(f.id):
         rows.append(("Вопрос автору", ", ".join(ctx["questions_by_finding"][f.id])))
     rows.append(("Найдено", _found(f)))
@@ -523,7 +526,14 @@ def _summary_section(report: Report, ctx: dict[str, Any]) -> Json:
         f"Цитаты: сверено {s.quotes_exact + s.quotes_fuzzy} из {s.quotes_total} "
         f"(точно {s.quotes_exact}, нечётко {s.quotes_fuzzy}).",
     ]
-    return {"title": title, "blocks": [_bullets(items)]}
+    blocks: list[Json] = [_bullets(items)]
+    if ctx["critic_dropped"]:
+        blocks += [
+            {"t": "h2", "text": "Находки, снятые критиком"},
+            _para(ctx["critic_dropped_intro"]),
+            _bullets(ctx["critic_dropped"]),
+        ]
+    return {"title": title, "blocks": blocks}
 
 
 def _conclusion_section(report: Report, ctx: dict[str, Any]) -> Json:
@@ -583,6 +593,7 @@ def _metrics_section(report: Report, ctx: dict[str, Any]) -> Json:
         ),
         ("Время прогона", f"{m.duration_s if m.duration_s is not None else '—'} с"),
         ("Цена по тарифу API", money(m.cost_usd)),
+        *ctx["evidence_rows"],
     ]
     qm = m.questions
     if qm is not None and qm.before_critic:
