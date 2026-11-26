@@ -1,0 +1,1197 @@
+{
+ "envelope_version": 1,
+ "key": "09b5680d2165374b5588efc56f2a5985b6d48698c90126bf0d82159a268e24ae",
+ "call_id": "segment.1",
+ "step": "segment",
+ "call_index": 1,
+ "model": "claude-sonnet-5-5",
+ "effort": "medium",
+ "backend": "cli",
+ "saved_at": "2026-11-26T22:51:35.914047+00:00",
+ "payload": {
+  "duration_api_ms": 28374,
+  "stop_reason": "tool_use",
+  "session_id": "2724d201-e6d5-47be-be4f-b002775161ee",
+  "total_cost_usd": 0.1002981,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 9566,
+   "cache_read_input_tokens": 5101,
+   "output_tokens": 6152,
+   "output_tokens_details": {
+    "thinking_tokens": 0
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 9566,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 6152,
+     "cache_read_input_tokens": 5101,
+     "cache_creation_input_tokens": 9566,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 9566
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 6152,
+    "cacheReadInputTokens": 5101,
+    "cacheCreationInputTokens": 9566,
+    "webSearchRequests": 0,
+    "costUSD": 0.1002981,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 9566,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 2,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "{\"requirements\":[{\"refs\":[\"B016\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Настольное приложение для Windows с локальным хранением в SQLite без обязательного интернета\",\"entities\":[{\"kind\":\"system\",\"value\":\"Windows\"},{\"kind\":\"system\",\"value\":\"SQLite\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B026\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"goal\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Автоматизация учёта личных денежных средств: счета, операции, категории, бюджеты, отчёты\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B027\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"ПС решает задачи: справочники, операции, поиск, остатки, отчёты, CSV, резервное копирование\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"CSV\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B029\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Эксплуатация на ПК пользователя в однопользовательском режиме\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B030.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Пользователи — физические лица с уверенными навыками Windows\",\"entities\":[{\"kind\":\"actor\",\"value\":\"физические лица\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B030.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Специальная подготовка не требуется\",\"entities\":[],\"links\":[],\"depends_on\":\"B030.1\"},{\"refs\":[\"B031\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Обслуживание выполняется пользователем через графический интерфейс без администратора\",\"entities\":[{\"kind\":\"actor\",\"value\":\"пользователь\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B036.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"ФТ-1\",\"summary\":\"Создание, просмотр, редактирование и удаление счетов\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B036.4\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"data\",\"subtype\":\"\",\"source_id\":\"ФТ-1\",\"summary\":\"Атрибуты счёта: наименование, тип, валюта, начальный остаток, архивность\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"наименование\"},{\"kind\":\"data_field\",\"value\":\"валюта\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B036.5\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"ФТ-1\",\"summary\":\"Хранить не менее 50 счетов одновременно\",\"entities\":[{\"kind\":\"amount\",\"value\":\"не менее 50\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B036.6\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"ФТ-1\",\"summary\":\"Удаление счёта с операциями блокируется с сообщением\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B036.7\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"ФТ-1\",\"summary\":\"Проверка: создать 3 счёта, изменить, удалить, отказ для счёта с операциями\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B037.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"ФТ-2\",\"summary\":\"Регистрация операций трёх типов\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B037.4\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"data\",\"subtype\":\"\",\"source_id\":\"ФТ-2\",\"summary\":\"Атрибуты операции и ограничения: дата, сумма, счёт, категория, комментарий\",\"entities\":[{\"kind\":\"amount\",\"value\":\"255 символов\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B037.5\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"ФТ-2\",\"summary\":\"После сохранения операции остатки пересчитываются автоматически\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B037.6\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"ФТ-2\",\"summary\":\"Проверка изменения остатка и отклонения некорректных операций\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B038.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"ФТ-3\",\"summary\":\"Двухуровневый справочник категорий с наименованием, типом и цветом\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B038.4\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"ФТ-3\",\"summary\":\"При первом запуске не менее 20 предустановленных категорий\",\"entities\":[{\"kind\":\"amount\",\"value\":\"не менее 20\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B038.5\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"ФТ-3\",\"summary\":\"Проверка наличия 20 категорий и создания подкатегории\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B039.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"ФТ-4\",\"summary\":\"Отбор операций по периоду, счёту, типу, категории, комментарию и комбинации\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B039.4\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"ui\",\"subtype\":\"\",\"source_id\":\"ФТ-4\",\"summary\":\"Постраничный вывод по 50 записей с итоговой суммой\",\"entities\":[{\"kind\":\"amount\",\"value\":\"50 записей\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B039.5\"],\"part_start\":\"Время формирования результата\",\"part_end\":\"не должно превышать 2 с.\",\"type\":\"nfr\",\"subtype\":\"\",\"source_id\":\"ФТ-4\",\"summary\":\"Отбор на 50 000 операций не дольше 2 с\",\"entities\":[{\"kind\":\"amount\",\"value\":\"2 с\"},{\"kind\":\"amount\",\"value\":\"50 000 операций\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B039.5\"],\"part_start\":\"Критерий проверки: на\",\"part_end\":\"протоколе испытаний.\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"ФТ-4\",\"summary\":\"Проверка отбора на 50 000 операций с измерением времени\",\"entities\":[],\"links\":[],\"depends_on\":\"B039.5\"},{\"refs\":[\"B040.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"ФТ-5\",\"summary\":\"Месячный лимит расходов по категории и процент исполнения\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B040.4\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"ui\",\"subtype\":\"\",\"source_id\":\"ФТ-5\",\"summary\":\"Индикатор жёлтый при 80 %, красный с предупреждением при превышении 100 %\",\"entities\":[{\"kind\":\"amount\",\"value\":\"80 %\"},{\"kind\":\"amount\",\"value\":\"100 %\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B040.5\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"ФТ-5\",\"summary\":\"Проверка цвета индикатора и предупреждения при лимите 1000\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B041.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"ФТ-6\",\"summary\":\"Формирование не менее трёх отчётов за произвольный период\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B041.4\"],\"part_start\":\"Время формирования любого отчёта\",\"part_end\":\"не должно превышать 3 с.\",\"type\":\"nfr\",\"subtype\":\"\",\"source_id\":\"ФТ-6\",\"summary\":\"Отчёт на 50 000 операций не дольше 3 с\",\"entities\":[{\"kind\":\"amount\",\"value\":\"3 с\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B041.4\"],\"part_start\":\"Критерий проверки: формируются все\",\"part_end\":\"фиксируется время построения.\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"ФТ-6\",\"summary\":\"Проверка отчётов за 12 месяцев: суммы и время\",\"entities\":[],\"links\":[],\"depends_on\":\"B041.4\"},{\"refs\":[\"B042.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"ФТ-7\",\"summary\":\"Экспорт операций в CSV и импорт из CSV\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"CSV UTF-8\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B042.4\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"ФТ-7\",\"summary\":\"Построчная проверка при импорте, протокол с номером строки и причиной\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B042.5\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"ФТ-7\",\"summary\":\"Файл не менее 1000 строк\",\"entities\":[{\"kind\":\"amount\",\"value\":\"1 000 строк\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B042.6\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"ФТ-7\",\"summary\":\"Проверка экспорта, импорта с тремя ошибочными строками\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B043.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"ФТ-8\",\"summary\":\"Резервная копия в файл и восстановление с подтверждением\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B043.4\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"ФТ-8\",\"summary\":\"Проверка восстановления состояния на момент копии\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B044.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"nfr\",\"subtype\":\"\",\"source_id\":\"ФТ-9\",\"summary\":\"Вход защищён паролем, хеш PBKDF2 от 100 000 итераций с солью\",\"entities\":[{\"kind\":\"amount\",\"value\":\"100 000 итераций\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B044.4\"],\"part_start\":\"После трёх последовательных\",\"part_end\":\"блокироваться на 60 с.\",\"type\":\"nfr\",\"subtype\":\"\",\"source_id\":\"ФТ-9\",\"summary\":\"После трёх неверных паролей вход блокируется на 60 с\",\"entities\":[{\"kind\":\"amount\",\"value\":\"60 с\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B044.4\"],\"part_start\":\"Критерий проверки: трижды вводится\",\"part_end\":\"в открытом виде.\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"ФТ-9\",\"summary\":\"Проверка блокировки, её длительности и отсутствия пароля открытым текстом\",\"entities\":[],\"links\":[],\"depends_on\":\"B044.4\"},{\"refs\":[\"B045.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"ФТ-10\",\"summary\":\"Настройка валюты, формата даты и темы\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B045.4\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"ФТ-10\",\"summary\":\"Настройки сохраняются между сеансами\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B045.5\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"ФТ-10\",\"summary\":\"Проверка сохранения трёх параметров после перезапуска\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B046.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"data\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Входные данные: экранные формы и CSV-файлы импорта\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B046.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"data\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Выходные данные: формы, отчёты, диаграммы, CSV экспорта\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B046.4\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"data\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Данные в SQLite, суммы с двумя знаками, даты ИСО 8601\",\"entities\":[{\"kind\":\"system\",\"value\":\"SQLite\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B047.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"nfr\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Запуск не более 5 с, реакция интерфейса не более 2 с при 50 000 операций\",\"entities\":[{\"kind\":\"amount\",\"value\":\"5 с\"},{\"kind\":\"amount\",\"value\":\"2 с\"}],\"links\":[],\"depends_on\":\"\"}],\"excluded\":[{\"block\":\"B001\",\"label\":\"metadata\",\"reason\":\"титульные сведения об организации\"},{\"block\":\"B002\",\"label\":\"metadata\",\"reason\":\"титульные сведения\"},{\"block\":\"B003\",\"label\":\"metadata\",\"reason\":\"направление подготовки\"},{\"block\":\"B004\",\"label\":\"metadata\",\"reason\":\"утверждение документа\"},{\"block\":\"B006\",\"label\":\"metadata\",\"reason\":\"название документа\"},{\"block\":\"B007\",\"label\":\"metadata\",\"reason\":\"обозначение и версия документа\"},{\"block\":\"B008\",\"label\":\"metadata\",\"reason\":\"ссылка на стандарт оформления\"},{\"block\":\"B009\",\"label\":\"metadata\",\"reason\":\"сведения об исполнителе\"},{\"block\":\"B010\",\"label\":\"metadata\",\"reason\":\"город\"},{\"block\":\"B012\",\"label\":\"metadata\",\"reason\":\"наименование программы\"},{\"block\":\"B013\",\"label\":\"metadata\",\"reason\":\"обозначение и версия\"},{\"block\":\"B014\",\"label\":\"context\",\"reason\":\"область применения\"},{\"block\":\"B015\",\"label\":\"context\",\"reason\":\"описание текущего положения\"},{\"block\":\"B017\",\"label\":\"context\",\"reason\":\"учебные цели разработки\"},{\"block\":\"B019\",\"label\":\"context\",\"reason\":\"основание разработки\"},{\"block\":\"B020\",\"label\":\"metadata\",\"reason\":\"наименование темы\"},{\"block\":\"B021\",\"label\":\"metadata\",\"reason\":\"сведения о заказчике\"},{\"block\":\"B022\",\"label\":\"metadata\",\"reason\":\"сведения об исполнителе\"},{\"block\":\"B023\",\"label\":\"metadata\",\"reason\":\"обозначение темы и сроки работ\"},{\"block\":\"B032\",\"label\":\"context\",\"reason\":\"ожидаемый эффект, мотивация\"},{\"block\":\"B035.1\",\"label\":\"context\",\"reason\":\"вводная фраза к перечню\"},{\"block\":\"B035.2\",\"label\":\"context\",\"reason\":\"пояснение о критериях проверки\"},{\"block\":\"B036.1\",\"label\":\"heading\",\"reason\":\"метка требования\"},{\"block\":\"B036.2\",\"label\":\"heading\",\"reason\":\"название требования\"},{\"block\":\"B037.1\",\"label\":\"heading\",\"reason\":\"метка требования\"},{\"block\":\"B037.2\",\"label\":\"heading\",\"reason\":\"название требования\"},{\"block\":\"B038.1\",\"label\":\"heading\",\"reason\":\"метка требования\"},{\"block\":\"B038.2\",\"label\":\"heading\",\"reason\":\"название требования\"},{\"block\":\"B039.1\",\"label\":\"heading\",\"reason\":\"метка требования\"},{\"block\":\"B039.2\",\"label\":\"heading\",\"reason\":\"название требования\"},{\"block\":\"B040.1\",\"label\":\"heading\",\"reason\":\"метка требования\"},{\"block\":\"B040.2\",\"label\":\"heading\",\"reason\":\"название требования\"},{\"block\":\"B041.1\",\"label\":\"heading\",\"reason\":\"метка требования\"},{\"block\":\"B041.2\",\"label\":\"heading\",\"reason\":\"название требования\"},{\"block\":\"B042.1\",\"label\":\"heading\",\"reason\":\"метка требования\"},{\"block\":\"B042.2\",\"label\":\"heading\",\"reason\":\"название требования\"},{\"block\":\"B043.1\",\"label\":\"heading\",\"reason\":\"метка требования\"},{\"block\":\"B043.2\",\"label\":\"heading\",\"reason\":\"название требования\"},{\"block\":\"B044.1\",\"label\":\"heading\",\"reason\":\"метка требования\"},{\"block\":\"B044.2\",\"label\":\"heading\",\"reason\":\"название требования\"},{\"block\":\"B045.1\",\"label\":\"heading\",\"reason\":\"метка требования\"},{\"block\":\"B045.2\",\"label\":\"heading\",\"reason\":\"название требования\"},{\"block\":\"B046.1\",\"label\":\"heading\",\"reason\":\"заголовок подпункта\"},{\"block\":\"B047.1\",\"label\":\"heading\",\"reason\":\"заголовок подпункта\"}]}",
+  "structured_output": {
+   "requirements": [
+    {
+     "refs": [
+      "B016"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Настольное приложение для Windows с локальным хранением в SQLite без обязательного интернета",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "Windows"
+      },
+      {
+       "kind": "system",
+       "value": "SQLite"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B026"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "goal",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Автоматизация учёта личных денежных средств: счета, операции, категории, бюджеты, отчёты",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B027"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "",
+     "summary": "ПС решает задачи: справочники, операции, поиск, остатки, отчёты, CSV, резервное копирование",
+     "entities": [
+      {
+       "kind": "data_field",
+       "value": "CSV"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B029"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Эксплуатация на ПК пользователя в однопользовательском режиме",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B030.1"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Пользователи — физические лица с уверенными навыками Windows",
+     "entities": [
+      {
+       "kind": "actor",
+       "value": "физические лица"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B030.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Специальная подготовка не требуется",
+     "entities": [],
+     "links": [],
+     "depends_on": "B030.1"
+    },
+    {
+     "refs": [
+      "B031"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Обслуживание выполняется пользователем через графический интерфейс без администратора",
+     "entities": [
+      {
+       "kind": "actor",
+       "value": "пользователь"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B036.3"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "ФТ-1",
+     "summary": "Создание, просмотр, редактирование и удаление счетов",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B036.4"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "data",
+     "subtype": "",
+     "source_id": "ФТ-1",
+     "summary": "Атрибуты счёта: наименование, тип, валюта, начальный остаток, архивность",
+     "entities": [
+      {
+       "kind": "data_field",
+       "value": "наименование"
+      },
+      {
+       "kind": "data_field",
+       "value": "валюта"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B036.5"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "ФТ-1",
+     "summary": "Хранить не менее 50 счетов одновременно",
+     "entities": [
+      {
+       "kind": "amount",
+       "value": "не менее 50"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B036.6"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "ФТ-1",
+     "summary": "Удаление счёта с операциями блокируется с сообщением",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B036.7"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "acceptance",
+     "subtype": "",
+     "source_id": "ФТ-1",
+     "summary": "Проверка: создать 3 счёта, изменить, удалить, отказ для счёта с операциями",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B037.3"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "ФТ-2",
+     "summary": "Регистрация операций трёх типов",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B037.4"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "data",
+     "subtype": "",
+     "source_id": "ФТ-2",
+     "summary": "Атрибуты операции и ограничения: дата, сумма, счёт, категория, комментарий",
+     "entities": [
+      {
+       "kind": "amount",
+       "value": "255 символов"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B037.5"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "ФТ-2",
+     "summary": "После сохранения операции остатки пересчитываются автоматически",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B037.6"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "acceptance",
+     "subtype": "",
+     "source_id": "ФТ-2",
+     "summary": "Проверка изменения остатка и отклонения некорректных операций",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B038.3"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "ФТ-3",
+     "summary": "Двухуровневый справочник категорий с наименованием, типом и цветом",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B038.4"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "ФТ-3",
+     "summary": "При первом запуске не менее 20 предустановленных категорий",
+     "entities": [
+      {
+       "kind": "amount",
+       "value": "не менее 20"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B038.5"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "acceptance",
+     "subtype": "",
+     "source_id": "ФТ-3",
+     "summary": "Проверка наличия 20 категорий и создания подкатегории",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B039.3"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "ФТ-4",
+     "summary": "Отбор операций по периоду, счёту, типу, категории, комментарию и комбинации",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B039.4"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "ui",
+     "subtype": "",
+     "source_id": "ФТ-4",
+     "summary": "Постраничный вывод по 50 записей с итоговой суммой",
+     "entities": [
+      {
+       "kind": "amount",
+       "value": "50 записей"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B039.5"
+     ],
+     "part_start": "Время формирования результата",
+     "part_end": "не должно превышать 2 с.",
+     "type": "nfr",
+     "subtype": "",
+     "source_id": "ФТ-4",
+     "summary": "Отбор на 50 000 операций не дольше 2 с",
+     "entities": [
+      {
+       "kind": "amount",
+       "value": "2 с"
+      },
+      {
+       "kind": "amount",
+       "value": "50 000 операций"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B039.5"
+     ],
+     "part_start": "Критерий проверки: на",
+     "part_end": "протоколе испытаний.",
+     "type": "acceptance",
+     "subtype": "",
+     "source_id": "ФТ-4",
+     "summary": "Проверка отбора на 50 000 операций с измерением времени",
+     "entities": [],
+     "links": [],
+     "depends_on": "B039.5"
+    },
+    {
+     "refs": [
+      "B040.3"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "ФТ-5",
+     "summary": "Месячный лимит расходов по категории и процент исполнения",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B040.4"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "ui",
+     "subtype": "",
+     "source_id": "ФТ-5",
+     "summary": "Индикатор жёлтый при 80 %, красный с предупреждением при превышении 100 %",
+     "entities": [
+      {
+       "kind": "amount",
+       "value": "80 %"
+      },
+      {
+       "kind": "amount",
+       "value": "100 %"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B040.5"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "acceptance",
+     "subtype": "",
+     "source_id": "ФТ-5",
+     "summary": "Проверка цвета индикатора и предупреждения при лимите 1000",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B041.3"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "ФТ-6",
+     "summary": "Формирование не менее трёх отчётов за произвольный период",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B041.4"
+     ],
+     "part_start": "Время формирования любого отчёта",
+     "part_end": "не должно превышать 3 с.",
+     "type": "nfr",
+     "subtype": "",
+     "source_id": "ФТ-6",
+     "summary": "Отчёт на 50 000 операций не дольше 3 с",
+     "entities": [
+      {
+       "kind": "amount",
+       "value": "3 с"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B041.4"
+     ],
+     "part_start": "Критерий проверки: формируются все",
+     "part_end": "фиксируется время построения.",
+     "type": "acceptance",
+     "subtype": "",
+     "source_id": "ФТ-6",
+     "summary": "Проверка отчётов за 12 месяцев: суммы и время",
+     "entities": [],
+     "links": [],
+     "depends_on": "B041.4"
+    },
+    {
+     "refs": [
+      "B042.3"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "ФТ-7",
+     "summary": "Экспорт операций в CSV и импорт из CSV",
+     "entities": [
+      {
+       "kind": "data_field",
+       "value": "CSV UTF-8"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B042.4"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "ФТ-7",
+     "summary": "Построчная проверка при импорте, протокол с номером строки и причиной",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B042.5"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "ФТ-7",
+     "summary": "Файл не менее 1000 строк",
+     "entities": [
+      {
+       "kind": "amount",
+       "value": "1 000 строк"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B042.6"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "acceptance",
+     "subtype": "",
+     "source_id": "ФТ-7",
+     "summary": "Проверка экспорта, импорта с тремя ошибочными строками",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B043.3"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "ФТ-8",
+     "summary": "Резервная копия в файл и восстановление с подтверждением",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B043.4"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "acceptance",
+     "subtype": "",
+     "source_id": "ФТ-8",
+     "summary": "Проверка восстановления состояния на момент копии",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B044.3"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "nfr",
+     "subtype": "",
+     "source_id": "ФТ-9",
+     "summary": "Вход защищён паролем, хеш PBKDF2 от 100 000 итераций с солью",
+     "entities": [
+      {
+       "kind": "amount",
+       "value": "100 000 итераций"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B044.4"
+     ],
+     "part_start": "После трёх последовательных",
+     "part_end": "блокироваться на 60 с.",
+     "type": "nfr",
+     "subtype": "",
+     "source_id": "ФТ-9",
+     "summary": "После трёх неверных паролей вход блокируется на 60 с",
+     "entities": [
+      {
+       "kind": "amount",
+       "value": "60 с"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B044.4"
+     ],
+     "part_start": "Критерий проверки: трижды вводится",
+     "part_end": "в открытом виде.",
+     "type": "acceptance",
+     "subtype": "",
+     "source_id": "ФТ-9",
+     "summary": "Проверка блокировки, её длительности и отсутствия пароля открытым текстом",
+     "entities": [],
+     "links": [],
+     "depends_on": "B044.4"
+    },
+    {
+     "refs": [
+      "B045.3"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "ФТ-10",
+     "summary": "Настройка валюты, формата даты и темы",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B045.4"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "ФТ-10",
+     "summary": "Настройки сохраняются между сеансами",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B045.5"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "acceptance",
+     "subtype": "",
+     "source_id": "ФТ-10",
+     "summary": "Проверка сохранения трёх параметров после перезапуска",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B046.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "data",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Входные данные: экранные формы и CSV-файлы импорта",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B046.3"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "data",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Выходные данные: формы, отчёты, диаграммы, CSV экспорта",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B046.4"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "data",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Данные в SQLite, суммы с двумя знаками, даты ИСО 8601",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "SQLite"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B047.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "nfr",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Запуск не более 5 с, реакция интерфейса не более 2 с при 50 000 операций",
+     "entities": [
+      {
+       "kind": "amount",
+       "value": "5 с"
+      },
+      {
+       "kind": "amount",
+       "value": "2 с"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    }
+   ],
+   "excluded": [
+    {
+     "block": "B001",
+     "label": "metadata",
+     "reason": "титульные сведения об организации"
+    },
+    {
+     "block": "B002",
+     "label": "metadata",
+     "reason": "титульные сведения"
+    },
+    {
+     "block": "B003",
+     "label": "metadata",
+     "reason": "направление подготовки"
+    },
+    {
+     "block": "B004",
+     "label": "metadata",
+     "reason": "утверждение документа"
+    },
+    {
+     "block": "B006",
+     "label": "metadata",
+     "reason": "название документа"
+    },
+    {
+     "block": "B007",
+     "label": "metadata",
+     "reason": "обозначение и версия документа"
+    },
+    {
+     "block": "B008",
+     "label": "metadata",
+     "reason": "ссылка на стандарт оформления"
+    },
+    {
+     "block": "B009",
+     "label": "metadata",
+     "reason": "сведения об исполнителе"
+    },
+    {
+     "block": "B010",
+     "label": "metadata",
+     "reason": "город"
+    },
+    {
+     "block": "B012",
+     "label": "metadata",
+     "reason": "наименование программы"
+    },
+    {
+     "block": "B013",
+     "label": "metadata",
+     "reason": "обозначение и версия"
+    },
+    {
+     "block": "B014",
+     "label": "context",
+     "reason": "область применения"
+    },
+    {
+     "block": "B015",
+     "label": "context",
+     "reason": "описание текущего положения"
+    },
+    {
+     "block": "B017",
+     "label": "context",
+     "reason": "учебные цели разработки"
+    },
+    {
+     "block": "B019",
+     "label": "context",
+     "reason": "основание разработки"
+    },
+    {
+     "block": "B020",
+     "label": "metadata",
+     "reason": "наименование темы"
+    },
+    {
+     "block": "B021",
+     "label": "metadata",
+     "reason": "сведения о заказчике"
+    },
+    {
+     "block": "B022",
+     "label": "metadata",
+     "reason": "сведения об исполнителе"
+    },
+    {
+     "block": "B023",
+     "label": "metadata",
+     "reason": "обозначение темы и сроки работ"
+    },
+    {
+     "block": "B032",
+     "label": "context",
+     "reason": "ожидаемый эффект, мотивация"
+    },
+    {
+     "block": "B035.1",
+     "label": "context",
+     "reason": "вводная фраза к перечню"
+    },
+    {
+     "block": "B035.2",
+     "label": "context",
+     "reason": "пояснение о критериях проверки"
+    },
+    {
+     "block": "B036.1",
+     "label": "heading",
+     "reason": "метка требования"
+    },
+    {
+     "block": "B036.2",
+     "label": "heading",
+     "reason": "название требования"
+    },
+    {
+     "block": "B037.1",
+     "label": "heading",
+     "reason": "метка требования"
+    },
+    {
+     "block": "B037.2",
+     "label": "heading",
+     "reason": "название требования"
+    },
+    {
+     "block": "B038.1",
+     "label": "heading",
+     "reason": "метка требования"
+    },
+    {
+     "block": "B038.2",
+     "label": "heading",
+     "reason": "название требования"
+    },
+    {
+     "block": "B039.1",
+     "label": "heading",
+     "reason": "метка требования"
+    },
+    {
+     "block": "B039.2",
+     "label": "heading",
+     "reason": "название требования"
+    },
+    {
+     "block": "B040.1",
+     "label": "heading",
+     "reason": "метка требования"
+    },
+    {
+     "block": "B040.2",
+     "label": "heading",
+     "reason": "название требования"
+    },
+    {
+     "block": "B041.1",
+     "label": "heading",
+     "reason": "метка требования"
+    },
+    {
+     "block": "B041.2",
+     "label": "heading",
+     "reason": "название требования"
+    },
+    {
+     "block": "B042.1",
+     "label": "heading",
+     "reason": "метка требования"
+    },
+    {
+     "block": "B042.2",
+     "label": "heading",
+     "reason": "название требования"
+    },
+    {
+     "block": "B043.1",
+     "label": "heading",
+     "reason": "метка требования"
+    },
+    {
+     "block": "B043.2",
+     "label": "heading",
+     "reason": "название требования"
+    },
+    {
+     "block": "B044.1",
+     "label": "heading",
+     "reason": "метка требования"
+    },
+    {
+     "block": "B044.2",
+     "label": "heading",
+     "reason": "название требования"
+    },
+    {
+     "block": "B045.1",
+     "label": "heading",
+     "reason": "метка требования"
+    },
+    {
+     "block": "B045.2",
+     "label": "heading",
+     "reason": "название требования"
+    },
+    {
+     "block": "B046.1",
+     "label": "heading",
+     "reason": "заголовок подпункта"
+    },
+    {
+     "block": "B047.1",
+     "label": "heading",
+     "reason": "заголовок подпункта"
+    }
+   ]
+  },
+  "ttft_ms": 28394,
+  "type": "result",
+  "duration_ms": 28446,
+  "uuid": "d7444030-456a-42bf-9b79-f6e426a44d3b",
+  "ttft_stream_ms": 917,
+  "time_to_request_ms": 55,
+  "time_to_request_phases_ms": {
+   "other": 6,
+   "system_prompt": 2,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 7,
+   "input_hooks": 2,
+   "conversation_append": 0,
+   "tool_pool_refresh": 1,
+   "init_message": 5,
+   "init_frame_send": 3,
+   "engine_pickup": 1,
+   "loop_entry": 3,
+   "message_prep": 1,
+   "model_config_wait": 2,
+   "autocompact": 1,
+   "request_announcements": 4,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 2,
+   "message_normalization": 2,
+   "client_creation": 3,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 5,
+  "time_to_request_cpu_ms": 59,
+  "time_to_request_major_faults": 0,
+  "process_rss_mib_turn_start": 203,
+  "process_anon_mib_turn_start": 124,
+  "process_rss_mib_result": 209,
+  "process_anon_mib_result": 122,
+  "process_peak_rss_mib": 224,
+  "process_cpu_ms_turn": 886,
+  "process_wall_ms_turn": 28446,
+  "tool_pool_build_count": 3,
+  "tool_pool_build_lapsed_count": 0,
+  "tool_pool_moved_at_lapse_count": 0,
+  "tool_pool_limit_ms": 30000,
+  "process_cpu_ms_streaming": 683,
+  "process_wall_ms_streaming": 27504,
+  "main_stream_count": 1,
+  "main_stream_event_count": 826,
+  "main_stream_chunk_count": 820,
+  "process_turn_states": {
+   "main_stream": {
+    "cpu_ms": 683,
+    "wall_ms": 27504,
+    "entries": 1
+   },
+   "first_event_wait": {
+    "cpu_ms": 118,
+    "wall_ms": 861,
+    "entries": 1
+   },
+   "before_first_request": {
+    "cpu_ms": 59,
+    "wall_ms": 55,
+    "entries": 1
+   },
+   "after_last_request": {
+    "cpu_ms": 26,
+    "wall_ms": 26,
+    "entries": 1
+   }
+  },
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 2,
+   "cpu_ms": 8,
+   "major_faults": 0,
+   "setup_ms": 1,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 1,
+   "render_ms": 1,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 1,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 1,
+   "new_schemas": 1
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 2,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 1,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 2,
+   "record_attempt_ms": 0,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 1
+  },
+  "first_content_frame_ms": 918,
+  "time_to_request_from_spawn_ms": 31128,
+  "warm_spare_claimed": false,
+  "flag_fetch_kick": "not_asked_warm",
+  "time_origin_ms": 1795733466680.7444,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "process_start_tuning": 0
+ }
+}
