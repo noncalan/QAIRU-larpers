@@ -16,6 +16,11 @@ import yaml
 
 LEXICON_PATH = Path(__file__).with_name("lexicon.yaml")
 _KEYS = ("stem", "word", "phrase", "pattern")
+ROLES = frozenset({"", "preference", "discretion"})
+"""Необязательное поле ``role`` записи: как правило L-02 читает оборот (см. ``text_rules.check_loophole``).
+
+``preference``: слово предпочтения («рекомендуется», «желательно»); ``discretion``: оборот «чьё решение»
+(«по усмотрению», «при желании»). Пустая роль: обычное слово раздела."""
 
 
 def fold(text: str) -> str:
@@ -30,6 +35,7 @@ class Term:
     key: str
     regex: re.Pattern[str]
     why: str
+    role: str = ""
 
 
 @dataclass(frozen=True)
@@ -55,6 +61,9 @@ def _compile(entry: dict[str, Any]) -> Term:
     if len(keys) != 1 or not entry.get("why"):
         raise ValueError(f"Запись словаря должна иметь ровно один из ключей {_KEYS} и поле why: {entry}")
     kind = keys[0]
+    role = str(entry.get("role", ""))
+    if role not in ROLES:
+        raise ValueError(f"Неизвестная роль {role!r} в записи словаря (допустимы {sorted(ROLES)}): {entry}")
     # Регулярные выражения не сворачиваем: ``fold`` испортил бы ``\S``, ``\D``; пишем их строчными и с «е».
     value = str(entry[kind]).strip() if kind == "pattern" else fold(str(entry[kind]).strip())
     if kind == "stem":
@@ -68,7 +77,7 @@ def _compile(entry: dict[str, Any]) -> Term:
     # Границы слова ставим, если запись сама не отключила их (``boundary: none``: «???», «[указать …]»).
     bounded = entry.get("boundary", "word") != "none"
     lead, trail = (r"(?<!\w)", r"(?!\w)") if bounded else ("", "")
-    return Term(key=value, regex=re.compile(f"{lead}{body}{trail}"), why=str(entry["why"]).strip())
+    return Term(key=value, regex=re.compile(f"{lead}{body}{trail}"), why=str(entry["why"]).strip(), role=role)
 
 
 @cache

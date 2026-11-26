@@ -23,3 +23,4 @@
 | `21-model-effort` | какая модель и effort на каком шаге | `docs/research/21-model-and-effort.md`, D-010 |
 | `22-search-prompt`, `23-search-pass` | промпт и живой проход поиска дефектов | README внутри папок, `docs/decisions.md` |
 | `39-evidence`, `40-test-draft`, `41-questions-critic`, `42-clarify` | записи прогонов шагов: свидетель, тест-кейс, критик вопросов, уточнение | README внутри папок, `docs/architecture.md` |
+| `48-lint-holdout` | срабатывания линтера на документе кейса и чужих документах без модели, «до и после» правки | `evals/holdout/README.md` |
