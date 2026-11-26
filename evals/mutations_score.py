@@ -72,6 +72,9 @@ class MutationScore:
     replacement: str
     original: str
     line: int
+    about: bool | None = None
+    """Ручное чтение: находка на месте говорит именно о внесённом дефекте (файл ``--reading``)."""
+    about_note: str = ""
 
 
 @dataclass
@@ -232,6 +235,7 @@ class OperatorRow:
     place_only: int
     by_lint: int
     by_model: int
+    about: int = 0
 
     @property
     def recall(self) -> float:
@@ -255,6 +259,7 @@ def by_operator(scores: Sequence[MutationScore]) -> list[OperatorRow]:
         row.place_only += s.status == PLACE_ONLY
         row.by_lint += s.by_lint
         row.by_model += s.by_model
+        row.about += bool(s.about)
     return sorted(rows.values(), key=lambda r: int(r.operator[1:]))
 
 
@@ -266,6 +271,7 @@ def total(rows: Sequence[OperatorRow]) -> OperatorRow:
         out.place_only += r.place_only
         out.by_lint += r.by_lint
         out.by_model += r.by_model
+        out.about += r.about
     return out
 
 
@@ -329,6 +335,15 @@ def _rows(scores: Sequence[MutationScore]) -> dict[str, Any]:
     }
 
 
+def apply_reading(copies: Sequence[CopyScore], reading: dict[str, Any]) -> None:
+    """Добавляет к мутациям ручные вердикты «находка о мутации» (ключ: id мутации)."""
+    verdicts = reading.get("verdicts", {})
+    for m in (m for c in copies for m in c.mutations):
+        if m.id in verdicts:
+            m.about = bool(verdicts[m.id]["about"])
+            m.about_note = str(verdicts[m.id].get("note", ""))
+
+
 def to_json(copies: Sequence[CopyScore], mutations_dir: Path) -> dict[str, Any]:
     scored = [m for c in copies if c.kind == "multi" for m in c.mutations]
     documents = sorted({document_of(m.copy) for m in scored})
@@ -378,12 +393,16 @@ def to_markdown(data: dict[str, Any]) -> str:
         ]
     every = [m for c in data["copies"] for m in c["mutations"]]
     if every:
-        lines += ["", "| Мутация | Оператор | Статус | Строка | Было | Стало | Находки на месте |"]
-        lines += ["|---|---|---|---|---|---|---|"]
+        lines += [
+            "",
+            "| Мутация | Оператор | Статус | По смыслу | Строка | Было | Стало | Находки на месте |",
+        ]
+        lines += ["|---|---|---|---|---|---|---|---|"]
         for m in every:
             titles = "<br>".join(_cell(t, 120) for t in m["titles"]) or "—"
             lines.append(
-                f"| {m['id']} | {m['operator']} | {m['status']} | {m['line']} | {_cell(m['original'])} | "
+                f"| {m['id']} | {m['operator']} | {m['status']} | {_about(m)} | {m['line']} | "
+                f"{_cell(m['original'])} | "
                 f"{_cell(m['replacement'])} | {titles} |"
             )
     return "\n".join(lines) + "\n"
@@ -392,17 +411,24 @@ def to_markdown(data: dict[str, Any]) -> str:
 def _operator_table(part: dict[str, Any]) -> list[str]:
     lines = [
         "| Оператор | Внесено | Поймано строго | По месту, свойство другое | Линтер | Модель "
-        "| Recall | Recall мягкий | Recall модели |",
-        "|---|---|---|---|---|---|---|---|---|",
+        "| Recall | Recall мягкий | Recall модели | По смыслу (чтение) |",
+        "|---|---|---|---|---|---|---|---|---|---|",
     ]
     for r in [*part["operators"], part["total"]]:
         n = r["inserted"] or 1
         lines.append(
             f"| {r['operator']} {r['name']} | {r['inserted']} | {r['caught']} | {r['place_only']} | "
             f"{r['by_lint']} | {r['by_model']} | {_pct(r['caught'] / n)} | "
-            f"{_pct((r['caught'] + r['place_only']) / n)} | {_pct(r['by_model'] / n)} |"
+            f"{_pct((r['caught'] + r['place_only']) / n)} | {_pct(r['by_model'] / n)} | "
+            f"{r['about']} из {r['inserted']} |"
         )
     return lines
+
+
+def _about(m: dict[str, Any]) -> str:
+    if m.get("about") is None:
+        return "—"
+    return ("да" if m["about"] else "нет") + (f": {_cell(m['about_note'], 100)}" if m["about_note"] else "")
 
 
 def _dash(value: float | None) -> str:
@@ -420,9 +446,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Подсчёт пойманных мутаций")
     parser.add_argument("mutations", type=Path, help="папка с копиями и манифестами")
     parser.add_argument("results", type=Path, help="папка с прогонами: <results>/<копия>/report.json")
+    parser.add_argument("--reading", type=Path, help="JSON с ручными вердиктами «находка о мутации»")
     parser.add_argument("--out", type=Path, required=True, help="путь без расширения для .json")
     args = parser.parse_args(argv)
     copies = score_all(args.mutations, args.results)
+    if args.reading:
+        apply_reading(copies, _read_json(args.reading))
     data = to_json(copies, args.mutations)
     args.out.with_suffix(".json").write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", "utf-8")
     args.out.with_suffix(".tables.md").write_text(to_markdown(data), encoding="utf-8")

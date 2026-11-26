@@ -276,3 +276,15 @@ def test_number_after_slash_is_not_a_separate_value() -> None:
     text = "## Р\n\n* Длина кода 10/12 цифр.\n"
 
     assert [text[c.start : c.end] for c in candidates("M1", text)] == []
+
+
+def test_manual_reading_is_counted_apart_from_code_verdict() -> None:
+    scores = _scored([_finding("F-02", "IND-COMPL", "TBD", kind="lint")])
+    copy = score.CopyScore("x", "multi", "", 1, 1, -1, -1, None, None, None, None, None, scores)
+    m10 = next(s for s in scores if s.operator == "M10")
+
+    score.apply_reading([copy], {"verdicts": {m10.id: {"about": True, "note": "заглушка названа"}}})
+
+    assert m10.about is True
+    assert score.total(score.by_operator(scores)).about == 1
+    assert next(s for s in scores if s.operator == "M1").about is None

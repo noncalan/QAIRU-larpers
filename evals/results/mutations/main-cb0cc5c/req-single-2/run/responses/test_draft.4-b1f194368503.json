@@ -1,0 +1,189 @@
+{
+ "envelope_version": 1,
+ "key": "b1f194368503be7ca057ba45a64d242fa5f0cfb22f5358c96ca4edf3b4a878e1",
+ "call_id": "test_draft.4",
+ "step": "test_draft",
+ "call_index": 4,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T20:02:17.472738+00:00",
+ "payload": {
+  "duration_api_ms": 61283,
+  "stop_reason": "end_turn",
+  "session_id": "622e77e9-e334-405c-906a-ed348223145c",
+  "total_cost_usd": 0.1239913,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 9866,
+   "cache_read_input_tokens": 2133,
+   "output_tokens": 8431,
+   "output_tokens_details": {
+    "thinking_tokens": 5661
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 9866,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 8431,
+     "cache_read_input_tokens": 2133,
+     "cache_creation_input_tokens": 9866,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 9866
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 8431,
+    "cacheReadInputTokens": 2133,
+    "cacheCreationInputTokens": 9866,
+    "webSearchRequests": 0,
+    "costUSD": 0.1239913,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 5661,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 9866,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n**M-051.** Чтобы проверить код успеха, нужно знать, когда приходит 200 и когда 201. Документ говорит только «200 или 201», условия нет. Тело успеха и коды 400 и 401 в документе есть, но после них стоит «и далее», и закрытого перечня ошибок нет. Ставлю пропуски на код при первом и при повторном сохранении и на остальные коды неуспеха.\n\n**M-052.** Для 400 документ даёт текст `message`. Обязательно ли поле `result` в теле ошибки, он не говорит: таблица ответа описывает `result` как OK / ERROR, а в примере 400 его нет. Ставлю пропуск на состав тела.\n\n**M-053.** Сценарий «таймаут хранилища» в документе не описан, код и тело ответа неизвестны. Для отсутствующей карты код 404 и тело названы, их беру из документа.\n\n**M-054.** Нужно знать единственный код успешного сохранения. Заголовок раздела говорит «200 … Created», а раздел про успех допускает 200 или 201. Тело успеха в документе есть, код ставлю пропуском.\n\n**M-055.** Для чужой карты один пункт даёт 403, другой 404, и тела ответа для 403 в документе нет. Ставлю пропуск на код и тело, называю оба места.\n\n## Ответ\n\n```json\n{\n  \"drafts\": [\n    {\n      \"finding\": \"M-051\",\n      \"can_write\": false,\n      \"precondition\": \"Клиент авторизован, карта demo-42 принадлежит ему, настройка порога для этой карты ещё ни разу не сохранялась.\",\n      \"steps\": [\n        \"Отправить запрос на сохранение порога: cardId=demo-42, amount=50000, enabled=1.\",\n        \"Повторить тот же запрос ещё раз, не меняя параметры.\",\n        \"Для негативных проверок взять коды неуспеха из перечня ошибок метода.\"\n      ],\n      \"expected\": \"Первое сохранение: код ответа [?1], тело {\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}. Повторное сохранение: код ответа [?2]. Коды неуспеха для негативных проверок: 400, 401 и [?3].\",\n      \"values\": [\n        {\"value\": \"{\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}\", \"quote\": \"{\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}\"},\n        {\"value\": \"400, 401\", \"quote\": \"Если результат 400, 401 и далее — неуспешный.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"при каком условии метод возвращает 200, а при каком 201: в документе сказано только «200 или 201 — успешный», условие 201 не описано\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"код повторного сохранения той же настройки: неизвестно, отличается ли он от кода первого сохранения\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"закрытый перечень остальных кодов неуспеха: после «400, 401» в тексте стоит «и далее»\", \"part\": \"expected\"}\n      ],\n      \"note\": \"Пара из первого и повторного сохранения выбрана тестировщиком, чтобы выявить условие 201. Из неё ожидаемый результат не выводится.\"\n    },\n    {\n      \"finding\": \"M-052\",\n      \"can_write\": false,\n      \"precondition\": \"Клиент авторизован, карта demo-42 принадлежит ему.\",\n      \"steps\": [\n        \"Отправить запрос на сохранение порога: cardId=demo-42, amount=50000, enabled=abc (нарушен формат параметра).\"\n      ],\n      \"expected\": \"Код ответа 400. В теле есть поле message со значением «Некорректный запрос». Поле result в теле: [?1].\",\n      \"values\": [\n        {\"value\": \"400\", \"quote\": \"Если результат 400, 401 и далее — неуспешный.\"},\n        {\"value\": \"Некорректный запрос\", \"quote\": \"{\\\"message\\\":\\\"Некорректный запрос\\\"}\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"обязательно ли поле result в теле ответа 400 и с каким значением: таблица ответа описывает result как OK / ERROR без оговорки для ошибок, а пример тела 400 содержит только message\", \"part\": \"expected\"}\n      ],\n      \"note\": \"Значение enabled=abc выбрано тестировщиком как нарушение формата параметра.\"\n    },\n    {\n      \"finding\": \"M-053\",\n      \"can_write\": false,\n      \"precondition\": \"Клиент авторизован. Хранилище настроек доступно, но отвечает дольше предельного времени ожидания (имитация таймаута).\",\n      \"steps\": [\n        \"Отправить запрос на сохранение порога: cardId=demo-42, amount=50000, enabled=1.\",\n        \"Восстановить хранилище и отправить запрос с cardId несуществующей карты.\"\n      ],\n      \"expected\": \"Шаг 1: код ответа [?1], тело [?2]. Шаг 2: код ответа 404, тело {\\\"message\\\":\\\"Карта не найдена\\\"}.\",\n      \"values\": [\n        {\"value\": \"404\", \"quote\": \"Для чужой карты возвращается 404, как и для отсутствующей карты.\"},\n        {\"value\": \"Карта не найдена\", \"quote\": \"{\\\"message\\\":\\\"Карта не найдена\\\"}\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"код ответа при таймауте или недоступности хранилища настроек: в документе такой случай не описан, а 500 назван только как «внутренняя ошибка сервера» без перечня условий\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"тело ответа при таймауте хранилища: не описано\", \"part\": \"expected\"}\n      ],\n      \"note\": \"Единого перечня кодов с условиями в документе нет, коды разбросаны по разделам.\"\n    },\n    {\n      \"finding\": \"M-054\",\n      \"can_write\": false,\n      \"precondition\": \"Клиент авторизован, карта demo-42 принадлежит ему.\",\n      \"steps\": [\n        \"Отправить запрос на сохранение порога: cardId=demo-42, amount=50000, enabled=1.\"\n      ],\n      \"expected\": \"Код ответа [?1]. Тело: {\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}.\",\n      \"values\": [\n        {\"value\": \"{\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}\", \"quote\": \"{\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"единственный код успешного сохранения: заголовок раздела называет «200 … Created», а по тексту успешными считаются и 200, и 201\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-055\",\n      \"can_write\": false,\n      \"precondition\": \"Клиент авторизован. Карта с идентификатором other-77 существует и принадлежит другому клиенту.\",\n      \"steps\": [\n        \"Отправить запрос на сохранение порога: cardId=other-77, amount=50000, enabled=1.\"\n      ],\n      \"expected\": \"Код ответа и тело ответа: [?1]. Настройка чужой карты не изменилась.\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"код и тело ответа при обращении к чужой карте: один пункт называет 403 («доступ запрещен»), другой требует 404 «как и для отсутствующей карты»; тело ответа для 403 в документе не приведено\", \"part\": \"expected\"}\n      ],\n      \"note\": \"Фраза «Настройка чужой карты не изменилась» не взята из документа. Она описывает то, что тестировщик проверит дополнительно.\"\n    }\n  ]\n}\n```",
+  "ttft_ms": 45638,
+  "type": "result",
+  "duration_ms": 64299,
+  "uuid": "92d67642-705b-4417-b706-d9cb7bc4c788",
+  "ttft_stream_ms": 974,
+  "time_to_request_ms": 451,
+  "time_to_request_phases_ms": {
+   "other": 3,
+   "system_prompt": 1,
+   "resume_other": 0,
+   "process_user_input": 1,
+   "input_attachments": 5,
+   "input_hooks": 1,
+   "conversation_append": 0,
+   "tool_pool_refresh": 0,
+   "init_message": 2,
+   "init_frame_send": 1,
+   "engine_pickup": 1,
+   "loop_entry": 1,
+   "message_prep": 1,
+   "model_config_wait": 0,
+   "autocompact": 0,
+   "request_announcements": 2,
+   "query_setup": 0,
+   "model_gates": 416,
+   "tool_schema_build": 3,
+   "message_normalization": 3,
+   "client_creation": 3,
+   "request_build": 7
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 1,
+  "time_to_request_cpu_ms": 131,
+  "time_to_request_major_faults": 20,
+  "input_attachments_detail": {
+   "slowest_producer": "model",
+   "slowest_producer_ms": 2,
+   "cpu_ms": 8,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 1,
+   "ambient_wait_ms": 2,
+   "render_ms": 0,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 3,
+   "placement_ms": 0,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 2,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 1,
+   "messages": 7,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 2,
+   "headers_ms": 1,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 2,
+   "record_attempt_ms": 0,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 974,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "credential_expires_at": "2026-12-24T20:08:55.712Z"
+ }
+}

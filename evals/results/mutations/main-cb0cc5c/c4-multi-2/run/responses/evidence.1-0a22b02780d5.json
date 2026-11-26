@@ -1,0 +1,189 @@
+{
+ "envelope_version": 1,
+ "key": "0a22b02780d547cd3c2556a68f699225789ef6d8b065640e11c609b4f5729f25",
+ "call_id": "evidence.1",
+ "step": "evidence",
+ "call_index": 1,
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T19:48:23.705540+00:00",
+ "payload": {
+  "duration_api_ms": 58461,
+  "stop_reason": "end_turn",
+  "session_id": "bdcef328-3075-4213-ada4-81218f143729",
+  "total_cost_usd": 0.2019668,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 7862,
+   "cache_read_input_tokens": 1914,
+   "output_tokens": 6934,
+   "output_tokens_details": {
+    "thinking_tokens": 3312
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 7862,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 6934,
+     "cache_read_input_tokens": 1914,
+     "cache_creation_input_tokens": 7862,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 7862
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-opus-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 6934,
+    "cacheReadInputTokens": 1914,
+    "cacheCreationInputTokens": 7862,
+    "webSearchRequests": 0,
+    "costUSD": 0.2019668,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3312,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 7862,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n- **M-007.** Сопоставил B017 («1:1») и B041 («список сотрудников по компании»). Разводит их привязка второго сотрудника к компании, у которой уже есть сотрудник: по B017 нужен отказ, по B041 компания может иметь список сотрудников.\n- **M-012.** Сопоставил B025 («10/12 цифр») и схему B062 («minLength = 10, maxLength = 12»). Разводит их ИНН ровно из 11 цифр: по B025 он недопустим, по схеме он в пределах длины.\n- **M-003.** Одно место B008, роль Redis не задана. Сценарий: сессия пользователя и перезапуск приложения. Если в Redis хранятся сессии, сессия переживает перезапуск. Если Redis служит только кешем, а сессии в памяти, сессия теряется.\n- **M-010.** В документе одно правило: ОГРН из 13 цифр. Других длин ОГРН и отдельного случая ИП документ не упоминает. Что у ИП ОГРНИП из 15 цифр, известно только извне документа. Второго места нет.\n- **M-011.** Одно место B025, «уникальный» можно понять двумя способами: во всей системе или в пределах владельца. Разводит их повтор ИНН чужой компании у другого пользователя.\n- **M-018.** О CSRF документ молчит. Ответ 403 следует из умолчаний Spring Security, а не из документа. По самому документу результат один: компания создаётся. Это неполнота, свидетеля нет.\n- **M-021.** Одно место B042 с «...». Разводит толкования поле `companyId` в теле POST: оно либо привязывает сотрудника к компании, либо не входит в тело, потому что привязка делается только через PATCH (B043).\n- **M-025.** Одно место B041, слово «всех» понимается как все сотрудники системы или все сотрудники текущего пользователя. Разводит толкования запрос без `companyId` при двух пользователях.\n- **M-028.** Одно место B044. Разводит толкования PUT без поля компании для привязанного сотрудника: при полной замене привязка сбрасывается, при смене компании только через PATCH она сохраняется.\n- **M-032.** «Разрешить все» выполнимо и вместе с cookie: можно отражать любой origin (allowedOriginPatterns \"*\") при allowCredentials. Документ не требует буквального «*», поэтому B050 и B031 выполняются одновременно.\n- **M-034.** Одно место B051: перечень в скобках можно понять как примеры или как исчерпывающий список. Разводит толкования удаление сотрудника.\n\n## Ответ\n\n```json\n{\n  \"witnesses\": [\n    {\n      \"id\": \"M-007\",\n      \"scenario\": \"Пользователь A владеет компанией id=1, к ней уже привязан сотрудник id=10. Пользователь отправляет PATCH /api/employees/11/company с телом { \\\"companyId\\\": 1 }\",\n      \"readings\": [\n        {\n          \"quote\": \"Привязка сотрудника к компании (1:1 или null).\",\n          \"reading\": \"\",\n          \"expectation\": \"привязка сотрудника 11 отклонена: у компании 1 уже есть сотрудник\"\n        },\n        {\n          \"quote\": \"Список сотрудников (всех или по компании).\",\n          \"reading\": \"\",\n          \"expectation\": \"сотрудник 11 привязан, GET /api/employees?companyId=1 возвращает двух сотрудников (10 и 11)\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-012\",\n      \"scenario\": \"POST /api/companies с телом { \\\"name\\\": \\\"ООО Ромашка\\\", \\\"inn\\\": \\\"12345678901\\\" } (ИНН из 11 цифр)\",\n      \"readings\": [\n        {\n          \"quote\": \"inn` (уникальный, 10/12 цифр)\",\n          \"reading\": \"\",\n          \"expectation\": \"ИНН из 11 цифр недопустим, запрос отклонён с ошибкой валидации\"\n        },\n        {\n          \"quote\": \"minLength = 10, maxLength = 12\",\n          \"reading\": \"\",\n          \"expectation\": \"ИНН из 11 символов укладывается в описанные границы длины и считается допустимым\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-003\",\n      \"scenario\": \"Пользователь вошёл через POST /api/auth/login в 10:00 и получил session cookie. В 10:05 приложение перезапущено. В 10:06 пользователь вызывает GET /api/users/me с той же cookie\",\n      \"readings\": [\n        {\n          \"quote\": \"Реализация — с использованием Redis и PostgreSQL 16.\",\n          \"reading\": \"Redis служит хранилищем HTTP-сессий\",\n          \"expectation\": \"сессия сохранилась, возвращаются данные пользователя\"\n        },\n        {\n          \"quote\": \"Реализация — с использованием Redis и PostgreSQL 16.\",\n          \"reading\": \"Redis служит кешем данных, сессии хранятся в памяти приложения\",\n          \"expectation\": \"сессия потеряна, запрос отклонён как неавторизованный\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-010\",\n      \"scenario\": null,\n      \"readings\": [],\n      \"reason\": \"По документу результат один: ОГРН не из 13 цифр отклоняется. Что у ИП ОГРНИП из 15 цифр, документ не говорит, это внешнее знание, второго места нет\"\n    },\n    {\n      \"id\": \"M-011\",\n      \"scenario\": \"У пользователя A есть компания с ИНН 7701234567. Пользователь B отправляет POST /api/companies с телом { \\\"name\\\": \\\"ООО Лютик\\\", \\\"inn\\\": \\\"7701234567\\\" }\",\n      \"readings\": [\n        {\n          \"quote\": \"inn` (уникальный, 10/12 цифр), `ogrn` (уникальный, 13)\",\n          \"reading\": \"ИНН уникален во всей системе\",\n          \"expectation\": \"создание отклонено с конфликтом (409)\"\n        },\n        {\n          \"quote\": \"inn` (уникальный, 10/12 цифр), `ogrn` (уникальный, 13)\",\n          \"reading\": \"ИНН уникален в пределах компаний одного владельца\",\n          \"expectation\": \"компания пользователя B создана\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-018\",\n      \"scenario\": null,\n      \"readings\": [],\n      \"reason\": \"О CSRF документ ничего не говорит. Отказ 403 следует из умолчаний фреймворка, а не из документа. По документу результат один: компания создаётся. Это неполнота, а не расхождение\"\n    },\n    {\n      \"id\": \"M-021\",\n      \"scenario\": \"Пользователь, владеющий компанией id=1, отправляет POST /api/employees с телом { \\\"firstName\\\": \\\"Иван\\\", \\\"lastName\\\": \\\"Петров\\\", \\\"age\\\": 30, \\\"companyId\\\": 1 }\",\n      \"readings\": [\n        {\n          \"quote\": \"POST /api/employees` Создать сотрудника: `{ \\\"firstName\\\": \\\"Иван\\\", \\\"age\\\": 30, ... }`.\",\n          \"reading\": \"под «...» допускаются любые поля сущности Employee, включая компанию\",\n          \"expectation\": \"сотрудник создан и привязан к компании 1\"\n        },\n        {\n          \"quote\": \"POST /api/employees` Создать сотрудника: `{ \\\"firstName\\\": \\\"Иван\\\", \\\"age\\\": 30, ... }`.\",\n          \"reading\": \"под «...» только собственные атрибуты сотрудника, привязка делается через PATCH /company\",\n          \"expectation\": \"сотрудник создан без компании (company = null)\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-025\",\n      \"scenario\": \"У пользователя A компания 1 с сотрудником Ивановым, у пользователя B компания 2 с сотрудником Петровым. Пользователь B вызывает GET /api/employees без companyId\",\n      \"readings\": [\n        {\n          \"quote\": \"Список сотрудников (всех или по компании).\",\n          \"reading\": \"«всех» — все сотрудники системы\",\n          \"expectation\": \"в ответе Иванов и Петров\"\n        },\n        {\n          \"quote\": \"Список сотрудников (всех или по компании).\",\n          \"reading\": \"«всех» — все сотрудники текущего пользователя\",\n          \"expectation\": \"в ответе только Петров\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-028\",\n      \"scenario\": \"Сотрудник id=5 привязан к компании 1. Пользователь отправляет PUT /api/employees/5 с телом { \\\"firstName\\\": \\\"Иван\\\", \\\"lastName\\\": \\\"Петров\\\", \\\"age\\\": 31 }, поля компании в теле нет\",\n      \"readings\": [\n        {\n          \"quote\": \"PUT /api/employees/{id}` Обновить сотрудника.\",\n          \"reading\": \"PUT полностью заменяет сотрудника, включая компанию\",\n          \"expectation\": \"привязка сброшена, company = null\"\n        },\n        {\n          \"quote\": \"PUT /api/employees/{id}` Обновить сотрудника.\",\n          \"reading\": \"PUT не трогает компанию, она меняется только через PATCH /company\",\n          \"expectation\": \"сотрудник остаётся привязан к компании 1\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-032\",\n      \"scenario\": null,\n      \"readings\": [],\n      \"reason\": \"«Разрешить все» выполнимо и вместе с cookie: можно отражать любой origin при включённых credentials. Документ не требует буквального «*», поэтому B050 и B031 выполняются одновременно\"\n    },\n    {\n      \"id\": \"M-034\",\n      \"scenario\": \"Пользователь успешно выполняет DELETE /api/employees/7\",\n      \"readings\": [\n        {\n          \"quote\": \"Логирование ключевых операций (создание компании, ошибки авторизации).\",\n          \"reading\": \"в скобках примеры, удаление сотрудника тоже ключевая операция\",\n          \"expectation\": \"в журнал записано удаление сотрудника 7\"\n        },\n        {\n          \"quote\": \"Логирование ключевых операций (создание компании, ошибки авторизации).\",\n          \"reading\": \"в скобках исчерпывающий перечень ключевых операций\",\n          \"expectation\": \"запись об удалении сотрудника 7 в журнал не попадает\"\n        }\n      ],\n      \"reason\": \"\"\n    }\n  ]\n}\n```",
+  "ttft_ms": 32237,
+  "type": "result",
+  "duration_ms": 62630,
+  "uuid": "4d194d1e-6bed-4bdc-b761-aa2414ed3baf",
+  "ttft_stream_ms": 1116,
+  "time_to_request_ms": 493,
+  "time_to_request_phases_ms": {
+   "other": 1,
+   "system_prompt": 1,
+   "resume_other": 0,
+   "process_user_input": 1,
+   "input_attachments": 23,
+   "input_hooks": 1,
+   "conversation_append": 0,
+   "tool_pool_refresh": 0,
+   "init_message": 2,
+   "init_frame_send": 1,
+   "engine_pickup": 0,
+   "loop_entry": 1,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 0,
+   "request_announcements": 1,
+   "query_setup": 0,
+   "model_gates": 454,
+   "tool_schema_build": 2,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 2
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 1,
+  "time_to_request_cpu_ms": 100,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "at_mentioned_files",
+   "slowest_producer_ms": 19,
+   "cpu_ms": 40,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 19,
+   "ambient_start_ms": 1,
+   "ambient_wait_ms": 1,
+   "render_ms": 0,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 1,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 7,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 0,
+   "plans_ms": 0,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 0,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1117,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "credential_expires_at": "2026-12-24T20:08:55.712Z"
+ }
+}

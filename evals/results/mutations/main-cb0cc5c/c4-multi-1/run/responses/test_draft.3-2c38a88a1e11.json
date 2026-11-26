@@ -1,0 +1,189 @@
+{
+ "envelope_version": 1,
+ "key": "2c38a88a1e1179d9807218615c8b1289e45f888fc33482c948456afb3aad16ba",
+ "call_id": "test_draft.3",
+ "step": "test_draft",
+ "call_index": 3,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T19:49:34.960922+00:00",
+ "payload": {
+  "duration_api_ms": 44101,
+  "stop_reason": "end_turn",
+  "session_id": "5132fa6c-8551-41f0-8d9d-719a21d7be0f",
+  "total_cost_usd": 0.0911633,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 6749,
+   "cache_read_input_tokens": 2133,
+   "output_tokens": 6395,
+   "output_tokens_details": {
+    "thinking_tokens": 2931
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 6749,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 6395,
+     "cache_read_input_tokens": 2133,
+     "cache_creation_input_tokens": 6749,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 6749
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 6395,
+    "cacheReadInputTokens": 2133,
+    "cacheCreationInputTokens": 6749,
+    "webSearchRequests": 0,
+    "costUSD": 0.0911633,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2931,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 6749,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n**M-029.** Для результата нужен перечень данных, которых не должно быть в журнале. В документе есть только сам факт логирования ошибок авторизации. Правила об исключении пароля и идентификатора сессии нет, поэтому ставлю пропуск.\n\n**M-030.** Нужно знать, логируется ли удаление компании, на каком уровне и с какими полями. Документ даёт только перечень в скобках без пометки, закрытый он или нет. Уровня и полей записи нет. Все три значения заменены пропусками.\n\n**M-031.** Раздела 9.6 в документе нет. Не сказано даже, что именно и в каком порядке обрабатывается. Сценарий и результат невозможно задать, остаётся пропуск.\n\n**M-032.** Нужен код ответа, когда пользователь B создаёт компанию с ИНН пользователя A. Документ говорит «уникальный» и «неуникальный ИНН → 409», но область уникальности не задаёт. Ставлю пропуск, дубль в пределах одного пользователя не подменяет проверяемый случай.\n\n**M-033.** Из документа известен один код: 409 для дубля ИНН при создании. Остальное (коды успеха, тела ответов, 409 для ОГРН и для ИНН при PUT, 404, 400 для нечислового id, структура ошибки) не названо. Оно заменено пропусками.\n\n**M-034.** Для вердикта о приёмке нужны перечень проверок «корректной работы», критерий «чистого кода» и правило связи «и/или». Документ ничего из этого не называет, поэтому весь результат заменён пропусками.\n\n## Ответ\n\n```json\n{\n  \"drafts\": [\n    {\n      \"finding\": \"M-029\",\n      \"can_write\": false,\n      \"precondition\": \"Приложение запущено, логирование включено, существует пользователь user1.\",\n      \"steps\": [\n        \"Отправить POST /api/auth/login с логином user1 и неверным паролем, заранее известным тестировщику.\",\n        \"Открыть журнал приложения и найти запись об этой ошибке авторизации.\",\n        \"Выполнить успешный вход и повторить поиск по журналу: проверить, есть ли в записях введённый пароль и идентификатор сессии (значение session cookie).\"\n      ],\n      \"expected\": \"В журнале есть запись об ошибке авторизации. Данные, которые в запись попадать не должны: [?1]. Введённого пароля и идентификатора сессии в журнале [?2].\",\n      \"values\": [\n        {\"value\": \"ошибки авторизации\", \"quote\": \"Логирование ключевых операций (создание компании, ошибки авторизации).\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"перечень данных, исключаемых из записей журнала: в документе нет правила о чувствительных данных\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"допустимо ли присутствие пароля и идентификатора сессии в журнале: документ этого ни разрешает, ни запрещает\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-030\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователь авторизован и владеет компанией без сотрудников.\",\n      \"steps\": [\n        \"Отправить DELETE /api/companies/{id} для этой компании.\",\n        \"Открыть журнал приложения и найти записи, появившиеся после запроса.\"\n      ],\n      \"expected\": \"Запись об удалении компании в журнале [?1]. Уровень записи: [?2]. Поля записи: [?3].\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"логируется ли удаление компании: неясно, закрыт ли перечень в скобках (создание компании, ошибки авторизации) или это примеры «ключевых операций»\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"уровень записи журнала (INFO, WARN и т. д.): в документе не задан\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"состав полей записи (пользователь, id объекта, время и т. п.): в документе не задан\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-031\",\n      \"can_write\": false,\n      \"precondition\": \"Приложение запущено, пользователь авторизован.\",\n      \"steps\": [\n        \"Выполнить операцию, в которой участвуют DTO и модель БД, например POST /api/companies с корректными данными.\",\n        \"Сверить порядок обработки запроса с описанием, на которое ссылается документ.\"\n      ],\n      \"expected\": \"Запрос обрабатывается в порядке [?1].\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"порядок обработки: документ отсылает к разделу 9.6, которого в нём нет, и не сказано, что именно обрабатывается (запрос, преобразование DTO и модели, валидация)\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-032\",\n      \"can_write\": false,\n      \"precondition\": \"Зарегистрированы пользователи A и B. У пользователя A есть компания с ИНН 1234567890. Пользователь B авторизован.\",\n      \"steps\": [\n        \"От имени пользователя B отправить POST /api/companies с name и ИНН 1234567890, как у компании пользователя A.\"\n      ],\n      \"expected\": \"Ответ на создание компании: [?1]. Компания у пользователя B [?2].\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"код ответа при совпадении ИНН с компанией другого пользователя: в документе не сказано, уникален ли ИНН во всей системе или только у владельца (есть лишь «неуникальный ИНН → HTTP 409» без области уникальности)\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"создаётся ли компания у пользователя B: зависит от области уникальности ИНН, которая не задана\", \"part\": \"expected\"}\n      ],\n      \"note\": \"Дубль ИНН в пределах одного пользователя документ покрывает кодом 409. Но это другой случай, чем в находке.\"\n    },\n    {\n      \"finding\": \"M-033\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователь авторизован и владеет компанией K1 с ИНН 1234567890 и некоторым ОГРН, а также второй компанией K2 с другим ИНН. В системе нет компании с id 999999.\",\n      \"steps\": [\n        \"Отправить POST /api/companies с корректными данными новой компании.\",\n        \"Отправить POST /api/companies с ИНН, который уже есть у K1.\",\n        \"Отправить POST /api/companies с ОГРН, который уже есть у K1, и новым ИНН.\",\n        \"Отправить PUT /api/companies/{id K2} с ИНН компании K1.\",\n        \"Отправить GET /api/companies/999999, затем GET /api/companies/abc.\"\n      ],\n      \"expected\": \"1) Код успеха [?1], тело ответа [?2]. 2) HTTP 409, тело ошибки структурированное, поля [?3]. 3) Код [?4]. 4) Код [?5]. 5) Для несуществующего id код [?6], для нечислового id код [?7]. Коды успеха остальных операций (login, logout, GET, PUT, PATCH, DELETE): [?8].\",\n      \"values\": [\n        {\"value\": \"HTTP 409\", \"quote\": \"Пример: попытка создания компании с неуникальным ИНН должна возвращать HTTP 409.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"код успеха создания компании (200, 201 или иной): в документе не задан\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"состав тела ответа при успешном создании компании\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"структура тела ошибки: документ говорит лишь «структурированные ошибки» без полей\", \"part\": \"expected\"},\n        {\"number\": 4, \"missing\": \"код ответа при дубле ОГРН: правило 409 задано только для ИНН при создании\", \"part\": \"expected\"},\n        {\"number\": 5, \"missing\": \"код ответа при дубле ИНН в PUT: правило задано только для создания\", \"part\": \"expected\"},\n        {\"number\": 6, \"missing\": \"условие и код ответа для несуществующего id: 404 упомянут только в общем перечне кодов, без условий\", \"part\": \"expected\"},\n        {\"number\": 7, \"missing\": \"условие и код ответа для нечислового id: 400 упомянут только в общем перечне кодов, без условий\", \"part\": \"expected\"},\n        {\"number\": 8, \"missing\": \"коды успеха и тела ответов для остальных операций авторизации, компаний и сотрудников\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-034\",\n      \"can_write\": false,\n      \"precondition\": \"Есть сданная работа: часть эндпоинтов возвращает ошибки, код проекта оформлен аккуратно.\",\n      \"steps\": [\n        \"Проверить работу эндпоинтов по критерию «корректная работа всех эндпоинтов».\",\n        \"Оценить код по критериям «чистый код» и «соблюдение принципов SOLID».\",\n        \"Вынести решение о приёмке работы.\"\n      ],\n      \"expected\": \"Решение о приёмке: [?1]. Работа считается корректной, если выполнены проверки: [?2]. Код считается чистым, если [?3].\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"правило, которое задаёт вердикт при расхождении критериев: «и/или» не определяет, достаточно ли одного критерия или нужны оба\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"перечень проверок для «корректной работы эндпоинтов»\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"измеримый критерий «чистого кода» и «соблюдения SOLID»\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    }\n  ]\n}\n```",
+  "ttft_ms": 23432,
+  "type": "result",
+  "duration_ms": 45507,
+  "uuid": "96aa31a9-a565-46a0-b582-1b0887b50ab6",
+  "ttft_stream_ms": 939,
+  "time_to_request_ms": 334,
+  "time_to_request_phases_ms": {
+   "other": 2,
+   "system_prompt": 1,
+   "resume_other": 0,
+   "process_user_input": 2,
+   "input_attachments": 30,
+   "input_hooks": 0,
+   "conversation_append": 0,
+   "tool_pool_refresh": 2,
+   "init_message": 3,
+   "init_frame_send": 1,
+   "engine_pickup": 1,
+   "loop_entry": 1,
+   "message_prep": 1,
+   "model_config_wait": 0,
+   "autocompact": 1,
+   "request_announcements": 2,
+   "query_setup": 0,
+   "model_gates": 273,
+   "tool_schema_build": 4,
+   "message_normalization": 2,
+   "client_creation": 3,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 3,
+  "time_to_request_cpu_ms": 142,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "at_mentioned_files",
+   "slowest_producer_ms": 24,
+   "cpu_ms": 56,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 24,
+   "ambient_start_ms": 1,
+   "ambient_wait_ms": 3,
+   "render_ms": 0,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 1,
+   "waits_ms": 2,
+   "placement_ms": 1,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 1,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 7,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 1,
+   "cache_break_record_ms": 0,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 2,
+   "record_attempt_ms": 0,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 1,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 939,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "credential_expires_at": "2026-12-24T20:08:55.712Z"
+ }
+}

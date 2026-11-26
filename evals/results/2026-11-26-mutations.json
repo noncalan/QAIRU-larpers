@@ -1,0 +1,1285 @@
+{
+  "schema": "mutations-score/2",
+  "copies": [
+    {
+      "copy": "c4-multi-1",
+      "kind": "multi",
+      "run_dir": "evals/results/mutations/main-cb0cc5c/c4-multi-1",
+      "findings": 35,
+      "findings_lint_only": 0,
+      "noise": 17,
+      "noise_new_place": 9,
+      "jaccard_with_original": 0.224,
+      "jaccard_places": 0.306,
+      "cost_usd": 2.0373,
+      "duration_s": 635.93,
+      "agent_version": "cb0cc5c",
+      "mutations": [
+        {
+          "copy": "c4-multi-1",
+          "id": "c4-multi-1-01",
+          "operator": "M1",
+          "name": "Размыть число",
+          "status": "caught",
+          "by_lint": false,
+          "by_model": true,
+          "by_model_place": true,
+          "findings": [
+            "F-10",
+            "F-11",
+            "F-12"
+          ],
+          "properties": [
+            "IND-COMPL",
+            "IND-UNAMB",
+            "SET-CONS"
+          ],
+          "titles": [
+            "F-10 IND-COMPL: Не задана обязательность полей компании кроме name",
+            "F-11 IND-UNAMB: ОГРН задан как «приемлемое значение»",
+            "F-12 SET-CONS: Ограничения ИНН расходятся: «10/12 цифр» и длина 10–12"
+          ],
+          "replacement": "приемлемое значение",
+          "original": "13 цифр",
+          "line": 38,
+          "about": true,
+          "about_note": "ОГРН задан как «приемлемое значение»"
+        },
+        {
+          "copy": "c4-multi-1",
+          "id": "c4-multi-1-02",
+          "operator": "M6",
+          "name": "Склеить требования",
+          "status": "place_only",
+          "by_lint": false,
+          "by_model": false,
+          "by_model_place": true,
+          "findings": [
+            "F-30"
+          ],
+          "properties": [
+            "IND-VERIF"
+          ],
+          "titles": [
+            "F-30 IND-VERIF: Критерии оценки двусмысленны и непроверяемы"
+          ],
+          "replacement": "1. Корректная работа всех эндпоинтов (Postman-коллекция приветствуется) и/или чистый код, соблюдение принципов SOLID.",
+          "original": "1. Корректная работа всех эндпоинтов (Postman-коллекция приветствуется).\n2. Чистый код, соблюдение принципов SOLID.",
+          "line": 123,
+          "about": true,
+          "about_note": "«и/или» названо среди двусмысленностей критериев; свойство Verifiable"
+        },
+        {
+          "copy": "c4-multi-1",
+          "id": "c4-multi-1-03",
+          "operator": "M4",
+          "name": "Висячая ссылка",
+          "status": "caught",
+          "by_lint": false,
+          "by_model": true,
+          "by_model_place": true,
+          "findings": [
+            "F-27"
+          ],
+          "properties": [
+            "SET-COMPL"
+          ],
+          "titles": [
+            "F-27 SET-COMPL: Ссылка на несуществующий раздел 9.6"
+          ],
+          "replacement": " Порядок обработки описан в разделе 9.6.",
+          "original": "",
+          "line": 89,
+          "about": true,
+          "about_note": "ссылка на несуществующий раздел 9.6"
+        }
+      ]
+    },
+    {
+      "copy": "c4-multi-2",
+      "kind": "multi",
+      "run_dir": "evals/results/mutations/main-cb0cc5c/c4-multi-2",
+      "findings": 40,
+      "findings_lint_only": 0,
+      "noise": 19,
+      "noise_new_place": 10,
+      "jaccard_with_original": 0.206,
+      "jaccard_places": 0.358,
+      "cost_usd": 2.0604,
+      "duration_s": 595.57,
+      "agent_version": "cb0cc5c",
+      "mutations": [
+        {
+          "copy": "c4-multi-2",
+          "id": "c4-multi-2-01",
+          "operator": "M2",
+          "name": "Убрать единицу или границу",
+          "status": "caught",
+          "by_lint": false,
+          "by_model": true,
+          "by_model_place": true,
+          "findings": [
+            "F-09",
+            "F-10",
+            "F-11",
+            "F-12",
+            "F-34"
+          ],
+          "properties": [
+            "IND-COMPL",
+            "IND-CORR",
+            "IND-UNAMB",
+            "SET-COMPR",
+            "SET-CONS"
+          ],
+          "titles": [
+            "F-09 IND-COMPL: Обязательность и ограничения полей Company не заданы",
+            "F-10 IND-CORR: ИНН из 12 цифр не сочетается с ОГРН из 13 цифр",
+            "F-11 IND-UNAMB: Область уникальности ИНН и ОГРН не задана",
+            "F-12 SET-CONS: Допустимая длина ИНН расходится",
+            "F-34 SET-COMPR: Пользователь назван четырьмя именами"
+          ],
+          "replacement": "",
+          "original": " цифр",
+          "line": 38,
+          "about": false,
+          "about_note": "код засчитал «поймано» по свойству Complete, но находки не о пропавшей единице «цифр»"
+        },
+        {
+          "copy": "c4-multi-2",
+          "id": "c4-multi-2-02",
+          "operator": "M7",
+          "name": "Решение вместо требования",
+          "status": "place_only",
+          "by_lint": false,
+          "by_model": false,
+          "by_model_place": true,
+          "findings": [
+            "F-06"
+          ],
+          "properties": [
+            "IND-UNAMB"
+          ],
+          "titles": [
+            "F-06 IND-UNAMB: Роль Redis не определена и привязана к документации"
+          ],
+          "replacement": " Реализация — с использованием Redis и PostgreSQL 16.",
+          "original": "",
+          "line": 15,
+          "about": true,
+          "about_note": "роль Redis не определена; свойство Unambiguous, а не Appropriate"
+        },
+        {
+          "copy": "c4-multi-2",
+          "id": "c4-multi-2-03",
+          "operator": "M8",
+          "name": "Непроверяемая формулировка",
+          "status": "caught",
+          "by_lint": true,
+          "by_model": true,
+          "by_model_place": true,
+          "findings": [
+            "F-30"
+          ],
+          "properties": [
+            "IND-VERIF"
+          ],
+          "titles": [
+            "F-30 IND-VERIF: «Интуитивно понятный интерфейс» и «стабильная работа» непроверяемы"
+          ],
+          "replacement": "\n\nИнтерфейс должен быть интуитивно понятным, а работа системы стабильной.",
+          "original": "",
+          "line": 82,
+          "about": true,
+          "about_note": "«интуитивно понятный» и «стабильная работа» непроверяемы"
+        },
+        {
+          "copy": "c4-multi-2",
+          "id": "c4-multi-2-04",
+          "operator": "M5",
+          "name": "Удалить ветку ошибки",
+          "status": "place_only",
+          "by_lint": false,
+          "by_model": false,
+          "by_model_place": true,
+          "findings": [
+            "F-39"
+          ],
+          "properties": [
+            "IND-VERIF"
+          ],
+          "titles": [
+            "F-39 IND-VERIF: Объём интеграционных тестов не задан"
+          ],
+          "replacement": "",
+          "original": "   - Пример: попытка создания компании с неуникальным ИНН должна возвращать HTTP 409.\n",
+          "line": 120,
+          "about": false,
+          "about_note": "находка об объёме интеграционных тестов, пропажу примера с кодом 409 агент не заметил"
+        }
+      ]
+    },
+    {
+      "copy": "req-multi-1",
+      "kind": "multi",
+      "run_dir": "evals/results/mutations/main-cb0cc5c/req-multi-1",
+      "findings": 65,
+      "findings_lint_only": 0,
+      "noise": 27,
+      "noise_new_place": 8,
+      "jaccard_with_original": 0.326,
+      "jaccard_places": 0.6,
+      "cost_usd": 3.5629,
+      "duration_s": 608.5,
+      "agent_version": "cb0cc5c",
+      "mutations": [
+        {
+          "copy": "req-multi-1",
+          "id": "req-multi-1-01",
+          "operator": "M6",
+          "name": "Склеить требования",
+          "status": "place_only",
+          "by_lint": false,
+          "by_model": false,
+          "by_model_place": true,
+          "findings": [
+            "F-07",
+            "F-58"
+          ],
+          "properties": [
+            "IND-UNAMB",
+            "SET-COMPR"
+          ],
+          "titles": [
+            "F-07 IND-UNAMB: «и/или» в проверке доступа",
+            "F-58 SET-COMPR: Держатель карты назван по-разному"
+          ],
+          "replacement": "1. Проверить пользовательскую сессию и/или проверить принадлежность карты клиенту.",
+          "original": "1. Проверить пользовательскую сессию.\n2. Проверить принадлежность карты клиенту.",
+          "line": 117,
+          "about": true,
+          "about_note": "«и/или» в проверке доступа; свойство Unambiguous, а не Singular"
+        },
+        {
+          "copy": "req-multi-1",
+          "id": "req-multi-1-02",
+          "operator": "M9",
+          "name": "Безличное «обеспечивается»",
+          "status": "place_only",
+          "by_lint": false,
+          "by_model": false,
+          "by_model_place": true,
+          "findings": [
+            "F-09",
+            "F-26"
+          ],
+          "properties": [
+            "IND-FEAS",
+            "IND-VERIF"
+          ],
+          "titles": [
+            "F-09 IND-FEAS: Цель «в момент покупки» не сочетается с триггером по проведению и сроком в минуту",
+            "F-26 IND-VERIF: Нефункциональное требование к сроку неизмеримо"
+          ],
+          "replacement": "Передаётся push на отправку в течение минуты после получения события.",
+          "original": "Сервис передаёт push на отправку в течение минуты после получения события.",
+          "line": 46,
+          "about": false,
+          "about_note": "находки о сроке «в течение минуты», про пропавшего исполнителя ничего"
+        },
+        {
+          "copy": "req-multi-1",
+          "id": "req-multi-1-03",
+          "operator": "M1",
+          "name": "Размыть число",
+          "status": "caught",
+          "by_lint": true,
+          "by_model": true,
+          "by_model_place": true,
+          "findings": [
+            "F-13",
+            "F-14",
+            "F-15"
+          ],
+          "properties": [
+            "IND-COMPL",
+            "IND-UNAMB"
+          ],
+          "titles": [
+            "F-13 IND-COMPL: Не задано поведение для неактивной карты и карты не в KZT",
+            "F-14 IND-COMPL: Покупки в другой валюте по карте KZT",
+            "F-15 IND-UNAMB: Диапазон порога задан как «разумные пределы»"
+          ],
+          "replacement": "в разумных пределах",
+          "original": "от 1 000 до 1 000 000 ₸ включительно",
+          "line": 37,
+          "about": true,
+          "about_note": "диапазон задан как «разумные пределы»"
+        },
+        {
+          "copy": "req-multi-1",
+          "id": "req-multi-1-04",
+          "operator": "M10",
+          "name": "Заглушка",
+          "status": "caught",
+          "by_lint": true,
+          "by_model": true,
+          "by_model_place": true,
+          "findings": [
+            "F-33"
+          ],
+          "properties": [
+            "SET-COMPL"
+          ],
+          "titles": [
+            "F-33 SET-COMPL: Ожидаемый результат граничного критерия — TBD"
+          ],
+          "replacement": "TBD",
+          "original": "Февральский счётчик вырос на 4 000 ₸",
+          "line": 64,
+          "about": true,
+          "about_note": "ожидаемый результат TBD"
+        },
+        {
+          "copy": "req-multi-1",
+          "id": "req-multi-1-05",
+          "operator": "M4",
+          "name": "Висячая ссылка",
+          "status": "place_only",
+          "by_lint": false,
+          "by_model": false,
+          "by_model_place": true,
+          "findings": [
+            "F-40"
+          ],
+          "properties": [
+            "IND-UNAMB"
+          ],
+          "titles": [
+            "F-40 IND-UNAMB: Ссылка на регламент РГ-17 неполная"
+          ],
+          "replacement": " Исключения обрабатываются в соответствии с регламентом РГ-17.",
+          "original": "",
+          "line": 161,
+          "about": true,
+          "about_note": "ссылка на регламент РГ-17 неполная; свойство Unambiguous"
+        }
+      ]
+    },
+    {
+      "copy": "req-multi-2",
+      "kind": "multi",
+      "run_dir": "evals/results/mutations/main-cb0cc5c/req-multi-2",
+      "findings": 59,
+      "findings_lint_only": 0,
+      "noise": 23,
+      "noise_new_place": 5,
+      "jaccard_with_original": 0.346,
+      "jaccard_places": 0.642,
+      "cost_usd": 3.1724,
+      "duration_s": 517.96,
+      "agent_version": "cb0cc5c",
+      "mutations": [
+        {
+          "copy": "req-multi-2",
+          "id": "req-multi-2-01",
+          "operator": "M7",
+          "name": "Решение вместо требования",
+          "status": "place_only",
+          "by_lint": false,
+          "by_model": false,
+          "by_model_place": true,
+          "findings": [
+            "F-53"
+          ],
+          "properties": [
+            "IND-SING"
+          ],
+          "titles": [
+            "F-53 IND-SING: В шаг проверки карты вставлено ограничение реализации"
+          ],
+          "replacement": " Решение строится на Spring Boot 3 с кешем в Redis.",
+          "original": "",
+          "line": 122,
+          "about": true,
+          "about_note": "в шаг вставлено ограничение реализации; свойство Singular, а не Appropriate"
+        },
+        {
+          "copy": "req-multi-2",
+          "id": "req-multi-2-02",
+          "operator": "M8",
+          "name": "Непроверяемая формулировка",
+          "status": "caught",
+          "by_lint": true,
+          "by_model": true,
+          "by_model_place": true,
+          "findings": [
+            "F-25"
+          ],
+          "properties": [
+            "IND-VERIF"
+          ],
+          "titles": [
+            "F-25 IND-VERIF: «Удобной и надёжной» не проверяется"
+          ],
+          "replacement": "\n\nСистема должна быть удобной и надёжной.",
+          "original": "",
+          "line": 46,
+          "about": true,
+          "about_note": "«удобной и надёжной» не проверяется"
+        },
+        {
+          "copy": "req-multi-2",
+          "id": "req-multi-2-03",
+          "operator": "M2",
+          "name": "Убрать единицу или границу",
+          "status": "place_only",
+          "by_lint": false,
+          "by_model": false,
+          "by_model_place": true,
+          "findings": [
+            "F-54"
+          ],
+          "properties": [
+            "IND-CONF"
+          ],
+          "titles": [
+            "F-54 IND-CONF: Требования оформлены неединообразно, без ID, модальности и приоритетов"
+          ],
+          "replacement": "",
+          "original": ", обе границы включены",
+          "line": 128,
+          "about": false,
+          "about_note": "пропажу «обе границы включены» агент не заметил"
+        },
+        {
+          "copy": "req-multi-2",
+          "id": "req-multi-2-04",
+          "operator": "M5",
+          "name": "Удалить ветку ошибки",
+          "status": "caught",
+          "by_lint": false,
+          "by_model": true,
+          "by_model_place": true,
+          "findings": [
+            "F-11"
+          ],
+          "properties": [
+            "IND-COMPL"
+          ],
+          "titles": [
+            "F-11 IND-COMPL: Экран настройки не описан для ошибок ввода и показа суммы"
+          ],
+          "replacement": "",
+          "original": " При ошибке ввода сообщение появляется под полем.",
+          "line": 29,
+          "about": true,
+          "about_note": "экран не описан для ошибок ввода"
+        },
+        {
+          "copy": "req-multi-2",
+          "id": "req-multi-2-05",
+          "operator": "M3",
+          "name": "Второе значение параметра",
+          "status": "caught",
+          "by_lint": false,
+          "by_model": true,
+          "by_model_place": true,
+          "findings": [
+            "F-01",
+            "F-13",
+            "F-14",
+            "F-15",
+            "F-39"
+          ],
+          "properties": [
+            "IND-COMPL",
+            "SET-COMPL",
+            "SET-COMPR",
+            "SET-CONS"
+          ],
+          "titles": [
+            "F-01 SET-CONS: Диапазон порога задан по-разному",
+            "F-13 IND-COMPL: Не сказано, какая сумма учитывается по покупке в иностранной валюте",
+            "F-14 SET-COMPL: Не описано, что происходит с настройкой и расходами при смене статуса карты",
+            "F-15 SET-CONS: API не проверяет условия Ф-1 (активная карта KZT)",
+            "F-39 SET-COMPR: Порог назван четырьмя именами"
+          ],
+          "replacement": "\n\nДержатель активной карты KZT задаёт целый порог от 1 000 до 2 000 000 ₸ включительно.",
+          "original": "",
+          "line": 59,
+          "about": true,
+          "about_note": "диапазон порога задан по-разному"
+        }
+      ]
+    },
+    {
+      "copy": "req-multi-3",
+      "kind": "multi",
+      "run_dir": "evals/results/mutations/main-cb0cc5c/req-multi-3",
+      "findings": 62,
+      "findings_lint_only": 0,
+      "noise": 27,
+      "noise_new_place": 6,
+      "jaccard_with_original": 0.333,
+      "jaccard_places": 0.612,
+      "cost_usd": 3.1456,
+      "duration_s": 526.28,
+      "agent_version": "cb0cc5c",
+      "mutations": [
+        {
+          "copy": "req-multi-3",
+          "id": "req-multi-3-01",
+          "operator": "M6",
+          "name": "Склеить требования",
+          "status": "place_only",
+          "by_lint": false,
+          "by_model": false,
+          "by_model_place": true,
+          "findings": [
+            "F-35"
+          ],
+          "properties": [
+            "IND-UNAMB"
+          ],
+          "titles": [
+            "F-35 IND-UNAMB: «И/или» в шаге проверки"
+          ],
+          "replacement": "2. Проверить принадлежность карты клиенту и/или проверить сумму и переключатель.",
+          "original": "2. Проверить принадлежность карты клиенту.\n3. Проверить сумму и переключатель.",
+          "line": 118,
+          "about": true,
+          "about_note": "«и/или» в шаге проверки; свойство Unambiguous"
+        },
+        {
+          "copy": "req-multi-3",
+          "id": "req-multi-3-02",
+          "operator": "M7",
+          "name": "Решение вместо требования",
+          "status": "place_only",
+          "by_lint": false,
+          "by_model": false,
+          "by_model_place": true,
+          "findings": [
+            "F-59"
+          ],
+          "properties": [
+            "IND-SING"
+          ],
+          "titles": [
+            "F-59 IND-SING: Пункт R-24.1, R-24.2 содержит два независимых обязательства"
+          ],
+          "replacement": " Решение строится на Spring Boot 3 с кешем в Redis.",
+          "original": "",
+          "line": 123,
+          "about": true,
+          "about_note": "правило и выбор технологии в одном пункте; свойство Singular"
+        },
+        {
+          "copy": "req-multi-3",
+          "id": "req-multi-3-03",
+          "operator": "M1",
+          "name": "Размыть число",
+          "status": "caught",
+          "by_lint": true,
+          "by_model": true,
+          "by_model_place": true,
+          "findings": [
+            "F-26",
+            "F-52"
+          ],
+          "properties": [
+            "IND-CONF",
+            "IND-VERIF"
+          ],
+          "titles": [
+            "F-26 IND-VERIF: «Своевременно» не проверяется",
+            "F-52 IND-CONF: Нет модальности «должен», ID и приоритетов у большинства требований"
+          ],
+          "replacement": "своевременно",
+          "original": "в течение минуты",
+          "line": 46,
+          "about": true,
+          "about_note": "«своевременно» не проверяется"
+        },
+        {
+          "copy": "req-multi-3",
+          "id": "req-multi-3-04",
+          "operator": "M5",
+          "name": "Удалить ветку ошибки",
+          "status": "place_only",
+          "by_lint": false,
+          "by_model": false,
+          "by_model_place": true,
+          "findings": [
+            "F-40"
+          ],
+          "properties": [
+            "SET-CONS"
+          ],
+          "titles": [
+            "F-40 SET-CONS: Перечни кодов ответа в разных местах не совпадают"
+          ],
+          "replacement": "",
+          "original": "**403.** Ответ в случае, если на указанный ресурс доступ запрещен.  \n",
+          "line": 174,
+          "about": false,
+          "about_note": "находка о старом расхождении перечней кодов, пропажу описания 403 агент не заметил"
+        },
+        {
+          "copy": "req-multi-3",
+          "id": "req-multi-3-05",
+          "operator": "M10",
+          "name": "Заглушка",
+          "status": "caught",
+          "by_lint": true,
+          "by_model": true,
+          "by_model_place": true,
+          "findings": [
+            "F-39"
+          ],
+          "properties": [
+            "IND-COMPL"
+          ],
+          "titles": [
+            "F-39 IND-COMPL: Логика поля `enabled` в ответе — TBD"
+          ],
+          "replacement": "TBD",
+          "original": "«0» или «1»",
+          "line": 156,
+          "about": true,
+          "about_note": "логика поля — TBD"
+        }
+      ]
+    },
+    {
+      "copy": "req-multi-4",
+      "kind": "multi",
+      "run_dir": "evals/results/mutations/main-cb0cc5c/req-multi-4",
+      "findings": 59,
+      "findings_lint_only": 0,
+      "noise": 18,
+      "noise_new_place": 4,
+      "jaccard_with_original": 0.38,
+      "jaccard_places": 0.734,
+      "cost_usd": 3.0817,
+      "duration_s": 836.94,
+      "agent_version": "cb0cc5c",
+      "mutations": [
+        {
+          "copy": "req-multi-4",
+          "id": "req-multi-4-01",
+          "operator": "M9",
+          "name": "Безличное «обеспечивается»",
+          "status": "place_only",
+          "by_lint": false,
+          "by_model": false,
+          "by_model_place": true,
+          "findings": [
+            "F-04",
+            "F-51"
+          ],
+          "properties": [
+            "IND-TRACE",
+            "SET-COMPL"
+          ],
+          "titles": [
+            "F-04 SET-COMPL: Нет операции чтения настроек и суммы за месяц",
+            "F-51 IND-TRACE: Ссылка на дочерний документ без версии"
+          ],
+          "replacement": "Читается и сохраняется настройки через дочерний документ «Уведомление о расходах по карте — REST API».",
+          "original": "Приложение читает и сохраняет настройки через дочерний документ «Уведомление о расходах по карте — REST API».",
+          "line": 52,
+          "about": false,
+          "about_note": "находки о чтении настроек и версии документа, про исполнителя ничего"
+        },
+        {
+          "copy": "req-multi-4",
+          "id": "req-multi-4-02",
+          "operator": "M8",
+          "name": "Непроверяемая формулировка",
+          "status": "caught",
+          "by_lint": true,
+          "by_model": true,
+          "by_model_place": true,
+          "findings": [
+            "F-26",
+            "F-53"
+          ],
+          "properties": [
+            "IND-SING",
+            "IND-VERIF"
+          ],
+          "titles": [
+            "F-26 IND-VERIF: Субъективные требования «интуитивно понятный» и «стабильный»",
+            "F-53 IND-SING: Два независимых обязательства в одном пункте"
+          ],
+          "replacement": "\n\nИнтерфейс должен быть интуитивно понятным, а работа системы стабильной.",
+          "original": "",
+          "line": 57,
+          "about": true,
+          "about_note": "«интуитивно понятный» и «стабильный» без меры"
+        },
+        {
+          "copy": "req-multi-4",
+          "id": "req-multi-4-03",
+          "operator": "M2",
+          "name": "Убрать единицу или границу",
+          "status": "caught",
+          "by_lint": false,
+          "by_model": true,
+          "by_model_place": true,
+          "findings": [
+            "F-09",
+            "F-10",
+            "F-41",
+            "F-46"
+          ],
+          "properties": [
+            "IND-COMPL",
+            "SET-COMPR"
+          ],
+          "titles": [
+            "F-09 IND-COMPL: Пересчёт суммы покупки в другой валюте не задан",
+            "F-10 IND-COMPL: Условие «активная карта KZT» не определено и не проверяется в API",
+            "F-41 SET-COMPR: Порог называется по-разному",
+            "F-46 SET-COMPR: Клиент назван по-разному"
+          ],
+          "replacement": "",
+          "original": " включительно",
+          "line": 37,
+          "about": false,
+          "about_note": "код засчитал «поймано» по свойству Complete, но находки о валюте и статусе карты, не о пропавшем «включительно»"
+        },
+        {
+          "copy": "req-multi-4",
+          "id": "req-multi-4-04",
+          "operator": "M4",
+          "name": "Висячая ссылка",
+          "status": "place_only",
+          "by_lint": false,
+          "by_model": false,
+          "by_model_place": true,
+          "findings": [
+            "F-34"
+          ],
+          "properties": [
+            "IND-UNAMB"
+          ],
+          "titles": [
+            "F-34 IND-UNAMB: Ссылка на несуществующий раздел 9.6"
+          ],
+          "replacement": " Порядок обработки описан в разделе 9.6.",
+          "original": "",
+          "line": 128,
+          "about": true,
+          "about_note": "ссылка на несуществующий раздел 9.6; свойство Unambiguous"
+        },
+        {
+          "copy": "req-multi-4",
+          "id": "req-multi-4-05",
+          "operator": "M3",
+          "name": "Второе значение параметра",
+          "status": "caught",
+          "by_lint": false,
+          "by_model": true,
+          "by_model_place": true,
+          "findings": [
+            "F-22",
+            "F-23",
+            "F-49"
+          ],
+          "properties": [
+            "IND-CONF",
+            "IND-VERIF",
+            "SET-CONS"
+          ],
+          "titles": [
+            "F-22 IND-VERIF: Срок передачи push не измерим",
+            "F-23 SET-CONS: Срок передачи push задан двумя разными значениями",
+            "F-49 IND-CONF: Требования оформлены неединообразно: нет ID и модальности «должен»"
+          ],
+          "replacement": "\n\nСервис передаёт push на отправку в течение 5 минут после получения события.",
+          "original": "",
+          "line": 99,
+          "about": true,
+          "about_note": "срок задан двумя разными значениями"
+        }
+      ]
+    },
+    {
+      "copy": "req-single-1",
+      "kind": "single",
+      "run_dir": "evals/results/mutations/main-cb0cc5c/req-single-1",
+      "findings": 54,
+      "findings_lint_only": 0,
+      "noise": 26,
+      "noise_new_place": 7,
+      "jaccard_with_original": 0.3,
+      "jaccard_places": 0.662,
+      "cost_usd": 2.9733,
+      "duration_s": 816.56,
+      "agent_version": "cb0cc5c",
+      "mutations": [
+        {
+          "copy": "req-single-1",
+          "id": "req-single-1-01",
+          "operator": "M1",
+          "name": "Размыть число",
+          "status": "caught",
+          "by_lint": true,
+          "by_model": true,
+          "by_model_place": true,
+          "findings": [
+            "F-09",
+            "F-10",
+            "F-40"
+          ],
+          "properties": [
+            "IND-COMPL",
+            "IND-UNAMB",
+            "SET-COMPR"
+          ],
+          "titles": [
+            "F-09 IND-COMPL: Не определено, какая сумма учитывается для покупки в иностранной валюте",
+            "F-10 IND-UNAMB: Диапазон порога в Ф-1 задан словами «в разумных пределах»",
+            "F-40 SET-COMPR: Клиент назван по-разному"
+          ],
+          "replacement": "в разумных пределах",
+          "original": "от 1 000 до 1 000 000 ₸ включительно",
+          "line": 37,
+          "about": null,
+          "about_note": ""
+        }
+      ]
+    },
+    {
+      "copy": "req-single-2",
+      "kind": "single",
+      "run_dir": "evals/results/mutations/main-cb0cc5c/req-single-2",
+      "findings": 55,
+      "findings_lint_only": 0,
+      "noise": 29,
+      "noise_new_place": 4,
+      "jaccard_with_original": 0.296,
+      "jaccard_places": 0.714,
+      "cost_usd": 2.8401,
+      "duration_s": 774.36,
+      "agent_version": "cb0cc5c",
+      "mutations": [
+        {
+          "copy": "req-single-2",
+          "id": "req-single-2-01",
+          "operator": "M6",
+          "name": "Склеить требования",
+          "status": "place_only",
+          "by_lint": false,
+          "by_model": false,
+          "by_model_place": true,
+          "findings": [
+            "F-05"
+          ],
+          "properties": [
+            "IND-UNAMB"
+          ],
+          "titles": [
+            "F-05 IND-UNAMB: «и/или» в проверке доступа"
+          ],
+          "replacement": "1. Проверить пользовательскую сессию и/или проверить принадлежность карты клиенту.",
+          "original": "1. Проверить пользовательскую сессию.\n2. Проверить принадлежность карты клиенту.",
+          "line": 117,
+          "about": null,
+          "about_note": ""
+        }
+      ]
+    }
+  ],
+  "operators": [
+    {
+      "operator": "M1",
+      "name": "Размыть число",
+      "inserted": 3,
+      "caught": 3,
+      "place_only": 0,
+      "by_lint": 2,
+      "by_model": 3,
+      "about": 3,
+      "recall": 1.0,
+      "recall_soft": 1.0
+    },
+    {
+      "operator": "M2",
+      "name": "Убрать единицу или границу",
+      "inserted": 3,
+      "caught": 2,
+      "place_only": 1,
+      "by_lint": 0,
+      "by_model": 2,
+      "about": 0,
+      "recall": 0.6666666666666666,
+      "recall_soft": 1.0
+    },
+    {
+      "operator": "M3",
+      "name": "Второе значение параметра",
+      "inserted": 2,
+      "caught": 2,
+      "place_only": 0,
+      "by_lint": 0,
+      "by_model": 2,
+      "about": 2,
+      "recall": 1.0,
+      "recall_soft": 1.0
+    },
+    {
+      "operator": "M4",
+      "name": "Висячая ссылка",
+      "inserted": 3,
+      "caught": 1,
+      "place_only": 2,
+      "by_lint": 0,
+      "by_model": 1,
+      "about": 3,
+      "recall": 0.3333333333333333,
+      "recall_soft": 1.0
+    },
+    {
+      "operator": "M5",
+      "name": "Удалить ветку ошибки",
+      "inserted": 3,
+      "caught": 1,
+      "place_only": 2,
+      "by_lint": 0,
+      "by_model": 1,
+      "about": 1,
+      "recall": 0.3333333333333333,
+      "recall_soft": 1.0
+    },
+    {
+      "operator": "M6",
+      "name": "Склеить требования",
+      "inserted": 3,
+      "caught": 0,
+      "place_only": 3,
+      "by_lint": 0,
+      "by_model": 0,
+      "about": 3,
+      "recall": 0.0,
+      "recall_soft": 1.0
+    },
+    {
+      "operator": "M7",
+      "name": "Решение вместо требования",
+      "inserted": 3,
+      "caught": 0,
+      "place_only": 3,
+      "by_lint": 0,
+      "by_model": 0,
+      "about": 3,
+      "recall": 0.0,
+      "recall_soft": 1.0
+    },
+    {
+      "operator": "M8",
+      "name": "Непроверяемая формулировка",
+      "inserted": 3,
+      "caught": 3,
+      "place_only": 0,
+      "by_lint": 3,
+      "by_model": 3,
+      "about": 3,
+      "recall": 1.0,
+      "recall_soft": 1.0
+    },
+    {
+      "operator": "M9",
+      "name": "Безличное «обеспечивается»",
+      "inserted": 2,
+      "caught": 0,
+      "place_only": 2,
+      "by_lint": 0,
+      "by_model": 0,
+      "about": 0,
+      "recall": 0.0,
+      "recall_soft": 1.0
+    },
+    {
+      "operator": "M10",
+      "name": "Заглушка",
+      "inserted": 2,
+      "caught": 2,
+      "place_only": 0,
+      "by_lint": 2,
+      "by_model": 2,
+      "about": 2,
+      "recall": 1.0,
+      "recall_soft": 1.0
+    }
+  ],
+  "total": {
+    "operator": "Σ",
+    "name": "Все операторы",
+    "inserted": 27,
+    "caught": 14,
+    "place_only": 13,
+    "by_lint": 7,
+    "by_model": 14,
+    "about": 20,
+    "recall": 0.5185185185185185,
+    "recall_soft": 1.0
+  },
+  "documents": {
+    "c4": {
+      "operators": [
+        {
+          "operator": "M1",
+          "name": "Размыть число",
+          "inserted": 1,
+          "caught": 1,
+          "place_only": 0,
+          "by_lint": 0,
+          "by_model": 1,
+          "about": 1,
+          "recall": 1.0,
+          "recall_soft": 1.0
+        },
+        {
+          "operator": "M2",
+          "name": "Убрать единицу или границу",
+          "inserted": 1,
+          "caught": 1,
+          "place_only": 0,
+          "by_lint": 0,
+          "by_model": 1,
+          "about": 0,
+          "recall": 1.0,
+          "recall_soft": 1.0
+        },
+        {
+          "operator": "M4",
+          "name": "Висячая ссылка",
+          "inserted": 1,
+          "caught": 1,
+          "place_only": 0,
+          "by_lint": 0,
+          "by_model": 1,
+          "about": 1,
+          "recall": 1.0,
+          "recall_soft": 1.0
+        },
+        {
+          "operator": "M5",
+          "name": "Удалить ветку ошибки",
+          "inserted": 1,
+          "caught": 0,
+          "place_only": 1,
+          "by_lint": 0,
+          "by_model": 0,
+          "about": 0,
+          "recall": 0.0,
+          "recall_soft": 1.0
+        },
+        {
+          "operator": "M6",
+          "name": "Склеить требования",
+          "inserted": 1,
+          "caught": 0,
+          "place_only": 1,
+          "by_lint": 0,
+          "by_model": 0,
+          "about": 1,
+          "recall": 0.0,
+          "recall_soft": 1.0
+        },
+        {
+          "operator": "M7",
+          "name": "Решение вместо требования",
+          "inserted": 1,
+          "caught": 0,
+          "place_only": 1,
+          "by_lint": 0,
+          "by_model": 0,
+          "about": 1,
+          "recall": 0.0,
+          "recall_soft": 1.0
+        },
+        {
+          "operator": "M8",
+          "name": "Непроверяемая формулировка",
+          "inserted": 1,
+          "caught": 1,
+          "place_only": 0,
+          "by_lint": 1,
+          "by_model": 1,
+          "about": 1,
+          "recall": 1.0,
+          "recall_soft": 1.0
+        }
+      ],
+      "total": {
+        "operator": "Σ",
+        "name": "Все операторы",
+        "inserted": 7,
+        "caught": 4,
+        "place_only": 3,
+        "by_lint": 1,
+        "by_model": 4,
+        "about": 5,
+        "recall": 0.5714285714285714,
+        "recall_soft": 1.0
+      }
+    },
+    "req": {
+      "operators": [
+        {
+          "operator": "M1",
+          "name": "Размыть число",
+          "inserted": 2,
+          "caught": 2,
+          "place_only": 0,
+          "by_lint": 2,
+          "by_model": 2,
+          "about": 2,
+          "recall": 1.0,
+          "recall_soft": 1.0
+        },
+        {
+          "operator": "M2",
+          "name": "Убрать единицу или границу",
+          "inserted": 2,
+          "caught": 1,
+          "place_only": 1,
+          "by_lint": 0,
+          "by_model": 1,
+          "about": 0,
+          "recall": 0.5,
+          "recall_soft": 1.0
+        },
+        {
+          "operator": "M3",
+          "name": "Второе значение параметра",
+          "inserted": 2,
+          "caught": 2,
+          "place_only": 0,
+          "by_lint": 0,
+          "by_model": 2,
+          "about": 2,
+          "recall": 1.0,
+          "recall_soft": 1.0
+        },
+        {
+          "operator": "M4",
+          "name": "Висячая ссылка",
+          "inserted": 2,
+          "caught": 0,
+          "place_only": 2,
+          "by_lint": 0,
+          "by_model": 0,
+          "about": 2,
+          "recall": 0.0,
+          "recall_soft": 1.0
+        },
+        {
+          "operator": "M5",
+          "name": "Удалить ветку ошибки",
+          "inserted": 2,
+          "caught": 1,
+          "place_only": 1,
+          "by_lint": 0,
+          "by_model": 1,
+          "about": 1,
+          "recall": 0.5,
+          "recall_soft": 1.0
+        },
+        {
+          "operator": "M6",
+          "name": "Склеить требования",
+          "inserted": 2,
+          "caught": 0,
+          "place_only": 2,
+          "by_lint": 0,
+          "by_model": 0,
+          "about": 2,
+          "recall": 0.0,
+          "recall_soft": 1.0
+        },
+        {
+          "operator": "M7",
+          "name": "Решение вместо требования",
+          "inserted": 2,
+          "caught": 0,
+          "place_only": 2,
+          "by_lint": 0,
+          "by_model": 0,
+          "about": 2,
+          "recall": 0.0,
+          "recall_soft": 1.0
+        },
+        {
+          "operator": "M8",
+          "name": "Непроверяемая формулировка",
+          "inserted": 2,
+          "caught": 2,
+          "place_only": 0,
+          "by_lint": 2,
+          "by_model": 2,
+          "about": 2,
+          "recall": 1.0,
+          "recall_soft": 1.0
+        },
+        {
+          "operator": "M9",
+          "name": "Безличное «обеспечивается»",
+          "inserted": 2,
+          "caught": 0,
+          "place_only": 2,
+          "by_lint": 0,
+          "by_model": 0,
+          "about": 0,
+          "recall": 0.0,
+          "recall_soft": 1.0
+        },
+        {
+          "operator": "M10",
+          "name": "Заглушка",
+          "inserted": 2,
+          "caught": 2,
+          "place_only": 0,
+          "by_lint": 2,
+          "by_model": 2,
+          "about": 2,
+          "recall": 1.0,
+          "recall_soft": 1.0
+        }
+      ],
+      "total": {
+        "operator": "Σ",
+        "name": "Все операторы",
+        "inserted": 20,
+        "caught": 10,
+        "place_only": 10,
+        "by_lint": 6,
+        "by_model": 10,
+        "about": 15,
+        "recall": 0.5,
+        "recall_soft": 1.0
+      }
+    }
+  },
+  "interference": [
+    {
+      "operator": "M1",
+      "single": "req-single-1",
+      "single_status": "caught",
+      "multi": "req-multi-1-03",
+      "multi_status": "caught"
+    },
+    {
+      "operator": "M6",
+      "single": "req-single-2",
+      "single_status": "place_only",
+      "multi": "req-multi-1-01",
+      "multi_status": "place_only"
+    }
+  ]
+}
