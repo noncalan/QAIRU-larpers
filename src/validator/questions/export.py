@@ -29,10 +29,17 @@
         comment: null            # пояснение автора, по желанию
 
 Файл пишется всегда, даже без вопросов (тогда ``questions: []``), чтобы у прогона был один набор выходов.
+
+Ответы автора не затираются. Если в ``questions.yaml`` рядом с отчётом уже что-то вписал человек
+(``answered_by``, ``answer`` или ``comment`` хотя бы у одного вопроса) или файл не похож на наш, вопросы
+этого прогона пишутся в первый свободный ``questions-2.yaml``, ``questions-3.yaml``, …
+(``safe_questions_path``). Так повторный прогон ``--answers out/questions.yaml`` в ту же папку не стирает
+ответы, по которым он сделан.
 """
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -43,6 +50,8 @@ from validator.report.fmt import where
 
 SCHEMA_VERSION = 1
 YAML_WIDTH = 120
+MAX_SPARE_FILES = 99
+"""Сколько запасных имён ``questions-N.yaml`` перебирать; дальше имя с отметкой времени."""
 
 HEADER = (
     "# Вопросы агента QAIRU к автору ТЗ.\n"
@@ -86,9 +95,61 @@ def questions_payload(questions: list[Question], doc_name: str, doc_sha256: str 
     }
 
 
+def _filled(value: object) -> bool:
+    """Поле заполнено человеком: не ``null`` и не пустая строка (``0`` и ``false`` тоже ответ)."""
+    return value is not None and str(value).strip() != ""
+
+
+def has_author_input(path: Path) -> bool:
+    """Есть ли в файле то, что нельзя затирать: ответ, пояснение или имя отвечавшего.
+
+    Файл, который не читается, не YAML или не похож на ``questions.yaml``, тоже считаем чужим: доказать,
+    что в нём нет работы человека, нельзя, поэтому и перезаписывать его нельзя.
+    """
+    try:
+        data = yaml.safe_load(path.read_text(encoding="utf-8-sig"))
+    except (OSError, UnicodeDecodeError, yaml.YAMLError):
+        return True
+    if not isinstance(data, dict) or not isinstance(data.get("questions"), list):
+        return True
+    if _filled(data.get("answered_by")):
+        return True
+    return any(
+        not isinstance(q, dict) or _filled(q.get("answer")) or _filled(q.get("comment"))
+        for q in data["questions"]
+    )
+
+
+def _spare_names(path: Path) -> list[Path]:
+    return [path.with_name(f"{path.stem}-{n}{path.suffix}") for n in range(2, MAX_SPARE_FILES + 2)]
+
+
+def safe_questions_path(path: Path) -> Path:
+    """Куда писать вопросы прогона, не затирая ответы автора.
+
+    ``path``, если файла нет или в нём нет ответов человека (прошлый прогон без ответов перезаписываем, как
+    раньше); иначе первое такое же безопасное имя ``questions-2.yaml``, ``questions-3.yaml``, …
+    """
+    for candidate in (path, *_spare_names(path)):
+        if not candidate.exists() or not has_author_input(candidate):
+            return candidate
+    stamp = datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
+    return path.with_name(f"{path.stem}-{stamp}{path.suffix}")
+
+
 def write_questions_yaml(
-    path: Path, questions: list[Question], doc_name: str, doc_sha256: str | None
+    path: Path,
+    questions: list[Question],
+    doc_name: str,
+    doc_sha256: str | None,
+    kept: Path | None = None,
 ) -> None:
+    """Файл вопросов по схеме модуля. ``kept``: файл с ответами автора, ради которого выбрано другое имя."""
     payload = questions_payload(questions, doc_name, doc_sha256)
     body = yaml.safe_dump(payload, allow_unicode=True, sort_keys=False, width=YAML_WIDTH)
-    path.write_text(HEADER + body, encoding="utf-8")
+    note = (
+        f"# Ответы в {kept.name} не тронуты: вопросы этого прогона записаны сюда, чтобы их не затереть.\n"
+        if kept is not None
+        else ""
+    )
+    path.write_text(HEADER + note + body, encoding="utf-8")

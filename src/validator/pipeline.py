@@ -44,6 +44,7 @@ from validator.errors import (
     LLM_BUDGET_ESTIMATE,
     LLM_LONG_DOCUMENT,
     LLM_REPLAYED,
+    OUT_KEEPS_ANSWERS,
     OUT_OVERWRITES_INPUT,
     OUT_WRITE_FAILED,
     InputError,
@@ -87,7 +88,7 @@ from validator.models import (
 )
 from validator.parts import PartPlan, describe, plan_parts, whole_plan
 from validator.passport import build_passport
-from validator.questions import build_questions, write_questions_yaml
+from validator.questions import build_questions, safe_questions_path, write_questions_yaml
 from validator.refs import humanize
 from validator.report import PdfRenderError, build_report, render_md, render_pdf
 from validator.report.selfcheck import check_report, selfcheck_diagnostics
@@ -127,6 +128,8 @@ class _State:
     client: RecordingClient | None = None
     backend_used: Backend | None = None
     pdf_written: bool = False
+    questions_path: Path | None = None
+    """Куда пишем вопросы: ``cfg.questions_path`` или другое имя, если там ответы автора."""
 
 
 def _step(
@@ -550,6 +553,7 @@ def _context(
         calls=list(calls),
         passport=passport,
         checklists=state.checklists,
+        questions_file=_questions_path(state).name,
     )
 
 
@@ -672,18 +676,52 @@ def _write(state: _State, report: Report | None, markdown: str) -> dict[str, Pat
         cfg.report_json_path.write_text(report.model_dump_json(indent=2) + "\n", encoding="utf-8")
         outputs["report_json"] = cfg.report_json_path
     doc = state.doc
+    questions_path = _questions_path(state)
     write_questions_yaml(
-        cfg.questions_path,
+        questions_path,
         state.questions,
         doc.name if doc else cfg.input_path.name,
         doc.sha256 if doc else None,
+        kept=cfg.questions_path if questions_path != cfg.questions_path else None,
     )
-    outputs["questions"] = cfg.questions_path
+    outputs["questions"] = questions_path
     calls_path = cfg.run_dir / "calls.jsonl"
     write_calls_jsonl(calls_path, state.client.records if state.client else [])
     outputs["calls"] = calls_path
     outputs["log"] = cfg.log_path
     return outputs
+
+
+def _questions_path(state: _State) -> Path:
+    return state.questions_path or state.cfg.questions_path
+
+
+def _keep_author_answers(state: _State) -> None:
+    """Не затирать ответы автора: если в ``questions.yaml`` они есть, вопросы прогона пишем под другим именем.
+
+    Типичный случай: ``validator doc.pdf out/report.pdf --answers out/questions.yaml``. Выбор делаем до
+    сборки отчёта, чтобы отчёт назвал верный файл и показал это в диагностике (``OUT-004``).
+    """
+    cfg = state.cfg
+    try:
+        path = safe_questions_path(cfg.questions_path)
+    except OSError:  # папка недоступна: запись всё равно упадёт и даст понятный код 2
+        logger.exception("Не удалось проверить %s", cfg.questions_path)
+        return
+    state.questions_path = path
+    if path == cfg.questions_path:
+        return
+    logger.info("В %s ответы автора, вопросы прогона пишем в %s", cfg.questions_path, path)
+    state.diagnostics.append(
+        Diagnostic(
+            code=OUT_KEEPS_ANSWERS,
+            level=DiagLevel.INFO,
+            message=f"В {cfg.questions_path.name} рядом с отчётом уже есть ответы автора",
+            action=f"Файл не перезаписан, вопросы этого прогона записаны в {path.name}",
+            hint=f"Новые ответы вписывайте в {path.name}; прежние остались в {cfg.questions_path.name}",
+            step="report",
+        )
+    )
 
 
 def _message(code: ExitCode, report: Report | None, path: Path | None, markdown: Path | None = None) -> str:
@@ -767,6 +805,7 @@ def run(cfg: RunConfig) -> RunOutcome:
             )
         if state.client is not None:
             state.diagnostics.extend(state.client.diagnostics)
+        _keep_author_answers(state)
         code, report, markdown = _render(state)
         if cfg.wants_pdf and report is None:
             _remove_stale_pdf(cfg)  # отчёт аварийный (INT-001 уже в нём): PDF строить не из чего
@@ -792,9 +831,15 @@ def run(cfg: RunConfig) -> RunOutcome:
             )
         logger.info("Готово: код %s", code.value)
         shown = cfg.report_pdf_path if state.pdf_written else cfg.report_md_path
+        message = _message(code, report, shown, cfg.report_md_path if state.pdf_written else None)
+        questions_path = _questions_path(state)
+        if questions_path != cfg.questions_path:
+            message += (
+                f" Ответы в {cfg.questions_path.name} не тронуты, вопросы прогона: {questions_path.name}."
+            )
         return RunOutcome(
             exit_code=code,
-            message=_message(code, report, shown, cfg.report_md_path if state.pdf_written else None),
+            message=message,
             report_path=shown,
             outputs=outputs,
             report=report,

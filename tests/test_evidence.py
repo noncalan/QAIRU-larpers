@@ -578,9 +578,14 @@ def test_only_checked_witness_makes_a_question_and_raises_priority(
     rejected, checked = finding_with(bad), finding_with(good)
 
     assert rejected.witness is not None and not rejected.witness.checked
-    assert finding_origins(rejected) == () and priority([rejected], {}).value == "P2"
-    assert checked.witness is not None and checked.witness.checked
-    assert finding_origins(checked) and priority([checked], {}).value == "P0"
+    assert finding_origins(rejected) == ()
+    assert checked.witness is not None and checked.witness.checked and finding_origins(checked)
+    # Свидетель не делает вопрос блокером разработки (P0 только у критичной), но у незначительной находки
+    # сверенный свидетель поднимает вопрос до P1: ожидаемый результат теста не задан. Отклонённый
+    # свидетель не поднимает.
+    assert priority([checked]).value == "P1"
+    assert priority([rejected.model_copy(update={"severity": Severity.MINOR})]).value == "P2"
+    assert priority([checked.model_copy(update={"severity": Severity.MINOR})]).value == "P1"
 
 
 def test_metrics_count_kept_downgraded_dropped_and_overruled(doc: ParsedDocument, tmp_path: Path) -> None:

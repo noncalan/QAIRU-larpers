@@ -54,7 +54,13 @@ VOLATILE = {
 MAX_DIFFERENCES_SHOWN = 20
 SHORT_VALUE = 300
 
-STALE_RECORDINGS: dict[DocKind, str] = {}
+_STALE_QUESTIONS = (
+    "#122: P0 только при критичной находке; приоритет виден в промпте редактора вопросов, номера "
+    "вопросов в промпте критика: questions.1 и questions_critic.1 ждут общей перезаписи"
+)
+STALE_RECORDINGS: dict[DocKind, str] = dict.fromkeys(
+    (DocKind.MD, DocKind.PDF, DocKind.DOCX), _STALE_QUESTIONS
+)
 """Записи, которые отстали от кода и ждут живой перезаписи. Пока запись в этом списке, проверка «каждый
 ответ по ключу» для формата помечена как ожидаемо падающая (``strict``): после перезаписи она пройдёт,
 и pytest напомнит убрать формат отсюда. Снапшот отчёта сравнивается для всех форматов."""

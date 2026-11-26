@@ -180,6 +180,10 @@
         #text(size: 7.5pt, fill: muted)[#s.at(0)]
       ]),
     )
+    if f.at("review", default: "") != "" {
+      v(6pt)
+      par[#text(size: 9pt)[#f.review]]
+    }
     if f.at("clarify", default: "") != "" {
       v(6pt)
       par[#text(size: 9pt)[#strong[Уточнения автора.] #f.clarify]]

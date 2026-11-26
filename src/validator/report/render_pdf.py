@@ -286,6 +286,7 @@ def _first_page(report: Report, ctx: dict[str, Any]) -> Json:
         "ask": ask,
         "ask_empty": "Вопросов, блокирующих разработку или тестирование, нет.",
         "clarify": _first_page_clarify(ctx["clarify"]),
+        "review": ctx["review_line"] or "",
     }
 
 
@@ -473,9 +474,20 @@ def _requirements_section(report: Report, ctx: dict[str, Any]) -> Json:
         mono=[0, 1],
     )
     blocks: list[Json] = [_para(intro), table]
-    cards = [_finding_card(f, ctx) for f in ctx["req_findings"]]
-    blocks += cards or [_para("Нарушений в отдельных требованиях не найдено.")]
+    cards = [_finding_card(f, ctx) for f in ctx["req_findings"]] or [_para(ctx["empty_req"])]
+    blocks += cards + _minor_blocks(ctx["req_minor"], ctx["minor_note_req"], ctx)
     return {"title": title, "blocks": blocks}
+
+
+def _minor_blocks(items: Sequence[Finding], note: str, ctx: dict[str, Any]) -> list[Json]:
+    """Блок «Незначительные замечания (по желанию)» в конце раздела 4 или 5, как в Markdown."""
+    if not items:
+        return []
+    head = [
+        {"t": "h2", "text": ctx["minor_title"]},
+        _note(f"{note} Находок в блоке: {len(items)}."),
+    ]
+    return head + [_finding_card(f, ctx) for f in items]
 
 
 def _set_section(report: Report, ctx: dict[str, Any]) -> Json:
@@ -485,8 +497,8 @@ def _set_section(report: Report, ctx: dict[str, Any]) -> Json:
             "title": title,
             "blocks": [_para("Проверка набора не выполнена, смотрите диагностику прогона.")],
         }
-    cards = [_finding_card(f, ctx) for f in ctx["set_findings"]]
-    blocks = cards or [_para("Нарушений уровня набора (29148 п. 5.2.6, IEEE 830 п. 4.3) не найдено.")]
+    cards = [_finding_card(f, ctx) for f in ctx["set_findings"]] or [_para(ctx["empty_set"])]
+    blocks = cards + _minor_blocks(ctx["set_minor"], ctx["minor_note_set"], ctx)
     return {"title": title, "blocks": blocks + _checklist_blocks(report, ctx)}
 
 
@@ -609,7 +621,7 @@ def _questions_body(report: Report, ctx: dict[str, Any]) -> Json:
             mono=[0],
         )
         blocks = [table, *(_question_card(q, ctx) for q in report.questions)]
-        blocks.append(_para("Ответы можно вписать в questions.yaml рядом с отчётом."))
+        blocks.append(_para(f"Ответы можно вписать в {report.questions_file} рядом с отчётом."))
         return {"title": title, "blocks": [*blocks, *_withdrawn_blocks(report, ctx)]}
     failed = [d for d in report.diagnostics if d.step == "questions" and d.level.value != "info"]
     if report.questions_withdrawn:

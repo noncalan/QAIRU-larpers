@@ -64,7 +64,7 @@ def test_request_has_document_candidates_and_step_model(tmp_path: Path) -> None:
     cands = collect_candidates(verification(library_findings(doc)))
     cfg = make_cfg(doc, tmp_path)
 
-    req = build_request(cands, doc, {}, cfg)
+    req = build_request(cands, doc, cfg)
 
     assert req.step is LLMStep.QUESTIONS and req.call_index == 1
     assert (req.model, req.effort) == ("claude-opus-5-5", Effort.HIGH)
@@ -79,7 +79,7 @@ def test_document_text_with_placeholder_is_not_substituted(tmp_path: Path) -> No
     doc = make_doc(tmp_path, "# Шаблон\n\nПоле {candidates} заполняет оператор вручную.\n")
     cands = collect_candidates(verification(library_findings(make_doc(tmp_path))))
 
-    req = build_request(cands, doc, {}, make_cfg(doc, tmp_path))
+    req = build_request(cands, doc, make_cfg(doc, tmp_path))
 
     assert "Поле {candidates} заполняет" in req.prompt
 

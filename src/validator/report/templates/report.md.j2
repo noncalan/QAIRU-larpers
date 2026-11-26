@@ -70,6 +70,17 @@
 - **Примечание:** {{ note | cell }}
 {% endfor %}
 {% endmacro %}
+{% macro minor_block(items, note) %}
+{% if items %}
+### {{ minor_title }}
+
+{{ note }} Находок в блоке: {{ items | length }}.
+
+{% for f in items %}
+{{ finding_card(f) }}
+{% endfor %}
+{% endif %}
+{% endmacro %}
 {% macro diag_table(items) %}
 | Код | Уровень | Что обнаружено | Где | Что сделал агент | Что сделать вам |
 |---|---|---|---|---|---|
@@ -87,6 +98,10 @@
 
 {% if v %}
 Требований: **{{ v.summary.requirements_total }}** · нарушений: **{{ v.summary.violations }}** · критичных: **{{ v.summary.critical }}** · «неясно»: **{{ v.summary.unclear }}** · вопросов автору: **{{ r.questions | length }}**
+{% if review_line %}
+
+{{ review_line }}
+{% endif %}
 {% if clarify %}
 
 **Уточнения автора.** {{ clarify.summary_line }} Светофор до ответов: {{ clarify.compare[0][1] if clarify.compare else "—" }}. Подробности в разделе 6.
@@ -235,8 +250,9 @@
 {% for f in req_findings %}
 {{ finding_card(f) }}
 {% else %}
-Нарушений в отдельных требованиях не найдено.
+{{ empty_req }}
 {% endfor %}
+{{ minor_block(req_minor, minor_note_req) }}
 {% else %}
 Проверка требований не выполнена, смотрите диагностику прогона.
 {% endif %}
@@ -247,8 +263,9 @@
 {% for f in set_findings %}
 {{ finding_card(f) }}
 {% else %}
-Нарушений уровня набора (29148 п. 5.2.6, IEEE 830 п. 4.3) не найдено.
+{{ empty_set }}
 {% endfor %}
+{{ minor_block(set_minor, minor_note_set) }}
 {% else %}
 Проверка набора не выполнена, смотрите диагностику прогона.
 {% endif %}
@@ -371,7 +388,7 @@
 
 {% endif %}
 {% endfor %}
-Ответы можно вписать в `questions.yaml` рядом с отчётом.
+Ответы можно вписать в `{{ r.questions_file }}` рядом с отчётом.
 {% elif r.questions_withdrawn %}
 Открытых вопросов нет: самопроверка нашла в документе ответы на все вопросы, они перечислены ниже.
 {% elif r.diagnostics | selectattr("step", "equalto", "questions") | rejectattr("level", "equalto", "info") | list %}
