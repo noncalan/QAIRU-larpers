@@ -19,6 +19,7 @@ from pathlib import Path
 
 from validator.config import load_config
 from validator.evidence import evidence
+from validator.evidence_testdraft import draft_tests
 from validator.ingest import parse
 from validator.lint import lint
 from validator.llm import FakeLLM
@@ -44,6 +45,7 @@ def main() -> int:
     fake = FakeLLM(FIXTURES)
     seg = segment(doc, fake, cfg)
     merged = evidence(merge(search(doc, fake, cfg), lint(doc, seg), doc), doc, fake, cfg)
+    merged = draft_tests(merged, doc, fake, cfg).findings  # попытка теста (#40) даёт кандидатам пропуски [?]
     ver = verify(merged, doc, seg)
     cands = collect_candidates(ver)
     req = build_request(cands, doc, {r.id: r.type for r in seg.requirements}, cfg)
