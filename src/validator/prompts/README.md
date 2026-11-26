@@ -19,6 +19,7 @@
 | `critic_system.md`, `critic_user.md` | 6б, критик находок (#39, по умолчанию выключен, `--critic`) | Opus 5.5 | рассуждение, затем ```json со списком `decisions` (`evidence_critic.py`); снимает и понижает код по сверенной цитате-основанию |
 | `questions_system.md`, `questions_user.md` | 8б, редактор вопросов (#20) | Opus 5.5 | рассуждение, затем ```json со списком `questions` (`questions/editor.py`) |
 | `questions_critic_system.md`, `questions_critic_user.md` | 8г, критик-самоответ (#41) | Opus 5.5 | рассуждение, затем ```json со списком `reviews` (`questions/critic.py`); снимает вопрос код по сверенной цитате-ответу |
+| `test_draft_system.md`, `test_draft_user.md` | 6в, попытка теста (#40) | Sonnet 5.5 | рассуждение, затем ```json со списком `drafts` (`evidence_testdraft.py`); значение без цитаты код заменяет пропуском `[?N]` (`evidence_testdraft_check.py`) |
 | `set_check_system.md`, `set_check_user.md` | 4в, сверка требований между частями длинного документа (#38) | Opus 5.5, effort как у поиска | рассуждение, затем ```json со списком `issues` (`set_check.py`); цитаты подставляет код из требований |
 | `part_note.md` | 2 и 4, только для длинного документа (#38) | — | служебная пометка перед блоками части: номер части, её разделы, оглавление (`parts.py`); документ целиком идёт без неё |
 | `clarify_system.md`, `clarify_user.md` | 8е, сверка с ответами автора (#42), только с `--answers` | Opus 5.5 | рассуждение, затем ```json со списками `effects` и `new_findings` (`clarify/model.py`); закрытие и новые находки проверяет код (`clarify/apply.py`) |

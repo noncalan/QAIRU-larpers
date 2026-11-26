@@ -18,7 +18,7 @@ from typing import Any
 
 import pytest
 
-from validator import evidence_critic, evidence_witness, pipeline
+from validator import evidence_critic, evidence_testdraft, evidence_witness, pipeline
 from validator.checklists import load_checklists, render_section
 from validator.config import LONG_DOC_TOKENS, estimate_tokens, load_config
 from validator.estimate import estimate_run
@@ -668,15 +668,16 @@ def _evidence_requests(long_doc: ParsedDocument, cfg: RunConfig) -> tuple[list[L
     requests = [
         evidence_witness.build_request([found], {}, long_doc, cfg),
         evidence_critic.build_request([pick], {}, long_doc, cfg),
+        evidence_testdraft.build_request([found], long_doc, cfg, 1),
     ]
     return requests, target.id
 
 
-def test_witness_and_critic_see_only_the_sections_of_their_findings(
+def test_evidence_steps_see_only_the_sections_of_their_findings(
     long_doc: ParsedDocument, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Шаг 6 на документе длиннее вида целиком: свидетель и критик находок видят разделы своих мест (#38)."""
-    for module in (evidence_witness, evidence_critic):
+    """Шаг 6 на длинном документе: свидетель, критик и попытка теста видят разделы своих мест (#38)."""
+    for module in (evidence_witness, evidence_critic, evidence_testdraft):
         monkeypatch.setattr(module, "focus_view", lambda doc, places: focus_view(doc, places, limit=5_000))
 
     requests, target = _evidence_requests(long_doc, cfg_for(tmp_path))
@@ -687,7 +688,7 @@ def test_witness_and_critic_see_only_the_sections_of_their_findings(
         assert "Оглавление всего документа" in req.prompt
 
 
-def test_witness_and_critic_timeout_grows_with_input(long_doc: ParsedDocument, tmp_path: Path) -> None:
+def test_evidence_steps_timeout_grows_with_input(long_doc: ParsedDocument, tmp_path: Path) -> None:
     cfg = cfg_for(tmp_path)
 
     requests, _ = _evidence_requests(long_doc, cfg)

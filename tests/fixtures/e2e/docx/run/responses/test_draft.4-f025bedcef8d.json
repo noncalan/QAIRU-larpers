@@ -1,0 +1,231 @@
+{
+ "envelope_version": 1,
+ "key": "f025bedcef8d6bc99cfef19102f79caa2de9c36fcb2bb491677d8769dfc4bf7d",
+ "call_id": "test_draft.4",
+ "step": "test_draft",
+ "call_index": 4,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T03:05:18.214617+00:00",
+ "payload": {
+  "duration_api_ms": 167754,
+  "stop_reason": "end_turn",
+  "session_id": "03a90b2a-6874-425a-a31d-d274ff5aac65",
+  "total_cost_usd": 0.2879416,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 11557,
+   "cache_read_input_tokens": 2296,
+   "output_tokens": 24148,
+   "output_tokens_details": {
+    "thinking_tokens": 19337
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 11557,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 24148,
+     "cache_read_input_tokens": 2296,
+     "cache_creation_input_tokens": 11557,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 11557
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 24148,
+    "cacheReadInputTokens": 2296,
+    "cacheCreationInputTokens": 11557,
+    "webSearchRequests": 0,
+    "costUSD": 0.2879416,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 19337,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 11557,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n**M-059.** Для результата нужны состав тела ответа при ошибке и состояние настройки после неё. Документ даёт `result=ERROR` и пример с `message`. Поле `amount` разрешено только при успехе. Включает ли ответ прежние `amount` и `enabled`, документ не говорит, поэтому здесь пропуск.\n\n**M-062.** Для результата нужен тип полей в ответе. Документ задаёт `string` и в таблице ответа, и в примере, а тип `integer` относится к запросу. Тест написать можно.\n\n**M-063.** Нужно знать, обязателен ли `Content-Type` для запроса без тела и что будет при его отсутствии или ином значении. Документ этого не говорит: пример CURL идёт без заголовка, но в запросе указан `application/json`. Пропуск.\n\n**M-064.** Нужен HTTP-статус первого и повторного сохранения. Документ называет успешными 200 и 201, но условия выбора не даёт. Пропуск.\n\n**M-065.** Нужен закрытый перечень допустимых кодов. «И далее» его не задаёт, поэтому пропуск. Код 401 для запроса без токена документ задаёт однозначно.\n\n**M-067.** Для `amount=999` документ называет два результата: 400 с «Некорректный запрос» и ответ с `result=ERROR` и «Проверьте сумму». При этом 200 по описанию считается успехом. Единого результата нет, пропуск.\n\n**M-069.** Единого перечня статусов нет. Коды 401 и 404 с телами в тексте найти можно. Условие, при котором возвращается 403, и тело ответа для него документ не даёт.\n\n**M-070.** Для чужой карты перечень и заголовок раздела дают 403, а текст раздела даёт 404. Единого результата нет, пропуск.\n\n**M-071.** Код 404 в списке статусов отсутствует. Но условие (отсутствующая карта), код и тело ответа заданы в тексте раздела, поэтому тест написать можно.\n\n## Ответ\n\n```json\n{\n  \"drafts\": [\n    {\n      \"finding\": \"M-059\",\n      \"can_write\": false,\n      \"precondition\": \"Клиент вошёл в приложение. Для его активной карты demo-42 сохранён порог 50 000 ₸, уведомление включено.\",\n      \"steps\": [\n        \"Отправить запрос на сохранение: cardId=demo-42, amount=999, enabled=1 (сумма ниже допустимого минимума).\",\n        \"Открыть Карты → Расходы → Уведомления и посмотреть сохранённую настройку.\"\n      ],\n      \"expected\": \"В теле ответа result «ERROR» и message «Проверьте сумму»; прежние amount и enabled в теле ответа: [?1]. На экране настройка в прежнем состоянии: порог 50 000 ₸, уведомление включено.\",\n      \"values\": [\n        {\"value\": \"ERROR\", \"quote\": \"При отклонении суммы вернуть прежнее состояние и результат ERROR.\"},\n        {\"value\": \"прежнее состояние\", \"quote\": \"При отклонении суммы вернуть прежнее состояние и результат ERROR.\"},\n        {\"value\": \"Проверьте сумму\", \"quote\": \"{\\\"result\\\":\\\"ERROR\\\",\\\"message\\\":\\\"Проверьте сумму\\\"}\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"должен ли ответ при ошибке содержать amount и enabled прежней настройки: «вернуть прежнее состояние» это допускает, но amount в таблице ответа только «при успехе», а в примере ошибки этих полей нет\", \"part\": \"expected\"}\n      ],\n      \"note\": \"HTTP-статус ответа здесь не проверяется: для недопустимой суммы документ называет разные статусы.\"\n    },\n    {\n      \"finding\": \"M-062\",\n      \"can_write\": true,\n      \"precondition\": \"Клиент вошёл в приложение. Карта demo-42 принадлежит клиенту.\",\n      \"steps\": [\n        \"Отправить запрос на сохранение: cardId=demo-42, amount=50000, enabled=1.\",\n        \"Проверить типы полей amount и enabled в теле ответа.\"\n      ],\n      \"expected\": \"Тело ответа {\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}: amount и enabled имеют тип string (значения в кавычках), а не число.\",\n      \"values\": [\n        {\"value\": \"{\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}\", \"quote\": \"{\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}\"},\n        {\"value\": \"string\", \"quote\": \"Parameter: amount; Format: string; Logic: При успехе\"},\n        {\"value\": \"string\", \"quote\": \"Parameter: enabled; Format: string; Logic: «0» или «1»\"}\n      ],\n      \"gaps\": [],\n      \"note\": \"Тип integer относится к запросу, в ответе тип string задан и в таблице, и в примере, так что ожидаемый тип поля в ответе известен.\"\n    },\n    {\n      \"finding\": \"M-063\",\n      \"can_write\": false,\n      \"precondition\": \"Клиент вошёл в приложение, есть токен. Карта demo-42 принадлежит клиенту.\",\n      \"steps\": [\n        \"Отправить GET /alerts/saveLimit с cardId=demo-42, amount=50000, enabled=1 и заголовком Authorization, без тела и без заголовка Content-Type.\",\n        \"Повторить запрос, добавив заголовок Content-Type: text/plain.\"\n      ],\n      \"expected\": \"Запрос без Content-Type: [?1]. Запрос с Content-Type text/plain: [?2].\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"обязателен ли Content-Type при запросе без тела и что возвращает метод, если заголовка нет: в одном месте указан application/json, в другом сказано, что тело не используется\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"отклоняется ли запрос с Content-Type, отличным от application/json, и каким ответом\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-064\",\n      \"can_write\": false,\n      \"precondition\": \"Клиент вошёл в приложение. Карта demo-42 принадлежит клиенту, настройка порога для неё ещё не сохранялась.\",\n      \"steps\": [\n        \"Отправить запрос на сохранение: cardId=demo-42, amount=50000, enabled=1. Записать HTTP-статус и тело ответа.\",\n        \"Отправить тот же запрос повторно. Записать HTTP-статус и тело ответа.\"\n      ],\n      \"expected\": \"Оба ответа успешные (200 или 201), тело {\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}. HTTP-статус первого сохранения: [?1]. HTTP-статус повторного сохранения: [?2].\",\n      \"values\": [\n        {\"value\": \"200 или 201\", \"quote\": \"Если результат 200 или 201 — успешный.\"},\n        {\"value\": \"{\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}\", \"quote\": \"{\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"условие, при котором метод возвращает 200, и условие, при котором 201: заголовок называет 200 «Created» (в HTTP это 201), правила выбора нет\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"статус при повторном сохранении, заменяющем действующую настройку: 200 или 201\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-065\",\n      \"can_write\": false,\n      \"precondition\": \"Клиент вошёл в приложение. Карта demo-42 принадлежит клиенту.\",\n      \"steps\": [\n        \"Отправить запрос на сохранение без токена авторизации.\",\n        \"Отправить запрос с cardId несуществующей карты.\",\n        \"Сверить полученные HTTP-статусы с перечнем допустимых кодов ответа метода.\"\n      ],\n      \"expected\": \"На запрос без токена: код 401, тело {\\\"message\\\":\\\"Требуется вход\\\"}. Все полученные коды входят в перечень допустимых кодов метода: [?1].\",\n      \"values\": [\n        {\"value\": \"401\", \"quote\": \"401. Unsuccessful — Unauthorized\"},\n        {\"value\": \"Требуется вход\", \"quote\": \"{\\\"message\\\":\\\"Требуется вход\\\"}\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"закрытый перечень кодов ответа: «400, 401 и далее» не задаёт границу неуспешных кодов, а 201 назван успешным, но нигде не описан\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-067\",\n      \"can_write\": false,\n      \"precondition\": \"Клиент вошёл в приложение. Карта demo-42 принадлежит клиенту, для неё сохранён порог 50 000 ₸.\",\n      \"steps\": [\n        \"Отправить запрос на сохранение: cardId=demo-42, amount=999, enabled=1.\"\n      ],\n      \"expected\": \"HTTP-статус и тело ответа: [?1]. Сохранённая настройка остаётся в прежнем состоянии: порог 50 000 ₸.\",\n      \"values\": [\n        {\"value\": \"прежнее состояние\", \"quote\": \"При отклонении суммы вернуть прежнее состояние и результат ERROR.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"HTTP-статус и тело ответа при сумме вне допустимого диапазона: раздел статусов даёт 400 при неверно заполненных параметрах с телом «Некорректный запрос», а пример ответа даёт result=ERROR с «Проверьте сумму» в разделе 200, хотя 200 по описанию считается успехом\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-069\",\n      \"can_write\": false,\n      \"precondition\": \"Клиент вошёл в приложение. Карта demo-42 принадлежит клиенту.\",\n      \"steps\": [\n        \"Отправить запрос на сохранение без токена авторизации.\",\n        \"Отправить запрос с cardId несуществующей карты.\",\n        \"Выполнить действие, при котором метод должен вернуть 403: [?1].\"\n      ],\n      \"expected\": \"Шаг 1: код 401, тело {\\\"message\\\":\\\"Требуется вход\\\"}. Шаг 2: код 404, тело {\\\"message\\\":\\\"Карта не найдена\\\"}. Шаг 3: код 403, тело ответа [?2].\",\n      \"values\": [\n        {\"value\": \"401\", \"quote\": \"401. Unsuccessful — Unauthorized\"},\n        {\"value\": \"Требуется вход\", \"quote\": \"{\\\"message\\\":\\\"Требуется вход\\\"}\"},\n        {\"value\": \"404\", \"quote\": \"Для чужой карты возвращается 404, как и для отсутствующей карты.\"},\n        {\"value\": \"Карта не найдена\", \"quote\": \"{\\\"message\\\":\\\"Карта не найдена\\\"}\"},\n        {\"value\": \"403\", \"quote\": \"403. Unsuccessful — Forbidden\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"условие, при котором метод возвращает 403: сказано только «доступ запрещён», а для чужой карты в тексте назван 404; других случаев нет\", \"part\": \"steps\"},\n        {\"number\": 2, \"missing\": \"тело ответа 403: под заголовком 403 стоит только тело для 404\", \"part\": \"expected\"}\n      ],\n      \"note\": \"Единого перечня статусов с условиями нет: в списке только 200 и 400, остальные коды разбросаны по разделу 200 и тексту под заголовком 403. 500 здесь не проверяется: способ вызвать внутреннюю ошибку в документе не описан.\"\n    },\n    {\n      \"finding\": \"M-070\",\n      \"can_write\": false,\n      \"precondition\": \"Клиент вошёл в приложение. Карта demo-77 принадлежит другому клиенту.\",\n      \"steps\": [\n        \"Отправить запрос на сохранение: cardId=demo-77, amount=50000, enabled=1.\"\n      ],\n      \"expected\": \"Код ответа и тело: [?1]. Настройка чужой карты не изменилась.\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"код и тело ответа для чужой карты: заголовок раздела и перечень статусов дают 403 («доступ запрещён»), текст раздела — 404 с «Карта не найдена»; также не сказано, при каком условии вообще возвращается 403\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-071\",\n      \"can_write\": true,\n      \"precondition\": \"Клиент вошёл в приложение. Карты с идентификатором demo-0 в системе нет.\",\n      \"steps\": [\n        \"Отправить запрос на сохранение: cardId=demo-0, amount=50000, enabled=1.\"\n      ],\n      \"expected\": \"Код ответа 404, тело {\\\"message\\\":\\\"Карта не найдена\\\"}.\",\n      \"values\": [\n        {\"value\": \"404\", \"quote\": \"Для чужой карты возвращается 404, как и для отсутствующей карты.\"},\n        {\"value\": \"Карта не найдена\", \"quote\": \"{\\\"message\\\":\\\"Карта не найдена\\\"}\"}\n      ],\n      \"gaps\": [],\n      \"note\": \"Кода 404 нет в списке статусов, но условие (отсутствующая карта), код и тело заданы в тексте раздела. Поведение для чужой карты в этом тесте не проверяется.\"\n    }\n  ]\n}\n```",
+  "ttft_ms": 143721,
+  "type": "result",
+  "duration_ms": 170726,
+  "uuid": "23c9e910-93b0-48d3-94cd-998f884f9098",
+  "ttft_stream_ms": 1087,
+  "time_to_request_ms": 242,
+  "time_to_request_phases_ms": {
+   "other": 33,
+   "system_prompt": 2,
+   "resume_other": 0,
+   "process_user_input": 16,
+   "input_attachments": 30,
+   "input_hooks": 24,
+   "conversation_append": 1,
+   "tool_pool_refresh": 9,
+   "init_message": 20,
+   "init_frame_send": 20,
+   "engine_pickup": 7,
+   "loop_entry": 10,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 6,
+   "request_announcements": 16,
+   "query_setup": 0,
+   "model_gates": 3,
+   "tool_schema_build": 2,
+   "message_normalization": 3,
+   "client_creation": 19,
+   "request_build": 19
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 187,
+  "time_to_request_cpu_ms": 87,
+  "time_to_request_major_faults": 0,
+  "process_rss_mib_turn_start": 196,
+  "process_anon_mib_turn_start": 118,
+  "process_rss_mib_result": 189,
+  "process_anon_mib_result": 103,
+  "process_peak_rss_mib": 204,
+  "process_cpu_ms_turn": 1204,
+  "process_wall_ms_turn": 170721,
+  "tool_pool_build_count": 4,
+  "tool_pool_build_lapsed_count": 1,
+  "tool_pool_moved_at_lapse_count": 0,
+  "tool_pool_limit_ms": 30000,
+  "process_cpu_ms_streaming": 934,
+  "process_wall_ms_streaming": 166882,
+  "main_stream_count": 1,
+  "main_stream_event_count": 851,
+  "main_stream_chunk_count": 847,
+  "process_turn_states": {
+   "main_stream": {
+    "cpu_ms": 934,
+    "wall_ms": 166882,
+    "entries": 1
+   },
+   "first_event_wait": {
+    "cpu_ms": 149,
+    "wall_ms": 843,
+    "entries": 1
+   },
+   "before_first_request": {
+    "cpu_ms": 87,
+    "wall_ms": 237,
+    "entries": 1
+   },
+   "after_last_request": {
+    "cpu_ms": 34,
+    "wall_ms": 2759,
+    "entries": 1
+   }
+  },
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 1,
+   "cpu_ms": 9,
+   "major_faults": 0,
+   "setup_ms": 1,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 19,
+   "ambient_wait_ms": 1,
+   "render_ms": 6,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 1,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 2,
+   "images_ms": 1,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 4,
+   "system_ms": 2,
+   "headers_ms": 1,
+   "cache_break_record_ms": 5,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 6,
+   "record_attempt_ms": 0,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 1,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1088,
+  "time_to_request_from_spawn_ms": 2344609,
+  "warm_spare_claimed": false,
+  "flag_fetch_kick": "not_asked_warm",
+  "time_origin_ms": 1795662145760.0999,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "process_start_tuning": 0
+ }
+}

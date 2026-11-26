@@ -46,6 +46,7 @@ from validator.report.coverage import (
 )
 from validator.report.fmt import FILTERS, found_text, plain, where
 from validator.report.run_metrics import step_label
+from validator.report.testdraft_view import draft_stats, draft_view, stats_line
 
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
 NO_VIOLATIONS = "нарушений нет"
@@ -386,6 +387,8 @@ def report_context(report: Report) -> dict[str, Any]:
         "coverage_totals": {k.value: n for k, n in coverage_totals(report.coverage).items()}
         if report.coverage
         else {},
+        "test_drafts": {f.id: v for f in findings if (v := draft_view(f)) is not None},
+        "test_draft_line": stats_line(stats) if (stats := draft_stats(findings)) else None,
     }
 
 

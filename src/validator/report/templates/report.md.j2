@@ -46,6 +46,22 @@
 {% if questions_by_finding.get(f.id) %}
 - **Вопрос автору:** {{ questions_by_finding[f.id] | join(", ") }}
 {% endif %}
+{% set td = test_drafts.get(f.id) %}
+{% if td %}
+- **Попытка теста:** {{ td.status | cell }}
+{% for label, text in td.parts %}
+  - {{ label }}: {{ text | cell }}
+{% endfor %}
+{% for line in td.gaps %}
+  - Пропуск {{ line | cell }}
+{% endfor %}
+{% for line in td.values %}
+  - Из документа {{ line | cell }}
+{% endfor %}
+{% if td.note %}
+  - Примечание модели: {{ td.note | cell }}
+{% endif %}
+{% endif %}
 - **Найдено:** {{ found(f) }}
 {% if f.anchor_corrected %}
 - **Примечание:** место цитаты уточнил код (модель указала другой блок).
@@ -388,6 +404,9 @@
 - Критичных: **{{ s.critical }}**{% if s.critical_ids %} ({{ s.critical_ids | join(", ") }}){% endif %}.
 - Критичные классы по ТЗ (непроверяемые, противоречивые, неполные): {% for f in critical_classes %}{{ f.id }} {{ f.defect_type.label }}{% if not loop.last %}, {% endif %}{% else %}не найдены{% endfor %}.
 - Вопросов автору: {{ r.questions | length }}.
+{% if test_draft_line %}
+- {{ test_draft_line | cell }}
+{% endif %}
 {% if clarify %}
 - Уточнения автора: {{ clarify.summary_line }}
 {% endif %}

@@ -24,6 +24,7 @@ from validator.models import (
     Question,
     QuestionOption,
     Segmentation,
+    TestDraft,
     Verification,
     WithdrawnQuestion,
     Witness,
@@ -47,6 +48,7 @@ WITNESS_TEXT_FIELDS = ("scenario", "note")
 READING_TEXT_FIELDS = ("expectation", "reading")
 CRITIC_TEXT_FIELDS = ("reason", "note")
 DISCARDED_TEXT_FIELDS = ("detail",)
+DRAFT_TEXT_FIELDS = ("precondition", "action", "expected", "note")
 
 
 class RefNamer:
@@ -115,6 +117,7 @@ _Texts = (
     | WitnessReading
     | CriticDecision
     | DiscardedFinding
+    | TestDraft
 )
 
 
@@ -127,6 +130,24 @@ def _replace(model: _Texts, fields: Sequence[str], namer: RefNamer) -> dict[str,
             if fixed != value:
                 changes[name] = fixed
     return changes
+
+
+def humanize_draft(draft: TestDraft, namer: RefNamer) -> TestDraft:
+    """Черновик теста (#40): тексты модели без ID блоков; значения и цитаты не трогаем."""
+    changes = _replace(draft, DRAFT_TEXT_FIELDS, namer)
+    steps = [namer.text(x) for x in draft.steps]
+    if steps != draft.steps:
+        changes["steps"] = steps
+    gaps = [g.model_copy(update=_gap_change(g.missing, namer)) for g in draft.gap_items]
+    if gaps != draft.gap_items:
+        changes["gap_items"] = gaps
+        changes["gaps"] = [g.missing for g in gaps]
+    return draft.model_copy(update=changes) if changes else draft
+
+
+def _gap_change(missing: str, namer: RefNamer) -> dict[str, object]:
+    fixed = namer.text(missing)
+    return {"missing": fixed} if fixed != missing else {}
 
 
 def _humanize_witness(witness: Witness, namer: RefNamer) -> Witness:
@@ -149,6 +170,10 @@ def _evidence_changes(finding: Finding | MergedFinding, namer: RefNamer) -> dict
         fixed = _replace(finding.critic, CRITIC_TEXT_FIELDS, namer)
         if fixed:
             changes["critic"] = finding.critic.model_copy(update=fixed)
+    if finding.test_draft is not None:
+        draft = humanize_draft(finding.test_draft, namer)
+        if draft is not finding.test_draft:
+            changes["test_draft"] = draft
     return changes
 
 

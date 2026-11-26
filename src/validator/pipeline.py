@@ -52,6 +52,8 @@ from validator.errors import (
 )
 from validator.estimate import describe_estimate, estimate_run
 from validator.evidence import gather
+from validator.evidence_testdraft import draft_tests
+from validator.evidence_testdraft_links import link_gaps
 from validator.ingest import guard, parse
 from validator.ingest.quality import review
 from validator.lint import lint
@@ -326,6 +328,32 @@ def _clarify(
     state.diagnostics.extend(outcome.diagnostics)
 
 
+def _prove(state: _State, doc: ParsedDocument, llm: RecordingClient, cfg: RunConfig) -> None:
+    """Шаг 6: пример-свидетель и критик, затем попытка теста. Каждый шаг необязательный."""
+    merged = state.merged
+    proven = _step(
+        state,
+        "evidence",
+        lambda: gather(merged, doc, llm, cfg),
+        lambda: None,
+        action="Находки идут без примера-свидетеля и без решения критика",
+    )
+    if proven is not None:
+        state.merged = proven.findings
+        state.diagnostics.extend(proven.diagnostics)
+    evidenced = state.merged
+    drafted = _step(
+        state,
+        "test_draft",
+        lambda: draft_tests(evidenced, doc, llm, cfg),
+        lambda: None,
+        action="Находки идут без попытки теста",
+    )
+    if drafted is not None:
+        state.merged = drafted.findings
+        state.diagnostics.extend(drafted.diagnostics)
+
+
 def _execute(state: _State) -> None:
     cfg = state.cfg
     _check_requests(state)
@@ -377,17 +405,7 @@ def _execute(state: _State) -> None:
         action="Находки не слиты",
         level=DiagLevel.ERROR,
     )
-    merged = state.merged
-    proven = _step(
-        state,
-        "evidence",
-        lambda: gather(merged, doc, llm, cfg),
-        lambda: None,
-        action="Находки идут без примера-свидетеля и без решения критика",
-    )
-    if proven is not None:
-        state.merged = proven.findings
-        state.diagnostics.extend(proven.diagnostics)
+    _prove(state, doc, llm, cfg)
     found = state.merged
     state.verification = _step(
         state,
@@ -414,6 +432,14 @@ def _execute(state: _State) -> None:
         state.verification = light_with_questions(ver, state.questions if asked is not None else None)
         if answers is not None:
             _clarify(state, answers, doc, llm, asked is not None)
+        linked = state.verification
+        state.verification = _step(
+            state,
+            "test_draft_links",
+            lambda: link_gaps(linked, state.questions, state.questions_withdrawn) if linked else linked,
+            lambda: linked,
+            action="Пропуски черновиков теста не связаны с вопросами",
+        )
     before = (state.verification, state.questions, state.questions_withdrawn)
     state.verification, state.questions, state.questions_withdrawn = _step(
         state,
