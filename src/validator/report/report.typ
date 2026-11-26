@@ -44,7 +44,9 @@
     )
   },
 )
-#set text(font: "Liberation Sans", lang: "ru", size: 9pt, fill: ink)
+// DejaVu Sans: запасной шрифт для знаков, которых нет в Liberation (₸, ₽ и др.)
+#let body-fonts = ("Liberation Sans", "DejaVu Sans")
+#set text(font: body-fonts, lang: "ru", size: 9pt, fill: ink)
 #set par(leading: 0.6em, spacing: 0.9em)
 #set list(indent: 4pt, body-indent: 6pt, spacing: 0.6em)
 
@@ -57,7 +59,7 @@
   #text(size: 10.5pt, weight: "bold")[#it.body]
 ]
 
-#let mono(c) = text(font: "Liberation Mono", size: 7.5pt)[#c]
+#let mono(c) = text(font: ("Liberation Mono", "DejaVu Sans"), size: 7.5pt)[#c]
 
 // ---------------------------------------------------------------- таблицы
 

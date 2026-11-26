@@ -230,20 +230,53 @@ def test_markup_characters_in_document_text_stay_plain_text() -> None:
 # ---------------------------------------------------------------- шрифты и повторяемость
 
 
+BUNDLED_FAMILIES = ("Liberation", "DejaVuSans")
+"""Семейства из ``fonts/``: встроенные в Typst New Computer Modern и Libertinus в PDF попадать не должны."""
+
+SYMBOLS_SAMPLE = "Комиссия 150 ₸ и 10 ₽ № 5 «кавычки» — тире, €, $ ӘәҒғҚқҢңӨөҰұҮүҺһІі"
+"""Знаки валют и казахские буквы: ₸ и ₽ нет в Liberation, их берёт запасной DejaVu Sans."""
+
+
+def embedded_fonts(data: bytes) -> set[str]:
+    with pymupdf.open(stream=data, filetype="pdf") as doc:
+        return {font[3] for page in doc for font in page.get_fonts()}
+
+
 def test_pdf_embeds_only_bundled_fonts() -> None:
-    with pymupdf.open(stream=render_pdf(load("full")), filetype="pdf") as doc:
-        names = {font[3] for page in doc for font in page.get_fonts()}
+    names = embedded_fonts(render_pdf(load("full")))
 
     assert names
-    assert all("Liberation" in name for name in names), names
+    assert all(any(family in name for family in BUNDLED_FAMILIES) for name in names), names
+
+
+def test_currency_signs_and_kazakh_letters_use_bundled_fonts() -> None:
+    report = load("full")
+    assert report.segmentation is not None
+    requirement = report.segmentation.requirements[0].model_copy(update={"quote": SYMBOLS_SAMPLE})
+    report = report.model_copy(
+        update={
+            "segmentation": report.segmentation.model_copy(
+                update={"requirements": [requirement, *report.segmentation.requirements[1:]]}
+            )
+        }
+    )
+
+    data = render_pdf(report)
+    names = embedded_fonts(data)
+
+    assert SYMBOLS_SAMPLE in pdf_text(data)
+    assert all(any(family in name for family in BUNDLED_FAMILIES) for name in names), names
+    assert any("DejaVuSans" in name for name in names), names
 
 
 def test_font_files_and_license_are_in_the_package() -> None:
     files = {p.name for p in FONTS_DIR.iterdir()}
 
     assert {"LiberationSans-Regular.ttf", "LiberationSans-Bold.ttf", "LiberationMono-Regular.ttf"} <= files
+    assert {"DejaVuSans.ttf", "DejaVuSans-Bold.ttf"} <= files
     assert "OFL.txt" in files
     assert "SIL OPEN FONT LICENSE" in (FONTS_DIR / "OFL.txt").read_text(encoding="utf-8")
+    assert "Bitstream Vera" in (FONTS_DIR / "LICENSE-DejaVu.txt").read_text(encoding="utf-8")
 
 
 def test_same_report_gives_identical_pdf_bytes() -> None:
