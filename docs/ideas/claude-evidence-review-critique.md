@@ -1,5 +1,7 @@
 # Критика глазами жюри (агент idea-critic)
 
+> **Частично устарело (D-006, D-009):** места про запасной путь «PDF напрямую в Gemini» и модель в `.env.example` относятся к отказавшемуся от Gemini плану; модель агента — Claude. Итог обсуждения идеи: `final-idea.md`.
+
 25.11.2026 · объект: [`claude-evidence-review.md`](claude-evidence-review.md) · роль: лид QA, член жюри отбора BCC-HUB x MNU AI Agent Challenge 2026
 
 Что читал: `docs/case/task.md`, `docs/case/case-analysis.md`, `docs/research/00-summary.md`, `docs/research/07-jury-wow-and-business-value.md` (бегло), саму идею и `data/input/requirements.md`. Эталон `docs/gold/defects.md` открывал только для того, чтобы понять, что идея поймает. Чтобы оценить оракул, посмотрел прототип `experiments/03-proto/z3_conflicts.py` и раздел темы 03 про «доказательство» #1, #2, #34. В интернет не ходил. Часы и вероятности ниже — моя экспертная оценка, а не замер.
