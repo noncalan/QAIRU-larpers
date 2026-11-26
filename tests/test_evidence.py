@@ -578,9 +578,10 @@ def test_only_checked_witness_makes_a_question_and_raises_priority(
     rejected, checked = finding_with(bad), finding_with(good)
 
     assert rejected.witness is not None and not rejected.witness.checked
-    assert finding_origins(rejected) == () and priority([rejected], {}).value == "P2"
+    assert finding_origins(rejected) == () and priority([rejected]).value == "P2"
     assert checked.witness is not None and checked.witness.checked
-    assert finding_origins(checked) and priority([checked], {}).value == "P0"
+    # Важная, не критичная: свидетель блокирует тест, но не разработку.
+    assert finding_origins(checked) and priority([checked]).value == "P1"
 
 
 def test_metrics_count_kept_downgraded_dropped_and_overruled(doc: ParsedDocument, tmp_path: Path) -> None:

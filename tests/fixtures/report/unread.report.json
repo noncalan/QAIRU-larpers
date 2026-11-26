@@ -99,5 +99,6 @@
   },
   "coverage": null,
   "selfcheck": null,
-  "checklists": []
+  "checklists": [],
+  "questions_file": "questions.yaml"
 }

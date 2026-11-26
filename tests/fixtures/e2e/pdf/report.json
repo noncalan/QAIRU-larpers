@@ -7,15 +7,15 @@
     "document_sha256": "827b313b968e08fe35310bff9dc37687099888e4c9d5bc364e3403f4b2cc66db",
     "document_size_bytes": 205814,
     "document_pages": 8,
-    "started_at": "2026-11-26T12:02:09.040179Z",
-    "finished_at": "2026-11-26T12:02:09.208456Z",
-    "duration_s": 0.17,
-    "agent_version": "ef81eda-dirty",
+    "started_at": "2026-11-26T12:31:18.831710Z",
+    "finished_at": "2026-11-26T12:31:19.273067Z",
+    "duration_s": 0.44,
+    "agent_version": "5a34ca1-dirty",
     "agent_version_source": "git",
     "agent_dirty": true,
     "prompts_sha256": "7dd96b1cffa406769efc8daf0df90f974ab4ef58757a546a07948210acc7492d",
-    "os": "Darwin 25.6.0 (arm64)",
-    "python": "3.12.10",
+    "os": "Linux 6.18.44-fc-v880 (x86_64)",
+    "python": "3.13.18",
     "backend_requested": "replay",
     "backend_used": "replay",
     "profile": "standard",
@@ -106,6 +106,15 @@
       "hint": "",
       "location": null,
       "step": "questions"
+    },
+    {
+      "code": "LLM-016",
+      "level": "warning",
+      "message": "Записанные ответы не совпали с запросами по ключу у 2 вызовов (questions.1, questions_critic.1): поменялся документ, промпт или модель",
+      "action": "Ответы взяты по шагу и номеру вызова; цитаты всё равно сверены с документом",
+      "hint": "Для точного воспроизведения возьмите ту же версию агента и тот же документ",
+      "location": null,
+      "step": "llm"
     }
   ],
   "segmentation": {
@@ -5114,8 +5123,8 @@
               "missing": "влияет ли возврат на признак отправки и на повторное достижение порога: уходит ли второй push. Также не описаны частичный возврат, возврат больше учтённой суммы (отрицательные расходы), возврат без найденной исходной покупки и возврат в другом месяце",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-13",
-              "question_withdrawn": true
+              "question_id": "Q-11",
+              "question_withdrawn": false
             }
           ],
           "note": "",
@@ -5449,7 +5458,7 @@
               "missing": "к какому месяцу относится push: к месяцу расходов (дате покупки) или к месяцу отправки. От этого зависит, уходит ли второй push 10 февраля",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-11",
+              "question_id": "Q-12",
               "question_withdrawn": false
             }
           ],
@@ -5812,48 +5821,48 @@
               "missing": "таймаут запроса к сервису настроек и число и интервал повторов: в документе об отказе смежных сервисов ничего нет",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-14",
-              "question_withdrawn": false
+              "question_id": "Q-13",
+              "question_withdrawn": true
             },
             {
               "number": 2,
               "missing": "учитываются ли расходы по покупке, если порог получить не удалось",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-14",
-              "question_withdrawn": false
+              "question_id": "Q-13",
+              "question_withdrawn": true
             },
             {
               "number": 3,
               "missing": "будет ли push по карте A после восстановления настроек и когда",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-14",
-              "question_withdrawn": false
+              "question_id": "Q-13",
+              "question_withdrawn": true
             },
             {
               "number": 4,
               "missing": "учитываются ли расходы по карте B, когда сервис push недоступен",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-14",
-              "question_withdrawn": false
+              "question_id": "Q-13",
+              "question_withdrawn": true
             },
             {
               "number": 5,
               "missing": "значение признака отправки при недоступном сервисе push",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-14",
-              "question_withdrawn": false
+              "question_id": "Q-13",
+              "question_withdrawn": true
             },
             {
               "number": 6,
               "missing": "доставляется ли push повторно после восстановления сервиса и сколько раз пробуют",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-14",
-              "question_withdrawn": false
+              "question_id": "Q-13",
+              "question_withdrawn": true
             }
           ],
           "note": "",
@@ -6097,7 +6106,7 @@
               "missing": "какая именно «сумма» передаётся: покупка 1 500 ₸, накопленные расходы 50 000 ₸ или порог",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-12",
+              "question_id": "Q-14",
               "question_withdrawn": false
             },
             {
@@ -6105,7 +6114,7 @@
               "missing": "текст шаблона push",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-12",
+              "question_id": "Q-14",
               "question_withdrawn": false
             },
             {
@@ -6113,7 +6122,7 @@
               "missing": "язык push и формат записи суммы (разделители, символ валюты)",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-12",
+              "question_id": "Q-14",
               "question_withdrawn": false
             }
           ],
@@ -10662,9 +10671,8 @@
     },
     {
       "id": "Q-08",
-      "priority": "P0",
+      "priority": "P1",
       "blocks": [
-        "development",
         "testing"
       ],
       "addressee": [
@@ -10797,9 +10805,8 @@
     },
     {
       "id": "Q-09",
-      "priority": "P0",
+      "priority": "P1",
       "blocks": [
-        "development",
         "testing"
       ],
       "addressee": [
@@ -10923,9 +10930,8 @@
     },
     {
       "id": "Q-10",
-      "priority": "P0",
+      "priority": "P1",
       "blocks": [
-        "development",
         "testing"
       ],
       "addressee": [
@@ -11047,9 +11053,81 @@
     },
     {
       "id": "Q-11",
-      "priority": "P0",
+      "priority": "P1",
       "blocks": [
-        "development",
+        "testing"
+      ],
+      "addressee": [
+        "business"
+      ],
+      "topic": "возврат после push",
+      "quotes": [
+        {
+          "text": "Возврат уменьшает расходы месяца исходной покупки.",
+          "match": "exact",
+          "score": 100.0,
+          "located": "Возврат уменьшает расходы\nмесяца исходной покупки.",
+          "anchor": {
+            "char_start": 1469,
+            "char_end": 1519,
+            "block_ids": [
+              "B023"
+            ],
+            "sentence_ids": [
+              "B023.4"
+            ],
+            "line_start": 50,
+            "line_end": 51,
+            "page": 2,
+            "page_line": null,
+            "paragraph": null,
+            "table": null,
+            "row": null,
+            "cell": null,
+            "column": null,
+            "extraction": "text"
+          }
+        }
+      ],
+      "question": "10 марта расходы достигли порога 50 000 ₸ и push ушёл; 12 марта возврат снизил их до 45 000 ₸, 20 марта они снова дошли до 50 000 ₸: приходит ли второй push?",
+      "why": "Не сказано, влияет ли возврат на признак отправки. Отдельно не описаны частичный возврат, отрицательные расходы и возврат без исходной покупки.",
+      "options": [
+        {
+          "label": "A",
+          "text": "Не приходит: признак отправки за месяц возврат не сбрасывает",
+          "change": "Добавить в Ф-2: возврат не меняет признак отправки",
+          "grounded_in": "На карту приходится\nмаксимум один такой push за календарный месяц."
+        },
+        {
+          "label": "B",
+          "text": "Приходит: возврат ниже порога сбрасывает признак отправки",
+          "change": "Добавить в Ф-3 исключение для возврата и критерий приёмки",
+          "grounded_in": null
+        }
+      ],
+      "if_unanswered": "Команда не отправит второй push, а продукт может считать новое достижение порога событием для клиента.",
+      "related_findings": [
+        "F-13"
+      ],
+      "origin": "test_draft",
+      "standard": [
+        "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Complete)",
+        "IEEE 830-1998, п. 4.3.3"
+      ],
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
+    },
+    {
+      "id": "Q-12",
+      "priority": "P1",
+      "blocks": [
         "testing"
       ],
       "addressee": [
@@ -11120,10 +11198,9 @@
       }
     },
     {
-      "id": "Q-12",
-      "priority": "P0",
+      "id": "Q-14",
+      "priority": "P1",
       "blocks": [
-        "development",
         "testing"
       ],
       "addressee": [
@@ -11188,111 +11265,6 @@
       "standard": [
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Unambiguous)",
         "IEEE 830-1998, п. 4.3.2"
-      ],
-      "review": {
-        "answered": false,
-        "answer": "",
-        "answer_quote": null,
-        "common_sense": false,
-        "obvious_fix": false,
-        "scenario": true,
-        "errors": []
-      }
-    },
-    {
-      "id": "Q-14",
-      "priority": "P1",
-      "blocks": [
-        "testing"
-      ],
-      "addressee": [
-        "architect"
-      ],
-      "topic": "недоступность сервиса push",
-      "quotes": [
-        {
-          "text": "Сервис расходов → push: передать последние четыре цифры карты и сумму при достижении порога.",
-          "match": "exact",
-          "score": 100.0,
-          "located": "Сервис расходов → push: передать\nпоследние четыре цифры карты и сумму при достижении порога.",
-          "anchor": {
-            "char_start": 2022,
-            "char_end": 2114,
-            "block_ids": [
-              "B027"
-            ],
-            "sentence_ids": [
-              "B027.3"
-            ],
-            "line_start": 65,
-            "line_end": 66,
-            "page": 2,
-            "page_line": null,
-            "paragraph": null,
-            "table": null,
-            "row": null,
-            "cell": null,
-            "column": null,
-            "extraction": "text"
-          }
-        },
-        {
-          "text": "Сервис расходов → настройки: получить порог карты.",
-          "match": "exact",
-          "score": 100.0,
-          "located": "Сервис расходов →\nнастройки: получить порог карты.",
-          "anchor": {
-            "char_start": 1971,
-            "char_end": 2021,
-            "block_ids": [
-              "B027"
-            ],
-            "sentence_ids": [
-              "B027.2"
-            ],
-            "line_start": 64,
-            "line_end": 65,
-            "page": 2,
-            "page_line": null,
-            "paragraph": null,
-            "table": null,
-            "row": null,
-            "cell": null,
-            "column": null,
-            "extraction": "text"
-          }
-        }
-      ],
-      "question": "Покупка довела расходы до порога, но сервис push 10 минут недоступен: что происходит с push и признаком отправки?",
-      "why": "Поведение при отказе смежных сервисов не описано. От ответа зависят повторы, признак отправки и тест на отказ; то же решение нужно для недоступного сервиса настроек.",
-      "options": [
-        {
-          "label": "A",
-          "text": "Передача повторяется до успеха, признак ставится только после успешной передачи",
-          "change": "Указать число и интервал повторов; добавить ветку ошибки на BPMN-схему",
-          "grounded_in": null
-        },
-        {
-          "label": "B",
-          "text": "Повтора нет, признак не ставится: push уйдёт при следующей покупке в месяце",
-          "change": "Описать в Ф-3 повторную попытку при следующем событии",
-          "grounded_in": null
-        },
-        {
-          "label": "C",
-          "text": "Повтора нет, признак ставится, push теряется",
-          "change": "Зафиксировать потерю push как допустимую и указать, где фиксируется ошибка",
-          "grounded_in": null
-        }
-      ],
-      "if_unanswered": "Команда выберет поведение сама, и клиент может не получить push или получить его с большой задержкой.",
-      "related_findings": [
-        "F-18"
-      ],
-      "origin": "test_draft",
-      "standard": [
-        "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Complete)",
-        "IEEE 830-1998, п. 4.3.3"
       ],
       "review": {
         "answered": false,
@@ -11596,26 +11568,52 @@
           "testing"
         ],
         "addressee": [
-          "business"
+          "architect"
         ],
-        "topic": "возврат после push",
+        "topic": "недоступность сервиса push",
         "quotes": [
           {
-            "text": "Возврат уменьшает расходы месяца исходной покупки.",
+            "text": "Сервис расходов → push: передать последние четыре цифры карты и сумму при достижении порога.",
             "match": "exact",
             "score": 100.0,
-            "located": "Возврат уменьшает расходы\nмесяца исходной покупки.",
+            "located": "Сервис расходов → push: передать\nпоследние четыре цифры карты и сумму при достижении порога.",
             "anchor": {
-              "char_start": 1469,
-              "char_end": 1519,
+              "char_start": 2022,
+              "char_end": 2114,
               "block_ids": [
-                "B023"
+                "B027"
               ],
               "sentence_ids": [
-                "B023.4"
+                "B027.3"
               ],
-              "line_start": 50,
-              "line_end": 51,
+              "line_start": 65,
+              "line_end": 66,
+              "page": 2,
+              "page_line": null,
+              "paragraph": null,
+              "table": null,
+              "row": null,
+              "cell": null,
+              "column": null,
+              "extraction": "text"
+            }
+          },
+          {
+            "text": "Сервис расходов → настройки: получить порог карты.",
+            "match": "exact",
+            "score": 100.0,
+            "located": "Сервис расходов →\nнастройки: получить порог карты.",
+            "anchor": {
+              "char_start": 1971,
+              "char_end": 2021,
+              "block_ids": [
+                "B027"
+              ],
+              "sentence_ids": [
+                "B027.2"
+              ],
+              "line_start": 64,
+              "line_end": 65,
               "page": 2,
               "page_line": null,
               "paragraph": null,
@@ -11627,29 +11625,35 @@
             }
           }
         ],
-        "question": "10 марта расходы достигли порога 50 000 ₸ и push ушёл; 12 марта возврат снизил их до 45 000 ₸, 20 марта они снова дошли до 50 000 ₸: приходит ли второй push?",
-        "why": "Не сказано, влияет ли возврат на признак отправки. Отдельно не описаны частичный возврат, отрицательные расходы и возврат без исходной покупки.",
+        "question": "Покупка довела расходы до порога, но сервис push 10 минут недоступен: что происходит с push и признаком отправки?",
+        "why": "Поведение при отказе смежных сервисов не описано. От ответа зависят повторы, признак отправки и тест на отказ; то же решение нужно для недоступного сервиса настроек.",
         "options": [
           {
             "label": "A",
-            "text": "Не приходит: признак отправки за месяц возврат не сбрасывает",
-            "change": "Добавить в Ф-2: возврат не меняет признак отправки",
-            "grounded_in": "На карту приходится\nмаксимум один такой push за календарный месяц."
+            "text": "Передача повторяется до успеха, признак ставится только после успешной передачи",
+            "change": "Указать число и интервал повторов; добавить ветку ошибки на BPMN-схему",
+            "grounded_in": null
           },
           {
             "label": "B",
-            "text": "Приходит: возврат ниже порога сбрасывает признак отправки",
-            "change": "Добавить в Ф-3 исключение для возврата и критерий приёмки",
+            "text": "Повтора нет, признак не ставится: push уйдёт при следующей покупке в месяце",
+            "change": "Описать в Ф-3 повторную попытку при следующем событии",
+            "grounded_in": null
+          },
+          {
+            "label": "C",
+            "text": "Повтора нет, признак ставится, push теряется",
+            "change": "Зафиксировать потерю push как допустимую и указать, где фиксируется ошибка",
             "grounded_in": null
           }
         ],
-        "if_unanswered": "Команда не отправит второй push, а продукт может считать новое достижение порога событием для клиента.",
+        "if_unanswered": "Команда выберет поведение сама, и клиент может не получить push или получить его с большой задержкой.",
         "related_findings": [
-          "F-13"
+          "F-18"
         ],
         "origin": "test_draft",
         "standard": [
-          "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Complete)",
+          "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Complete)",
           "IEEE 830-1998, п. 4.3.3"
         ],
         "review": {
@@ -11737,7 +11741,7 @@
     ]
   },
   "metrics": {
-    "duration_s": 0.17,
+    "duration_s": 0.44,
     "calls_total": 8,
     "calls_failed": 0,
     "calls_cached": 0,
@@ -11768,12 +11772,12 @@
       "common_sense": 0,
       "duplicate_pairs": 0,
       "by_priority": {
-        "P0": 11,
-        "P1": 2
+        "P0": 6,
+        "P1": 7
       },
       "by_addressee": {
-        "architect": 6,
-        "business": 7,
+        "architect": 5,
+        "business": 8,
         "security": 2
       }
     },
@@ -15106,5 +15110,6 @@
       "used": false,
       "findings": []
     }
-  ]
+  ],
+  "questions_file": "questions.yaml"
 }

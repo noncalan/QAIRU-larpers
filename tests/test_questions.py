@@ -42,7 +42,8 @@ from validator.models import (
 from validator.questions import QuestionsOutcome, ask, build_questions, write_questions_yaml
 from validator.questions.candidates import collect_candidates, shortlist
 from validator.questions.cards import MAX_QUESTIONS, CardDraft, CheckLog, finalize
-from validator.questions.export import SCHEMA_VERSION
+from validator.questions.export import SCHEMA_VERSION, has_author_input, safe_questions_path
+from validator.questions.scoring import priority
 
 INVENTED = "Продление занимает ровно три секунды и выполняется на сервере."
 ANSWERED = "Ответ есть в документе."
@@ -127,6 +128,53 @@ def test_same_requirement_and_same_gap_merge(doc: ParsedDocument) -> None:
     cands = collect_candidates(verification(findings))
 
     assert [c.finding_ids for c in cands] == [("F-01", "F-02")]
+
+
+# ---------------------------------------------------------------- приоритет (#122)
+
+
+def test_p0_only_when_a_related_finding_is_critical(doc: ParsedDocument) -> None:
+    """P0 «блокирует разработку» следует за критичной находкой; «мешает тесту» без критичности это P1."""
+    critical = finding(doc, "F-01", [TERM], severity=Severity.CRITICAL, blocks_testing=True)
+    blocks_test = finding(doc, "F-02", [EXTEND], defect=DefectType.INCOMPLETE, blocks_testing=True)
+    plain = finding(doc, "F-03", [FINE], defect=DefectType.INCOMPLETE, requirements=["R-04"])
+
+    assert priority([critical]) is QuestionPriority.P0
+    assert priority([blocks_test, critical]) is QuestionPriority.P0
+    assert priority([blocks_test]) is QuestionPriority.P1
+    assert priority([plain]) is QuestionPriority.P2
+
+
+def test_many_major_findings_that_block_tests_give_no_p0(doc: ParsedDocument, tmp_path: Path) -> None:
+    """Ревью RC1: 15 из 15 вопросов P0 при 8 критичных. Без критичной находки ни один вопрос не P0."""
+    majors = [
+        finding(doc, f"F-0{n}", [quote], defect=DefectType.INCOMPLETE, blocks_testing=True)
+        for n, quote in enumerate([TERM, EXTEND, FINE, FIVE_DAYS], start=1)
+    ]
+
+    outcome = build_questions(
+        verification(majors),
+        doc,
+        segmentation(doc),
+        editor_llm("Сбой", is_error=True),
+        make_cfg(doc, tmp_path),
+    )
+
+    assert outcome.questions
+    assert {q.priority for q in outcome.questions} == {QuestionPriority.P1}
+    assert all(q.blocks == [WorkStage.TESTING] for q in outcome.questions)
+
+
+def test_question_is_p0_exactly_when_it_closes_a_critical_finding(
+    doc: ParsedDocument, tmp_path: Path
+) -> None:
+    findings = {f.id: f for f in library_findings(doc)}
+
+    outcome = run(doc, tmp_path, editor_llm("Сбой", is_error=True))
+
+    for q in outcome.questions:
+        critical = any(findings[i].severity is Severity.CRITICAL for i in q.related_findings)
+        assert (q.priority is QuestionPriority.P0) == critical, q.id
 
 
 # ---------------------------------------------------------------- карточки редактора и проверки кода
@@ -525,6 +573,69 @@ def test_questions_yaml_is_valid_and_ready_for_answers(doc: ParsedDocument, tmp_
         assert all(o["text"] and o["change"] and o["for_discussion"] is False for o in item["options"])
         assert all(w["quote"] in doc.text and w["place"] for w in item["where"])
         assert item["related_findings"] == q.related_findings
+
+
+def _questions_file(path: Path, *, answer: object = None, comment: object = None, by: object = None) -> Path:
+    payload = {
+        "schema_version": SCHEMA_VERSION,
+        "answered_by": by,
+        "questions": [{"id": "Q-01", "answer": answer, "comment": comment}],
+    }
+    path.write_text(yaml.safe_dump(payload, allow_unicode=True), encoding="utf-8")
+    return path
+
+
+@pytest.mark.parametrize(
+    ("fields", "filled"),
+    [
+        ({}, False),
+        ({"answer": "   "}, False),
+        ({"answer": "A"}, True),
+        ({"answer": "пропустить"}, True),
+        ({"answer": 0}, True),
+        ({"comment": "Уточним у владельца"}, True),
+        ({"by": "Аналитик"}, True),
+    ],
+)
+def test_author_input_is_any_answer_comment_or_name(
+    tmp_path: Path, fields: dict[str, object], filled: bool
+) -> None:
+    assert has_author_input(_questions_file(tmp_path / "questions.yaml", **fields)) is filled
+
+
+@pytest.mark.parametrize("text", ["questions: [\n", "просто заметки автора", "- 1\n- 2\n"])
+def test_unreadable_or_foreign_file_counts_as_author_input(tmp_path: Path, text: str) -> None:
+    path = tmp_path / "questions.yaml"
+    path.write_text(text, encoding="utf-8")
+
+    assert has_author_input(path)
+
+
+def test_safe_path_keeps_answers_and_reuses_files_without_them(tmp_path: Path) -> None:
+    main = tmp_path / "questions.yaml"
+    assert safe_questions_path(main) == main  # файла нет
+
+    _questions_file(main)
+    assert safe_questions_path(main) == main  # прошлый прогон без ответов: перезаписываем, как раньше
+
+    _questions_file(main, answer="A")
+    assert safe_questions_path(main) == tmp_path / "questions-2.yaml"
+
+    _questions_file(tmp_path / "questions-2.yaml", answer="B")
+    assert safe_questions_path(main) == tmp_path / "questions-3.yaml"
+
+    _questions_file(tmp_path / "questions-2.yaml")
+    assert safe_questions_path(main) == tmp_path / "questions-2.yaml"
+
+
+def test_questions_yaml_under_new_name_points_to_kept_file(tmp_path: Path) -> None:
+    path = tmp_path / "questions-2.yaml"
+
+    write_questions_yaml(path, [], "doc.md", None, kept=tmp_path / "questions.yaml")
+
+    text = path.read_text(encoding="utf-8")
+    assert "Ответы в questions.yaml не тронуты" in text
+    assert yaml.safe_load(text)["questions"] == []
 
 
 def test_questions_yaml_without_questions_is_valid(tmp_path: Path) -> None:
