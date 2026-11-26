@@ -1,0 +1,1461 @@
+{
+ "schema_version": "1",
+ "name": "gaps-c4",
+ "created_at": "2026-11-27T04:08:41.000419+05:00",
+ "settings": {
+  "labelers": [
+   {
+    "labeler": "opus",
+    "model": "claude-opus-5-5",
+    "effort": "high"
+   },
+   {
+    "labeler": "fable",
+    "model": "claude-fable-5-2",
+    "effort": "high"
+   }
+  ],
+  "mode": "cli",
+  "seed": 49,
+  "batch_size": 40,
+  "control_share": 0.125,
+  "document": "data/holdout/c4/c4_tech_task.md",
+  "document_sha256": "fe3bf62e887c60fcfd9739bbe248a0c222490d443dafa9e86a0a4955eabe31f6",
+  "runs": [
+   "experiments/50-gaps-pass/runs/full/c4"
+  ]
+ },
+ "items": [
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-01",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-01",
+   "quote": "Пользователи могут регистрироваться, авторизоваться и выполнять CRUD-операции над своими компаниями и сотрудниками. … `id`, `firstName`, `lastName`, `middleName`, `gender` (enum: MALE, FEMALE), `age`, `maritalStatus` (enum: MARRIED, SINGLE), `company` (может быть null).",
+   "place": "раздел «c4_tech_task_example › Контекст (C1)», строка 7",
+   "property": "Полнота набора, неполнота",
+   "explanation": "у Employee нет связи с User, поэтому принадлежность сотрудника с `company = null` определить нельзя, и изоляцию данных сотрудников не реализовать и не проверить.",
+   "severity": "критично",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B004"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-02",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-02",
+   "quote": "Привязка сотрудника к компании (1:1 или null). … `GET /api/employees?companyId=1` Список сотрудников (всех или по компании).",
+   "place": "раздел «c4_tech_task_example › Компоненты (C3)», строка 27",
+   "property": "Согласованность, противоречие",
+   "explanation": "разработчик выберет либо уникальный внешний ключ, либо связь многие-к-одному, и тест привязки второго сотрудника не имеет одного результата.",
+   "severity": "критично",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B017"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-03",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-03",
+   "quote": "`user` (связь с владельцем)",
+   "place": "раздел «Код (C4) › Требования к сущностям», строка 38",
+   "property": "Полнота требования, неполнота",
+   "explanation": "один разработчик возьмёт владельца из сессии, другой примет его из тела запроса, и тогда пользователь сможет создать компанию на чужой аккаунт; неизвестно и то, можно ли сменить владельца через PUT.",
+   "severity": "критично",
+   "finder": "не указан",
+   "passes": null,
+   "blocks": [
+    "B025"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-04",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-04",
+   "quote": "`GET /api/companies/{id}` Получить компанию по ID (только свои).",
+   "place": "раздел «Код (C4) › Эндпоинты», строки 58–59",
+   "property": "Полнота требования, неполнота",
+   "explanation": "не сказано, что PUT, DELETE и операции с сотрудниками тоже ограничены владельцем, и не задан ответ на чужой объект (403 или 404), поэтому тесты изоляции данных не написать.",
+   "severity": "критично",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B037"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-05",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-05",
+   "quote": "`GET /api/employees?companyId=1` Список сотрудников (всех или по компании).",
+   "place": "раздел «Код (C4) › Эндпоинты», строки 66–67",
+   "property": "Однозначность, двусмысленность",
+   "explanation": "ожидаемый состав списка и ответ на несуществующий или чужой `companyId` нельзя вывести из текста.",
+   "severity": "критично",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B041"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-06",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-06",
+   "quote": "**Цель**: Создать безопасный REST-бекенд с использованием Spring Boot 3.4, Hibernate 6, PostgreSQL и Flyway.",
+   "place": "раздел «c4_tech_task_example › Контекст (C1)», строка 8",
+   "property": "Проверяемость, непроверяемость",
+   "explanation": "нельзя показать на приёмке, что цель «безопасный» достигнута.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B004"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-07",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-07",
+   "quote": "Сессионная аутентификация через Spring Security.",
+   "place": "раздел «c4_tech_task_example › Компоненты (C3)», строка 21",
+   "property": "Полнота требования, неполнота",
+   "explanation": "не заданы время жизни сессии, атрибуты cookie (HttpOnly, Secure, SameSite), включена ли защита CSRF и что происходит с истёкшей сессией, поэтому реализации будут разными.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B011"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-08",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-08",
+   "quote": "Создание/редактирование/удаление компаний с валидацией ИНН, ОГРН.",
+   "place": "раздел «c4_tech_task_example › Компоненты (C3)», строка 24",
+   "property": "Однозначность, двусмысленность",
+   "explanation": "тест на ИНН с неверной контрольной суммой не имеет одного ожидаемого результата.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B014"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-09",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-09",
+   "quote": "`id`, `name` (обязательное), `fullLegalName`, `inn` (уникальный, 10/12 цифр), `ogrn` (уникальный, 13 цифр), `user` (связь с владельцем).",
+   "place": "раздел «Код (C4) › Требования к сущностям», строка 38",
+   "property": "Корректность, некорректность",
+   "explanation": "неизвестно, допускаются ли ИП; у автора нужно узнать, какие типы лиц поддерживаются и допустим ли ОГРН из 15 цифр.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B025"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-10",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-10",
+   "quote": "`inn` (уникальный, 10/12 цифр)",
+   "place": "раздел «Код (C4) › Требования к сущностям», строка 38",
+   "property": "Однозначность, двусмысленность",
+   "explanation": "тест R-41 даст разный результат в зависимости от толкования, а глобальный 409 раскрывает пользователю B существование чужой компании.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B025"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-11",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-11",
+   "quote": "`inn` (уникальный, 10/12 цифр) … @Schema(example = \"1234567890\", minLength = 10, maxLength = 12) private String inn;",
+   "place": "раздел «Код (C4) › Требования к сущностям», строка 38",
+   "property": "Согласованность, противоречие",
+   "explanation": "документация API и валидация будут расходиться, и тест на 11 цифр не имеет одного результата.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B025"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-12",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-12",
+   "quote": "`id`, `firstName`, `lastName`, `middleName`, `gender` (enum: MALE, FEMALE), `age`, `maritalStatus` (enum: MARRIED, SINGLE), `company` (может быть null).",
+   "place": "раздел «Код (C4) › Требования к сущностям», строка 40",
+   "property": "Полнота требования, неполнота",
+   "explanation": "не определено, какие поля обязательны и какие значения допустимы, поэтому негативные тесты на 400 не написать. Не заданы: - обязательность `inn`, `ogrn`, `fullLegalName`; - обязательность `firstName`, `lastName`, `middleName`, `gender`, `age`, `maritalStatus`; - диапазон и тип `age`; - максимальная длина строк; - реакция на значение enum вне списка.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B027"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-13",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-13",
+   "quote": "`POST /api/auth/register` Регистрация: `{ \"login\": \"user1\", \"password\": \"pass\" }`.",
+   "place": "раздел «Код (C4) › Эндпоинты», строки 44–45",
+   "property": "Полнота требования, неполнота",
+   "explanation": "не заданы следующие правила, без которых тесты регистрации не написать: - правила логина: длина, допустимые символы; - правила пароля: минимальная длина (пример «pass»); - код и тело успешного ответа; - код при занятом логине; - создаётся ли сессия сразу после регистрации.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B030"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-14",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-14",
+   "quote": "`POST /api/auth/login` Вход (устанавливает session cookie).",
+   "place": "раздел «Код (C4) › Эндпоинты», строки 46–47",
+   "property": "Полнота требования, неполнота",
+   "explanation": "не заданы тело запроса входа, код успешного ответа, код при неверных учётных данных, код при повторном входе, а также ответ на logout без сессии.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B031"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-15",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-15",
+   "quote": "`GET /api/users/me` Информация о текущем пользователе.",
+   "place": "раздел «Код (C4) › Эндпоинты», строки 50–51",
+   "property": "Полнота требования, неполнота",
+   "explanation": "не сказано, какие поля возвращаются, что поле `password` (хэш) в ответ не входит и какой код вернётся без сессии.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B033"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-16",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-16",
+   "quote": "`POST /api/companies` Создать компанию: `{ \"name\": \"ООО Ромашка\", \"inn\": \"1234567890\", ... }`. … `POST /api/employees` Создать сотрудника: `{ \"firstName\": \"Иван\", \"age\": 30, ... }`.",
+   "place": "раздел «Код (C4) › Эндпоинты», строки 56–57",
+   "property": "Однозначность, неполнота",
+   "explanation": "неизвестно, какие поля принимают POST и PUT и можно ли передать `company` или `companyId` при создании сотрудника.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B036"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-17",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-17",
+   "quote": "`PUT /api/companies/{id}` Обновить компанию.",
+   "place": "раздел «Код (C4) › Эндпоинты», строки 60–61",
+   "property": "Однозначность, двусмысленность",
+   "explanation": "тест на PUT с неполным телом не имеет одного ожидаемого результата.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B038"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-18",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-18",
+   "quote": "`PUT /api/companies/{id}` Обновить компанию. … `DELETE /api/employees/{id}` Удалить сотрудника.",
+   "place": "раздел «Код (C4) › Эндпоинты», строки 60–61",
+   "property": "Полнота набора, неполнота",
+   "explanation": "в R-32 код 404 назван, но не сказано, при каких операциях и условиях он возвращается; для DELETE несуществующего объекта одна реализация вернёт 404, другая 204.",
+   "severity": "важно",
+   "finder": "не указан",
+   "passes": null,
+   "blocks": [
+    "B038"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-19",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-19",
+   "quote": "`DELETE /api/companies/{id}` Удалить компанию (если нет сотрудников).",
+   "place": "раздел «Код (C4) › Эндпоинты», строки 62–63",
+   "property": "Полнота требования, неполнота",
+   "explanation": "не задан код и текст ответа, когда у компании есть привязанные сотрудники, поэтому негативный тест не написать.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B039"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-20",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-20",
+   "quote": "Список сотрудников (всех или по компании).",
+   "place": "раздел «Код (C4) › Эндпоинты», строка 67",
+   "property": "Полнота требования, неполнота",
+   "explanation": "если `companyId` не существует или принадлежит другому пользователю, одна реализация вернёт пустой список, другая HTTP 404, третья выдаст сотрудников чужой компании.",
+   "severity": "важно",
+   "finder": "не указан",
+   "passes": null,
+   "blocks": [
+    "B041"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-21",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-21",
+   "quote": "`PATCH /api/employees/{id}/company` Привязать к компании: `{ \"companyId\": 1 }` (или null).",
+   "place": "раздел «Код (C4) › Эндпоинты», строки 70–71",
+   "property": "Полнота требования, неполнота",
+   "explanation": "не заданы ответы на несуществующую компанию, на чужую компанию, на повторную привязку к той же компании и на отсутствие поля `companyId`, поэтому негативные тесты не написать.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B043"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-22",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-22",
+   "quote": "`PATCH /api/employees/{id}/company` Привязать к компании: `{ \"companyId\": 1 }` (или null). … `PUT /api/employees/{id}` Обновить сотрудника.",
+   "place": "раздел «Код (C4) › Эндпоинты», строки 70–71",
+   "property": "Однозначность, двусмысленность",
+   "explanation": "у автора нужно узнать, входит ли компания в тело PUT или меняется только через PATCH.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B043"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-23",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-23",
+   "quote": "`DELETE /api/employees/{id}` Удалить сотрудника.",
+   "place": "раздел «Код (C4) › Эндпоинты», строки 74–75",
+   "property": "Полнота набора, неполнота",
+   "explanation": "для операций не указаны коды успеха (200, 201, 204) и состав возвращаемых объектов, поэтому позитивные тесты не имеют ожидаемого результата.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B045"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-24",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-24",
+   "quote": "Глобальная обработка исключений с возвратом структурированных ошибок (HTTP 400, 404, 409).",
+   "place": "раздел «Код (C4) › Технические требования», строка 79",
+   "property": "Полнота набора, неполнота",
+   "explanation": "нет кода 401 для запроса без сессии и при неверном пароле, нет кода 403 для чужого объекта, не задана структура «структурированной ошибки» (поля, формат). Тело ответа об ошибке не с чем сравнить в тесте.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B048"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-25",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-25",
+   "quote": "Настройка CORS (разрешить все для тестового окружения).",
+   "place": "раздел «Код (C4) › Технические требования», строка 81",
+   "property": "Выполнимость, невыполнимость",
+   "explanation": "разработчик не сможет одновременно разрешить все origin и передавать session cookie, а настройки CORS для окружения кроме тестового не заданы.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B050"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-26",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-26",
+   "quote": "Логирование ключевых операций (создание компании, ошибки авторизации).",
+   "place": "раздел «Код (C4) › Технические требования», строка 82",
+   "property": "Проверяемость, непроверяемость",
+   "explanation": "не заданы: - полный перечень событий; - уровень логирования; - состав записи; - запрет писать пароли, ИНН и данные сотрудников.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B051"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-27",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-27",
+   "quote": "Пример: попытка создания компании с неуникальным ИНН должна возвращать HTTP 409.",
+   "place": "раздел «c4_tech_task_example › Инструкция для разработчика», строка 118",
+   "property": "Полнота набора, неполнота",
+   "explanation": "из негативных сценариев задан только один (повтор ИНН). Не названы: - обязательный перечень интеграционных тестов; - доступ без сессии; - доступ к чужому объекту; - неверный ИНН или ОГРН; - удаление компании с сотрудниками; - занятый логин; - неверный пароль.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B064"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-28",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-28",
+   "quote": "Пример: попытка создания компании с неуникальным ИНН должна возвращать HTTP 409.",
+   "place": "раздел «c4_tech_task_example › Инструкция для разработчика», строка 118",
+   "property": "Полнота набора, неполнота",
+   "explanation": "ОГРН тоже уникален (R-13), но ответ на его дубль не задан, как и ответ на дубль ИНН или ОГРН при обновлении (R-23); один разработчик вернёт 409, другой отдаст ошибку БД как 500.",
+   "severity": "важно",
+   "finder": "не указан",
+   "passes": null,
+   "blocks": [
+    "B064"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-29",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-29",
+   "quote": "Корректная работа всех эндпоинтов (Postman-коллекция приветствуется). … Чистый код, соблюдение принципов SOLID.",
+   "place": "раздел «c4_tech_task_example › Критерии оценки», строка 123",
+   "property": "Проверяемость, непроверяемость",
+   "explanation": "«корректная» и «чистый» — субъективные оценки без эталона, а «приветствуется» — лазейка, поэтому два проверяющих оценят работу по-разному.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B066"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-30",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-30",
+   "quote": "**База данных**: PostgreSQL для хранения данных пользователей, компаний и сотрудников.",
+   "place": "раздел «c4_tech_task_example › Контейнеры (C2)», строка 14",
+   "property": "Полнота набора, неполнота",
+   "explanation": "ФИО, пол, возраст и семейное положение сотрудников — персональные данные. Для них не заданы срок хранения и судьба данных пользователя (удаления учётной записи в документе нет). У автора нужно узнать, требуются ли эти правила в рамках тестового задания.",
+   "severity": "незначительно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B007"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-31",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-31",
+   "quote": "Создание/редактирование/удаление сотрудников.",
+   "place": "раздел «c4_tech_task_example › Компоненты (C3)», строка 26",
+   "property": "Соответствие шаблону, прослеживаемость и оформление",
+   "explanation": "на требования нельзя сослаться из тест-кейсов. Обязательные пункты не отличить от пожеланий («приветствуется», R-42). Не указана версия документа.",
+   "severity": "незначительно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B016"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-32",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-32",
+   "quote": "**User** (аккаунт): … `user` (связь с владельцем)",
+   "place": "раздел «Код (C4) › Требования к сущностям», строка 35",
+   "property": "Понятность, разнобой терминов и единиц",
+   "explanation": "«пользователь», «аккаунт», «владелец» и «текущий пользователь» не связаны явным определением, и неясно, всегда ли владелец совпадает с текущим пользователем.",
+   "severity": "незначительно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B022"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-33",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-33",
+   "quote": "**Авторизация**: … **Компании** (требуется авторизация):",
+   "place": "раздел «Код (C4) › Эндпоинты», строка 43",
+   "property": "Понятность, разнобой терминов и единиц",
+   "explanation": "одним словом обозначены и вход по паролю (фрагмент в разделе «Код (C4) › Эндпоинты» (строка 43), R-35), и проверка прав, и раздел с регистрацией, поэтому неясно, что считать «ошибкой авторизации» в R-35 и каким кодом её отвечать (401 или 403).",
+   "severity": "незначительно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B029"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-34",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-34",
+   "quote": "Список компаний текущего пользователя. … Список сотрудников (всех или по компании).",
+   "place": "раздел «Код (C4) › Эндпоинты», строка 55",
+   "property": "Полнота требования, неполнота",
+   "explanation": "неизвестно, сортируются ли списки и разбиваются ли на страницы; тест, который сверяет содержимое ответа по позиции, не получит однозначного ожидаемого результата.",
+   "severity": "незначительно",
+   "finder": "не указан",
+   "passes": null,
+   "blocks": [
+    "B035"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-35",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-35",
+   "quote": "login VARCHAR(50) UNIQUE NOT NULL",
+   "place": "раздел «c4_tech_task_example › Инструкция для разработчика», строка 97",
+   "property": "Полнота требования, неполнота",
+   "explanation": "у автора нужно узнать, обязательна ли длина 50 символов из примера и какой ответ вернуть на логин длиннее 50 (400, а не 500 от БД).",
+   "severity": "незначительно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B058"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:experiments/50-gaps-pass/runs/full/c4#F-36",
+   "origin": "agent",
+   "run": "experiments/50-gaps-pass/runs/full/c4",
+   "ref": "F-36",
+   "quote": "@Schema(name = \"CompanyRequest\", description = \"Данные компании\") public class CompanyDTO {",
+   "place": "раздел «c4_tech_task_example › Инструкция для разработчика», строки 107–108",
+   "property": "Понятность, разнобой терминов и единиц",
+   "explanation": "в коде и в Swagger одна сущность будет называться по-разному, и неясно, используется ли этот DTO и для ответа.",
+   "severity": "незначительно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B061"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "control:1.1",
+   "origin": "control",
+   "run": null,
+   "ref": "1.1",
+   "quote": "Создать скрипты `V1__init_tables.sql`, `V2__add_constraints.sql`.",
+   "place": "раздел «c4_tech_task_example › Инструкция для разработчика», строка 92",
+   "property": "Соответствие шаблону, прослеживаемость и оформление",
+   "explanation": "Фразу «Создать скрипты `V1__init_tables.sql`, `V2__add_constraints.sql`.» можно сформулировать короче и с другим порядком слов. Смысл требования и ожидаемый результат проверки от этого не меняются, но текст читался бы ровнее.",
+   "severity": null,
+   "finder": null,
+   "passes": null,
+   "blocks": [],
+   "control": "nitpick",
+   "donors": []
+  },
+  {
+   "uid": "control:1.2",
+   "origin": "control",
+   "run": null,
+   "ref": "1.2",
+   "quote": "Добавить описания эндпоинтов через аннотации `@Operation`, `@Schema`.",
+   "place": "раздел «c4_tech_task_example › Инструкция для разработчика», строка 104",
+   "property": "Соответствие шаблону, прослеживаемость и оформление",
+   "explanation": "Фразу «Добавить описания эндпоинтов через аннотации `@Operation`,» можно сформулировать короче и с другим порядком слов. Смысл требования и ожидаемый результат проверки от этого не меняются, но текст читался бы ровнее.",
+   "severity": null,
+   "finder": null,
+   "passes": null,
+   "blocks": [],
+   "control": "nitpick",
+   "donors": []
+  },
+  {
+   "uid": "control:1.3",
+   "origin": "control",
+   "run": null,
+   "ref": "1.3",
+   "quote": "id`, `firstName`, `lastName`, `middleName`, `gender` (enum: MALE, FEMALE), `age`, `maritalStatus` (enum: MARRIED, SINGLE), `company` (может быть null).",
+   "place": "раздел «Код (C4) › Требования к сущностям», строка 40",
+   "property": "Соответствие шаблону, прослеживаемость и оформление",
+   "explanation": "Фразу «id`, `firstName`, `lastName`, `middleName`, `gender` (enum:» можно сформулировать короче и с другим порядком слов. Смысл требования и ожидаемый результат проверки от этого не меняются, но текст читался бы ровнее.",
+   "severity": null,
+   "finder": null,
+   "passes": null,
+   "blocks": [],
+   "control": "nitpick",
+   "donors": []
+  },
+  {
+   "uid": "control:1.4",
+   "origin": "control",
+   "run": null,
+   "ref": "1.4",
+   "quote": "GET /api/companies/{id}`  \n     Получить компанию по ID (только свои).",
+   "place": "раздел «Код (C4) › Эндпоинты», строки 58–59",
+   "property": "Соответствие шаблону, прослеживаемость и оформление",
+   "explanation": "Предлагаю переписать «GET /api/companies/{id}` Получить компанию по ID» более деловым языком. Содержание остаётся тем же, проверить требование можно и сейчас.",
+   "severity": null,
+   "finder": null,
+   "passes": null,
+   "blocks": [],
+   "control": "nitpick",
+   "donors": []
+  },
+  {
+   "uid": "control:1.5",
+   "origin": "control",
+   "run": null,
+   "ref": "1.5",
+   "quote": "Логирование ключевых операций (создание компании, ошибки авторизации).",
+   "place": "раздел «Код (C4) › Технические требования», строка 82",
+   "property": "Соответствие шаблону, прослеживаемость и оформление",
+   "explanation": "Фразу «Логирование ключевых операций (создание компании, ошибки» можно сформулировать короче и с другим порядком слов. Смысл требования и ожидаемый результат проверки от этого не меняются, но текст читался бы ровнее.",
+   "severity": null,
+   "finder": null,
+   "passes": null,
+   "blocks": [],
+   "control": "nitpick",
+   "donors": []
+  }
+ ],
+ "batches": [
+  {
+   "index": 1,
+   "uids": [
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-10",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-23",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-28",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-19",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-11",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-17",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-05",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-21",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-25",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-06",
+    "control:1.3",
+    "control:1.1",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-15",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-13",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-01",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-16",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-34",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-08",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-02",
+    "control:1.4",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-36",
+    "control:1.5",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-32",
+    "control:1.2",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-24",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-22",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-09",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-29",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-04",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-18",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-20",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-33",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-27",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-31",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-35",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-07",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-30",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-14",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-26",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-12",
+    "agent:experiments/50-gaps-pass/runs/full/c4#F-03"
+   ]
+  }
+ ],
+ "labels": {
+  "opus": {
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-10": {
+    "label": "real",
+    "reason": "«уникальный» не уточняет: глобально или в рамках пользователя; от этого зависит тест на дубль ИНН у другого пользователя и утечка через 409."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-23": {
+    "label": "real",
+    "reason": "Ни для одного эндпоинта не заданы код успеха и тело ответа; у позитивных тестов нет ожидаемого результата."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-28": {
+    "label": "disputed",
+    "reason": "Ответ на дубль ОГРН и дубли при PUT не задан, но 409 легко вывести из общего списка кодов (400, 404, 409) и примера с ИНН."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-19": {
+    "label": "real",
+    "reason": "«(если нет сотрудников)» без кода и тела ответа при наличии сотрудников; негативный тест не написать."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-11": {
+    "label": "real",
+    "reason": "Сущность требует 10 или 12 цифр, а @Schema minLength=10, maxLength=12 пропускает 11 цифр — прямое противоречие."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-17": {
+    "label": "real",
+    "reason": "Не сказано, PUT — полная замена или частичное обновление; ожидаемый результат PUT с неполным телом неоднозначен."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-05": {
+    "label": "real",
+    "reason": "«всех» — непонятно чьих (у Employee нет владельца); ответ на несуществующий или чужой companyId не задан."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-21": {
+    "label": "real",
+    "reason": "Для PATCH не заданы ответы на несуществующую или чужую компанию и на отсутствие поля; негативные тесты не написать."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-25": {
+    "label": "disputed",
+    "reason": "В Spring allowedOriginPatterns(\"*\") с credentials работает, так что требование выполнимо; пробел только в настройке для других окружений."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-06": {
+    "label": "disputed",
+    "reason": "«безопасный» — формулировка цели; конкретика (BCrypt, сессии, только свои объекты) дана ниже, но критерия приёмки нет."
+   },
+   "control:1.3": {
+    "label": "false",
+    "reason": "Чисто стилистическое замечание; сам проверяющий пишет, что смысл и проверка не меняются."
+   },
+   "control:1.1": {
+    "label": "false",
+    "reason": "Стилистика имён скриптов; на разработку и тест не влияет."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-15": {
+    "label": "real",
+    "reason": "Состав ответа /api/users/me не задан, исключение хэша пароля и код без сессии не указаны."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-13": {
+    "label": "real",
+    "reason": "Нет правил логина и пароля (пример «pass»), кодов успеха и занятого логина, неясно поведение сессии после регистрации."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-01": {
+    "label": "real",
+    "reason": "У Employee есть только company (может быть null), связи с User нет; принадлежность сотрудника без компании не определить."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-16": {
+    "label": "real",
+    "reason": "В примерах тел стоит «...», полный состав полей POST и PUT и возможность передать companyId при создании не заданы."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-34": {
+    "label": "disputed",
+    "reason": "Сортировка и пагинация не заданы; тест можно писать без опоры на порядок, влияние слабое."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-08": {
+    "label": "disputed",
+    "reason": "Технические требования указывают @Pattern для ИНН/ОГРН, т.е. проверку формата; про контрольную сумму можно спорить."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-02": {
+    "label": "real",
+    "reason": "«1:1» противоречит списку сотрудников по компании и фразе «если нет сотрудников»; схема БД будет разной."
+   },
+   "control:1.4": {
+    "label": "false",
+    "reason": "Просьба переписать «деловым языком»; содержание и проверяемость не затронуты."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-36": {
+    "label": "disputed",
+    "reason": "Имя CompanyRequest в Swagger против CompanyDTO в коде и вопрос про DTO ответа — несущественный разнобой."
+   },
+   "control:1.5": {
+    "label": "false",
+    "reason": "Чисто стилистическое замечание без влияния на смысл."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-32": {
+    "label": "disputed",
+    "reason": "Термины «аккаунт», «владелец», «текущий пользователь» по контексту понятны, явного определения нет; риск слабый."
+   },
+   "control:1.2": {
+    "label": "false",
+    "reason": "Стилистика формулировки; на разработку и тест не влияет."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-24": {
+    "label": "real",
+    "reason": "Указаны только 400/404/409; 401/403 и структура тела ошибки не заданы, тест не с чем сравнить."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-22": {
+    "label": "real",
+    "reason": "Не определено, меняется ли компания через PUT /employees/{id} или только через PATCH; поведение реализаций разойдётся."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-09": {
+    "label": "real",
+    "reason": "ИНН из 12 цифр бывает у ИП, а ОГРН задан только из 13 цифр (ОГРНИП — 15): поддержка ИП противоречива."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-29": {
+    "label": "disputed",
+    "reason": "Критерии оценки тестового задания субъективны, но это не требования к ПО; на тест-кейсы API влияют слабо."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-04": {
+    "label": "real",
+    "reason": "«только свои» сказано лишь для GET /companies/{id}; для PUT, DELETE и сотрудников ограничение и код 403/404 не заданы."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-18": {
+    "label": "real",
+    "reason": "Условия кода 404 не определены; DELETE несуществующего объекта может вернуть 404 или 204."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-20": {
+    "label": "real",
+    "reason": "Ответ на несуществующий или чужой companyId не задан; возможна выдача чужих сотрудников."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-33": {
+    "label": "disputed",
+    "reason": "«Авторизация» используется и для входа, и для доступа — разнобой есть, но выбор 401/403 решается контекстом."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-27": {
+    "label": "disputed",
+    "reason": "Раздел тестирования дан как пример для задания; обязательный перечень тестов — скорее пожелание."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-31": {
+    "label": "false",
+    "reason": "Объяснение (ID, версия, «приветствуется») не относится к процитированной строке; для тестового задания придирка к оформлению."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-35": {
+    "label": "disputed",
+    "reason": "Длина 50 есть в примере DDL; ответ на длинный логин (400 или 500) не задан, но это частный случай."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-07": {
+    "label": "real",
+    "reason": "Не сказано, включён ли CSRF: при включённом все POST/PUT без токена получат 403, поведение API различается."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-30": {
+    "label": "disputed",
+    "reason": "Сроки хранения ПДн для тестового задания — скорее вопрос к автору, на разработку эндпоинтов влияет слабо."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-14": {
+    "label": "real",
+    "reason": "Для /login не заданы тело запроса, коды успеха и неверных данных, ответ logout без сессии."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-26": {
+    "label": "disputed",
+    "reason": "Логирование описано примерами; уровень и формат слабо влияют на тест, запрет логировать пароли — полезное уточнение."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-12": {
+    "label": "real",
+    "reason": "Обязательным помечен только name; обязательность остальных полей, диапазон age и длины не заданы, негативные тесты не написать."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-03": {
+    "label": "real",
+    "reason": "Не указано, что владелец берётся из сессии и не меняется через PUT; возможна подмена владельца."
+   }
+  },
+  "fable": {
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-10": {
+    "label": "disputed",
+    "reason": "Объяснение не называет, какие толкования расходятся; «уникальный» плюс пример с 409 читается как глобальная уникальность. Утечка через 409 — пожелание по безопасности."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-23": {
+    "label": "real",
+    "reason": "Коды успеха и тела ответов не заданы ни для одного эндпоинта: для DELETE нельзя выбрать между 200 и 204, для POST между 200 и 201."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-28": {
+    "label": "disputed",
+    "reason": "Ответ на дубль ОГРН и на дубль при PUT прямо не задан, но 409 выводится по аналогии с примером для ИНН и списком кодов; пробел слабый."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-19": {
+    "label": "real",
+    "reason": "Условие «если нет сотрудников» есть, а код ответа при его нарушении (400 или 409) не указан; ожидаемый результат негативного теста не определить."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-11": {
+    "label": "real",
+    "reason": "«10/12 цифр» против minLength=10, maxLength=12 в @Schema: схема допускает 11 символов, требование к сущности — нет."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-17": {
+    "label": "disputed",
+    "reason": "Поведение при неполном теле не описано, но PUT по стандарту означает полную замену, а name обязателен; зависит от трактовки."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-05": {
+    "label": "real",
+    "reason": "«Всех» — своих или всех в системе, не сказано: у Employee нет связи с User. Ответ на чужой или несуществующий companyId тоже не задан."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-21": {
+    "label": "real",
+    "reason": "Для PATCH описан только успешный вариант тела; ответы на несуществующую и чужую компанию не заданы, негативные тесты без ожидаемого результата."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-25": {
+    "label": "disputed",
+    "reason": "«Разрешить все» с session cookie требует уточнения, но это выполнимо (allowedOriginPatterns); невыполнимость преувеличена, прод для тестового задания не нужен."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-06": {
+    "label": "disputed",
+    "reason": "«Безопасный» стоит в формулировке цели, а не в требовании; конкретные меры (BCrypt, сессии, авторизация) заданы ниже. Слово размыто, но на работу почти не влияет."
+   },
+   "control:1.3": {
+    "label": "false",
+    "reason": "Чисто стилистическое пожелание; проверяющий сам пишет, что смысл и результат проверки не меняются."
+   },
+   "control:1.1": {
+    "label": "false",
+    "reason": "Стилистическая придирка к однозначной инструкции с именами файлов; на разработку и тест не влияет."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-15": {
+    "label": "real",
+    "reason": "Состав ответа /users/me не задан (в User есть password), кода без сессии нет — 401 отсутствует в списке кодов; ожидаемый результат не составить."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-13": {
+    "label": "real",
+    "reason": "Для регистрации дан только пример тела: нет правил логина и пароля, кода успеха, кода на занятый логин; тесты регистрации не определить."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-01": {
+    "label": "real",
+    "reason": "В Employee нет поля владельца, company может быть null, а контекст требует работы только со «своими» сотрудниками — изоляцию не реализовать."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-16": {
+    "label": "real",
+    "reason": "Тела POST оборваны «...», тело PUT не описано; можно ли передать companyId при создании сотрудника, не сказано, хотя есть отдельный PATCH."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-34": {
+    "label": "disputed",
+    "reason": "Сортировка и пагинация не упомянуты, но это скорее пожелание: состав списка можно проверять без учёта порядка."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-08": {
+    "label": "false",
+    "reason": "Документ отвечает сам: валидация через Jakarta Validation `@Pattern` для ИНН/ОГРН плюс «10/12 цифр», «13 цифр» — проверка формата, без контрольной суммы."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-02": {
+    "label": "real",
+    "reason": "«1:1 или null» противоречит списку сотрудников по компании и условию «если нет сотрудников», которые подразумевают многие-к-одному."
+   },
+   "control:1.4": {
+    "label": "false",
+    "reason": "Пожелание по стилю; проверяющий сам признаёт, что содержание то же и требование проверяемо."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-36": {
+    "label": "disputed",
+    "reason": "Расхождение имён CompanyRequest и CompanyDTO есть, но это иллюстративный пример аннотаций; на реализацию и тесты влияет слабо."
+   },
+   "control:1.5": {
+    "label": "false",
+    "reason": "Стилистическая правка без влияния на смысл, что признано в самом объяснении."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-32": {
+    "label": "false",
+    "reason": "Термины связаны в тексте: «User (аккаунт)», «user (связь с владельцем)», «компаний текущего пользователя»; разнобой не мешает ни разработке, ни тесту."
+   },
+   "control:1.2": {
+    "label": "false",
+    "reason": "Стилистическая придирка; требование с конкретными аннотациями понятно и проверяемо."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-24": {
+    "label": "real",
+    "reason": "В списке только 400, 404, 409 при обязательной авторизации — 401 и 403 нет; формат «структурированной ошибки» не описан, тело не с чем сравнить."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-22": {
+    "label": "real",
+    "reason": "Тело PUT сотрудника не описано: неясно, отвязывает ли PUT без companyId сотрудника от компании или привязка меняется только через PATCH."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-09": {
+    "label": "disputed",
+    "reason": "ИНН из 12 цифр (ИП, физлица) не сочетается с ОГРН строго из 13 цифр, но требование как написано однозначно тестируется; это вопрос к автору."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-29": {
+    "label": "disputed",
+    "reason": "Это критерии оценки тестового задания, а не требования; «приветствуется» прямо помечает необязательность. Субъективность есть, но на разработку и тест не влияет."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-04": {
+    "label": "real",
+    "reason": "«Только свои» указано лишь у GET по id; для PUT, DELETE и сотрудников ограничение и код ответа на чужой объект (403 или 404) не заданы."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-18": {
+    "label": "disputed",
+    "reason": "Условия возврата 404 не расписаны, но 404 на несуществующий id — общепринятая трактовка, код назван в списке; расхождение маловероятно."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-20": {
+    "label": "real",
+    "reason": "Поведение фильтра при несуществующем или чужом companyId не задано; возможны пустой список, 404 или выдача чужих данных."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-33": {
+    "label": "disputed",
+    "reason": "«Авторизация» означает и вход, и проверку доступа — терминологическая неточность; содержательный пробел (401/403) покрыт другими замечаниями."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-27": {
+    "label": "disputed",
+    "reason": "Объём обязательных интеграционных тестов не задан, но пример помечен как пример; это пожелание к полноте, а не дефект формулировки."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-31": {
+    "label": "disputed",
+    "reason": "Идентификаторов требований и версии действительно нет, но объяснение не про цитату, а «приветствуется» как раз отделяет пожелание; на тест не влияет."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-35": {
+    "label": "disputed",
+    "reason": "VARCHAR(50) стоит в примере миграции; обязательность лимита и ответ на длинный логин не заданы, но это частный граничный случай."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-07": {
+    "label": "disputed",
+    "reason": "Время жизни сессии, атрибуты cookie и CSRF не заданы, но для тестового задания допустимы настройки Spring Security по умолчанию; уточнить полезно."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-30": {
+    "label": "false",
+    "reason": "Сроки хранения персональных данных вне рамок тестового задания; проверяющий сам не уверен, нужны ли они. На разработку и тест не влияет."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-14": {
+    "label": "real",
+    "reason": "Для login указано только «устанавливает session cookie»: нет тела запроса, кода успеха и кода при неверных учётных данных."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-26": {
+    "label": "disputed",
+    "reason": "«Ключевые операции» размыты, но в скобках названы два события, которые можно проверить; уровень и состав записи — детали на усмотрение разработчика."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-12": {
+    "label": "real",
+    "reason": "Обязательность помечена только у name; для остальных полей, диапазона age и длин строк правил нет — негативные тесты на 400 не построить."
+   },
+   "agent:experiments/50-gaps-pass/runs/full/c4#F-03": {
+    "label": "disputed",
+    "reason": "Источник владельца прямо не указан, но «компаний текущего пользователя» и пример тела без user указывают на сессию; риск невелик."
+   }
+  }
+ },
+ "calls": [
+  {
+   "labeler": "opus",
+   "batch": 1,
+   "key": "eda64e4a2a3172805eb07973496e87a6f992faf711f87b9634015521e9fa6ddb",
+   "source": "cli",
+   "model": "claude-opus-5-5",
+   "cost_usd": 0.191152,
+   "duration_ms": 48292,
+   "cache_path": "evals/cache/precision/eda64e4a2a3172805eb07973496e87a6f992faf711f87b9634015521e9fa6ddb.json"
+  },
+  {
+   "labeler": "fable",
+   "batch": 1,
+   "key": "641448cb5742d1d5d0a213e7feb922622331c3f2a6a8b4568d84b2cfc78dabab",
+   "source": "cli",
+   "model": "claude-fable-5-2",
+   "cost_usd": 0.48700800000000005,
+   "duration_ms": 71549,
+   "cache_path": "evals/cache/precision/641448cb5742d1d5d0a213e7feb922622331c3f2a6a8b4568d84b2cfc78dabab.json"
+  }
+ ],
+ "overall": {
+  "name": "все находки",
+  "by_labeler": {
+   "opus": {
+    "total": 36,
+    "labeled": 36,
+    "real": 22,
+    "disputed": 13,
+    "false": 1
+   },
+   "fable": {
+    "total": 36,
+    "labeled": 36,
+    "real": 16,
+    "disputed": 17,
+    "false": 3
+   }
+  },
+  "consensus": {
+   "total": 36,
+   "labeled": 36,
+   "real": 16,
+   "disputed": 16,
+   "false": 4
+  },
+  "agreement": {
+   "both": 36,
+   "same": 26,
+   "kappa3": 0.5,
+   "kappa2": 0.6746987951807228
+  }
+ },
+ "by_run": [
+  {
+   "name": "агент: experiments/50-gaps-pass/runs/full/c4",
+   "by_labeler": {
+    "opus": {
+     "total": 36,
+     "labeled": 36,
+     "real": 22,
+     "disputed": 13,
+     "false": 1
+    },
+    "fable": {
+     "total": 36,
+     "labeled": 36,
+     "real": 16,
+     "disputed": 17,
+     "false": 3
+    }
+   },
+   "consensus": {
+    "total": 36,
+    "labeled": 36,
+    "real": 16,
+    "disputed": 16,
+    "false": 4
+   },
+   "agreement": {
+    "both": 36,
+    "same": 26,
+    "kappa3": 0.5,
+    "kappa2": 0.6746987951807228
+   }
+  }
+ ],
+ "by_severity": [
+  {
+   "name": "критично",
+   "by_labeler": {
+    "opus": {
+     "total": 5,
+     "labeled": 5,
+     "real": 5,
+     "disputed": 0,
+     "false": 0
+    },
+    "fable": {
+     "total": 5,
+     "labeled": 5,
+     "real": 4,
+     "disputed": 1,
+     "false": 0
+    }
+   },
+   "consensus": {
+    "total": 5,
+    "labeled": 5,
+    "real": 4,
+    "disputed": 1,
+    "false": 0
+   },
+   "agreement": {
+    "both": 5,
+    "same": 4,
+    "kappa3": 0.0,
+    "kappa2": 0.0
+   }
+  },
+  {
+   "name": "важно",
+   "by_labeler": {
+    "opus": {
+     "total": 24,
+     "labeled": 24,
+     "real": 17,
+     "disputed": 7,
+     "false": 0
+    },
+    "fable": {
+     "total": 24,
+     "labeled": 24,
+     "real": 12,
+     "disputed": 11,
+     "false": 1
+    }
+   },
+   "consensus": {
+    "total": 24,
+    "labeled": 24,
+    "real": 12,
+    "disputed": 11,
+    "false": 1
+   },
+   "agreement": {
+    "both": 24,
+    "same": 18,
+    "kappa3": 0.511864406779661,
+    "kappa2": 0.5833333333333333
+   }
+  },
+  {
+   "name": "незначительно",
+   "by_labeler": {
+    "opus": {
+     "total": 7,
+     "labeled": 7,
+     "real": 0,
+     "disputed": 6,
+     "false": 1
+    },
+    "fable": {
+     "total": 7,
+     "labeled": 7,
+     "real": 0,
+     "disputed": 5,
+     "false": 2
+    }
+   },
+   "consensus": {
+    "total": 7,
+    "labeled": 7,
+    "real": 0,
+    "disputed": 4,
+    "false": 3
+   },
+   "agreement": {
+    "both": 7,
+    "same": 4,
+    "kappa3": -0.23529411764705874,
+    "kappa2": null
+   }
+  }
+ ],
+ "by_finder": [
+  {
+   "name": "не указан",
+   "by_labeler": {
+    "opus": {
+     "total": 5,
+     "labeled": 5,
+     "real": 3,
+     "disputed": 2,
+     "false": 0
+    },
+    "fable": {
+     "total": 5,
+     "labeled": 5,
+     "real": 1,
+     "disputed": 4,
+     "false": 0
+    }
+   },
+   "consensus": {
+    "total": 5,
+    "labeled": 5,
+    "real": 1,
+    "disputed": 4,
+    "false": 0
+   },
+   "agreement": {
+    "both": 5,
+    "same": 3,
+    "kappa3": 0.28571428571428564,
+    "kappa2": 0.28571428571428564
+   }
+  },
+  {
+   "name": "проходы",
+   "by_labeler": {
+    "opus": {
+     "total": 31,
+     "labeled": 31,
+     "real": 19,
+     "disputed": 11,
+     "false": 1
+    },
+    "fable": {
+     "total": 31,
+     "labeled": 31,
+     "real": 15,
+     "disputed": 13,
+     "false": 3
+    }
+   },
+   "consensus": {
+    "total": 31,
+    "labeled": 31,
+    "real": 15,
+    "disputed": 12,
+    "false": 4
+   },
+   "agreement": {
+    "both": 31,
+    "same": 23,
+    "kappa3": 0.5320754716981132,
+    "kappa2": 0.743801652892562
+   }
+  }
+ ],
+ "by_passes": [
+  {
+   "name": "1 из 1",
+   "by_labeler": {
+    "opus": {
+     "total": 31,
+     "labeled": 31,
+     "real": 19,
+     "disputed": 11,
+     "false": 1
+    },
+    "fable": {
+     "total": 31,
+     "labeled": 31,
+     "real": 15,
+     "disputed": 13,
+     "false": 3
+    }
+   },
+   "consensus": {
+    "total": 31,
+    "labeled": 31,
+    "real": 15,
+    "disputed": 12,
+    "false": 4
+   },
+   "agreement": {
+    "both": 31,
+    "same": 23,
+    "kappa3": 0.5320754716981132,
+    "kappa2": 0.743801652892562
+   }
+  }
+ ],
+ "controls": {
+  "opus": {
+   "total": 5,
+   "labeled": 5,
+   "caught": 5,
+   "not_real": 5
+  },
+  "fable": {
+   "total": 5,
+   "labeled": 5,
+   "caught": 5,
+   "not_real": 5
+  }
+ },
+ "controls_by_kind": {
+  "nitpick": {
+   "opus": {
+    "total": 5,
+    "labeled": 5,
+    "caught": 5,
+    "not_real": 5
+   },
+   "fable": {
+    "total": 5,
+    "labeled": 5,
+    "caught": 5,
+    "not_real": 5
+   }
+  }
+ },
+ "judge": [],
+ "warnings": [],
+ "notes": [
+  "experiments/50-gaps-pass/runs/full/c4: сравнения с судьёй нет: Нет вердикта судьи в кеше для experiments/50-gaps-pass/runs/full/c4 (ключ 264843e78f3b…). Запустите с --judge cli, чтобы вызвать судью (Opus 5.5 high, несколько минут)"
+ ]
+}
