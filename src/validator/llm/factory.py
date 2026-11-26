@@ -211,8 +211,23 @@ def align_config(cfg: RunConfig, client: LLMClient, parts: int = 1) -> tuple[Run
     if not isinstance(client, ReplayLLM):
         return cfg, []
     cfg, critic_info = _align_critic(cfg, client)
+    cfg, gaps_info = _align_gaps(cfg, client)
     cfg, search_info = _align_search(cfg, client, parts)
-    return cfg, [*critic_info, *search_info]
+    return cfg, [*critic_info, *gaps_info, *search_info]
+
+
+def _align_gaps(cfg: RunConfig, client: ReplayLLM) -> tuple[RunConfig, list[Diagnostic]]:
+    """Запись сделана с ``--gaps``: replay включает проход на пропуски, иначе его находки молча пропали бы."""
+    if cfg.gaps or not client.recorded(LLMStep.GAPS):
+        return cfg, []
+    info = Diagnostic(
+        code=LLM_REPLAYED,
+        level=DiagLevel.INFO,
+        message="Прогон в записи сделан с проходом на пропуски (--gaps)",
+        action="Проход на пропуски включён и для replay, его ответ взят из записи",
+        step="llm",
+    )
+    return cfg.model_copy(update={"gaps": True}), [info]
 
 
 def _align_search(cfg: RunConfig, client: ReplayLLM, parts: int) -> tuple[RunConfig, list[Diagnostic]]:

@@ -45,6 +45,8 @@ CLARIFY_OUTPUT_TOKENS = 12_000
 SET_CHECK_INPUT_SHARE = 0.35
 """Сжатый список требований для сверки на токен документа (короткие формулировки вместо блоков)."""
 SET_CHECK_OUTPUT_TOKENS = 12_000
+GAPS_OUTPUT_PER_TOKEN = 1.2
+"""Ответ прохода на пропуски (``--gaps``) на токен части: разбор по блокам и находки (замер 27.11)."""
 
 
 @dataclass(frozen=True)
@@ -95,6 +97,8 @@ def estimate_run(plan: PartPlan, cfg: RunConfig) -> RunEstimate:
         steps.append(
             StepEstimate(LLMStep.SET_CHECK, 1, _cost(cfg, LLMStep.SET_CHECK, listed, SET_CHECK_OUTPUT_TOKENS))
         )
+    if cfg.gaps:
+        steps.append(_per_part(cfg, LLMStep.GAPS, plan, GAPS_OUTPUT_PER_TOKEN, 1))
     evidence = [LLMStep.EVIDENCE, *([LLMStep.CRITIC] if cfg.critic else [])]
     steps += [
         StepEstimate(step, 1, _cost(cfg, step, view + WITNESS_OVERHEAD_TOKENS, WITNESS_OUTPUT_TOKENS))

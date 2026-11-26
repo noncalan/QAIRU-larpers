@@ -50,6 +50,8 @@ STEP_MODELS: dict[LLMStep, StepModel] = {
     LLMStep.SET_CHECK: StepModel(model=OPUS, effort=Effort.MEDIUM),
     # Сверка находок с ответами автора (--answers, #42): та же модель, что у вопросов.
     LLMStep.CLARIFY: StepModel(model=OPUS, effort=Effort.HIGH),
+    # Проход на пропуски (--gaps): та же модель, что у поиска, effort из профиля.
+    LLMStep.GAPS: StepModel(model=OPUS, effort=Effort.MEDIUM),
 }
 
 
@@ -76,6 +78,10 @@ SEARCH_INPUT = SearchInput.BLOCKS
 CHECKLISTS = True
 """Доменные чек-листы с триггерами в промпте поиска по умолчанию (#35). Выключаются ``--no-checklists``;
 решение по умолчанию и цифры eval: описание PR #35 и ``src/validator/checklists/README.md``."""
+
+GAPS = False
+"""Проход на пропуски (шаг 4г) по умолчанию выключен: включается ``--gaps``. Чтобы включить по умолчанию,
+нужна перезапись записей e2e живыми вызовами: находки меняются, а с ними входы следующих шагов."""
 
 CALL_TIMEOUT_S = 1200
 """Таймаут одного вызова: проход Opus xhigh идёт до 7,5 минуты (исследование 21), берём с запасом."""
@@ -115,6 +121,7 @@ def step_models(profile: Profile) -> dict[LLMStep, StepModel]:
     models = dict(STEP_MODELS)
     models[LLMStep.SEARCH] = StepModel(model=OPUS, effort=PROFILES[profile].search_effort)
     models[LLMStep.SET_CHECK] = StepModel(model=OPUS, effort=PROFILES[profile].search_effort)
+    models[LLMStep.GAPS] = StepModel(model=OPUS, effort=PROFILES[profile].search_effort)
     return models
 
 
@@ -159,6 +166,7 @@ def load_config(
     ocr: bool | None = None,
     env_file: Path | None = None,
     critic: bool = False,
+    gaps: bool | None = None,
 ) -> RunConfig:
     load_env(env_file)
     pdf_engine = (pdf_backend or os.environ.get(PDF_BACKEND_ENV) or PDF_BACKEND).lower()
@@ -178,6 +186,7 @@ def load_config(
         answers_path=answers_path,
         ask=ask,
         critic=critic,
+        gaps=gaps if gaps is not None else GAPS,
         max_budget_usd=max_budget_usd,
         pdf_backend=cast(PdfBackendName, pdf_engine),
         search_input=search_input if search_input is not None else SEARCH_INPUT,
@@ -192,6 +201,7 @@ def load_config(
 
 __all__ = [
     "CHECKLISTS",
+    "GAPS",
     "PROFILES",
     "SEARCH_INPUT",
     "STEP_MODELS",

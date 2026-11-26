@@ -26,6 +26,7 @@ STEP_LABELS: dict[str, str] = {
     LLMStep.SEARCH.value: "Поиск дефектов (проходы)",
     LLMStep.SEARCH_TRANSFER.value: "Перенос находок в JSON",
     LLMStep.SET_CHECK.value: "Сверка требований между частями",
+    LLMStep.GAPS.value: "Проход на пропуски",
     LLMStep.EVIDENCE.value: "Пример-свидетель",
     LLMStep.CRITIC.value: "Критик находок",
     LLMStep.TEST_DRAFT.value: "Попытка тест-кейса",

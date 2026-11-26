@@ -13,6 +13,7 @@
 | части | план не построился: документ целиком; длинный документ: ИНФО LLM-070 с оценкой цены до вызовов |
 | 4 поиск | упал проход: «K−1 из K»; упали все: отчёт по линтеру, код 5 |
 | 4в сверка между частями | находки частей остаются, предупреждение LLM-072 |
+| 4г проход на пропуски (``--gaps``) | находки поиска остаются, предупреждение LLM-074 |
 | 5 слияние, 7 верификатор | внутренняя ошибка, код 1, отчёт из того, что есть |
 | 6 доказательства | упал свидетель или критик: находки без него, предупреждение |
 | 8 вопросы | редактор упал: вопросы кодом без редактуры; шаг упал: раздел без вопросов; предупреждение |
@@ -56,6 +57,7 @@ from validator.estimate import describe_estimate, estimate_run
 from validator.evidence import gather
 from validator.evidence_testdraft import draft_tests
 from validator.evidence_testdraft_links import link_gaps
+from validator.gaps import find_gaps
 from validator.ingest import guard, parse
 from validator.ingest.quality import review
 from validator.lint import lint
@@ -121,6 +123,7 @@ class _State:
     passes: list[PassResult] = field(default_factory=list)
     plan: PartPlan | None = None
     set_check: list[CandidateFinding] = field(default_factory=list)
+    gaps: list[CandidateFinding] = field(default_factory=list)
     merged: list[MergedFinding] = field(default_factory=list)
     verification: Verification | None = None
     questions: list[Question] = field(default_factory=list)
@@ -289,6 +292,14 @@ def _cross_parts(state: _State, seg: Segmentation, plan: PartPlan, llm: LLMClien
     return outcome.candidates
 
 
+def _find_gaps(state: _State, doc: ParsedDocument, plan: PartPlan, llm: LLMClient) -> list[CandidateFinding]:
+    """Шаг 4г (``--gaps``): пропуски сверх того, что уже нашли поиск, линтер и сверка между частями."""
+    known = [c for p in state.passes if p.ok for c in p.candidates] + state.lint_hits + state.set_check
+    outcome = find_gaps(doc, plan, known, llm, state.cfg)
+    state.diagnostics.extend(outcome.diagnostics)
+    return outcome.candidates
+
+
 def _load_answers(state: _State) -> AnswersFile | None:
     """Файл ответов автора (--answers). CLI проверяет его до прогона (код 2), здесь сбой не роняет прогон."""
     path = state.cfg.answers_path
@@ -401,7 +412,15 @@ def _execute(state: _State) -> None:
         list,
         action="Противоречия и повторы между частями не сверены",
     )
-    passes, rules = state.passes, [*state.lint_hits, *state.set_check]
+    if cfg.gaps:
+        state.gaps = _step(
+            state,
+            "gaps",
+            lambda: _find_gaps(state, doc, plan, llm),
+            list,
+            action="Пропуски отдельным проходом не искались",
+        )
+    passes, rules = state.passes, [*state.lint_hits, *state.set_check, *state.gaps]
     state.merged = _step(
         state,
         "merge",

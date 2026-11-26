@@ -94,12 +94,10 @@ def prompts_sha256(root: Path = PROMPTS_DIR) -> str:
 
 
 def _models(cfg: RunConfig) -> dict[str, str]:
-    """Шаг → «модель · effort». Сверку с ответами автора показываем, только если ответы переданы."""
-    return {
-        step.value: model.label
-        for step, model in cfg.step_models.items()
-        if step is not LLMStep.CLARIFY or cfg.answers_path is not None
-    }
+    """Шаг → «модель · effort». Сверку с ответами автора показываем, только если ответы переданы, проход на
+    пропуски, только если он включён (``--gaps``)."""
+    optional = {LLMStep.CLARIFY: cfg.answers_path is not None, LLMStep.GAPS: cfg.gaps}
+    return {step.value: model.label for step, model in cfg.step_models.items() if optional.get(step, True)}
 
 
 def _file_sha256(path: Path | None) -> str | None:

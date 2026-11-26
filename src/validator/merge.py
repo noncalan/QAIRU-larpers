@@ -142,6 +142,11 @@ class _Prepared:
         return src.rule_id if src.kind in _RULE_SOURCES else None
 
     @property
+    def is_gap(self) -> bool:
+        """Находка прохода на пропуски (шаг 4г): свой вызов модели, в N из K не считается."""
+        return self.cand.source.kind is SourceKind.GAPS
+
+    @property
     def longest_located(self) -> int:
         return max((s[1] - s[0] for s in self.spans if s), default=0)
 
@@ -312,9 +317,21 @@ def _distinct_lint_rules(a: _Prepared, b: _Prepared) -> bool:
     return a.lint_rule is not None and b.lint_rule is not None and a.lint_rule != b.lint_rule
 
 
+def _gap_needs_gist(a: _Prepared, b: _Prepared) -> bool:
+    """Находка прохода на пропуски против находки модели (поиска или того же прохода на пропуски).
+
+    Проход на пропуски цитирует место, где недостающее должно стоять, то есть фразу, о которой у поиска
+    уже есть находка про другое («не задана валюта» и «не сказано, входит ли граница» на одном числе).
+    Общая цитата и общее свойство Complete их не склеивают: нужна одна суть, как у находок одного прохода.
+    """
+    return (a.is_gap or b.is_gap) and a.lint_rule is None and b.lint_rule is None
+
+
 def _similarity(a: _Prepared, b: _Prepared) -> float:
     """0, если кандидаты разные; иначе похожесть цитат (не меньше ``MIN_QUOTE_OVERLAP``)."""
     if _distinct_lint_rules(a, b) or not _same_place(a, b):
+        return 0.0
+    if _gap_needs_gist(a, b) and not _same_gist(a, b):
         return 0.0
     if not (compatible(a.cand, b.cand) or _rule_relates(a, b)):
         return 0.0
@@ -337,7 +354,10 @@ def _needs_direct_edge(a: _Prepared, b: _Prepared) -> bool:
     линтера и две находки с несколькими цитатами (противоречия «A и B» и «A и C» не сливаются через
     находку только про A)."""
     return (
-        _same_pass(a, b) or _distinct_lint_rules(a, b) or (len(a.norm_quotes) > 1 and len(b.norm_quotes) > 1)
+        _same_pass(a, b)
+        or _distinct_lint_rules(a, b)
+        or _gap_needs_gist(a, b)
+        or (len(a.norm_quotes) > 1 and len(b.norm_quotes) > 1)
     )
 
 
@@ -498,8 +518,10 @@ def _severity_hint(cluster: Sequence[_Prepared], voters: Sequence[_Prepared]) ->
 
 
 def _build(cluster: Sequence[_Prepared], mid: str, of: int, block_order: dict[str, int]) -> MergedFinding:
-    # Голосуют проходы; линтер голосует, только если кластер целиком из линтера.
-    voters = [p for p in cluster if p.pass_index is not None] or list(cluster)
+    # Голосуют проходы, без них проход на пропуски; линтер голосует, только если кластер целиком из линтера.
+    voters = (
+        [p for p in cluster if p.pass_index is not None] or [p for p in cluster if p.is_gap] or list(cluster)
+    )
     first = min(voters, key=lambda p: (-p.longest_located, p.key)).cand
     prop = _vote([p.cand.property for p in voters], first.property)
     defect = _vote([p.cand.defect_type for p in voters], first.defect_type)
