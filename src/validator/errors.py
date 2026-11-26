@@ -77,6 +77,8 @@ LLM_QUESTIONS_FAILED = "LLM-050"
 LLM_QUESTIONS_CHECKED = "LLM-051"  # код поправил или отбросил карточки редактора вопросов
 LLM_QUESTIONS_CRITIC_FAILED = "LLM-052"  # критик-самоответ не сработал: вопросы не перепроверены
 LLM_QUESTIONS_WITHDRAWN = "LLM-053"  # ИНФО: критик снял вопросы, ответ на которые есть в документе
+LLM_TEST_DRAFT_FAILED = "LLM-060"  # попытка теста не сработала: находки без черновика теста
+LLM_TEST_DRAFT_CHECKED = "LLM-061"  # ИНФО: код поправил черновики (значение без цитаты стало пропуском)
 
 # Настройки и флаги.
 CFG_BACKEND_UNAVAILABLE = "CFG-001"

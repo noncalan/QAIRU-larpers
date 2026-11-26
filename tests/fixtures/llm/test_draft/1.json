@@ -1,0 +1,220 @@
+{
+  "duration_api_ms": 61593,
+  "stop_reason": "end_turn",
+  "session_id": "00000000-0000-0000-0000-000000000000",
+  "total_cost_usd": 0.136906,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 12408,
+    "cache_read_input_tokens": 0,
+    "output_tokens": 8727,
+    "output_tokens_details": {
+      "thinking_tokens": 6286
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 12408,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 8727,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 12408,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 12408
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 8727,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 12408,
+      "webSearchRequests": 0,
+      "costUSD": 0.136906,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 6286,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 12408,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n**M-001.** Нужно знать, какой счётчик растёт у покупки, совершённой 31 января и проведённой 1 февраля. Ф-2 привязывает месяц к дате совершения покупки, то есть к январю. Критерий приёмки ждёт рост февральского счётчика. Единого результата нет, поэтому пропуск, в котором названы оба места.\n\n**M-002.** Нужно знать, с какого статуса покупка входит в расходы. Документ говорит только «проведённые покупки» и не определяет, что это значит: авторизация или клиринг. Пропуск.\n\n**M-003.** Срок «в течение минуты» в документе есть. Нет доли событий, условий нагрузки и точки отсчёта (какой компонент получает событие и от какого момента идёт минута). Это три пропуска.\n\n**M-005.** Описание в таблице противоречиво, но логика метода, правила, параметры и примеры ответа однозначно описывают сохранение. Отдельного сценария чтения в документе нет. Тест различает сохранение и чтение по состоянию настройки до и после вызова, и все значения результата есть в документе.\n\n## Ответ\n\n```json\n{\n  \"drafts\": [\n    {\n      \"finding\": \"M-001\",\n      \"can_write\": false,\n      \"precondition\": \"Активная карта KZT. Покупка на 4 000 ₸ совершена 31 января в 23:58 по Алматы и ещё не проведена. Известны текущие значения январского и февральского счётчиков расходов этой карты.\",\n      \"steps\": [\n        \"Провести покупку 1 февраля в 00:03 по Алматы.\",\n        \"Сравнить январский и февральский счётчики с исходными значениями.\"\n      ],\n      \"expected\": \"Счётчик [?1] вырос на 4 000 ₸, второй счётчик не изменился.\",\n      \"values\": [\n        {\"value\": \"4 000 ₸\", \"quote\": \"Покупка 31 января в 23:58 на 4 000 ₸\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"какой месячный счётчик должен вырасти: правило о месяце по дате совершения покупки в Алматы даёт январь, критерий приёмки «Февральский счётчик вырос на 4 000 ₸» даёт февраль; единого результата в документе нет\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-002\",\n      \"can_write\": false,\n      \"precondition\": \"Активная карта KZT, известна сумма расходов за текущий месяц. Процессинг готов прислать по карте авторизацию покупки на 1 000 ₸ (сумму выбирает тестировщик), а затем клиринг по ней.\",\n      \"steps\": [\n        \"Передать в сервис расходов авторизацию покупки на 1 000 ₸ без клиринга.\",\n        \"Посмотреть сумму расходов за месяц.\",\n        \"Передать клиринг по той же покупке.\",\n        \"Снова посмотреть сумму расходов за месяц.\"\n      ],\n      \"expected\": \"В расходы входят только проведённые покупки. Покупка учитывается с момента, когда она получает статус [?1]: до него сумма за месяц не меняется, с него вырастает на сумму покупки.\",\n      \"values\": [\n        {\"value\": \"проведённые покупки\", \"quote\": \"В расходы входят проведённые покупки.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"статус или стадия обработки покупки (после авторизации или после клиринга), с которой она считается «проведённой» и входит в расходы\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-003\",\n      \"can_write\": false,\n      \"precondition\": \"Активная карта KZT, уведомление включено, порог 50 000 ₸, расходы за месяц 48 500 ₸. Есть способ зафиксировать момент получения события и момент передачи push на отправку.\",\n      \"steps\": [\n        \"Отправить событие о проведённой покупке на 1 500 ₸, чтобы расходы достигли порога.\",\n        \"Зафиксировать момент получения события.\",\n        \"Зафиксировать момент, когда сервис передал push на отправку.\",\n        \"Вычислить разницу между моментами.\"\n      ],\n      \"expected\": \"Для [?1] событий при нагрузке [?2] push передан на отправку в течение минуты, считая от [?3].\",\n      \"values\": [\n        {\"value\": \"в течение минуты\", \"quote\": \"Сервис передаёт push на отправку в течение минуты после получения события.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"доля событий, для которых должен выполняться срок: все или процентиль (например, 95%)\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"условия нагрузки (число событий в единицу времени), при которых срок должен выполняться\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"точка отсчёта: какой компонент получает событие («Сервис» не назван) и какой момент считается получением события и передачей на отправку\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-005\",\n      \"can_write\": true,\n      \"precondition\": \"Dev-среда, пользователь вошёл в сессию владельца карты demo-42. Для карты уже сохранена настройка: порог 30 000 ₸, уведомление выключено (значения выбирает тестировщик).\",\n      \"steps\": [\n        \"Отправить GET-запрос на /alerts/saveLimit с токеном владельца и параметрами cardId=demo-42, amount=50000, enabled=1.\",\n        \"Сравнить тело ответа с ожидаемым.\",\n        \"Открыть Карты → Расходы → Уведомления и посмотреть сохранённый порог и переключатель.\"\n      ],\n      \"expected\": \"Ответ успешный (200 или 201), тело {\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}. Прежняя настройка заменена: порог 50 000 ₸, уведомление включено. Метод не вернул прежние значения и не оставил их без изменений.\",\n      \"values\": [\n        {\"value\": \"{\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}\", \"quote\": \"{\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}\"},\n        {\"value\": \"200 или 201\", \"quote\": \"Если результат 200 или 201 — успешный.\"},\n        {\"value\": \"заменяет действующую настройку\", \"quote\": \"Повторное сохранение заменяет действующую настройку.\"}\n      ],\n      \"gaps\": [],\n      \"note\": \"Описание метода называет и сохранение, и чтение, но логика метода, имя метода, обязательные параметры amount и enabled и пример ответа задают только сохранение. Сценария чтения в документе нет. Тест различает сохранение и чтение по состоянию настройки до и после вызова. Формулировку описания автору стоит исправить, но на ожидаемый результат это не влияет.\"\n    }\n  ]\n}\n```",
+  "ttft_ms": 48688,
+  "type": "result",
+  "duration_ms": 62473,
+  "uuid": "00000000-0000-0000-0000-000000000000",
+  "ttft_stream_ms": 959,
+  "time_to_request_ms": 89,
+  "time_to_request_phases_ms": {
+    "other": 11,
+    "system_prompt": 2,
+    "resume_other": 1,
+    "process_user_input": 4,
+    "input_attachments": 9,
+    "input_hooks": 3,
+    "conversation_append": 1,
+    "tool_pool_refresh": 2,
+    "init_message": 8,
+    "init_frame_send": 5,
+    "engine_pickup": 1,
+    "loop_entry": 10,
+    "message_prep": 1,
+    "model_config_wait": 2,
+    "autocompact": 1,
+    "request_announcements": 8,
+    "query_setup": 0,
+    "model_gates": 1,
+    "tool_schema_build": 2,
+    "message_normalization": 3,
+    "client_creation": 5,
+    "request_build": 9
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 39,
+  "time_to_request_cpu_ms": 96,
+  "time_to_request_major_faults": 0,
+  "process_rss_mib_turn_start": 203,
+  "process_anon_mib_turn_start": 125,
+  "process_rss_mib_result": 204,
+  "process_anon_mib_result": 119,
+  "process_peak_rss_mib": 221,
+  "process_cpu_ms_turn": 987,
+  "process_wall_ms_turn": 62472,
+  "tool_pool_build_count": 4,
+  "tool_pool_build_lapsed_count": 1,
+  "tool_pool_moved_at_lapse_count": 0,
+  "tool_pool_limit_ms": 30000,
+  "process_cpu_ms_streaming": 728,
+  "process_wall_ms_streaming": 60711,
+  "main_stream_count": 1,
+  "main_stream_event_count": 437,
+  "main_stream_chunk_count": 431,
+  "process_turn_states": {
+    "main_stream": {
+      "cpu_ms": 728,
+      "wall_ms": 60711,
+      "entries": 1
+    },
+    "first_event_wait": {
+      "cpu_ms": 124,
+      "wall_ms": 869,
+      "entries": 1
+    },
+    "before_first_request": {
+      "cpu_ms": 96,
+      "wall_ms": 88,
+      "entries": 1
+    },
+    "after_last_request": {
+      "cpu_ms": 39,
+      "wall_ms": 804,
+      "entries": 1
+    }
+  },
+  "input_attachments_detail": {
+    "slowest_producer": "deferred_tools_delta",
+    "slowest_producer_ms": 1,
+    "cpu_ms": 10,
+    "major_faults": 0,
+    "setup_ms": 0,
+    "prompt_producers_ms": 0,
+    "ambient_start_ms": 4,
+    "ambient_wait_ms": 1,
+    "render_ms": 1,
+    "producers": 44,
+    "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+    "betas_ms": 1,
+    "waits_ms": 0,
+    "placement_ms": 1,
+    "render_ms": 0,
+    "after_ms": 0,
+    "other_ms": 0,
+    "tools": 0,
+    "new_schemas": 0
+  },
+  "message_normalization_detail": {
+    "before_ms": 0,
+    "normalize_ms": 3,
+    "images_ms": 0,
+    "post_process_ms": 0,
+    "after_ms": 0,
+    "other_ms": 0,
+    "messages": 8,
+    "wire_messages": 2
+  },
+  "request_build_detail": {
+    "records_ms": 0,
+    "system_ms": 2,
+    "headers_ms": 1,
+    "cache_break_record_ms": 1,
+    "plans_ms": 1,
+    "retry_setup_ms": 1,
+    "sent_build_ms": 3,
+    "record_attempt_ms": 0,
+    "other_ms": 0,
+    "sent_build_safety_context_ms": 0,
+    "sent_build_cache_breakpoints_ms": 1,
+    "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 959,
+  "time_to_request_from_spawn_ms": 425538,
+  "warm_spare_claimed": false,
+  "flag_fetch_kick": "not_asked_warm",
+  "time_origin_ms": 1795660227570.1978,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "process_start_tuning": 0
+}

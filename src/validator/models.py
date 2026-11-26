@@ -913,8 +913,36 @@ class Witness(Contract):
     note: str = ""
 
 
+class DraftValue(Contract):
+    """Значение, которое черновик теста взял из документа, с цитатой-основанием (шаг 6, #40)."""
+
+    value: str = Field(description="Значение как оно записано в черновике: «5», «30 секунд»")
+    quote: str = Field(description="Цитата из документа, откуда значение, как её дала модель")
+    verified: bool = Field(default=False, description="Код нашёл цитату в документе и значение в ней")
+    anchor: Anchor | None = Field(default=None, description="Место цитаты, если она сверена")
+
+
+class DraftGap(Contract):
+    """Пропуск ``[?N]`` черновика теста: чего не хватает и какой вопрос автору его закрывает (#40)."""
+
+    number: int = Field(ge=1, description="Номер пропуска: в тексте он записан как [?1]")
+    missing: str = Field(description="Чего не хватает для ожидаемого результата")
+    part: str = Field(default="", description="Где пропуск: предусловие, шаги или ожидаемый результат")
+    replaced: str | None = Field(
+        default=None, description="Значение, которое модель назвала без цитаты: код заменил его на пропуск"
+    )
+    question_id: str | None = Field(default=None, description="Q-NN, который закрывает пропуск")
+    question_withdrawn: bool = Field(
+        default=False, description="Вопрос снят критиком: ответ на него нашёлся в документе"
+    )
+
+
 class TestDraft(Contract):
-    """Попытка тест-кейса (шаг 6): где значения нет, пропуск [?] с тем, чего не хватает."""
+    """Попытка тест-кейса (шаг 6): где значения нет, пропуск [?] с тем, чего не хватает.
+
+    ``action`` это шаги одной строкой (для шага вопросов), ``steps`` те же шаги списком для отчёта.
+    ``gaps`` это ``missing`` каждого пропуска (его читает шаг вопросов), подробности в ``gap_items``.
+    """
 
     __test__ = False  # не путать pytest: это не тестовый класс
 
@@ -923,6 +951,10 @@ class TestDraft(Contract):
     expected: str = ""
     gaps: list[str] = Field(default_factory=list)
     complete: bool = False
+    steps: list[str] = Field(default_factory=list)
+    values: list[DraftValue] = Field(default_factory=list)
+    gap_items: list[DraftGap] = Field(default_factory=list)
+    note: str = Field(default="", description="Почему тест можно написать (complete) или что код не принял")
 
 
 class CriticDecision(Contract):

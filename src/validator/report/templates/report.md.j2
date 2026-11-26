@@ -46,6 +46,22 @@
 {% if questions_by_finding.get(f.id) %}
 - **Вопрос автору:** {{ questions_by_finding[f.id] | join(", ") }}
 {% endif %}
+{% set td = test_drafts.get(f.id) %}
+{% if td %}
+- **Попытка теста:** {{ td.status | cell }}
+{% for label, text in td.parts %}
+  - {{ label }}: {{ text | cell }}
+{% endfor %}
+{% for line in td.gaps %}
+  - Пропуск {{ line | cell }}
+{% endfor %}
+{% for line in td.values %}
+  - Из документа {{ line | cell }}
+{% endfor %}
+{% if td.note %}
+  - Примечание модели: {{ td.note | cell }}
+{% endif %}
+{% endif %}
 {% if f.found_in %}
 - **Найдено:** в {{ f.found_in }} из {{ f.of }} проходов{% if f.sources %} ({{ f.sources | map(attribute="label") | join(", ") }}){% endif %}
 {% else %}
@@ -291,6 +307,9 @@
 - Критичных: **{{ s.critical }}**{% if s.critical_ids %} ({{ s.critical_ids | join(", ") }}){% endif %}.
 - Критичные классы по ТЗ (непроверяемые, противоречивые, неполные): {% for f in critical_classes %}{{ f.id }} {{ f.defect_type.label }}{% if not loop.last %}, {% endif %}{% else %}не найдены{% endfor %}.
 - Вопросов автору: {{ r.questions | length }}.
+{% if test_draft_line %}
+- {{ test_draft_line | cell }}
+{% endif %}
 - Отброшено кодом: {{ s.discarded_total }}{% if s.discarded_by_reason %} ({% for reason, n in s.discarded_by_reason.items() %}{{ reason.label }}: {{ n }}{% if not loop.last %}; {% endif %}{% endfor %}){% endif %}.
 - Цитаты: сверено {{ s.quotes_exact + s.quotes_fuzzy }} из {{ s.quotes_total }} (точно {{ s.quotes_exact }}, нечётко {{ s.quotes_fuzzy }}).
 {% if critic_dropped %}

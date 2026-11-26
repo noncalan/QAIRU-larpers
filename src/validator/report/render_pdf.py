@@ -38,6 +38,7 @@ from validator.report.coverage import LEGEND, NOT_CHECKED_NOTE, SHORT_LABELS, ST
 from validator.report.fmt import money, pct, plain, quote_plain, status_label, when, where
 from validator.report.render_md import report_context
 from validator.report.run_metrics import step_label
+from validator.report.testdraft_view import LABEL, DraftView
 
 PACKAGE_DIR = Path(__file__).resolve().parent
 TEMPLATE_PATH = PACKAGE_DIR / "report.typ"
@@ -174,12 +175,26 @@ def _finding_card(f: Finding, ctx: dict[str, Any]) -> Json:
         rows += [(f"{e.item_label} {i}", item) for i, item in enumerate(e.items, 1)]
     if ctx["questions_by_finding"].get(f.id):
         rows.append(("Вопрос автору", ", ".join(ctx["questions_by_finding"][f.id])))
+    rows += _draft_rows(ctx["test_drafts"].get(f.id))
     rows.append(("Найдено", _found(f)))
     if f.anchor_corrected:
         rows.append(("Примечание", "место цитаты уточнил код (модель указала другой блок)"))
     rows += [("Примечание", plain(n)) for n in f.notes]
     head = f"{f.id} · {f.severity.label} · {f.verdict.label} · {f.property.label}"
     return _card(f.severity.value, head, rows)
+
+
+def _draft_rows(td: DraftView | None) -> list[tuple[str, Any]]:
+    """Блок «Попытка теста» строками карточки: те же строки, что в Markdown (``testdraft_view``)."""
+    if td is None:
+        return []
+    rows: list[tuple[str, Any]] = [(LABEL, td.status)]
+    rows += list(td.parts)
+    rows += [("Пропуск", line) for line in td.gaps]
+    rows += [("Из документа", line) for line in td.values]
+    if td.note:
+        rows.append(("Примечание модели", td.note))
+    return rows
 
 
 def _found(f: Finding) -> str:
@@ -522,6 +537,7 @@ def _summary_section(report: Report, ctx: dict[str, Any]) -> Json:
         f"Критичных: {critical}.",
         f"Критичные классы по ТЗ (непроверяемые, противоречивые, неполные): {classes}.",
         f"Вопросов автору: {len(report.questions)}.",
+        *([ctx["test_draft_line"]] if ctx["test_draft_line"] else []),
         f"Отброшено кодом: {discarded}.",
         f"Цитаты: сверено {s.quotes_exact + s.quotes_fuzzy} из {s.quotes_total} "
         f"(точно {s.quotes_exact}, нечётко {s.quotes_fuzzy}).",
