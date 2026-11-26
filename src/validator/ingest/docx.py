@@ -26,7 +26,7 @@ from docx.opc.exceptions import PackageNotFoundError
 from lxml import etree
 
 from validator.errors import IN_DOCX_BROKEN, IN_DOCX_TEXT_BOXES, IN_DOCX_TRACKED_CHANGES, InputError
-from validator.ingest.blocks import ParsedLines, text_diagnostics
+from validator.ingest.blocks import OBLIGATION, ParsedLines, text_diagnostics
 from validator.ingest.docx_numbering import NS, Numbering, W
 from validator.models import BlockKind, DiagLevel, Diagnostic, DocKind, Extraction, SourceLine
 
@@ -35,8 +35,10 @@ CELL_SEPARATOR = " | "
 NESTED_ROW_SEPARATOR = "; "
 MAX_STYLE_DEPTH = 20
 """Глубина цепочки стилей: защита от цикла «стиль основан на самом себе» в испорченном файле."""
-FIRST_ROW_FLAG = 0x0020
-"""Бит «первая строка особая» в ``w:tblLook/@w:val``."""
+MAX_HEADER_CELL_CHARS = 32
+MAX_HEADER_CELL_WORDS = 4
+_HEADER_LABEL = re.compile(r"(?:[^\W\d_]|[ №/_()\-–‑])+")
+_HEADER_OBLIGATION = re.compile(r"\b(?:должен|может|may|can)\b", re.IGNORECASE)
 _SKIP_IN_TEXT = frozenset({"pPr", "rPr", "del", "moveFrom", "Fallback", "drawing", "pict", "object"})
 _NESTED_IN_TEXT = frozenset(
     {
@@ -278,28 +280,34 @@ def _cell_text(ctx: _Context, tc: etree._Element) -> str:
     return " ".join(" ".join(parts).split())
 
 
-def _has_header(table: etree._Element, rows: list[etree._Element]) -> bool:
-    if len(rows) < 2:
+def _is_header_label(text: str) -> bool:
+    return (
+        len(text) <= MAX_HEADER_CELL_CHARS
+        and len(text.split()) <= MAX_HEADER_CELL_WORDS
+        and bool(_HEADER_LABEL.fullmatch(text))
+        and (text == "№" or any(char.isalpha() for char in text))
+        and not OBLIGATION.search(text)
+        and not _HEADER_OBLIGATION.search(text)
+    )
+
+
+def _has_label_row(lines: list[SourceLine]) -> bool:
+    """Подписи должны отличаться по форме от первой непустой строки данных."""
+    labels = lines[0].cells
+    if len(labels) < 2 or not all(_is_header_label(cell) for cell in labels):
         return False
-    if rows[0].find("w:trPr/w:tblHeader", NS) is not None:
-        return True
-    look = table.find("w:tblPr/w:tblLook", NS)
-    if look is None:
-        return True
-    first_row = look.get(_w("firstRow"))
-    if first_row is not None:
-        return first_row not in ("0", "false")
-    value = look.get(_w("val"))
-    try:
-        return bool(int(value, 16) & FIRST_ROW_FLAG) if value else True
-    except ValueError:
-        return True
+    if any(len(line.cells) != len(labels) for line in lines[1:]):
+        return False
+    body = next((line.cells for line in lines[1:] if any(line.cells)), [])
+    return any(cell and not _is_header_label(cell) for cell in body)
 
 
 def _table_lines(ctx: _Context, table: etree._Element) -> list[SourceLine]:
     ctx.tables += 1
     rows = table.findall("w:tr", NS)
-    header = _has_header(table, rows)
+    # w:tblLook задаёт оформление. Только w:tblHeader явно помечает строку заголовком.
+    marker = rows[0].find("w:trPr/w:tblHeader", NS) if len(rows) > 1 else None
+    header = marker is not None and _val(marker) in (None, "1", "true", "on")
     above: dict[int, str] = {}
     out: list[SourceLine] = []
     for index, row in enumerate(rows):
@@ -321,6 +329,8 @@ def _table_lines(ctx: _Context, table: etree._Element) -> list[SourceLine]:
                 extraction=Extraction.TABLE,
             )
         )
+    if marker is None and len(out) > 1 and _has_label_row(out):
+        out[0] = out[0].model_copy(update={"inferred_header": True})
     return out
 
 
