@@ -49,6 +49,9 @@ class Unit:
     end: int
     text: str
     block_id: str
+    context_end: int = -1
+    """Конец требования, в котором лежит единица (``-1``: не задан). Предложение PDF бывает разрезано на
+    два блока переносом страницы: продолжение того же требования лежит в ``doc.text[end:context_end]``."""
 
     @cached_property
     def folded(self) -> str:
@@ -75,7 +78,7 @@ def build_units(doc: ParsedDocument, seg: Segmentation) -> list[Unit]:
             for start, end in _pieces(block):
                 a, b = max(start, lo), min(end, hi)
                 if b > a and (a, b) not in units:
-                    units[(a, b)] = Unit(a, b, doc.text[a:b], block.id)
+                    units[(a, b)] = Unit(a, b, doc.text[a:b], block.id, context_end=hi)
     return [units[key] for key in sorted(units)]
 
 
