@@ -1,0 +1,231 @@
+{
+ "envelope_version": 1,
+ "key": "fe489afc2aff42ea6d1f7f257ad11ba6d71bbc1cf5e53d0d268b7bf4456259d2",
+ "call_id": "test_draft.3",
+ "step": "test_draft",
+ "call_index": 3,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T12:53:33.801842+00:00",
+ "payload": {
+  "duration_api_ms": 13605,
+  "stop_reason": "end_turn",
+  "session_id": "0e665486-2343-404b-99a0-b02e91321a83",
+  "total_cost_usd": 0.041039599999999996,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 5964,
+   "cache_read_input_tokens": 2296,
+   "output_tokens": 1695,
+   "output_tokens_details": {
+    "thinking_tokens": 0
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 5964,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 1695,
+     "cache_read_input_tokens": 2296,
+     "cache_creation_input_tokens": 5964,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 5964
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 1695,
+    "cacheReadInputTokens": 2296,
+    "cacheCreationInputTokens": 5964,
+    "webSearchRequests": 0,
+    "costUSD": 0.041039599999999996,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 5964,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n**M-030.** Для ожидаемого результата нужен перечень сценариев с конкретными ответами по каждому эндпоинту: статусы, тела ответов. В документе есть список эндпоинтов и только один пример с кодом: неуникальный ИНН даёт HTTP 409. Он закрывает один сценарий из десятков. Для остальных нет ни кодов успеха (200/201/204), ни формата тела ошибки, ни кодов 401/403. Из общих кодов 400, 404, 409 не видно, какой код на какую ситуацию. «Приветствуется» относится к Postman-коллекции, это необязательное пожелание, а не результат. Пропуски: коды успеха и формат ответов. Для цитаты про 409 возьму значение из B064.\n\n**M-031.** Тест на «чистый код, SOLID» требует измеримого порога: метрики, инструмента, допустимых значений. Документ их не называет. Есть только структурные требования: перечень пакетов и отделение моделей БД от DTO. Но это другое поведение, чем SOLID, и сужать тест до него нельзя. Поэтому ожидаемый результат с пропуском: чем и по какому порогу измерять и что считать нарушением. Пакеты и разделение моделей можно упомянуть как проверяемую часть, но находка о критерии в целом.\n\n## Ответ\n\n```json\n{\n  \"drafts\": [\n    {\n      \"finding\": \"M-030\",\n      \"can_write\": false,\n      \"precondition\": \"Приложение запущено, миграции применены, пользователь зарегистрирован и вошёл (есть session cookie). В системе уже есть компания с ИНН «1234567890».\",\n      \"steps\": [\n        \"Отправить POST /api/companies с именем компании и ИНН «1234567890», который уже занят.\",\n        \"Отправить POST /api/companies с новым уникальным ИНН и корректными данными.\",\n        \"Отправить GET /api/companies/{id} для несуществующего id.\",\n        \"Отправить GET /api/companies без session cookie.\"\n      ],\n      \"expected\": \"Шаг 1: HTTP 409. Шаг 2: HTTP [?1], в теле [?2]. Шаг 3: HTTP [?3], тело ошибки [?4]. Шаг 4: HTTP [?5].\",\n      \"values\": [\n        {\"value\": \"HTTP 409\", \"quote\": \"Пример: попытка создания компании с неуникальным ИНН должна возвращать HTTP 409.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"код успешного ответа создания компании (200 или 201): в документе не указан ни для одного эндпоинта\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"состав тела успешного ответа (какие поля возвращаются): документ задаёт только поля сущности и запроса\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"код ответа для несуществующей или чужой компании: в документе есть только общий список «HTTP 400, 404, 409» без привязки к ситуациям\", \"part\": \"expected\"},\n        {\"number\": 4, \"missing\": \"формат «структурированной ошибки»: поля и тексты не заданы\", \"part\": \"expected\"},\n        {\"number\": 5, \"missing\": \"код ответа на запрос без авторизации (401 или 403): в документе не назван\", \"part\": \"expected\"}\n      ],\n      \"note\": \"Критерий «корректная работа всех эндпоинтов» не раскрыт перечнем сценариев. Однозначно задан только один сценарий (409 при неуникальном ИНН). Postman-коллекция «приветствуется», то есть не обязательна, и в тест не входит.\"\n    },\n    {\n      \"finding\": \"M-031\",\n      \"can_write\": false,\n      \"precondition\": \"Есть исходный код решения и согласованный инструмент статического анализа или чек-лист ревью.\",\n      \"steps\": [\n        \"Прогнать код через [?1].\",\n        \"Сравнить результаты по принципам SOLID с допустимым порогом.\",\n        \"Оформить результат проверки по каждому принципу.\"\n      ],\n      \"expected\": \"Решение признано соответствующим критерию «чистый код, SOLID», если [?2]; иначе перечислены нарушения.\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"чем измерять качество кода: инструмент, набор правил или чек-лист ревью; в документе не назван\", \"part\": \"steps\"},\n        {\"number\": 2, \"missing\": \"измеримый порог соответствия: метрики и допустимые значения или перечень проверяемых признаков для каждого принципа SOLID; в документе только слова «чистый код, соблюдение принципов SOLID»\", \"part\": \"expected\"}\n      ],\n      \"note\": \"В документе есть лишь структурные требования (набор пакетов, модели БД отделены от DTO), но они не раскрывают критерий SOLID, поэтому тест ограничен ими быть не может.\"\n    }\n  ]\n}\n```",
+  "ttft_ms": 13699,
+  "type": "result",
+  "duration_ms": 16441,
+  "uuid": "0c326a51-c56a-4366-b279-36fbabb3f33f",
+  "ttft_stream_ms": 2120,
+  "time_to_request_ms": 119,
+  "time_to_request_phases_ms": {
+   "other": 11,
+   "system_prompt": 3,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 39,
+   "input_hooks": 3,
+   "conversation_append": 1,
+   "tool_pool_refresh": 1,
+   "init_message": 8,
+   "init_frame_send": 5,
+   "engine_pickup": 1,
+   "loop_entry": 5,
+   "message_prep": 2,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "request_announcements": 8,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 3,
+   "message_normalization": 3,
+   "client_creation": 8,
+   "request_build": 10
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 68,
+  "time_to_request_cpu_ms": 131,
+  "time_to_request_major_faults": 0,
+  "process_rss_mib_turn_start": 201,
+  "process_anon_mib_turn_start": 123,
+  "process_rss_mib_result": 207,
+  "process_anon_mib_result": 120,
+  "process_peak_rss_mib": 223,
+  "process_cpu_ms_turn": 780,
+  "process_wall_ms_turn": 16440,
+  "tool_pool_build_count": 3,
+  "tool_pool_build_lapsed_count": 0,
+  "tool_pool_moved_at_lapse_count": 0,
+  "tool_pool_limit_ms": 30000,
+  "process_cpu_ms_streaming": 374,
+  "process_wall_ms_streaming": 11591,
+  "main_stream_count": 1,
+  "main_stream_event_count": 354,
+  "main_stream_chunk_count": 347,
+  "process_turn_states": {
+   "main_stream": {
+    "cpu_ms": 374,
+    "wall_ms": 11591,
+    "entries": 1
+   },
+   "first_event_wait": {
+    "cpu_ms": 216,
+    "wall_ms": 1999,
+    "entries": 1
+   },
+   "before_first_request": {
+    "cpu_ms": 130,
+    "wall_ms": 119,
+    "entries": 1
+   },
+   "after_last_request": {
+    "cpu_ms": 60,
+    "wall_ms": 2731,
+    "entries": 1
+   }
+  },
+  "input_attachments_detail": {
+   "slowest_producer": "at_mentioned_files",
+   "slowest_producer_ms": 26,
+   "cpu_ms": 46,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 28,
+   "ambient_start_ms": 4,
+   "ambient_wait_ms": 2,
+   "render_ms": 1,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 1,
+   "waits_ms": 0,
+   "placement_ms": 1,
+   "render_ms": 0,
+   "after_ms": 1,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 3,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 2,
+   "headers_ms": 2,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 1,
+   "sent_build_ms": 3,
+   "record_attempt_ms": 0,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 1,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 2121,
+  "time_to_request_from_spawn_ms": 552301,
+  "warm_spare_claimed": false,
+  "flag_fetch_kick": "not_asked_warm",
+  "time_origin_ms": 1795697596536.9722,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "process_start_tuning": 0
+ }
+}
