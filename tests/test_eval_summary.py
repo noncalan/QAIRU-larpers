@@ -20,6 +20,7 @@ from evals.summary import (
     load_config,
     num,
     pct,
+    read_precision,
     spread,
     summary_table,
     unstable_gold,
@@ -84,7 +85,7 @@ def test_summary_table_has_one_cell_per_configuration_and_pending_precision() ->
     rows = summary_table(cfgs)
 
     assert all(r.count("|") == rows[0].count("|") for r in rows)
-    assert any("Precision" in r and r.count("ждёт #49") == 2 for r in rows)
+    assert any("Precision" in r and r.count("ждёт раунда #49") == 2 for r in rows)
 
 
 def test_quote_segments_split_glued_quotes_and_drop_short_ones() -> None:
@@ -150,3 +151,20 @@ def test_load_config_reports_missing_agent_report_without_traceback(tmp_path: Pa
 
     with pytest.raises(EvalError):
         load_config("B", "B", broken, DOCUMENT)
+
+
+def test_read_precision_takes_strict_and_soft_share_from_both_labelers() -> None:
+    path = RESULTS / "2026-11-26-precision-pilot-e2e-md.json"
+
+    cells = read_precision(path)
+
+    assert set(cells) == {"agent", "baseline"}
+    assert cells["baseline"].startswith("51,2 % / 97,7 %")
+
+
+def test_read_precision_rejects_file_without_runs(tmp_path: Path) -> None:
+    broken = tmp_path / "p.json"
+    broken.write_text("{}", encoding="utf-8")
+
+    with pytest.raises(EvalError, match=r"evals\.precision"):
+        read_precision(broken)

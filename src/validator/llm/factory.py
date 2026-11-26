@@ -182,14 +182,35 @@ def make_client(cfg: RunConfig) -> tuple[LLMClient, list[Diagnostic]]:
     return _auto(cfg)
 
 
+def _align_critic(cfg: RunConfig, client: ReplayLLM) -> tuple[RunConfig, list[Diagnostic]]:
+    """Запись сделана с ``--critic``: replay включает критика, иначе его решения молча пропали бы."""
+    if cfg.critic or not client.recorded(LLMStep.CRITIC):
+        return cfg, []
+    info = Diagnostic(
+        code=LLM_REPLAYED,
+        level=DiagLevel.INFO,
+        message="Прогон в записи сделан с критиком находок (--critic)",
+        action="Критик находок включён и для replay, его решения взяты из записи",
+        step="llm",
+    )
+    return cfg.model_copy(update={"critic": True}), [info]
+
+
 def align_config(cfg: RunConfig, client: LLMClient) -> tuple[RunConfig, list[Diagnostic]]:
     """Для replay число проходов поиска и их модель берём из записи, а не из профиля по умолчанию.
 
     Иначе ``--backend replay`` без ``--profile`` пересобрал бы прогон ``quick`` как три прохода
-    (два упали бы «нет ответа»), а прогон ``submit`` искал бы ответы с другим effort.
+    (два упали бы «нет ответа»), а прогон ``submit`` искал бы ответы с другим effort. Так же из записи
+    берём, был ли включён критик находок (#39).
     """
     if not isinstance(client, ReplayLLM):
         return cfg, []
+    cfg, critic_info = _align_critic(cfg, client)
+    cfg, search_info = _align_search(cfg, client)
+    return cfg, [*critic_info, *search_info]
+
+
+def _align_search(cfg: RunConfig, client: ReplayLLM) -> tuple[RunConfig, list[Diagnostic]]:
     recorded = client.recorded(LLMStep.SEARCH)
     if not recorded:
         return cfg, []

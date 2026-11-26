@@ -282,19 +282,26 @@ def test_found_in_distribution_goes_from_the_most_stable_findings() -> None:
 def test_discarded_reasons_are_counted_in_enum_order_without_zeros() -> None:
     report = full()
 
-    assert discarded_by_reason(report.verification) == {DiscardReason.QUOTE_NOT_FOUND: 1}
+    assert list(discarded_by_reason(report.verification).items()) == [
+        (DiscardReason.QUOTE_NOT_FOUND, 1),
+        (DiscardReason.CRITIC_REJECTED, 1),
+    ]
     assert discarded_by_reason(None) == {}
 
 
 def test_critic_counts_are_zero_until_a_critic_decides() -> None:
-    report = full()
-    assert report.verification is not None
-    assert critic_counts(report.verification) == (0, 0, 0)
+    ver = full().verification
+    assert ver is not None
+    assert critic_counts(ver) == (3, 1, 1)  # фикстура #39: критик оставил, понизил и снял по находке
+    findings = [f.model_copy(update={"critic": None}) for f in ver.findings]
+    kept = [d for d in ver.discarded if d.reason is not DiscardReason.CRITIC_REJECTED]
+    clean = ver.model_copy(update={"findings": findings, "discarded": kept})
+    assert critic_counts(clean) == (0, 0, 0)
 
-    decided = report.verification.findings[0].model_copy(
+    decided = findings[0].model_copy(
         update={"critic": CriticDecision(action=CriticAction.DOWNGRADE, reason="мелочь")}
     )
-    ver = report.verification.model_copy(update={"findings": [decided, *report.verification.findings[1:]]})
+    ver = clean.model_copy(update={"findings": [decided, *findings[1:]]})
 
     assert critic_counts(ver) == (1, 1, 0)
     assert critic_counts(None) == (0, 0, 0)

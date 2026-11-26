@@ -19,8 +19,12 @@ from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 from validator.models import (
     Addressee,
+    CriticAction,
+    CriticDecision,
     DefectType,
     DiagLevel,
+    DiscardReason,
+    EvidenceMetrics,
     Finding,
     QuestionPriority,
     Quote,
@@ -28,6 +32,7 @@ from validator.models import (
     ReportStatus,
     Requirement,
     Scope,
+    Witness,
 )
 from validator.report.coverage import (
     LEGEND,
@@ -37,7 +42,7 @@ from validator.report.coverage import (
     cell_text,
     coverage_totals,
 )
-from validator.report.fmt import FILTERS
+from validator.report.fmt import FILTERS, plain, where
 from validator.report.run_metrics import step_label
 
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
@@ -46,6 +51,9 @@ NO_VIOLATIONS = "нарушений нет"
 
 _BLANK_RUNS = re.compile(r"\n{3,}")
 _CRITICAL_CLASSES = frozenset(d for d in DefectType if d.critical_class)
+
+Resolver = Callable[[Quote, Sequence[str]], list[str]]
+"""Раздел документа для цитаты (с запасным разделом находки): ``section_of`` в шаблонах."""
 
 
 @dataclass(frozen=True)
@@ -101,7 +109,7 @@ def _finding_sections(
     return sections
 
 
-def _section_resolver(requirements: Sequence[Requirement]) -> Callable[[Quote, Sequence[str]], list[str]]:
+def _section_resolver(requirements: Sequence[Requirement]) -> Resolver:
     """Раздел документа для цитаты: раздел самого узкого требования, в которое она попадает."""
     spans = [(r.anchor.char_start, r.anchor.char_end, r.section_path) for r in requirements]
 
@@ -113,6 +121,133 @@ def _section_resolver(requirements: Sequence[Requirement]) -> Callable[[Quote, S
         return list(min(inside, key=lambda item: item[0])[1]) if inside else list(fallback)
 
     return resolve
+
+
+@dataclass(frozen=True)
+class EvidenceLine:
+    """Строка карточки находки о шаге 6 (свидетель или критик): заголовок, текст, подпункты. Без разметки:
+    Markdown экранирует её фильтром ``cell``, PDF показывает как есть."""
+
+    head: str
+    text: str
+    items: tuple[str, ...] = ()
+    item_label: str = "Прочтение"
+
+
+CRITIC_DROPPED_INTRO = (
+    "Критик перепроверил рискованные находки по документу. Эти находки сняты: критик указал место документа, "
+    "которое на них отвечает, код сверил цитату-основание с документом и проверил, что она не повторяет "
+    "цитату самой находки."
+)
+
+
+def _place(q: Quote, resolve: Resolver, fallback: Sequence[str] = ()) -> str:
+    return where(q.anchor, resolve(q, fallback))
+
+
+def witness_line(w: Witness | None, resolve: Resolver, section: Sequence[str] = ()) -> EvidenceLine | None:
+    """Пример-свидетель в карточке: проверенный со сценарием и прочтениями, отклонённый или не построенный."""
+    if w is None:
+        return None
+    if not w.checked:
+        if not w.scenario.strip():
+            return EvidenceLine("Пример-свидетель", plain(w.note))
+        return EvidenceLine(
+            "Пример-свидетель не подтверждён", f"{plain(w.note)} Сценарий модели: {plain(w.scenario)}"
+        )
+    items = []
+    for r in w.readings:
+        how = f"если понимать как «{plain(r.reading)}»: " if r.reading else ""
+        place = f" ({_place(r.located, resolve, section)})" if r.located else ""
+        items.append(f"{how}по «{plain(r.quote, 200)}»{place} → {plain(r.expectation)}")
+    return EvidenceLine(
+        "Пример-свидетель (код сверил цитаты и различие ожиданий)", plain(w.scenario), tuple(items)
+    )
+
+
+def _basis(d: CriticDecision, resolve: Resolver, section: Sequence[str]) -> str:
+    if d.basis is None:
+        return ""
+    return (
+        f" Основание: «{plain(d.basis.located or d.basis.text, 200)}» ({_place(d.basis, resolve, section)})."
+    )
+
+
+def critic_line(
+    d: CriticDecision | None, resolve: Resolver, section: Sequence[str] = ()
+) -> EvidenceLine | None:
+    """Решение критика в карточке. Понижение с причиной показывает и примечание верификатора о важности."""
+    if d is None:
+        return None
+    basis = _basis(d, resolve, section)
+    if d.proposed is not None:
+        text = f"предлагал «{d.proposed.label}». {_sentence(d.reason)}{basis} {plain(d.note)}"
+        return EvidenceLine("Критик", text.strip())
+    if d.action is CriticAction.DOWNGRADE:
+        return EvidenceLine("Критик", f"понизил важность, причина в примечании.{basis}")
+    return EvidenceLine("Критик", f"подтвердил находку. {_sentence(d.reason)}{basis}")
+
+
+def _sentence(text: str) -> str:
+    """Фраза модели как предложение: с заглавной буквы и с точкой в конце."""
+    value = plain(text).rstrip(".")
+    return f"{value[:1].upper()}{value[1:]}." if value else ""
+
+
+def critic_dropped(report: Report, resolve: Resolver) -> list[str]:
+    """Находки, которые снял критик: суть, цитата находки, причина и сверенная цитата-основание."""
+    ver = report.verification
+    if ver is None:
+        return []
+    out: list[str] = []
+    for d in ver.discarded:
+        m, decision = d.finding, d.finding.critic
+        if d.reason is not DiscardReason.CRITIC_REJECTED or decision is None:
+            continue
+        what = plain(m.title or m.explanation, 200)
+        quote = f" Цитата находки: «{plain(m.quotes[0], 160)}»." if m.quotes else ""
+        out.append(
+            f"{m.mid} · {m.defect_type.label} · {m.property.label}: {what}.{quote} "
+            f"Причина: {_sentence(decision.reason)}{_basis(decision, resolve, ())}"
+        )
+    return out
+
+
+def evidence_metric_rows(m: EvidenceMetrics | None) -> list[tuple[str, str]]:
+    """Строки «Метрик прогона» о шаге 6; пусто, если шаг модель не вызывал."""
+    if m is None:
+        return []
+    rows: list[tuple[str, str]] = []
+    if m.witness_requested:
+        rows.append(
+            (
+                "Пример-свидетель",
+                f"модель ответила по {m.witness_requested} находкам: проверен кодом {m.witness_checked}, "
+                f"отклонён кодом {m.witness_rejected}, сценария нет {m.witness_declined}",
+            )
+        )
+    if not m.critic_enabled:
+        rows.append(("Критик находок", "выключен в этом прогоне, включается флагом --critic"))
+    elif m.critic_reviewed:
+        rows.append(
+            (
+                "Критик находок",
+                f"проверено {m.critic_reviewed}: оставлено {m.critic_kept}, понижено {m.critic_downgraded}, "
+                f"снято {m.critic_dropped}; код не принял как есть предложений: {m.critic_overruled}",
+            )
+        )
+    return rows
+
+
+def _evidence_lines(
+    findings: Sequence[Finding], resolve: Resolver, sections: dict[str, list[str]]
+) -> dict[str, list[EvidenceLine]]:
+    out: dict[str, list[EvidenceLine]] = {}
+    for f in findings:
+        section = sections.get(f.id, [])
+        lines = [witness_line(f.witness, resolve, section), critic_line(f.critic, resolve, section)]
+        out[f.id] = [line for line in lines if line is not None]
+    return out
 
 
 def _questions_by_finding(report: Report) -> dict[str, list[str]]:
@@ -148,6 +283,8 @@ def report_context(report: Report) -> dict[str, Any]:
         priority: [q.id for q in report.questions if q.priority is priority]
         for priority in (QuestionPriority.P0, QuestionPriority.P1)
     }
+    sections = _finding_sections(findings, requirements)
+    resolve = _section_resolver(requirements)
     return {
         "report": report,
         "findings_by_id": {f.id: f for f in findings},
@@ -157,8 +294,12 @@ def report_context(report: Report) -> dict[str, Any]:
         "set_findings": [f for f in findings if f.scope is Scope.SET],
         "critical_classes": [f for f in findings if f.defect_type in _CRITICAL_CLASSES],
         "questions_by_id": {q.id: q for q in report.questions},
-        "finding_sections": _finding_sections(findings, requirements),
-        "section_of": _section_resolver(requirements),
+        "finding_sections": sections,
+        "section_of": resolve,
+        "evidence_lines": _evidence_lines(findings, resolve, sections),
+        "critic_dropped": critic_dropped(report, resolve),
+        "critic_dropped_intro": CRITIC_DROPPED_INTRO,
+        "evidence_rows": evidence_metric_rows(report.metrics.evidence),
         "questions_by_finding": _questions_by_finding(report),
         "blocks_development": blocking[QuestionPriority.P0],
         "blocks_testing": blocking[QuestionPriority.P1],

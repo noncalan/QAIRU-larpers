@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from statistics import fmean, pstdev
@@ -34,7 +34,7 @@ from validator.text import locate_quote
 ASTANA = timezone(timedelta(hours=5))
 EMPTY = "—"
 NOTE_NAME = "summary-note.md"
-PRECISION_PENDING = "ждёт #49"
+PRECISION_PENDING = "ждёт раунда #49"
 RESULT_FIELDS = ("config", "runs", "settings", "name")
 
 
@@ -48,6 +48,7 @@ class ConfigResult:
     data: dict[str, Any]
     place_jaccard: float | None
     critical_keys: tuple[int, int] | None  # (найдены во всех прогонах, объединение): только агент
+    precision: str | None = None  # строгая / мягкая по разметке #49, готовый текст ячейки
 
     @property
     def config(self) -> dict[str, Any]:
@@ -131,6 +132,35 @@ def _critical_key_sets(run_dirs: Sequence[Path]) -> list[set[str]]:
     return sets
 
 
+def _precision_cell(entry: dict[str, Any]) -> str:
+    consensus = entry["consensus"]
+    labeled = consensus["labeled"]
+    if not labeled:
+        return EMPTY
+    strict = consensus["real"] / labeled
+    soft = (consensus["real"] + consensus["disputed"]) / labeled
+    return f"{pct(strict)} / {pct(soft)} ᵖ"
+
+
+def read_precision(path: Path) -> dict[str, str]:
+    """Precision из ``evals.precision`` по согласию двух моделей: ключи ``agent`` и ``baseline``."""
+    try:
+        data = json.loads(read_utf8(path, "Результат precision"))
+        by_run = data["by_run"]
+    except (ValueError, KeyError, TypeError) as exc:
+        raise EvalError(f"{path} не результат evals.precision (нет by_run)") from exc
+    cells: dict[str, str] = {}
+    for entry in by_run:
+        name = str(entry.get("name", ""))
+        if name.startswith("агент"):
+            cells["agent"] = _precision_cell(entry)
+        elif name.startswith("базовая линия"):
+            cells["baseline"] = _precision_cell(entry)
+    if not cells:
+        raise EvalError(f"В {path} нет срезов «агент» и «базовая линия»")
+    return cells
+
+
 def load_config(key: str, title: str, path: Path, document: Path) -> ConfigResult:
     """Результат eval и метрики, которых в нём нет: Жаккар мест и повторяемость критичных находок агента."""
     data = _read_result(path)
@@ -178,6 +208,10 @@ def _per_config(cfgs: Sequence[ConfigResult], fn: Callable[[ConfigResult], str])
     return [fn(c) for c in cfgs]
 
 
+def precision_text(cfg: ConfigResult) -> str:
+    return cfg.precision or PRECISION_PENDING
+
+
 def critical_keys_text(cfg: ConfigResult) -> str:
     if cfg.critical_keys is None or cfg.critical_keys[1] == 0:
         return EMPTY
@@ -205,7 +239,7 @@ def summary_table(cfgs: Sequence[ConfigResult]) -> list[str]:
         _row("Цитаты в отчёте есть в документе", c(lambda x: pct(x.config["quotes_final_verified"]))),
         _row("Цитаты дословно, без правок модели", c(lambda x: pct(x.config["quotes_exact"]))),
         _row("Шум (судья счёл находку пустой)", c(lambda x: pct(x.config["noise_share"]))),
-        _row("Precision (разметка двумя моделями вслепую)", [PRECISION_PENDING] * len(cfgs)),
+        _row("Precision строгая / мягкая (две модели вслепую, не люди)", c(precision_text)),
         _row("**Стабильность между прогонами**", [""] * len(cfgs)),
         _row("Жаккар найденных дефектов эталона", c(lambda x: num(x.config["gold_jaccard"], 3))),
         _row("Жаккар мест документа в находках", c(lambda x: num(x.place_jaccard, 3))),
@@ -226,7 +260,7 @@ def summary_table(cfgs: Sequence[ConfigResult]) -> list[str]:
     ]
 
 
-def render_summary(cfgs: Sequence[ConfigResult], note: str) -> str:
+def render_summary(cfgs: Sequence[ConfigResult], note: str, precision_note: str = "") -> str:
     runs = ", ".join(f"{c.key} {len(c.runs)}" for c in cfgs)
     lines = [
         "# Один промпт против агента",
@@ -238,6 +272,7 @@ def render_summary(cfgs: Sequence[ConfigResult], note: str) -> str:
         "",
         *summary_table(cfgs),
         "",
+        *([f"ᵖ {precision_note}", ""] if precision_note else []),
         note,
     ]
     return "\n".join(lines) + "\n"
@@ -358,6 +393,15 @@ def main(
     baseline: Annotated[Path, typer.Option("--a", help="Результат eval базовой линии")],
     agent: Annotated[Path, typer.Option("--b", help="Результат eval агента выбранным профилем")],
     agent_alt: Annotated[Path | None, typer.Option("--c", help="Результат eval агента, 3 прохода")] = None,
+    precision: Annotated[
+        Path | None, typer.Option(help="Результат evals.precision (#49): заполняет строку precision")
+    ] = None,
+    precision_for: Annotated[
+        str, typer.Option(help="Какой конфигурации агента принадлежит прогон из precision: B или C")
+    ] = "B",
+    precision_note: Annotated[
+        str, typer.Option(help="Сноска к строке precision: на каком прогоне и сколько проходов")
+    ] = "",
     name: Annotated[str, typer.Option(help="Имя: <дата>-<имя>.md и docs/img/<имя>.svg")] = "stability",
     title: Annotated[str, typer.Option(help="Заголовок файла стабильности")] = "Стабильность",
     note_file: Annotated[
@@ -376,6 +420,16 @@ def main(
         ]
         if agent_alt is not None:
             cfgs.append(load_config("C", "Агент, 3 прохода (C)", agent_alt, document))
+        cells = read_precision(precision) if precision is not None else {}
+        cfgs = [
+            replace(
+                c,
+                precision=cells.get(
+                    "baseline" if c.key == "A" else "agent" if c.key == precision_for else ""
+                ),
+            )
+            for c in cfgs
+        ]
         default_note = results_dir / NOTE_NAME
         used_note = note_file or (default_note if default_note.is_file() else None)
         note = read_utf8(used_note, "Примечание") if used_note is not None else ""
@@ -387,7 +441,9 @@ def main(
     img_dir.mkdir(parents=True, exist_ok=True)
     stability = results_dir / f"{now:%Y-%m-%d}-{name}.md"
     stability.write_text(render_stability(cfgs, title, now), encoding="utf-8")
-    (results_dir / "summary.md").write_text(render_summary(cfgs, note), encoding="utf-8")
+    (results_dir / "summary.md").write_text(
+        render_summary(cfgs, note, precision_note if cells else ""), encoding="utf-8"
+    )
     svg = render_svg(
         "Один промпт против агента",
         "Выше лучше. " + chart_subtitle(cfgs[0]),

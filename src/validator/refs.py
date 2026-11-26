@@ -16,13 +16,18 @@ from collections.abc import Sequence
 from validator.models import (
     Block,
     BlockKind,
+    CriticDecision,
+    DiscardedFinding,
     Finding,
+    MergedFinding,
     ParsedDocument,
     Question,
     QuestionOption,
     Segmentation,
     Verification,
     WithdrawnQuestion,
+    Witness,
+    WitnessReading,
 )
 
 _ID = r"B\d{3,}(?:\.\d+)?"
@@ -38,6 +43,10 @@ FINDING_TEXT_FIELDS = ("title", "explanation", "suggestion", "scenario", "test_g
 QUESTION_TEXT_FIELDS = ("topic", "question", "why", "if_unanswered")
 OPTION_TEXT_FIELDS = ("text", "change", "grounded_in")
 WITHDRAWN_TEXT_FIELDS = ("reason",)
+WITNESS_TEXT_FIELDS = ("scenario", "note")
+READING_TEXT_FIELDS = ("expectation", "reading")
+CRITIC_TEXT_FIELDS = ("reason", "note")
+DISCARDED_TEXT_FIELDS = ("detail",)
 
 
 class RefNamer:
@@ -96,9 +105,20 @@ def _place(block: Block) -> str:
     return f"фрагмент {section}" + (f" ({where})" if where else "")
 
 
-def _replace(
-    model: Finding | Question | QuestionOption | WithdrawnQuestion, fields: Sequence[str], namer: RefNamer
-) -> dict[str, object]:
+_Texts = (
+    Finding
+    | MergedFinding
+    | Question
+    | QuestionOption
+    | WithdrawnQuestion
+    | Witness
+    | WitnessReading
+    | CriticDecision
+    | DiscardedFinding
+)
+
+
+def _replace(model: _Texts, fields: Sequence[str], namer: RefNamer) -> dict[str, object]:
     changes: dict[str, object] = {}
     for name in fields:
         value = getattr(model, name)
@@ -109,9 +129,52 @@ def _replace(
     return changes
 
 
+def _humanize_witness(witness: Witness, namer: RefNamer) -> Witness:
+    """Сценарий и ожидания свидетеля; цитаты прочтений остаются дословными."""
+    changes = _replace(witness, WITNESS_TEXT_FIELDS, namer)
+    readings = [r.model_copy(update=_replace(r, READING_TEXT_FIELDS, namer)) for r in witness.readings]
+    if readings != witness.readings:
+        changes["readings"] = readings
+    return witness.model_copy(update=changes) if changes else witness
+
+
+def _evidence_changes(finding: Finding | MergedFinding, namer: RefNamer) -> dict[str, object]:
+    """Тексты шага 6 у находки: свидетель и решение критика (цитата-основание остаётся дословной)."""
+    changes: dict[str, object] = {}
+    if finding.witness is not None:
+        witness = _humanize_witness(finding.witness, namer)
+        if witness is not finding.witness:
+            changes["witness"] = witness
+    if finding.critic is not None:
+        fixed = _replace(finding.critic, CRITIC_TEXT_FIELDS, namer)
+        if fixed:
+            changes["critic"] = finding.critic.model_copy(update=fixed)
+    return changes
+
+
+def _notes_changes(finding: Finding, namer: RefNamer) -> dict[str, object]:
+    """Пометки карточки: в пометку о понижении критиком попадают его слова, в них бывают ID блоков."""
+    notes = [namer.text(n) for n in finding.notes]
+    return {"notes": notes} if notes != finding.notes else {}
+
+
 def humanize_finding(finding: Finding, namer: RefNamer) -> Finding:
-    changes = _replace(finding, FINDING_TEXT_FIELDS, namer)
+    changes = (
+        _replace(finding, FINDING_TEXT_FIELDS, namer)
+        | _evidence_changes(finding, namer)
+        | _notes_changes(finding, namer)
+    )
     return finding.model_copy(update=changes) if changes else finding
+
+
+def humanize_discarded(discarded: DiscardedFinding, namer: RefNamer) -> DiscardedFinding:
+    """Отброшенная находка: её тексты и причина (у снятой критиком это слова критика)."""
+    finding = discarded.finding
+    fixed = _replace(finding, FINDING_TEXT_FIELDS, namer) | _evidence_changes(finding, namer)
+    changes = _replace(discarded, DISCARDED_TEXT_FIELDS, namer)
+    if fixed:
+        changes["finding"] = finding.model_copy(update=fixed)
+    return discarded.model_copy(update=changes) if changes else discarded
 
 
 def humanize_question(question: Question, namer: RefNamer) -> Question:
@@ -141,7 +204,12 @@ def humanize(
     """Находки, вопросы и снятые вопросы без ID блоков в текстах: R-NN или место в документе вместо B012."""
     namer = RefNamer(doc, seg)
     if ver is not None:
-        ver = ver.model_copy(update={"findings": [humanize_finding(f, namer) for f in ver.findings]})
+        ver = ver.model_copy(
+            update={
+                "findings": [humanize_finding(f, namer) for f in ver.findings],
+                "discarded": [humanize_discarded(d, namer) for d in ver.discarded],
+            }
+        )
     return (
         ver,
         [humanize_question(q, namer) for q in questions],
@@ -149,4 +217,12 @@ def humanize(
     )
 
 
-__all__ = ["BLOCK_REF", "RefNamer", "humanize", "humanize_finding", "humanize_question", "humanize_withdrawn"]
+__all__ = [
+    "BLOCK_REF",
+    "RefNamer",
+    "humanize",
+    "humanize_discarded",
+    "humanize_finding",
+    "humanize_question",
+    "humanize_withdrawn",
+]
