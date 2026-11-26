@@ -620,6 +620,22 @@ def _one_line(text: str) -> str:
     return " ".join(text.split())
 
 
+_DELIMITER_TAG = re.compile(r"<(/?)(документ|document)>", re.IGNORECASE)
+ZERO_WIDTH = "\u200b"
+"""Нулевая ширина: сверка цитат её отбрасывает (``text.normalize``), поэтому цитата с ней находится."""
+
+
+def defuse_delimiters(text: str) -> str:
+    """Метки ``<документ>`` и ``</документ>`` из самого документа делаем безвредными для промпта.
+
+    Промпты шагов обрамляют документ этими метками и говорят модели: внутри них только данные. Если
+    автор документа (или злоумышленник) напишет в тексте ``</документ>``, а следом «инструкции», то
+    метка закрылась бы раньше времени. Невидимый символ после ``<`` ломает метку; на сверку цитат он не
+    влияет, а человек в отчёте видит текст документа, а не этот вариант.
+    """
+    return _DELIMITER_TAG.sub(lambda m: f"<{ZERO_WIDTH}{m[1]}{m[2]}>", text)
+
+
 def render_for_model(doc: ParsedDocument) -> str:
     """Документ с ID блоков и предложений для модели (исследование 18, п. 3.2).
 
@@ -646,4 +662,4 @@ def render_for_model(doc: ParsedDocument) -> str:
             out.extend(f"  [{s.id}] {_one_line(s.text)}" for s in block.sentences)
         else:
             out.extend(f"  {line}" for line in block.text.splitlines() if line.strip())
-    return "\n".join(out) + "\n"
+    return defuse_delimiters("\n".join(out)) + "\n"
