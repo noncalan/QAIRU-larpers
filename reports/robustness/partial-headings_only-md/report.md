@@ -1,6 +1,6 @@
 # Отчёт о проверке требований: headings_only.md
 
-Проверка по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3). Отчёт сформировал агент QAIRU validator 104b463, 2026-11-26 12:54:56 UTC.
+Проверка по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3). Отчёт сформировал агент QAIRU validator 924506e, 2026-11-26 13:08:36 UTC.
 
 ## Итог на первой странице
 
@@ -22,9 +22,9 @@
 |---|---|
 | Документ | headings_only.md (md, 40 байт) |
 | SHA-256 документа | f32c2c34faa73ac4d918ff495871acdd06bc96da623e08a4b7ac1ee0b5628e5a |
-| Дата прогона | 2026-11-26 12:54:56 UTC |
+| Дата прогона | 2026-11-26 13:08:36 UTC |
 | Длительность | 0.02 с |
-| Версия агента | 104b463 (источник: git) |
+| Версия агента | 924506e (источник: git) |
 | Хеш промптов | 7dd96b1cffa4 |
 | Способ вызова модели | фикстуры тестов (без модели) |
 | Модели по шагам | segment: claude-sonnet-5-5 · medium; search: claude-opus-5-5 · medium; search_transfer: claude-haiku-5-5 · medium; evidence: claude-opus-5-5 · high; critic: claude-opus-5-5 · high; test_draft: claude-sonnet-5-5 · high; questions: claude-opus-5-5 · high; questions_critic: claude-opus-5-5 · high; set_check: claude-opus-5-5 · medium |
