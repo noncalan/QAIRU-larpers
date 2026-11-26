@@ -30,6 +30,7 @@ from validator.llm import (
     to_payload,
 )
 from validator.llm.base import parse_cli_payload
+from validator.llm.cache import make_envelope, write_json_atomic
 from validator.llm.calllog import response_file_name
 from validator.llm.pricing import Tokens, price
 from validator.llm.schema import schema_errors
@@ -159,6 +160,68 @@ def test_cache_refresh_calls_the_model_and_rewrites(tmp_path: Path) -> None:
     assert len(live.calls) == 2
     assert reread.cached
     assert reread.structured == {"ok": False}
+
+
+class ApiStub(LiveStub):
+    backend = Backend.API
+
+
+def test_api_does_not_take_answers_cached_by_the_subscription(tmp_path: Path) -> None:
+    """Ревью Fable: ``--backend api`` после прогонов через подписку брал всё из кеша и не делал запросов."""
+    cli, api = LiveStub(), ApiStub()
+    RecordingClient(cli, cache=ResponseCache(tmp_path, CacheMode.USE, Backend.CLI)).call(request())
+
+    client = RecordingClient(api, cache=ResponseCache(tmp_path, CacheMode.USE, Backend.API))
+    resp = client.call(request())
+
+    assert len(api.calls) == 1 and not resp.cached
+    assert [r.status for r in client.records] == [CallStatus.OK]
+    assert (tmp_path / "cli").is_dir() and (tmp_path / "api").is_dir()
+
+
+def test_old_flat_cache_is_read_only_by_the_backend_that_wrote_it(tmp_path: Path) -> None:
+    """Кеш до раздела по бэкендам (``<2 знака>/<ключ>.json``) не пропадает, но и чужому не достаётся."""
+    req = request()
+    old = ResponseCache(tmp_path, CacheMode.USE).path_for(req.key)
+    write_json_atomic(old, make_envelope(req, payload(), Backend.CLI))
+
+    cli_hit = ResponseCache(tmp_path, CacheMode.USE, Backend.CLI).get(req)
+    api_hit = ResponseCache(tmp_path, CacheMode.USE, Backend.API).get(req)
+
+    assert cli_hit is not None and api_hit is None
+
+
+def test_run_cache_belongs_to_the_backend_in_use(tmp_path: Path) -> None:
+    cfg = _cfg(tmp_path)
+    req = request()
+    write_json_atomic(
+        ResponseCache(cfg.cache_dir, CacheMode.USE, Backend.CLI).path_for(req.key),
+        make_envelope(req, payload(), Backend.CLI),
+    )
+    api = ApiStub()
+
+    client = instrument(cfg, api)
+    client.call(req)
+
+    assert client.cache is not None and client.cache.backend is Backend.API
+    assert len(api.calls) == 1
+
+
+def test_all_answers_from_cache_are_flagged(tmp_path: Path) -> None:
+    """Прогон, где живая модель не вызывалась ни разу, не должен выглядеть как проверка этого пути."""
+    cache = ResponseCache(tmp_path, CacheMode.USE, Backend.API)
+    RecordingClient(ApiStub(), cache=cache).call(request())
+
+    warm = RecordingClient(ApiStub(), cache=cache)
+    warm.call(request())
+    mixed = RecordingClient(ApiStub(), cache=cache)
+    mixed.call(request())
+    mixed.call(request(2))
+
+    (note,) = [d for d in warm.diagnostics if d.code == "LLM-017"]
+    assert note.level is DiagLevel.INFO and "--cache off" in note.hint
+    assert "Все ответы модели (1) взяты из кеша" in note.message
+    assert not [d for d in mixed.diagnostics if d.code == "LLM-017"]
 
 
 def test_cache_off_neither_reads_nor_writes(tmp_path: Path) -> None:
@@ -425,9 +488,23 @@ def test_replay_finds_answer_by_key(tmp_path: Path) -> None:
     assert replay.diagnostics == []
 
 
-def test_replay_falls_back_to_step_and_index_with_warning(tmp_path: Path) -> None:
+def test_replay_refuses_answer_recorded_for_another_request(tmp_path: Path) -> None:
+    """#132: другой документ, другие ответы автора или новый промпт дают другой ключ. Ответ про чужой
+    вход не подставляется: вызов падает, шаг срабатывает по своей политике отказа."""
+    replay = ReplayLLM(_record_run(tmp_path, request(1)))
+
+    with pytest.raises(LLMError) as err:
+        RecordingClient(replay).call(request(1, prompt="Документ: другой."))
+
+    assert err.value.code == "LLM-015"
+    assert "другого документа, других ответов автора или другой версии промпта" in err.value.message
+    assert "--backend cli" in err.value.hint
+    assert replay.diagnostics == []
+
+
+def test_replay_by_position_only_on_request_with_warning(tmp_path: Path) -> None:
     run_dir = _record_run(tmp_path, request(1))
-    replay = ReplayLLM(tmp_path)  # папку отчёта тоже понимает: ищет в ней run/
+    replay = ReplayLLM(tmp_path, by_position=True)  # папку отчёта тоже понимает: ищет в ней run/
 
     resp = RecordingClient(replay).call(request(1, prompt="Документ: изменили."))
 
@@ -441,7 +518,7 @@ def test_replay_falls_back_to_step_and_index_with_warning(tmp_path: Path) -> Non
 def test_replay_warning_lists_calls_in_pipeline_order_not_arrival_order(tmp_path: Path) -> None:
     """Проходы поиска параллельны: порядок их прихода в replay случаен, а отчёт должен быть одинаковым."""
     _record_run(tmp_path, request(1), request(2), request(3))
-    replay = ReplayLLM(tmp_path)
+    replay = ReplayLLM(tmp_path, by_position=True)
     client = RecordingClient(replay)
 
     for index in (3, 1, 2):

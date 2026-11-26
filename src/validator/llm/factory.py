@@ -109,7 +109,7 @@ def _replay(cfg: RunConfig) -> tuple[LLMClient, list[Diagnostic]]:
             ),
         )
     try:
-        client = ReplayLLM(cfg.replay_dir)
+        client = ReplayLLM(cfg.replay_dir, by_position=cfg.replay_by_position)
     except LLMError as exc:
         return _unavailable(Backend.REPLAY, exc)
     info = Diagnostic(
@@ -290,7 +290,7 @@ def instrument(cfg: RunConfig, client: LLMClient) -> RecordingClient:
     use_cache = cfg.cache is not CacheMode.OFF and client.backend not in _NO_CACHE_BACKENDS
     return RecordingClient(
         client,
-        cache=ResponseCache(cfg.cache_dir, cfg.cache) if use_cache else None,
+        cache=ResponseCache(cfg.cache_dir, cfg.cache, client.backend) if use_cache else None,
         # Replay в ту же папку: ответы уже лежат там, второй экземпляр под новым ключом не пишем.
         responses_dir=None if in_place else responses_dir,
         max_budget_usd=cfg.max_budget_usd,

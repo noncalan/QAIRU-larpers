@@ -328,6 +328,8 @@ def _passport_section(report: Report, ctx: dict[str, Any]) -> Json:
         backend = f"модель не вызывалась (запрошено: {p.backend_requested.label})"
     else:
         backend = (p.backend_used or p.backend_requested).label
+        if p.calls_cached:
+            backend += f"; из кеша {p.calls_cached} из {p.calls_total} ответов"
     rows = [
         ("Документ", ctx["passport_document"]),
         ("SHA-256 документа", p.document_sha256 or "—"),

@@ -25,7 +25,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from validator.errors import LLM_BUDGET, LLMError
+from validator.errors import LLM_ALL_CACHED, LLM_BUDGET, LLMError
 from validator.llm.base import LLMClient, parse_cli_payload, to_payload
 from validator.llm.cache import ResponseCache, make_envelope, write_json_atomic
 from validator.llm.pricing import response_cost
@@ -99,7 +99,36 @@ class RecordingClient:
         backend_diags = list(found) if isinstance(found, list) else []
         with self._lock:
             failures = {code: list(items) for code, items in self._failures.items()}
-        return self.notes + [_failure_diagnostic(items) for items in failures.values()] + backend_diags
+            cached = self._all_cached()
+        return (
+            self.notes
+            + [_failure_diagnostic(items) for items in failures.values()]
+            + backend_diags
+            + ([cached] if cached is not None else [])
+        )
+
+    def _all_cached(self) -> Diagnostic | None:
+        """Живой бэкенд, а все ответы из кеша: модель в этом прогоне не вызывалась, путь к ней не проверен.
+
+        Так прогон ``--backend api`` после прогонов через тот же бэкенд выглядит как обычный, и проверка
+        «API работает» была бы ложно зелёной. Вызывается под ``self._lock``.
+        """
+        answered = [r for r in self.records if r.status is not CallStatus.RETRIED]
+        if self.backend not in LIVE_BACKENDS or not answered:
+            return None
+        if any(r.status is not CallStatus.CACHED for r in answered):
+            return None
+        return Diagnostic(
+            code=LLM_ALL_CACHED,
+            level=DiagLevel.INFO,
+            message=(
+                f"Все ответы модели ({len(answered)}) взяты из кеша: в этом прогоне модель не вызывалась "
+                f"({self.backend.label})"
+            ),
+            action="Отчёт собран из ответов, полученных этим же способом вызова раньше",
+            hint="Чтобы проверить сам вызов модели, запустите с --cache off",
+            step="llm",
+        )
 
     def spent_usd(self) -> float:
         """Сколько стоили живые вызовы этого прогона по тарифу (кеш и replay бесплатны).

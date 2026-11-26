@@ -63,6 +63,7 @@ LLM_REFUSED = "LLM-013"
 LLM_NO_FIXTURE = "LLM-014"
 LLM_REPLAY_MISSING = "LLM-015"
 LLM_REPLAY_BY_POSITION = "LLM-016"
+LLM_ALL_CACHED = "LLM-017"  # ИНФО: все ответы живого бэкенда из кеша, модель в прогоне не вызывалась
 LLM_SEGMENT_FALLBACK = "LLM-020"
 LLM_SEGMENT_BAD_REFS = "LLM-021"  # нарезка: несуществующие ID, границы части не найдены, записи не по схеме
 LLM_SEGMENT_UNCOVERED = "LLM-022"  # нарезка: блоки без решения модели («возможно пропущено»)

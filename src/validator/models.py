@@ -1435,6 +1435,10 @@ class RunConfig(Contract):
     passes: int = Field(default=3, ge=1, le=9)
     backend: Backend = Backend.AUTO
     replay_dir: Path | None = None
+    replay_by_position: bool = Field(
+        default=False,
+        description="Replay: ответ по шагу и номеру вызова, если ключ не совпал (только разработка, #132)",
+    )
     cache: CacheMode = CacheMode.USE
     cache_dir: Path = Path(".cache/validator")
     answers_path: Path | None = None
@@ -1536,6 +1540,9 @@ class Passport(Contract):
     models_actual: list[str] = Field(default_factory=list, description="Фактические модели из ответов")
     calls_total: int = 0
     calls_failed: int = 0
+    calls_cached: int = Field(
+        default=0, description="Сколько вызовов ответил кеш этого же бэкенда: модель на них не вызывалась"
+    )
     tokens: TokenUsage = Field(default_factory=TokenUsage)
     cost_usd: float | None = Field(default=None, description="Цена по тарифу API (подписка не платит)")
     exit_code: ExitCode = ExitCode.OK

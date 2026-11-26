@@ -104,6 +104,14 @@ def main(
     ] = None,
     backend: Annotated[Backend, typer.Option(help="Как вызывать модель")] = Backend.AUTO,
     replay: Annotated[Path | None, typer.Option(help="Папка run/ прошлого прогона для replay")] = None,
+    replay_by_position: Annotated[
+        bool,
+        typer.Option(
+            "--replay-by-position",
+            hidden=True,
+            help="Разработка: replay берёт ответ по шагу и номеру вызова, если ключ запроса не совпал",
+        ),
+    ] = False,
     cache: Annotated[CacheMode, typer.Option(help="Кеш ответов модели")] = CacheMode.USE,
     answers: Annotated[
         Path | None, typer.Option(help="answers.yaml с ответами автора: повторная проверка с ответами")
@@ -162,6 +170,7 @@ def main(
             passes=passes,
             backend=backend,
             replay_dir=replay,
+            replay_by_position=replay_by_position,
             cache=cache,
             answers_path=answers,
             ask=ask,
