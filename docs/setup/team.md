@@ -4,7 +4,7 @@
 
 ## 0. Что понадобится
 
-- Аккаунт GitHub и **принятое приглашение** в этот репозиторий, пока он приватный: https://github.com/noncalan/QAIRU-larpers-/invitations
+- Аккаунт GitHub и **принятое приглашение** в этот репозиторий, пока он приватный: https://github.com/noncalan/QAIRU-larpers/invitations
 - Подписка **Claude Pro или Max** (бесплатный план Claude Code не включает). Агент тоже вызывает модель через подписку (`claude -p`), ключ API не нужен.
 - Git, uv (поставит Python сам).
 
@@ -28,8 +28,8 @@
 ## 3. Клонировать репозиторий
 
 ```bash
-git clone https://github.com/noncalan/QAIRU-larpers-.git
-cd QAIRU-larpers-
+git clone https://github.com/noncalan/QAIRU-larpers.git
+cd QAIRU-larpers
 ```
 
 Пока репозиторий приватный: если git просит пароль, войди через [GitHub CLI](https://cli.github.com/) командой `gh auth login` (или клонируй через GitHub Desktop).

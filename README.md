@@ -1,6 +1,6 @@
 # QAIRU validator: проверка требований с доказательствами
 
-[![CI](https://github.com/noncalan/QAIRU-larpers-/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/noncalan/QAIRU-larpers-/actions/workflows/ci.yml)
+[![CI](https://github.com/noncalan/QAIRU-larpers/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/noncalan/QAIRU-larpers/actions/workflows/ci.yml)
 
 **CLI-агент читает документ требований (PDF, DOCX или Markdown), режет его на отдельные требования, проверяет каждое и весь набор по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3) и пишет отчёт на русском: что нарушено, где именно в документе, что исправить первым и какие вопросы задать автору.**
 
@@ -44,8 +44,8 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 Перезапустите терминал, затем:
 
 ```bash
-git clone https://github.com/noncalan/QAIRU-larpers-.git
-cd QAIRU-larpers-
+git clone https://github.com/noncalan/QAIRU-larpers.git
+cd QAIRU-larpers
 uv sync
 ```
 
