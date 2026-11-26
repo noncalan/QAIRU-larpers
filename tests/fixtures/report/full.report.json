@@ -37,7 +37,9 @@
       "cache_read_input_tokens": 0
     },
     "cost_usd": 1.62,
-    "exit_code": 0
+    "exit_code": 0,
+    "answers_file": null,
+    "answers_sha256": null
   },
   "document": {
     "name": "rooms.md",
@@ -1175,6 +1177,7 @@
       }
     }
   ],
+  "clarification": null,
   "conclusion": {
     "traffic_light": "red",
     "headline": "Начинать разработку и тестирование нельзя: критичных нарушений: 1",

@@ -32,7 +32,9 @@
       "cache_read_input_tokens": 0
     },
     "cost_usd": null,
-    "exit_code": 4
+    "exit_code": 4,
+    "answers_file": null,
+    "answers_sha256": null
   },
   "document": null,
   "input_diagnostics": [
@@ -51,6 +53,7 @@
   "verification": null,
   "questions": [],
   "questions_withdrawn": [],
+  "clarification": null,
   "conclusion": {
     "traffic_light": "red",
     "headline": "Проверка не выполнена: Файл пустой: 0 байт",

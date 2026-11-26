@@ -18,6 +18,7 @@
 | `critic_system.md`, `critic_user.md` | 6б, критик находок (#39, по умолчанию выключен, `--critic`) | Opus 5.5 | рассуждение, затем ```json со списком `decisions` (`evidence_critic.py`); снимает и понижает код по сверенной цитате-основанию |
 | `questions_system.md`, `questions_user.md` | 8б, редактор вопросов (#20) | Opus 5.5 | рассуждение, затем ```json со списком `questions` (`questions/editor.py`) |
 | `questions_critic_system.md`, `questions_critic_user.md` | 8г, критик-самоответ (#41) | Opus 5.5 | рассуждение, затем ```json со списком `reviews` (`questions/critic.py`); снимает вопрос код по сверенной цитате-ответу |
+| `clarify_system.md`, `clarify_user.md` | 8е, сверка с ответами автора (#42), только с `--answers` | Opus 5.5 | рассуждение, затем ```json со списками `effects` и `new_findings` (`clarify/model.py`); закрытие и новые находки проверяет код (`clarify/apply.py`) |
 
 Слоты в пользовательских промптах (`{document}`, `{findings}`) подставляет `prompting.fill` за один проход, поэтому фигурные скобки в тексте документа не ломают шаблон.
 

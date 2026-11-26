@@ -180,6 +180,7 @@ def build_report(ctx: RunContext) -> Report:
         verification=ctx.verification,
         questions=list(ctx.questions),
         questions_withdrawn=list(ctx.questions_withdrawn),
+        clarification=ctx.clarification,
         conclusion=_conclusion(ctx, errors),
         metrics=_metrics(ctx),
         coverage=_coverage(ctx),

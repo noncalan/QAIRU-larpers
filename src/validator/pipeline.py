@@ -14,6 +14,7 @@
 | 5 слияние, 7 верификатор | внутренняя ошибка, код 1, отчёт из того, что есть |
 | 6 доказательства | упал свидетель или критик: находки без него, предупреждение |
 | 8 вопросы | редактор упал: вопросы кодом без редактуры; шаг упал: раздел без вопросов; предупреждение |
+| 8е уточнения | файл ответов не читается: ответы не учтены; сверка упала: ответы без сверки |
 | ID блоков в текстах | остаются как есть, предупреждение |
 | 9 отчёт | Markdown пишется всегда, в крайнем случае аварийный; PDF не собрался: INT-002, Markdown остаётся |
 """
@@ -29,6 +30,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TypeVar
 
+from validator.clarify import AnswersError, AnswersFile, clarify, load_answers
 from validator.errors import (
     CFG_NOT_IMPLEMENTED,
     IN_NO_TEXT,
@@ -51,6 +53,7 @@ from validator.merge import merge
 from validator.models import (
     Backend,
     CandidateFinding,
+    Clarification,
     DiagLevel,
     Diagnostic,
     DocKind,
@@ -99,6 +102,7 @@ class _State:
     verification: Verification | None = None
     questions: list[Question] = field(default_factory=list)
     questions_withdrawn: list[WithdrawnQuestion] = field(default_factory=list)
+    clarification: Clarification | None = None
     client: RecordingClient | None = None
     backend_used: Backend | None = None
     pdf_written: bool = False
@@ -196,16 +200,6 @@ def _read_input(state: _State) -> ParsedDocument | None:
 
 def _check_requests(state: _State) -> None:
     cfg = state.cfg
-    if cfg.answers_path is not None or cfg.ask:
-        state.diagnostics.append(
-            Diagnostic(
-                code=CFG_NOT_IMPLEMENTED,
-                level=DiagLevel.WARNING,
-                message="Цикл уточнения (--answers, --ask) в этой версии агента ещё не работает",
-                action="Ответы автора не учтены, проверка выполнена по документу",
-                step="clarify",
-            )
-        )
     if cfg.replay_dir is not None and cfg.backend not in (Backend.REPLAY, Backend.AUTO):
         state.diagnostics.append(
             Diagnostic(
@@ -220,9 +214,54 @@ def _check_requests(state: _State) -> None:
         )
 
 
+def _load_answers(state: _State) -> AnswersFile | None:
+    """Файл ответов автора (--answers). CLI проверяет его до прогона (код 2), здесь сбой не роняет прогон."""
+    path = state.cfg.answers_path
+    if path is None:
+        return None
+    try:
+        return load_answers(path)
+    except AnswersError as exc:
+        state.diagnostics.append(
+            exc.to_diagnostic(
+                action="Ответы автора не учтены, проверка выполнена по документу",
+                level=DiagLevel.WARNING,
+                step="clarify",
+            )
+        )
+        return None
+
+
+def _clarify(
+    state: _State, answers: AnswersFile, doc: ParsedDocument, llm: RecordingClient, asked: bool
+) -> None:
+    """Шаг 8е: ответы автора → закрытые, уточнённые и новые находки, открытые вопросы, новый светофор.
+
+    ``asked``: шаг вопросов отработал; если нет, светофор и после ответов не становится зелёным.
+    """
+    ver, seg = state.verification, state.segmentation
+    if ver is None or seg is None:
+        return
+    questions, cfg = (state.questions if asked else None), state.cfg
+    outcome = _step(
+        state,
+        "clarify",
+        lambda: clarify(ver, questions, answers, doc, seg, llm, cfg),
+        lambda: None,
+        action="Ответы автора не учтены, проверка выполнена по документу",
+    )
+    if outcome is None:
+        return
+    state.verification = outcome.verification
+    state.questions = outcome.questions
+    state.clarification = outcome.clarification
+    state.diagnostics.extend(outcome.diagnostics)
+
+
 def _execute(state: _State) -> None:
     cfg = state.cfg
     _check_requests(state)
+    answers = _load_answers(state)
     doc = _read_input(state)
     if doc is None:
         return
@@ -303,6 +342,8 @@ def _execute(state: _State) -> None:
             state.questions_withdrawn = list(asked.withdrawn)
             state.diagnostics.extend(asked.diagnostics)
         state.verification = light_with_questions(ver, state.questions if asked is not None else None)
+        if answers is not None:
+            _clarify(state, answers, doc, llm, asked is not None)
     before = (state.verification, state.questions, state.questions_withdrawn)
     state.verification, state.questions, state.questions_withdrawn = _step(
         state,
@@ -348,6 +389,7 @@ def _context(
         verification=state.verification,
         questions=state.questions,
         questions_withdrawn=state.questions_withdrawn,
+        clarification=state.clarification,
         diagnostics=[*state.diagnostics, *extra],
         calls=list(calls),
         passport=passport,
