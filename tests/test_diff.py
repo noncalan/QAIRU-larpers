@@ -443,3 +443,24 @@ def test_cli_reads_document_versions(tmp_path: Path) -> None:
 
     assert proc.returncode == ExitCode.OK, proc.stderr
     assert "| Тексты документов | переданы |" in out.read_text(encoding="utf-8")
+
+
+def test_verbatim_quote_beats_edited_neighbour_sentence(tmp_path: Path) -> None:
+    old_req = f"{LOGIN} {EXPORT}"
+    new_req = f"{LOGIN} {EXPORT_FIXED}"
+    old = report([req("R-01", old_req)], [finding("F-01", LOGIN, ["R-01"], prop="IND-COMPL")])
+    new = report([req("R-01", new_req)], [], sha="bbb")
+
+    (d,) = diff(tmp_path, old, new, (old_req, new_req)).findings
+
+    assert d.cls is FindingClass.VANISHED  # требование правили, но не в этой фразе
+
+
+def test_unknown_quote_falls_back_to_requirement_status(tmp_path: Path) -> None:
+    old = report([req("R-01", NOTIFY)], [finding("F-01", "цитата, которой нет в тексте", ["R-01"])])
+    new = report([req("R-01", NOTIFY_NEW)], [], sha="bbb")
+
+    (d,) = diff(tmp_path, old, new).findings
+
+    assert d.cls is FindingClass.FIXED
+    assert "R-01 изменено" in d.reason

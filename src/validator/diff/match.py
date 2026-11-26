@@ -206,13 +206,23 @@ def _short(text: str, limit: int = 80) -> str:
     return one if len(one) <= limit else one[: limit - 1] + "…"
 
 
+def _touched(f: FindingView, req_status: dict[str, ReqStatus], statuses: tuple[ReqStatus, ...]) -> str:
+    touched = [r for r in f.requirement_ids if req_status.get(r) in statuses]
+    return ", ".join(f"{r} {req_status[r].label}" for r in touched)
+
+
 def _classify_gone(f: FindingView, where: Places, req_status: dict[str, ReqStatus]) -> FindingDiff:
-    for q in f.quotes:
-        if where.changed(q.text):
+    """Находки нет в новой версии: исправлено, если её место правили; иначе пропала без правки.
+
+    Решают цитаты. Требования смотрим, только если ни одну цитату не удалось найти в старой версии:
+    цитата, которая дословно осталась, сильнее того, что соседнюю фразу требования правили.
+    """
+    verdicts = [where.changed(q.text) for q in f.quotes]
+    for q, changed in zip(f.quotes, verdicts, strict=True):
+        if changed:
             return FindingDiff(FindingClass.FIXED, f, None, f"место цитаты изменено: «{_short(q.text)}»")
-    touched = [r for r in f.requirement_ids if req_status.get(r) in (ReqStatus.CHANGED, ReqStatus.REMOVED)]
-    if touched:
-        labels = ", ".join(f"{r} {req_status[r].label}" for r in touched)
+    labels = _touched(f, req_status, (ReqStatus.CHANGED, ReqStatus.REMOVED))
+    if labels and all(v is None for v in verdicts):
         return FindingDiff(FindingClass.FIXED, f, None, f"требование {labels}")
     return FindingDiff(
         FindingClass.VANISHED, f, None, "цитата дословно осталась в новой версии, а находки нет"
@@ -220,12 +230,13 @@ def _classify_gone(f: FindingView, where: Places, req_status: dict[str, ReqStatu
 
 
 def _classify_new(f: FindingView, where: Places, req_status: dict[str, ReqStatus]) -> FindingDiff:
-    for q in f.quotes:
-        if where.appeared(q.text):
+    """Новая находка: на изменённом месте (возможная регрессия) или на неизменённом (шум модели)."""
+    verdicts = [where.appeared(q.text) for q in f.quotes]
+    for q, appeared in zip(f.quotes, verdicts, strict=True):
+        if appeared:
             return FindingDiff(FindingClass.NEW_CHANGED, None, f, f"цитата из правки: «{_short(q.text)}»")
-    touched = [r for r in f.requirement_ids if req_status.get(r) in (ReqStatus.CHANGED, ReqStatus.ADDED)]
-    if touched:
-        labels = ", ".join(f"{r} {req_status[r].label}" for r in touched)
+    labels = _touched(f, req_status, (ReqStatus.CHANGED, ReqStatus.ADDED))
+    if labels and all(v is None for v in verdicts):
         return FindingDiff(FindingClass.NEW_CHANGED, None, f, f"требование {labels}")
     return FindingDiff(
         FindingClass.NEW_UNCHANGED, None, f, "место не менялось: в старой версии модель это не отметила"
