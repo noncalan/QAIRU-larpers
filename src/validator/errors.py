@@ -43,6 +43,7 @@ IN_ENCODING_UNCERTAIN = "IN-062"
 IN_NO_TEXT = "IN-071"
 IN_NOT_REQUIREMENTS = "IN-080"
 IN_HEADINGS_ONLY = "IN-081"
+IN_INJECTION = "IN-082"  # ИНФО: в тексте документа команды модели, они не выполняются
 IN_NO_REQUIREMENTS = IN_HEADINGS_ONLY  # нарезка без требований: тот же «пустой шаблон» (исследование 04)
 IN_PARSE_FAILED = "IN-099"
 

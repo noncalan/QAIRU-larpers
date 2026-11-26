@@ -43,10 +43,12 @@ _AUTH = re.compile(
     r"not logged in|/login|authentication|invalid api key|unauthori[sz]ed|oauth token|token (?:has )?expired"
 )
 _USAGE_LIMIT = re.compile(
-    r"usage limit|(?<!rate )limit reached|hit your (?:usage )?limit|limit will reset|"
+    r"usage limit|(?<!rate )limit reached|hit your [\w -]{0,20}limit|limit will reset|"
     r"\bresets? at\b|\bresets? \d{1,2}(?::\d\d)?\s*(?:am|pm)|credit balance is too low|"
     r"out of (?:extra )?usage"
 )
+_SUBSCRIPTION_LIMIT = re.compile(r"hit your [\w -]{0,20}limit")
+"""Лимит подписки или баланса: ``claude -p`` отдаёт его со статусом 429, но повтор не поможет."""
 _TRANSIENT = re.compile(
     r"overloaded|rate[ _-]?limit|too many requests|api error:?\s*(?:429|5\d\d)\b|connection error|"
     r"request timed out|econnreset|socket hang up|internal server error|service unavailable|bad gateway"
@@ -99,6 +101,8 @@ def classify_error(message: str, *, status: int | None = None, subtype: str | No
     low = message.lower()
     if _REFUSAL.search(low):
         kind = "refused"
+    elif _SUBSCRIPTION_LIMIT.search(low):
+        kind = "limit"
     elif status in _TRANSIENT_STATUS:
         kind = "transient"
     elif status in _AUTH_STATUS or _AUTH.search(low):
@@ -154,7 +158,12 @@ def _raise_error_payload(payload: dict[str, Any], text: str, req: LLMRequest) ->
     failed = payload.get("is_error") or subtype not in (None, "success") or stop == "refusal"
     if not failed:
         return
-    detail = text or str(subtype or stop or "ошибка без текста")
+    detail = text or (
+        "модель отказалась отвечать (stop_reason: refusal)"
+        if stop == "refusal"
+        else str(subtype or stop or "")
+    )
+    detail = detail if detail and detail != "success" else "ошибка без текста"
     status = payload.get("api_error_status")
     failure = classify_error(
         detail if stop != "refusal" else f"usage policy: {detail}",

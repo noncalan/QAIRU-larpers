@@ -120,6 +120,7 @@ def _not_json_error(req: LLMRequest, returncode: int, stdout: str, stderr: str) 
     return LLMError(
         f"claude -p вернул не JSON (код {returncode}): {detail}",
         code=LLM_BAD_RESPONSE,
+        hint="Повторите прогон; если повторяется, обновите Claude Code (claude update) и сообщите команде",
         location=req.call_id,
         retryable=True,
     )
