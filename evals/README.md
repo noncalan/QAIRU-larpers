@@ -165,7 +165,7 @@ uv run python -m evals.precision label out/run-1 evals/results/baseline/run-1 --
 
 ## Чужие документы и вопросы kick-off (#48)
 
-Прогоны агента на чужих документах (`data/holdout/`) и их precision лежат в `evals/holdout/<документ>/`, таблица и оговорки: [`holdout/README.md`](holdout/README.md). Precision считает тот же `evals.precision` с `--document data/holdout/<документ>/<файл>`.
+Прогоны агента на чужих документах (`data/holdout/`) и их precision лежат в `evals/holdout/<документ>/`, таблица и оговорки: [`holdout/README.md`](holdout/README.md). Сводку по всем документам собирает `uv run python -m evals.holdout_summary` (`holdout/summary.md`), тест сверяет её с пересчётом. Precision считает тот же `evals.precision` с `--document data/holdout/<документ>/<файл>`.
 
 `evals.kickoff` сопоставляет вопросы агента к ТЗ кейса с вопросами участников на kick-off (`holdout/kickoff_questions.md`: 13 вопросов по содержанию ТЗ, отобраны до прогона). Два судьи, Opus 5.5 и Fable 5.2 (оба `high`), независимо получают один и тот же запрос: ТЗ, список A (только формулировки вопросов kick-off, без расшифровки и ответов организаторов) и список B (вопросы агента: вопрос, пояснение, цитаты, варианты). На каждый вопрос A судья ставит «совпало», «частично» или «нет» со ссылками на вопросы B и причиной. Ответы кешируются в `evals/cache/kickoff/`.
 
@@ -222,6 +222,7 @@ findings:
 | `checkpoint.py`, `checkpoint.sh` | контрольная точка #37: прогоны B, B′, C, таблица A–C и правило D-011 кодом |
 | `cache/judge/` | вердикты судьи (коммитятся) |
 | `cache/precision/` | ответы разметчиков precision (коммитятся) |
+| `holdout_summary.py` | сводная таблица по чужим документам из `report.json`, разметки и `kickoff.json`: `holdout/summary.md` (#48) |
 | `kickoff.py`, `kickoff_report.py` | сопоставление вопросов агента с вопросами kick-off двумя судьями, результат в Markdown (#48) |
 | `cache/kickoff/` | ответы судей kick-off (коммитятся) |
 | `holdout/` | прогоны на чужих документах, их precision, вопросы kick-off (#48) |

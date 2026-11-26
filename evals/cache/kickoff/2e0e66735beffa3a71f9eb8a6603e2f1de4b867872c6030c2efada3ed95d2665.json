@@ -1,0 +1,435 @@
+{
+ "key": "2e0e66735beffa3a71f9eb8a6603e2f1de4b867872c6030c2efada3ed95d2665",
+ "created_at": "2026-11-26T17:32:30+00:00",
+ "model": "claude-fable-5-2",
+ "effort": "high",
+ "prompt_chars": 17319,
+ "meta": {
+  "labeler": "fable",
+  "kickoff": 13,
+  "agent": 15
+ },
+ "response": {
+  "call_id": "judge.1",
+  "text": "{\"matches\":[{\"id\":\"K-01\",\"label\":\"none\",\"b_ids\":[],\"reason\":\"В списке B нет вопроса о допустимости готовых open source harness или их компонентов.\"},{\"id\":\"K-02\",\"label\":\"partial\",\"b_ids\":[\"Q-12\"],\"reason\":\"Q-12 касается только ограничений на выбор модели (платная или бесплатная); про язык и фреймворки в B вопросов нет.\"},{\"id\":\"K-03\",\"label\":\"partial\",\"b_ids\":[\"Q-12\"],\"reason\":\"Q-12 спрашивает, откуда у проверяющего ключ для повтора прогона, но только для платной модели; про ключ в репозитории не спрашивает.\"},{\"id\":\"K-04\",\"label\":\"partial\",\"b_ids\":[\"Q-01\"],\"reason\":\"Q-01 попутно поднимает реакцию на неподдерживаемый формат входа; повреждённые файлы и документы без текста не затронуты.\"},{\"id\":\"K-05\",\"label\":\"match\",\"b_ids\":[\"Q-13\"],\"reason\":\"Оба вопроса о том, какой формат файла отчёта допустим: Markdown, PDF или другой.\"},{\"id\":\"K-06\",\"label\":\"none\",\"b_ids\":[],\"reason\":\"В B нет вопроса о том, будут ли агента проверять на дополнительных документах помимо выданного.\"},{\"id\":\"K-07\",\"label\":\"none\",\"b_ids\":[],\"reason\":\"Q-06 и Q-10 о формате таблицы и правиле нарезки, а не о том, кому поручить присвоение идентификаторов: модели или коду.\"},{\"id\":\"K-08\",\"label\":\"partial\",\"b_ids\":[\"Q-01\"],\"reason\":\"Q-01 о том же месте ТЗ (PDF на входе), но спрашивает, какой формат обязателен, а не как разбирать таблицы и диаграммы.\"},{\"id\":\"K-09\",\"label\":\"partial\",\"b_ids\":[\"Q-03\"],\"reason\":\"Q-03 о том же разделе про стандарты, но о том, какие критерии обязательны, а не о том, как переносить их в промпт.\"},{\"id\":\"K-10\",\"label\":\"none\",\"b_ids\":[],\"reason\":\"В B нет вопросов о необходимости сайта или интерфейса и о языке описания в репозитории.\"},{\"id\":\"K-11\",\"label\":\"none\",\"b_ids\":[],\"reason\":\"В B нет вопросов о структуре репозитория и файле зависимостей; Q-09 о критерии совпадения отчётов при повторе.\"},{\"id\":\"K-12\",\"label\":\"none\",\"b_ids\":[],\"reason\":\"В B нет вопроса о числе агентов или субагентов в решении.\"},{\"id\":\"K-13\",\"label\":\"none\",\"b_ids\":[],\"reason\":\"В B нет вопроса о том, должен ли агент работать с любым документом требований или только с выданным.\"}]}",
+  "structured": {
+   "matches": [
+    {
+     "id": "K-01",
+     "label": "none",
+     "b_ids": [],
+     "reason": "В списке B нет вопроса о допустимости готовых open source harness или их компонентов."
+    },
+    {
+     "id": "K-02",
+     "label": "partial",
+     "b_ids": [
+      "Q-12"
+     ],
+     "reason": "Q-12 касается только ограничений на выбор модели (платная или бесплатная); про язык и фреймворки в B вопросов нет."
+    },
+    {
+     "id": "K-03",
+     "label": "partial",
+     "b_ids": [
+      "Q-12"
+     ],
+     "reason": "Q-12 спрашивает, откуда у проверяющего ключ для повтора прогона, но только для платной модели; про ключ в репозитории не спрашивает."
+    },
+    {
+     "id": "K-04",
+     "label": "partial",
+     "b_ids": [
+      "Q-01"
+     ],
+     "reason": "Q-01 попутно поднимает реакцию на неподдерживаемый формат входа; повреждённые файлы и документы без текста не затронуты."
+    },
+    {
+     "id": "K-05",
+     "label": "match",
+     "b_ids": [
+      "Q-13"
+     ],
+     "reason": "Оба вопроса о том, какой формат файла отчёта допустим: Markdown, PDF или другой."
+    },
+    {
+     "id": "K-06",
+     "label": "none",
+     "b_ids": [],
+     "reason": "В B нет вопроса о том, будут ли агента проверять на дополнительных документах помимо выданного."
+    },
+    {
+     "id": "K-07",
+     "label": "none",
+     "b_ids": [],
+     "reason": "Q-06 и Q-10 о формате таблицы и правиле нарезки, а не о том, кому поручить присвоение идентификаторов: модели или коду."
+    },
+    {
+     "id": "K-08",
+     "label": "partial",
+     "b_ids": [
+      "Q-01"
+     ],
+     "reason": "Q-01 о том же месте ТЗ (PDF на входе), но спрашивает, какой формат обязателен, а не как разбирать таблицы и диаграммы."
+    },
+    {
+     "id": "K-09",
+     "label": "partial",
+     "b_ids": [
+      "Q-03"
+     ],
+     "reason": "Q-03 о том же разделе про стандарты, но о том, какие критерии обязательны, а не о том, как переносить их в промпт."
+    },
+    {
+     "id": "K-10",
+     "label": "none",
+     "b_ids": [],
+     "reason": "В B нет вопросов о необходимости сайта или интерфейса и о языке описания в репозитории."
+    },
+    {
+     "id": "K-11",
+     "label": "none",
+     "b_ids": [],
+     "reason": "В B нет вопросов о структуре репозитория и файле зависимостей; Q-09 о критерии совпадения отчётов при повторе."
+    },
+    {
+     "id": "K-12",
+     "label": "none",
+     "b_ids": [],
+     "reason": "В B нет вопроса о числе агентов или субагентов в решении."
+    },
+    {
+     "id": "K-13",
+     "label": "none",
+     "b_ids": [],
+     "reason": "В B нет вопроса о том, должен ли агент работать с любым документом требований или только с выданным."
+    }
+   ]
+  },
+  "model": "claude-fable-5-2",
+  "usage": {
+   "input_tokens": 2,
+   "output_tokens": 2125,
+   "cache_creation_input_tokens": 9603,
+   "cache_read_input_tokens": 0
+  },
+  "cost_usd": 0.23866400000000002,
+  "duration_ms": 19348,
+  "backend": "cli",
+  "cached": false,
+  "raw": {
+   "duration_api_ms": 19252,
+   "stop_reason": "tool_use",
+   "session_id": "682cb828-c7d1-4386-a9f6-baea3729cc7d",
+   "total_cost_usd": 0.23866400000000002,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 9603,
+    "cache_read_input_tokens": 0,
+    "output_tokens": 2125,
+    "output_tokens_details": {
+     "thinking_tokens": 1140
+    },
+    "server_tool_use": {
+     "web_search_requests": 0,
+     "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+     "ephemeral_1h_input_tokens": 9603,
+     "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [
+     {
+      "input_tokens": 2,
+      "output_tokens": 2125,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 9603,
+      "cache_creation": {
+       "ephemeral_5m_input_tokens": 0,
+       "ephemeral_1h_input_tokens": 9603
+      },
+      "type": "message"
+     }
+    ],
+    "speed": "standard",
+    "fallback_credit": null
+   },
+   "modelUsage": {
+    "claude-fable-5-2": {
+     "inputTokens": 2,
+     "outputTokens": 2125,
+     "cacheReadInputTokens": 0,
+     "cacheCreationInputTokens": 9603,
+     "webSearchRequests": 0,
+     "costUSD": 0.23866400000000002,
+     "contextWindow": 1000000,
+     "maxOutputTokens": 128000,
+     "thinkingTokens": 1140,
+     "cacheCreationEphemeral5mInputTokens": 0,
+     "cacheCreationEphemeral1hInputTokens": 9603,
+     "canonicalModel": "claude-fable-5-2",
+     "provider": "firstParty",
+     "costBasis": "list"
+    }
+   },
+   "permission_denials": [],
+   "terminal_reason": "completed",
+   "fast_mode_state": "off",
+   "fast_mode_disabled_reason": "sdk_opt_in_required",
+   "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+     "background": 0,
+     "foreground": 0,
+     "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+     "parent": 0,
+     "user": 0,
+     "system": 0
+    },
+    "refused": {
+     "depth_limit": 0,
+     "concurrency_limit": 0,
+     "budget": 0
+    },
+    "by_type": {}
+   },
+   "safety_stops": 0,
+   "is_error": false,
+   "num_turns": 2,
+   "subtype": "success",
+   "api_error_status": null,
+   "result": "{\"matches\":[{\"id\":\"K-01\",\"label\":\"none\",\"b_ids\":[],\"reason\":\"В списке B нет вопроса о допустимости готовых open source harness или их компонентов.\"},{\"id\":\"K-02\",\"label\":\"partial\",\"b_ids\":[\"Q-12\"],\"reason\":\"Q-12 касается только ограничений на выбор модели (платная или бесплатная); про язык и фреймворки в B вопросов нет.\"},{\"id\":\"K-03\",\"label\":\"partial\",\"b_ids\":[\"Q-12\"],\"reason\":\"Q-12 спрашивает, откуда у проверяющего ключ для повтора прогона, но только для платной модели; про ключ в репозитории не спрашивает.\"},{\"id\":\"K-04\",\"label\":\"partial\",\"b_ids\":[\"Q-01\"],\"reason\":\"Q-01 попутно поднимает реакцию на неподдерживаемый формат входа; повреждённые файлы и документы без текста не затронуты.\"},{\"id\":\"K-05\",\"label\":\"match\",\"b_ids\":[\"Q-13\"],\"reason\":\"Оба вопроса о том, какой формат файла отчёта допустим: Markdown, PDF или другой.\"},{\"id\":\"K-06\",\"label\":\"none\",\"b_ids\":[],\"reason\":\"В B нет вопроса о том, будут ли агента проверять на дополнительных документах помимо выданного.\"},{\"id\":\"K-07\",\"label\":\"none\",\"b_ids\":[],\"reason\":\"Q-06 и Q-10 о формате таблицы и правиле нарезки, а не о том, кому поручить присвоение идентификаторов: модели или коду.\"},{\"id\":\"K-08\",\"label\":\"partial\",\"b_ids\":[\"Q-01\"],\"reason\":\"Q-01 о том же месте ТЗ (PDF на входе), но спрашивает, какой формат обязателен, а не как разбирать таблицы и диаграммы.\"},{\"id\":\"K-09\",\"label\":\"partial\",\"b_ids\":[\"Q-03\"],\"reason\":\"Q-03 о том же разделе про стандарты, но о том, какие критерии обязательны, а не о том, как переносить их в промпт.\"},{\"id\":\"K-10\",\"label\":\"none\",\"b_ids\":[],\"reason\":\"В B нет вопросов о необходимости сайта или интерфейса и о языке описания в репозитории.\"},{\"id\":\"K-11\",\"label\":\"none\",\"b_ids\":[],\"reason\":\"В B нет вопросов о структуре репозитория и файле зависимостей; Q-09 о критерии совпадения отчётов при повторе.\"},{\"id\":\"K-12\",\"label\":\"none\",\"b_ids\":[],\"reason\":\"В B нет вопроса о числе агентов или субагентов в решении.\"},{\"id\":\"K-13\",\"label\":\"none\",\"b_ids\":[],\"reason\":\"В B нет вопроса о том, должен ли агент работать с любым документом требований или только с выданным.\"}]}",
+   "structured_output": {
+    "matches": [
+     {
+      "id": "K-01",
+      "label": "none",
+      "b_ids": [],
+      "reason": "В списке B нет вопроса о допустимости готовых open source harness или их компонентов."
+     },
+     {
+      "id": "K-02",
+      "label": "partial",
+      "b_ids": [
+       "Q-12"
+      ],
+      "reason": "Q-12 касается только ограничений на выбор модели (платная или бесплатная); про язык и фреймворки в B вопросов нет."
+     },
+     {
+      "id": "K-03",
+      "label": "partial",
+      "b_ids": [
+       "Q-12"
+      ],
+      "reason": "Q-12 спрашивает, откуда у проверяющего ключ для повтора прогона, но только для платной модели; про ключ в репозитории не спрашивает."
+     },
+     {
+      "id": "K-04",
+      "label": "partial",
+      "b_ids": [
+       "Q-01"
+      ],
+      "reason": "Q-01 попутно поднимает реакцию на неподдерживаемый формат входа; повреждённые файлы и документы без текста не затронуты."
+     },
+     {
+      "id": "K-05",
+      "label": "match",
+      "b_ids": [
+       "Q-13"
+      ],
+      "reason": "Оба вопроса о том, какой формат файла отчёта допустим: Markdown, PDF или другой."
+     },
+     {
+      "id": "K-06",
+      "label": "none",
+      "b_ids": [],
+      "reason": "В B нет вопроса о том, будут ли агента проверять на дополнительных документах помимо выданного."
+     },
+     {
+      "id": "K-07",
+      "label": "none",
+      "b_ids": [],
+      "reason": "Q-06 и Q-10 о формате таблицы и правиле нарезки, а не о том, кому поручить присвоение идентификаторов: модели или коду."
+     },
+     {
+      "id": "K-08",
+      "label": "partial",
+      "b_ids": [
+       "Q-01"
+      ],
+      "reason": "Q-01 о том же месте ТЗ (PDF на входе), но спрашивает, какой формат обязателен, а не как разбирать таблицы и диаграммы."
+     },
+     {
+      "id": "K-09",
+      "label": "partial",
+      "b_ids": [
+       "Q-03"
+      ],
+      "reason": "Q-03 о том же разделе про стандарты, но о том, какие критерии обязательны, а не о том, как переносить их в промпт."
+     },
+     {
+      "id": "K-10",
+      "label": "none",
+      "b_ids": [],
+      "reason": "В B нет вопросов о необходимости сайта или интерфейса и о языке описания в репозитории."
+     },
+     {
+      "id": "K-11",
+      "label": "none",
+      "b_ids": [],
+      "reason": "В B нет вопросов о структуре репозитория и файле зависимостей; Q-09 о критерии совпадения отчётов при повторе."
+     },
+     {
+      "id": "K-12",
+      "label": "none",
+      "b_ids": [],
+      "reason": "В B нет вопроса о числе агентов или субагентов в решении."
+     },
+     {
+      "id": "K-13",
+      "label": "none",
+      "b_ids": [],
+      "reason": "В B нет вопроса о том, должен ли агент работать с любым документом требований или только с выданным."
+     }
+    ]
+   },
+   "ttft_ms": 12072,
+   "type": "result",
+   "duration_ms": 19348,
+   "uuid": "ac3c3520-ad6b-49b2-9ed5-fc98b9d4ed2f",
+   "ttft_stream_ms": 515,
+   "time_to_request_ms": 83,
+   "time_to_request_phases_ms": {
+    "other": 9,
+    "system_prompt": 2,
+    "resume_other": 1,
+    "process_user_input": 4,
+    "input_attachments": 10,
+    "input_hooks": 3,
+    "conversation_append": 1,
+    "tool_pool_refresh": 1,
+    "init_message": 8,
+    "init_frame_send": 4,
+    "engine_pickup": 2,
+    "loop_entry": 4,
+    "message_prep": 1,
+    "model_config_wait": 1,
+    "autocompact": 2,
+    "request_announcements": 7,
+    "query_setup": 1,
+    "model_gates": 0,
+    "tool_schema_build": 4,
+    "message_normalization": 3,
+    "client_creation": 7,
+    "request_build": 8
+   },
+   "turn_start_resume_kind": "none",
+   "process_turn_index": 0,
+   "time_to_request_loop_lag_ms": 33,
+   "time_to_request_cpu_ms": 92,
+   "time_to_request_major_faults": 1,
+   "process_rss_mib_turn_start": 203,
+   "process_anon_mib_turn_start": 124,
+   "process_rss_mib_result": 210,
+   "process_anon_mib_result": 124,
+   "process_peak_rss_mib": 221,
+   "process_cpu_ms_turn": 665,
+   "process_wall_ms_turn": 19347,
+   "tool_pool_build_count": 3,
+   "tool_pool_build_lapsed_count": 0,
+   "tool_pool_moved_at_lapse_count": 0,
+   "tool_pool_limit_ms": 30000,
+   "process_cpu_ms_streaming": 435,
+   "process_wall_ms_streaming": 18808,
+   "main_stream_count": 1,
+   "main_stream_event_count": 154,
+   "main_stream_chunk_count": 147,
+   "process_turn_states": {
+    "main_stream": {
+     "cpu_ms": 435,
+     "wall_ms": 18808,
+     "entries": 1
+    },
+    "first_event_wait": {
+     "cpu_ms": 111,
+     "wall_ms": 429,
+     "entries": 1
+    },
+    "before_first_request": {
+     "cpu_ms": 92,
+     "wall_ms": 83,
+     "entries": 1
+    },
+    "after_last_request": {
+     "cpu_ms": 27,
+     "wall_ms": 27,
+     "entries": 1
+    }
+   },
+   "input_attachments_detail": {
+    "slowest_producer": "deferred_tools_delta",
+    "slowest_producer_ms": 3,
+    "cpu_ms": 12,
+    "major_faults": 0,
+    "setup_ms": 0,
+    "prompt_producers_ms": 1,
+    "ambient_start_ms": 4,
+    "ambient_wait_ms": 2,
+    "render_ms": 1,
+    "producers": 44,
+    "token_counts": 0
+   },
+   "tool_schema_build_detail": {
+    "betas_ms": 0,
+    "waits_ms": 1,
+    "placement_ms": 1,
+    "render_ms": 1,
+    "after_ms": 1,
+    "other_ms": 0,
+    "tools": 1,
+    "new_schemas": 1
+   },
+   "message_normalization_detail": {
+    "before_ms": 0,
+    "normalize_ms": 2,
+    "images_ms": 0,
+    "post_process_ms": 1,
+    "after_ms": 0,
+    "other_ms": 0,
+    "messages": 8,
+    "wire_messages": 2
+   },
+   "request_build_detail": {
+    "records_ms": 0,
+    "system_ms": 2,
+    "headers_ms": 1,
+    "cache_break_record_ms": 1,
+    "plans_ms": 1,
+    "retry_setup_ms": 0,
+    "sent_build_ms": 2,
+    "record_attempt_ms": 1,
+    "other_ms": 0,
+    "sent_build_safety_context_ms": 0,
+    "sent_build_cache_breakpoints_ms": 1,
+    "sent_build_surrogate_scan_ms": 0
+   },
+   "first_content_frame_ms": 515,
+   "time_to_request_from_spawn_ms": 8482,
+   "warm_spare_claimed": false,
+   "flag_fetch_kick": "not_asked_warm",
+   "time_origin_ms": 1795714330219.7493,
+   "queued_turn_count": 0,
+   "result_index": 0,
+   "process_start_tuning": 0
+  }
+ }
+}
