@@ -177,7 +177,7 @@ def _coverage(ctx: RunContext) -> CoverageMatrix | None:
     """Матрица покрытия: только когда есть и нарезка, и находки (иначе не по чему её строить)."""
     if ctx.verification is None or ctx.segmentation is None:
         return None
-    return build_coverage(ctx.verification, ctx.segmentation.requirements, ctx.passes)
+    return build_coverage(ctx.verification, ctx.segmentation.requirements, ctx.passes, ctx.parts)
 
 
 def build_report(ctx: RunContext) -> Report:

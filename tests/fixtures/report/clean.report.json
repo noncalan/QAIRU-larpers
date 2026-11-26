@@ -369,7 +369,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-02",
@@ -418,7 +423,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-03",
@@ -467,7 +477,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       }
     ],
     "set_rows": [
@@ -540,7 +555,8 @@
     ],
     "extra_finding_ids": [],
     "unlinked_finding_ids": [],
-    "checked": true
+    "checked": true,
+    "unchecked_parts": []
   },
   "selfcheck": {
     "applicable": true,
@@ -613,7 +629,7 @@
         "title": "Матрица покрытия совпадает с находками",
         "passed": true,
         "integrity": true,
-        "detail": "3 требований × 11 свойств (33 ячеек), 8 свойств набора",
+        "detail": "3 требований × 11 свойств и колонка «Набор», ячеек: 36; свойств набора: 8; у каждого требования те же находки, что в разделе 4",
         "failures": []
       }
     ],

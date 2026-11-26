@@ -201,10 +201,10 @@
 
 {{ parts_note }}
 
-| Часть | Разделы | Блоки | Страницы | Токенов, оценка |
-|---|---|---|---|---|
+| Часть | Разделы | Блоки | Страницы | Токенов, оценка | Проходов поиска |
+|---|---|---|---|---|---|
 {% for part in report.document.parts %}
-| {{ part.index }} | {{ part.sections | join("; ") | cell(300) }} | {{ part.first_block }}–{{ part.last_block }} ({{ part.blocks }}{% if part.context_blocks %}, плюс {{ part.context_blocks }} из раздела терминов для справки{% endif %}) | {{ part.pages or "—" }} | {{ part.tokens }} |
+| {{ part.index }} | {{ part.sections | join("; ") | cell(300) }} | {{ part.first_block }}–{{ part.last_block }} ({{ part.blocks }}{% if part.context_blocks %}, плюс {{ part.context_blocks }} из раздела терминов для справки{% endif %}) | {{ part.pages or "—" }} | {{ part.tokens }} | {{ part_search(part, report.metrics.passes_total) }} |
 {% endfor %}
 {% endif %}
 
@@ -224,7 +224,7 @@
 ## 4. Проверка каждого требования
 
 {% if v and seg %}
-Статус есть у каждого требования из таблицы нарезки. Подробности по каждой находке ниже. Требований без нарушений: {{ requirement_rows | selectattr("finding_ids", "equalto", ()) | list | length }} из {{ requirement_rows | length }}.
+{{ requirements_intro }}
 
 | Требование | ID в документе | Статус |
 |---|---|---|
@@ -543,17 +543,22 @@
 {{ coverage_not_checked_note }}
 
 {% endif %}
+{% if coverage_parts_note %}
+{{ coverage_parts_note }}
+
+{% endif %}
+{% if cov.checked and not cov.rows %}
+{{ coverage_no_requirements_note }}
+
+{% endif %}
 Обозначения: {{ coverage_legend }}
 
 ### Требования × свойства: ISO/IEC/IEEE 29148:2018, п. 5.2.5, и IEEE 830-1998, п. 4.3
 
-| Требование | {% for prop in cov.requirement_properties %}{{ coverage_short[prop] }} | {% endfor %}
-
-|---|{% for prop in cov.requirement_properties %}---|{% endfor %}
-
+| Требование | {% for prop in cov.requirement_properties %}{{ coverage_short[prop] }} | {% endfor %}{{ coverage_set_column }} |
+|---|{% for prop in cov.requirement_properties %}---|{% endfor %}---|
 {% for row in cov.rows %}
-| {{ row.requirement_id }} | {% for prop in cov.requirement_properties %}{{ coverage_text(row.cells[prop]) }} | {% endfor %}
-
+| {{ row.requirement_id }} | {% for prop in cov.requirement_properties %}{{ coverage_text(row.cells[prop]) }} | {% endfor %}{{ coverage_text(row.set_cell) }} |
 {% endfor %}
 
 Ячеек: {{ coverage_totals.values() | sum }}, нарушений нет в {{ coverage_totals["clean"] }}, нарушение в {{ coverage_totals["violation"] }}, «неясно» в {{ coverage_totals["unclear"] }}, не проверялось в {{ coverage_totals["not_checked"] }}.
@@ -569,6 +574,7 @@
 {% for prop in cov.requirement_properties %}
 | {{ coverage_short[prop] }} | {{ prop.label }} | {{ prop.refs | join("; ") | cell }} |
 {% endfor %}
+| {{ coverage_set_column }} | {{ coverage_set_column_label }} | {{ coverage_set_column_refs }} |
 
 ### Набор требований × свойства: ISO/IEC/IEEE 29148:2018, п. 5.2.6, и IEEE 830-1998, п. 4.3
 

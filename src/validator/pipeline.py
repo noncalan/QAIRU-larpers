@@ -43,6 +43,7 @@ from validator.errors import (
     LLM_ALL_PASSES_FAILED,
     LLM_BUDGET_ESTIMATE,
     LLM_LONG_DOCUMENT,
+    LLM_PART_NOT_SEARCHED,
     LLM_REPLAYED,
     OUT_OVERWRITES_INPUT,
     OUT_WRITE_FAILED,
@@ -70,6 +71,7 @@ from validator.models import (
     DiagLevel,
     Diagnostic,
     DocKind,
+    DocumentPart,
     ExitCode,
     GuardResult,
     MergedFinding,
@@ -480,7 +482,37 @@ def _search_step(
                 step="search",
             )
         )
+    else:
+        state.diagnostics.extend(_unsearched_parts(plan, state.passes))
     return cfg
+
+
+def _unsearched_parts(plan: PartPlan, passes: Sequence[PassResult]) -> list[Diagnostic]:
+    """Части длинного документа, где не отработал ни один проход: ошибка, проверка неполная (#38).
+
+    Без неё отчёт по такой части выглядел бы проверенным: проходы «удались» на других частях.
+    """
+    if not plan.split:
+        return []
+    return [
+        Diagnostic(
+            code=LLM_PART_NOT_SEARCHED,
+            level=DiagLevel.ERROR,
+            message=(
+                f"Часть {part.index} из {len(plan.parts)} не проверена моделью: "
+                "ни один проход поиска по ней не удался"
+            ),
+            action=(
+                f"Требования части ({'; '.join(part.sections) or 'без разделов'}) в отчёте помечены "
+                "«не проверено моделью»; находки по ней только от правил линтера и сверки между частями"
+            ),
+            hint="Проверьте доступ к модели (см. диагностику выше) и запустите снова",
+            location=f"{part.blocks[0].id}–{part.blocks[-1].id}",
+            step="search",
+        )
+        for part in plan.parts
+        if not any(p.covers(part.index) for p in passes)
+    ]
 
 
 def _choose_checklists(state: _State, doc: ParsedDocument, plan: PartPlan, client: LLMClient) -> Selection:
@@ -540,7 +572,7 @@ def _context(
         lint_hits=state.lint_hits,
         passes=state.passes,
         set_check=state.set_check,
-        parts=describe(state.plan, doc) if state.plan is not None and doc is not None else [],
+        parts=_parts(state, doc),
         merged=state.merged,
         verification=state.verification,
         questions=state.questions,
@@ -551,6 +583,14 @@ def _context(
         passport=passport,
         checklists=state.checklists,
     )
+
+
+def _parts(state: _State, doc: ParsedDocument | None) -> list[DocumentPart]:
+    """Части длинного документа для отчёта: с покрытием поиска и требованиями каждой части."""
+    if state.plan is None or doc is None:
+        return []
+    requirements = state.segmentation.requirements if state.segmentation is not None else []
+    return describe(state.plan, doc, state.passes, requirements)
 
 
 def _emergency_md(state: _State, code: ExitCode) -> str:

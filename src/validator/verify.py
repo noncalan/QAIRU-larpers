@@ -185,10 +185,22 @@ def _quote_notes(
             "находка держится на сверенных цитатах."
         )
     # Если нарезка пуста (шаг 2 упал), об этом говорит его диагностика, а не каждая находка.
-    if m.scope is Scope.REQUIREMENT and not linked and seg.requirements:
+    if _outside_requirements(m, linked, seg):
         where = f"разделу «{' › '.join(section[-2:])}»" if section else "документу в целом"
-        notes.append(f"Цитата не входит ни в одно требование из таблицы нарезки: находка отнесена к {where}.")
+        notes.append(
+            f"Цитата не входит ни в одно требование из таблицы нарезки: находка отнесена к {where} "
+            "и проверке всего набора."
+        )
     return notes
+
+
+def _outside_requirements(m: MergedFinding, linked: Sequence[str], seg: Segmentation) -> bool:
+    """Находка уровня требования, цитата которой не входит ни в одно требование нарезки (#118).
+
+    Такая находка о документе в целом (пустой блок согласующих, нет версии документа), поэтому отчёт
+    показывает её в проверке набора и в матрице набора, а не среди находок отдельных требований.
+    """
+    return m.scope is Scope.REQUIREMENT and not linked and bool(seg.requirements)
 
 
 def check(
@@ -216,7 +228,7 @@ def check(
         property=m.property,
         defect_type=m.defect_type,
         verdict=m.verdict,
-        scope=m.scope,
+        scope=Scope.SET if _outside_requirements(m, linked, seg) else m.scope,
         severity=severity.severity,
         severity_hint=m.severity_hint,
         severity_basis=severity.basis,

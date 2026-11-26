@@ -323,12 +323,18 @@ def test_set_level_gap_quoting_a_heading_is_bound_to_section(doc: ParsedDocument
     assert not any(ver.requirement_status.values())
 
 
-def test_requirement_finding_outside_requirements_gets_note(doc: ParsedDocument, seg: Segmentation) -> None:
+def test_requirement_finding_outside_requirements_goes_to_set_level(
+    doc: ParsedDocument, seg: Segmentation
+) -> None:
+    """#118: находка без требования о документе в целом, отчёт показывает её в проверке набора."""
     ver = verify([merged("Выдача книг", block_ids=("B002",))], doc, seg)
 
     finding = only(ver.findings)
     assert finding.requirement_ids == []
-    assert any("не входит ни в одно требование" in note for note in finding.notes)
+    assert finding.scope is Scope.SET
+    assert finding.property is Property.UNAMBIGUOUS  # свойство модели не меняется, строка набора по set_level
+    assert ver.summary.set_level == 1
+    assert any("не входит ни в одно требование" in note and "набора" in note for note in finding.notes)
 
 
 def test_empty_segmentation_does_not_add_a_note_to_every_finding(doc: ParsedDocument) -> None:
@@ -337,6 +343,7 @@ def test_empty_segmentation_does_not_add_a_note_to_every_finding(doc: ParsedDocu
     finding = only(ver.findings)
     assert finding.requirement_ids == []
     assert finding.notes == []
+    assert finding.scope is Scope.REQUIREMENT  # без нарезки отнести к набору не к чему
     assert ver.requirement_status == {}
 
 
