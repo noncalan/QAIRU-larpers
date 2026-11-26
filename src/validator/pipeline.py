@@ -94,6 +94,7 @@ from validator.questions import build_questions, safe_questions_path, write_ques
 from validator.refs import humanize
 from validator.report import PdfRenderError, build_report, render_md, render_pdf
 from validator.report.selfcheck import check_report, selfcheck_diagnostics
+from validator.retype import retype_unwitnessed
 from validator.search import first_pass_request, search
 from validator.segment import fallback_segmentation, segment
 from validator.set_check import set_check
@@ -444,6 +445,15 @@ def _execute(state: _State) -> None:
             lambda: link_gaps(linked, state.questions, state.questions_withdrawn) if linked else linked,
             lambda: linked,
             action="Пропуски черновиков теста не связаны с вопросами",
+        )
+    retyped = state.verification
+    if retyped is not None:
+        state.verification = _step(
+            state,
+            "retype",
+            lambda: retype_unwitnessed(retyped),
+            lambda: retyped,
+            action="Противоречия без примера-свидетеля оставлены противоречиями",
         )
     before = (state.verification, state.questions, state.questions_withdrawn)
     state.verification, state.questions, state.questions_withdrawn = _step(

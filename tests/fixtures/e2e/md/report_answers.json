@@ -7,16 +7,16 @@
     "document_sha256": "e7dae55e5453a250d93e335f5ff9c7f775f4457ccddd333f4a67e47b20d74381",
     "document_size_bytes": 13507,
     "document_pages": null,
-    "started_at": "2026-11-26T17:32:29.756170Z",
-    "finished_at": "2026-11-26T17:32:30.145430Z",
-    "duration_s": 0.39,
-    "agent_version": "e8ef344-dirty",
+    "started_at": "2026-11-26T19:43:35.428608Z",
+    "finished_at": "2026-11-26T19:43:35.574948Z",
+    "duration_s": 0.15,
+    "agent_version": "cb0cc5c-dirty",
     "agent_version_source": "git",
     "agent_dirty": true,
-    "agent_commit": "e8ef344",
+    "agent_commit": "cb0cc5c",
     "prompts_sha256": "7dd96b1cffa406769efc8daf0df90f974ab4ef58757a546a07948210acc7492d",
-    "os": "Linux 6.18.44-fc-v880 (x86_64)",
-    "python": "3.13.18",
+    "os": "Darwin 25.6.0 (arm64)",
+    "python": "3.12.10",
     "backend_requested": "replay",
     "backend_used": "replay",
     "profile": "standard",
@@ -8830,8 +8830,8 @@
       {
         "id": "F-46",
         "merged_id": "M-044",
-        "property": "SET-CONS",
-        "defect_type": "contradiction",
+        "property": "SET-COMPL",
+        "defect_type": "incomplete",
         "verdict": "violation",
         "scope": "set",
         "severity": "minor",
@@ -8935,7 +8935,7 @@
           "scenario": "",
           "readings": [],
           "checked": false,
-          "note": "Свидетель не построен: Заголовок Content-Type можно прислать и без тела, оба места выполняются одновременно. Поведение при отсутствии заголовка документ не задаёт, отказ пришлось бы придумать: это неполнота."
+          "note": "Свидетель не построен: Заголовок Content-Type можно прислать и без тела, оба места выполняются одновременно. Поведение при отсутствии заголовка документ не задаёт, отказ пришлось бы придумать: это неполнота. Тип изменён: «противоречие» → «неполнота», потому что места документа в одном сценарии не расходятся."
         },
         "test_draft": {
           "precondition": "Пользователь вошёл, есть токен, карта demo-42 принадлежит ему.",
@@ -9318,16 +9318,16 @@
         "IND-CORR": 2,
         "IND-CONF": 1,
         "IND-TRACE": 1,
-        "SET-COMPL": 7,
-        "SET-CONS": 6,
+        "SET-COMPL": 8,
+        "SET-CONS": 5,
         "SET-COMPR": 6,
         "SET-VALID": 1,
         "SET-RANK": 1
       },
       "by_defect_type": {
-        "contradiction": 3,
+        "contradiction": 2,
         "ambiguous": 5,
-        "incomplete": 14,
+        "incomplete": 15,
         "unverifiable": 3,
         "incorrect": 2,
         "terminology": 8,
@@ -12493,7 +12493,7 @@
     ]
   },
   "metrics": {
-    "duration_s": 0.39,
+    "duration_s": 0.15,
     "calls_total": 9,
     "calls_failed": 0,
     "calls_cached": 0,
@@ -15925,6 +15925,7 @@
           "F-41",
           "F-43",
           "F-44",
+          "F-46",
           "F-26"
         ],
         "refs": [
@@ -15940,8 +15941,7 @@
           "F-07",
           "F-51",
           "F-40",
-          "F-45",
-          "F-46"
+          "F-45"
         ],
         "refs": [
           "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
