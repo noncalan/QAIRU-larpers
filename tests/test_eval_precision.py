@@ -342,3 +342,68 @@ def test_unknown_labeler_is_rejected(capsys: pytest.CaptureFixture[str]) -> None
 
     assert code == 1
     assert "Неизвестный разметчик" in capsys.readouterr().err
+
+
+# ---------------------------------------------------------------- замечания ревью
+
+
+def test_control_donors_come_from_other_batches(pool: list[LabelItem], doc: ParsedDocument) -> None:
+    batches, controls = make_batches(pool, doc)
+    batch_of = {u: b.index for b in batches for u in b.uids}
+
+    donated = [(c, d) for c in controls for d in c.donors]
+
+    assert donated
+    assert all(batch_of[c.uid] != batch_of[d] for c, d in donated)
+
+
+def test_single_batch_gets_only_nitpick_controls(doc: ParsedDocument) -> None:
+    baseline = load_run(BASELINE_RUN, GOLD_DOCUMENT)
+    items = items_for_run(baseline, None, doc)
+
+    batches, controls = make_batches(items, doc, batch_size=len(items))
+
+    assert len(batches) == 1
+    assert {c.control for c in controls} == {ControlKind.NITPICK}
+
+
+def test_same_run_twice_is_rejected(tmp_path: Path) -> None:
+    with pytest.raises(EvalError, match="дважды"):
+        label([BASELINE_RUN, BASELINE_RUN], name="t", mode=Mode.CACHE, cache_dir=tmp_path)
+
+
+def test_all_false_list_needs_every_labeler(tmp_path: Path) -> None:
+    stubs = {
+        Labeler.OPUS: StubLabeler(lambda _: "false"),
+        Labeler.FABLE: StubLabeler(lambda n: "false" if n == 2 else "real"),
+    }
+    result = label([BASELINE_RUN], name="t", cache_dir=tmp_path, client_factory=_labels_by_uid(stubs))
+    fable = dict(result.labels[Labeler.FABLE])
+    dropped = next(u for u, m in fable.items() if m.label is Label.FALSE)
+    del fable[dropped]  # Fable не ответил про эту находку: «ложной по мнению всех» она быть не может
+    partial = result.model_copy(update={"labels": {**result.labels, Labeler.FABLE: fable}})
+
+    from evals.precision_report import render_markdown  # noqa: PLC0415
+
+    section = render_markdown(partial).split("## Ложные по мнению всех разметчиков", 1)[1].split("## ", 1)[0]
+    shown = [
+        i
+        for i in partial.items
+        if i.uid != dropped and fable.get(i.uid) and fable[i.uid].label is Label.FALSE
+    ]
+    assert next(i for i in partial.items if i.uid == dropped).quote[:40] not in section
+    assert all(i.origin is Origin.CONTROL or i.quote[:40] in section for i in shown)
+
+
+def test_judge_comparison_from_cache_and_clear_note_on_miss(tmp_path: Path) -> None:
+    stubs = {lab: StubLabeler(lambda _: "real") for lab in Labeler}
+
+    hit = label([BASELINE_RUN], name="t", cache_dir=tmp_path, client_factory=_labels_by_uid(stubs))
+    miss = label(
+        [BASELINE_RUN], name="t", mode=Mode.CACHE, cache_dir=tmp_path, judge_cache_dir=tmp_path / "x"
+    )
+
+    assert [j.run for j in hit.judge] == ["tests/fixtures/eval/baseline-run"]
+    assert hit.judge[0].items == len([i for i in hit.items if i.origin is Origin.BASELINE])
+    assert not miss.judge
+    assert any("сравнения с судьёй нет" in n for n in miss.notes)

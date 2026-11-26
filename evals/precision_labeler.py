@@ -21,10 +21,13 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from evals.judge import EvalError, VerdictCache, display_path, verdict_key
 from evals.precision_items import LabelItem
+from validator.config import OPUS
 from validator.errors import LLMError
 from validator.llm.base import LLMClient
 from validator.models import Backend, Effort, LLMRequest, LLMStep
 
+FABLE = "claude-fable-5-2"
+"""Fable 5.2 полным именем: второй разметчик другой модели, чем писала находки (Opus 5.5)."""
 DEFAULT_CACHE_DIR = Path(__file__).resolve().parent / "cache" / "precision"
 LABEL_TIMEOUT_S = 2400
 """Как у судьи: пачка из 40–50 находок у модели с effort high идёт несколько минут."""
@@ -39,7 +42,7 @@ class Labeler(StrEnum):
 
     @property
     def model(self) -> str:
-        return {"opus": "claude-opus-5-5", "fable": "claude-fable-5-2"}[self.value]
+        return {"opus": OPUS, "fable": FABLE}[self.value]
 
     @property
     def effort(self) -> Effort:

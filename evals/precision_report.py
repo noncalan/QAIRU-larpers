@@ -185,7 +185,7 @@ def render_markdown(result: PrecisionResult) -> str:
             lines += ["", f"### {title}", "", *_slice_rows(slices, labelers)]
     lines += ["", *_judge(result, labelers)]
     real = [i for i in result.items if i.origin is not Origin.CONTROL]
-    all_false = [i for i in real if (m := _marks(i, result, labelers)) and set(m) == {Label.FALSE}]
+    all_false = [i for i in real if _marks(i, result, labelers) == [Label.FALSE] * len(labelers)]
     split = [i for i in real if len(set(_marks(i, result, labelers))) > 1]
     lines += ["", *_listing("Ложные по мнению всех разметчиков", FALSE_INTRO, all_false, result, labelers)]
     intro = f"Всего {len(split)}."

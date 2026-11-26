@@ -173,12 +173,19 @@ def _finder(finding: Finding) -> str:
     return " + ".join(names) or "не указан"
 
 
-def agent_items(run: RunData, findings: Sequence[Finding], doc: ParsedDocument) -> list[LabelItem]:
-    """Находки агента: текст как у судьи (``JudgeItem``), место и разрезы из ``report.json``."""
+def agent_items(
+    run: RunData, findings: Sequence[Finding], doc: ParsedDocument, *, own_anchors: bool = True
+) -> list[LabelItem]:
+    """Находки агента: текст как у судьи (``JudgeItem``), место и разрезы из ``report.json``.
+
+    ``own_anchors``: прогон шёл по тому же документу, что видит разметчик, и место берётся из якоря
+    верификатора. Иначе (прогон по PDF, разметка по MD) место ищет код в документе разметки, как у
+    базовой линии, чтобы разметчик не узнал агента по «стр. N».
+    """
     out = []
     for item, finding in zip(run.items, findings, strict=True):
         first = finding.quotes[0] if finding.quotes else None
-        if first is not None and first.anchor is not None:
+        if own_anchors and first is not None and first.anchor is not None:
             section = finding.section_path or _block_section(doc, first.anchor.block_ids)
             place, blocks = where(first.anchor, section), list(first.anchor.block_ids)
         else:
@@ -220,9 +227,11 @@ def _from_judge_item(
     )
 
 
-def items_for_run(run: RunData, findings: Sequence[Finding] | None, doc: ParsedDocument) -> list[LabelItem]:
+def items_for_run(
+    run: RunData, findings: Sequence[Finding] | None, doc: ParsedDocument, *, own_anchors: bool = True
+) -> list[LabelItem]:
     if run.source is Source.AGENT:
-        return agent_items(run, findings or [], doc)
+        return agent_items(run, findings or [], doc, own_anchors=own_anchors)
     return baseline_items(run, doc)
 
 
@@ -270,7 +279,11 @@ def _control(
 
 
 class ControlMaker:
-    """Собирает контрольные находки из пула и документа. Блок и донор берутся не больше одного раза."""
+    """Собирает контрольные находки из пула и документа. Блок и донор берутся не больше одного раза.
+
+    Донор берётся только из других пачек (``exclude``): иначе разметчик увидел бы в одной пачке
+    настоящую находку и её копию с чужой цитатой и по повтору узнал бы контрольную.
+    """
 
     def __init__(self, pool: Sequence[LabelItem], doc: ParsedDocument) -> None:
         self.pool = list(pool)
@@ -279,12 +292,13 @@ class ControlMaker:
         ]
         self.used_blocks: set[str] = set()
         self.used_donors: set[str] = set()
+        self.exclude: set[str] = set()
 
     def _free(self) -> list[tuple[Block, str]]:
         return [(b, f) for b, f in self.fragments if b.id not in self.used_blocks]
 
     def _donors(self, rng: random.Random) -> list[LabelItem]:
-        free = [i for i in self.pool if i.uid not in self.used_donors]
+        free = [i for i in self.pool if i.uid not in self.used_donors and i.uid not in self.exclude]
         return rng.sample(free, len(free))
 
     def _take(self, block: Block) -> str:
@@ -323,7 +337,7 @@ class ControlMaker:
         return None
 
     def nitpick(self, rng: random.Random, uid: str) -> LabelItem | None:
-        free = self._free() or self.fragments
+        free = self._free()
         if not free:
             return None
         block, fragment = rng.choice(free)
@@ -331,8 +345,13 @@ class ControlMaker:
         text = rng.choice(NITPICK_TEMPLATES).format(frag=frag)
         return _control(ControlKind.NITPICK, uid, fragment, self._take(block), NITPICK_PROPERTY, text, [])
 
-    def make(self, rng: random.Random, batch: int, n: int) -> list[LabelItem]:
-        """``n`` контрольных находок пачки, виды по кругу со случайного."""
+    def make(self, rng: random.Random, batch: int, n: int, exclude: set[str]) -> list[LabelItem]:
+        """``n`` контрольных находок пачки, виды по кругу со случайного; ``exclude``: uid этой пачки.
+
+        Если донора из других пачек нет (пачка одна), вместо подмены цитаты будет придирка; если
+        свободных блоков документа не осталось, контрольных будет меньше ``n``.
+        """
+        self.exclude = exclude
         kinds = list(ControlKind)
         start = rng.randrange(len(kinds))
         out: list[LabelItem] = []
@@ -383,7 +402,7 @@ def make_batches(
     for index in range(1, n_batches + 1):
         real = order[(index - 1) * size : index * size]
         rng = random.Random(f"{seed}:batch:{index}")  # noqa: S311 - то же
-        extra = maker.make(rng, index, control_count(len(real), control_share))
+        extra = maker.make(rng, index, control_count(len(real), control_share), {r.uid for r in real})
         members = real + extra
         rng.shuffle(members)
         batches.append(Batch(index=index, uids=[m.uid for m in members]))

@@ -26,17 +26,12 @@ from pathlib import Path
 from pydantic import BaseModel, ConfigDict, Field
 
 from evals.eval import ASTANA, DEFAULT_RESULTS, NAME_PATTERN
-from evals.findings import render_items
-from evals.gold import GOLD_DOCUMENT, load_gold, read_gold_md, sha256_text
+from evals.gold import GOLD_DOCUMENT, sha256_text
 from evals.judge import DEFAULT_CACHE_DIR as JUDGE_CACHE_DIR
 from evals.judge import (
     EvalError,
-    ExtraVerdict,
-    Judge,
     VerdictCache,
     display_path,
-    judge_prompt,
-    parse_verdict,
     read_utf8,
 )
 from evals.precision_items import (
@@ -46,10 +41,10 @@ from evals.precision_items import (
     Batch,
     ControlKind,
     LabelItem,
-    Origin,
     items_for_run,
     make_batches,
 )
+from evals.precision_judge import JudgeCompare, judge_compare
 from evals.precision_labeler import (
     DEFAULT_CACHE_DIR,
     ItemLabel,
@@ -103,27 +98,6 @@ class PrecisionSettings(BaseModel):
     runs: list[str]
 
 
-class JudgeCompare(BaseModel):
-    """Шум по судье #24 для того же прогона: судья видит эталон, разметчики нет."""
-
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    run: str
-    items: int
-    real: int = Field(description="Сопоставлены с эталоном или real вне эталона")
-    noise: int
-    agree: dict[Labeler, float | None] = Field(description="Совпадение «настоящий или нет» с судьёй")
-    cache_path: str | None = None
-
-    @property
-    def real_share(self) -> float | None:
-        return self.real / self.items if self.items else None
-
-    @property
-    def noise_share(self) -> float | None:
-        return self.noise / self.items if self.items else None
-
-
 class PrecisionResult(BaseModel):
     """Содержимое ``evals/results/<дата>-precision-<имя>.json``."""
 
@@ -163,9 +137,13 @@ def _pool(
     pool: list[LabelItem] = []
     for path, run in runs:
         findings = _agent_findings(path) if run.source is Source.AGENT else None
-        if run.source is Source.AGENT and run.document and run.document != document:
-            notes.append(f"{run.label}: цитаты агента сверены с {run.document}, разметка идёт по {document}")
-        pool.extend(items_for_run(run, findings, doc))
+        own = run.document in (None, document)
+        if run.source is Source.AGENT and not own:
+            notes.append(
+                f"{run.label}: прогон шёл по {run.document}, разметка по {document}: место находки "
+                "ищет код в документе разметки"
+            )
+        pool.extend(items_for_run(run, findings, doc, own_anchors=own))
     return pool
 
 
@@ -201,50 +179,6 @@ def _label_all(
     for _, _, warns in done:
         warnings.extend(warns)
     return labels, [c for _, calls, _ in done for c in calls]
-
-
-def _judge_compare(
-    runs: Sequence[RunData],
-    items: Sequence[LabelItem],
-    labels: dict[Labeler, dict[str, ItemLabel]],
-    cache_dir: Path,
-    notes: list[str],
-) -> list[JudgeCompare]:
-    """Шум судьи из кеша вердиктов eval (документ и эталон по умолчанию eval). Промах это заметка."""
-    gold = load_gold()
-    prompt_parts = (read_utf8(GOLD_DOCUMENT, "Документ эталона"), read_gold_md())
-    judge = Judge(None, VerdictCache(cache_dir))
-    out = []
-    for run in runs:
-        prompt = judge_prompt(*prompt_parts, render_items(run.items))
-        try:
-            structured, call = judge.ask(prompt, 1, {"run": run.label})
-        except EvalError:
-            notes.append(f"{run.label}: вердикта судьи в кеше нет, сравнения с судьёй нет")
-            continue
-        verdict = parse_verdict(structured, gold.ids, len(run.items))
-        run_items = [i for i in items if i.run == run.label and i.origin is not Origin.CONTROL]
-        judged: dict[str, bool] = {}
-        for number, item in enumerate(run_items, start=1):
-            if number in verdict.matched_findings or verdict.extra.get(number) is ExtraVerdict.REAL:
-                judged[item.uid] = True
-            elif verdict.extra.get(number) is ExtraVerdict.NOISE:
-                judged[item.uid] = False
-        agree: dict[Labeler, float | None] = {}
-        for lab, marks in labels.items():
-            pairs = [(marks[u].label is Label.REAL, real) for u, real in judged.items() if u in marks]
-            agree[lab] = sum(x == y for x, y in pairs) / len(pairs) if pairs else None
-        out.append(
-            JudgeCompare(
-                run=run.label,
-                items=len(run_items),
-                real=sum(judged.values()),
-                noise=sum(not v for v in judged.values()),
-                agree=agree,
-                cache_path=call.cache_path,
-            )
-        )
-    return out
 
 
 def _control_scores(
@@ -300,6 +234,9 @@ def label(
     notes: list[str] = []
     doc = load_document(document)
     loaded = [(p, load_run(p, document)) for p in runs]
+    seen = [run.label for _, run in loaded]
+    if len(set(seen)) != len(seen):
+        raise EvalError(f"Прогон указан дважды: {sorted({x for x in seen if seen.count(x) > 1})}")
     pool = _pool(loaded, doc, display_path(document), notes)
     if not pool:
         raise EvalError("В прогонах нет ни одной находки: размечать нечего")
@@ -334,7 +271,7 @@ def label(
         calls=calls,
         controls=overall,
         controls_by_kind=by_kind,
-        judge=_judge_compare([r for _, r in loaded], items, labels, judge_cache_dir, notes),
+        judge=judge_compare([r for _, r in loaded], items, labels, notes, judge_cache_dir),
         warnings=warnings,
         notes=notes,
         overall=make_slice("все находки", [i.uid for i in real], marks),
