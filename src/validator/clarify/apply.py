@@ -297,7 +297,7 @@ def recount(
             "quotes_not_found": old.quotes_not_found + s.quotes_not_found,
         }
     )
-    light, reason = traffic_light(ordered)
+    light, reason = traffic_light(ordered, requirements=len(seg.requirements))
     return ver.model_copy(
         update={
             "findings": ordered,

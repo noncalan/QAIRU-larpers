@@ -42,11 +42,18 @@ from validator.report import triage
 from validator.report.clarify_view import CLARIFY_TITLE, CLOSED_NOTE, clarify_view
 from validator.report.coverage import (
     LEGEND,
+    NO_REQUIREMENTS_NOTE,
     NOT_CHECKED_NOTE,
+    SET_COLUMN,
+    SET_COLUMN_LABEL,
+    SET_COLUMN_REFS,
     SHORT_LABELS,
     STATE_LABELS,
     cell_text,
     coverage_totals,
+    part_search_text,
+    row_cells,
+    unchecked_parts_note,
 )
 from validator.report.first_page import (
     TZ_CLASSES_TITLE,
@@ -67,6 +74,10 @@ SEGMENTATION_NOTE = (
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
 NO_VIOLATIONS = "нарушений нет"
 """Статус требования без находок: слова из ТЗ п. 6, по ним тесты ищут каждое R-NN."""
+NOT_SEARCHED = "не проверено моделью"
+"""Статус требования, по месту которого не отработал ни один проход поиска (#126): «нарушений нет»
+здесь было бы неправдой, без модели нарушения искали только правила линтера."""
+NOT_SEARCHED_REST = "остальное не проверено моделью"
 
 _BLANK_RUNS = re.compile(r"\n{3,}")
 
@@ -81,6 +92,7 @@ class RequirementRow:
     requirement: Requirement
     finding_ids: tuple[str, ...]
     status: str
+    searched: bool = True
 
 
 def _environment() -> Environment:
@@ -98,19 +110,42 @@ def _environment() -> Environment:
 
 
 def requirement_rows(report: Report) -> list[RequirementRow]:
-    """Статус каждого требования: «нарушений нет» или список F-NN с важностью и вердиктом."""
+    """Статус каждого требования: список F-NN с важностью и вердиктом, «нарушений нет» или, если поиск
+    по месту требования не отработал, «не проверено моделью» (как «–» в матрице покрытия)."""
     ver, seg = report.verification, report.segmentation
     if ver is None or seg is None:
         return []
     by_id = {f.id: f for f in ver.findings}
+    searched = {r.requirement_id: r.searched for r in report.coverage.rows} if report.coverage else {}
     rows: list[RequirementRow] = []
     for req in seg.requirements:
         ids = tuple(ver.requirement_status.get(req.id, ()))
         known = [by_id[i] for i in ids if i in by_id]
         parts = [f"{f.id} ({f.severity.label}, {f.verdict.label})" for f in known]
         parts += [i for i in ids if i not in by_id]
-        rows.append(RequirementRow(req, ids, ", ".join(parts) if parts else NO_VIOLATIONS))
+        checked = searched.get(req.id, True)
+        if parts:
+            status = ", ".join(parts) + ("" if checked else f"; {NOT_SEARCHED_REST}")
+        else:
+            status = NO_VIOLATIONS if checked else NOT_SEARCHED
+        rows.append(RequirementRow(req, ids, status, checked))
     return rows
+
+
+def requirements_intro(rows: Sequence[RequirementRow]) -> str:
+    """Строка над таблицей раздела 4: сколько требований без нарушений и сколько не проверено моделью."""
+    clean = sum(1 for r in rows if not r.finding_ids and r.searched)
+    text = (
+        "Статус есть у каждого требования из таблицы нарезки. Подробности по каждой находке ниже. "
+        f"Требований без нарушений: {clean} из {len(rows)}."
+    )
+    missed = sum(1 for r in rows if not r.searched)
+    if missed:
+        text += (
+            f" Не проверено моделью: {missed} (ни один проход поиска по их месту не отработал, "
+            "смотрите диагностику прогона)."
+        )
+    return text
 
 
 def _finding_sections(
@@ -409,6 +444,7 @@ def report_context(report: Report) -> dict[str, Any]:
     by_finding = _questions_by_finding(report)
     order = report.conclusion.fix_first
     first = fix_items(order, {f.id: f for f in findings}, resolve, sections, by_finding)
+    rows = requirement_rows(report)
     parent = {r.id: r.parent_id for r in requirements}
     keep = set(report.conclusion.fix_first) | {
         fid for q in report.questions if q.priority in blocking for fid in q.related_findings
@@ -423,7 +459,8 @@ def report_context(report: Report) -> dict[str, Any]:
         "report": report,
         "findings_by_id": {f.id: f for f in findings},
         "requirements_by_id": {r.id: r for r in requirements},
-        "requirement_rows": requirement_rows(report),
+        "requirement_rows": rows,
+        "requirements_intro": requirements_intro(rows),
         "req_findings": req_main,
         "req_minor": req_minor,
         "set_findings": set_main,
@@ -473,6 +510,15 @@ def report_context(report: Report) -> dict[str, Any]:
         "coverage_short": SHORT_LABELS,
         "coverage_legend": LEGEND,
         "coverage_not_checked_note": NOT_CHECKED_NOTE,
+        "coverage_no_requirements_note": NO_REQUIREMENTS_NOTE,
+        "coverage_parts_note": unchecked_parts_note(report.coverage, report.document.parts)
+        if report.coverage and report.document
+        else None,
+        "coverage_set_column": SET_COLUMN,
+        "coverage_set_column_label": SET_COLUMN_LABEL,
+        "coverage_set_column_refs": "; ".join(SET_COLUMN_REFS),
+        "coverage_row_cells": row_cells,
+        "part_search": part_search_text,
         "coverage_state_label": STATE_LABELS,
         "coverage_totals": {k.value: n for k, n in coverage_totals(report.coverage).items()}
         if report.coverage

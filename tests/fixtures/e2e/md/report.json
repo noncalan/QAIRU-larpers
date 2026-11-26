@@ -7,13 +7,13 @@
     "document_sha256": "e7dae55e5453a250d93e335f5ff9c7f775f4457ccddd333f4a67e47b20d74381",
     "document_size_bytes": 13507,
     "document_pages": null,
-    "started_at": "2026-11-26T13:03:06.685654Z",
-    "finished_at": "2026-11-26T13:03:07.098687Z",
-    "duration_s": 0.41,
-    "agent_version": "954a128-dirty",
+    "started_at": "2026-11-26T13:04:10.226884Z",
+    "finished_at": "2026-11-26T13:04:10.721364Z",
+    "duration_s": 0.49,
+    "agent_version": "81ac60c-dirty",
     "agent_version_source": "git",
     "agent_dirty": true,
-    "agent_commit": "954a128",
+    "agent_commit": "81ac60c",
     "prompts_sha256": "7dd96b1cffa406769efc8daf0df90f974ab4ef58757a546a07948210acc7492d",
     "os": "Linux 6.18.44-fc-v880 (x86_64)",
     "python": "3.13.18",
@@ -104,7 +104,7 @@
       "code": "LLM-045",
       "level": "info",
       "message": "Код проверил черновики теста: готово 34 из 41",
-      "action": "значений без цитаты заменено пропуском: 4; чисел ожидаемого результата без цитаты заменено пропуском: 19; записей про несуществующие находки пропущено: 5",
+      "action": "пропусков вместо значений без цитаты: 4; пропусков вместо чисел ожидаемого результата без цитаты: 19; записей про несуществующие находки пропущено: 5",
       "hint": "",
       "location": null,
       "step": "test_draft"
@@ -10403,7 +10403,7 @@
         "property": "IND-TRACE",
         "defect_type": "traceability",
         "verdict": "violation",
-        "scope": "requirement",
+        "scope": "set",
         "severity": "minor",
         "severity_hint": "minor",
         "severity_basis": "тип «прослеживаемость и оформление», не мешает написать тест-кейс: «незначительно»",
@@ -10469,7 +10469,7 @@
         "critic": null,
         "anchor_corrected": false,
         "notes": [
-          "Цитата не входит ни в одно требование из таблицы нарезки: находка отнесена к разделу «Часть A. Новый функционал › Ревью требований»."
+          "Цитата не входит ни в одно требование из таблицы нарезки: находка отнесена к разделу «Часть A. Новый функционал › Ревью требований» и проверке всего набора."
         ]
       },
       {
@@ -11356,7 +11356,7 @@
         "placeholder": 3,
         "traceability": 2
       },
-      "set_level": 25,
+      "set_level": 26,
       "discarded_total": 0,
       "discarded_by_reason": {},
       "quotes_total": 67,
@@ -11367,7 +11367,7 @@
     },
     "traffic_light": "red",
     "traffic_reason": "6 критичных нарушений мешают написать тест-кейсы (F-01, F-02, F-03, F-04, F-05 и ещё 1)",
-    "traffic_rule": "красный, если есть критичное нарушение, которое мешает написать тест-кейс; жёлтый, если критичных нет, но есть важные нарушения, находки «неясно» или вопросы автору, которые блокируют разработку или тестирование; зелёный, если остались только незначительные нарушения или их нет. Цвет считает код по находкам со сверенными цитатами и по вопросам автору, модель его не выбирает.",
+    "traffic_rule": "красный, если есть критичное нарушение, которое мешает написать тест-кейс; жёлтый, если критичных нет, но есть важные нарушения, находки «неясно» или вопросы автору, которые блокируют разработку или тестирование; зелёный, если остались только незначительные нарушения или их нет. Документ без единого требования не зелёный, а красный: разрабатывать и тестировать нечего. Цвет считает код по находкам со сверенными цитатами и по вопросам автору, модель его не выбирает.",
     "requirement_status": {
       "R-01": [
         "F-01",
@@ -13271,7 +13271,7 @@
     ]
   },
   "metrics": {
-    "duration_s": 0.41,
+    "duration_s": 0.49,
     "calls_total": 9,
     "calls_failed": 1,
     "calls_cached": 0,
@@ -13495,7 +13495,16 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-01",
+            "F-36",
+            "F-37"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-02.1",
@@ -13544,7 +13553,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-38"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-02.2",
@@ -13593,7 +13609,15 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-35",
+            "F-39"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-03.1",
@@ -13642,7 +13666,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-03.2",
@@ -13691,7 +13720,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-03.3",
@@ -13742,7 +13776,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-04",
@@ -13791,7 +13830,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-08"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-05.1",
@@ -13842,7 +13888,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-10"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-05.2",
@@ -13893,7 +13946,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-06.1",
@@ -13944,7 +14002,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-02"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-06.2",
@@ -13997,7 +14062,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-01"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-06.3",
@@ -14048,7 +14120,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-06.4",
@@ -14099,7 +14176,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-07.1",
@@ -14152,7 +14234,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-07.2",
@@ -14203,7 +14290,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-05"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-08.1",
@@ -14252,7 +14346,15 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-16",
+            "F-41"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-08.2",
@@ -14303,7 +14405,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-05"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-09.1",
@@ -14352,7 +14461,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-39"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-09.2",
@@ -14401,7 +14517,15 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-18",
+            "F-19"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-09.3",
@@ -14452,7 +14576,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-10",
@@ -14505,7 +14634,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-11",
@@ -14557,7 +14691,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-43"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-12.1",
@@ -14606,7 +14747,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-06"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-12.2",
@@ -14657,7 +14805,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-13",
@@ -14708,7 +14861,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-41"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-14",
@@ -14757,7 +14917,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-02"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-15",
@@ -14806,7 +14973,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-16",
@@ -14857,7 +15029,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-17",
@@ -14908,7 +15085,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-18",
@@ -14957,7 +15139,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-10"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-19",
@@ -15006,7 +15195,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-47"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-20",
@@ -15055,7 +15251,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-21",
@@ -15104,7 +15305,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-22",
@@ -15155,7 +15361,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-23",
@@ -15204,7 +15415,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-24",
@@ -15255,7 +15471,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-25",
@@ -15304,7 +15525,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-48"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-26",
@@ -15353,7 +15581,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-16"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-27",
@@ -15402,7 +15637,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-48"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-28",
@@ -15451,7 +15693,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-38"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-29",
@@ -15500,7 +15749,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-30",
@@ -15551,7 +15805,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-31",
@@ -15600,7 +15859,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-36"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-32",
@@ -15649,7 +15915,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-49"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-33",
@@ -15698,7 +15971,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-34",
@@ -15749,7 +16027,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-35.1",
@@ -15800,7 +16083,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-35.2",
@@ -15849,7 +16137,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-32"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-36",
@@ -15898,7 +16193,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-37",
@@ -15947,7 +16247,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-38",
@@ -15996,7 +16301,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-49"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-39",
@@ -16045,7 +16357,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-40.1",
@@ -16094,7 +16411,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-40.2",
@@ -16143,7 +16465,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-33"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-41.1",
@@ -16192,7 +16521,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-41.2",
@@ -16241,7 +16575,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-34"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-41.3",
@@ -16290,7 +16631,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-42",
@@ -16339,7 +16685,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-34"
+          ]
+        },
+        "searched": true
       }
     ],
     "set_rows": [
@@ -16425,8 +16778,10 @@
       },
       {
         "property": "SET-TRACE",
-        "state": "clean",
-        "finding_ids": [],
+        "state": "violation",
+        "finding_ids": [
+          "F-45"
+        ],
         "refs": [
           "IEEE 830-1998, п. 4.3.8"
         ]
@@ -16441,10 +16796,9 @@
       }
     ],
     "extra_finding_ids": [],
-    "unlinked_finding_ids": [
-      "F-45"
-    ],
-    "checked": true
+    "unlinked_finding_ids": [],
+    "checked": true,
+    "unchecked_parts": []
   },
   "selfcheck": {
     "applicable": true,
@@ -16517,7 +16871,7 @@
         "title": "Матрица покрытия совпадает с находками",
         "passed": true,
         "integrity": true,
-        "detail": "58 требований × 11 свойств (638 ячеек), 8 свойств набора",
+        "detail": "58 требований × 11 свойств и колонка «Набор», ячеек: 696; свойств набора: 8; у каждого требования те же находки, что в разделе 4",
         "failures": []
       }
     ],

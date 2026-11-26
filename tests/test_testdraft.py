@@ -167,7 +167,27 @@ def test_value_without_quote_in_document_becomes_gap(doc: ParsedDocument, tmp_pa
     assert gap.number == 1 and gap.replaced == "пять процентов" and "без цитаты" in gap.missing
     assert t.gaps == [gap.missing]
     info = next(d for d in diagnostics if d.code == LLM_TEST_DRAFT_CHECKED)
-    assert info.level is DiagLevel.INFO and "заменено пропуском: 1" in info.action
+    assert info.level is DiagLevel.INFO and "пропусков вместо значений без цитаты: 1" in info.action
+
+
+def test_value_replaced_in_two_places_counts_two_gaps_in_diagnostic_and_summary(
+    doc: ParsedDocument, tmp_path: Path
+) -> None:
+    """#118: диагностика писала «заменено: 3», сводка «4» (одно значение в двух местах). Считаем места."""
+    d = draft(
+        precondition="Штраф составляет пять процентов.",
+        expected="Начислено пять процентов.",
+        gaps=[],
+        values=[{"value": "пять процентов", "quote": "Штраф составляет пять процентов от суммы."}],
+    )
+
+    findings, diagnostics = run(doc, [merged()], llm_with(d), tmp_path)
+
+    t = only_draft(findings)
+    replaced = [g for g in t.gap_items if g.replaced]
+    assert len(replaced) == 2
+    info = next(d for d in diagnostics if d.code == LLM_TEST_DRAFT_CHECKED)
+    assert "пропусков вместо значений без цитаты: 2" in info.action
 
 
 def test_quote_found_but_value_not_in_it_becomes_gap(doc: ParsedDocument, tmp_path: Path) -> None:

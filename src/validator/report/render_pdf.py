@@ -37,7 +37,18 @@ from validator.models import (
     SelfCheck,
 )
 from validator.report.clarify_view import CLARIFY_TITLE, CLOSED_NOTE, ClarifyView, clarify_view
-from validator.report.coverage import LEGEND, NOT_CHECKED_NOTE, SHORT_LABELS, STATE_LABELS, cell_text
+from validator.report.coverage import (
+    LEGEND,
+    NO_REQUIREMENTS_NOTE,
+    NOT_CHECKED_NOTE,
+    SET_COLUMN,
+    SET_COLUMN_LABEL,
+    SET_COLUMN_REFS,
+    SHORT_LABELS,
+    STATE_LABELS,
+    cell_text,
+    part_search_text,
+)
 from validator.report.first_page import FixItem
 from validator.report.fmt import money, pct, plain, quote_plain, status_label, when, where
 from validator.report.passport_view import tokens_in, tokens_text
@@ -432,16 +443,24 @@ def _parts(report: Report) -> list[Json]:
         extra = f", плюс {part.context_blocks} из раздела терминов для справки" if part.context_blocks else ""
         return f"{part.first_block}–{part.last_block} ({part.blocks}{extra})"
 
+    total = report.metrics.passes_total
     rows = [
-        [str(p.index), plain("; ".join(p.sections), 300), blocks(p), p.pages or "—", str(p.tokens)]
+        [
+            str(p.index),
+            plain("; ".join(p.sections), 300),
+            blocks(p),
+            p.pages or "—",
+            str(p.tokens),
+            part_search_text(p, total),
+        ]
         for p in parts
     ]
     table = _table(
-        ["Часть", "Разделы", "Блоки", "Страницы", "Токенов, оценка"],
+        ["Часть", "Разделы", "Блоки", "Страницы", "Токенов, оценка", "Проходов поиска"],
         rows,
-        [0.08, 0.42, 0.24, 0.12, 0.14],
+        [0.07, 0.33, 0.22, 0.11, 0.12, 0.15],
         mono=[0],
-        hyph=[1, 2],
+        hyph=[1, 2, 5],
     )
     return [_para(PARTS_NOTE), table]
 
@@ -454,11 +473,7 @@ def _requirements_section(report: Report, ctx: dict[str, Any]) -> Json:
             "blocks": [_para("Проверка требований не выполнена, смотрите диагностику прогона.")],
         }
     rows = ctx["requirement_rows"]
-    clean = sum(1 for r in rows if not r.finding_ids)
-    intro = (
-        "Статус есть у каждого требования из таблицы нарезки. Подробности по каждой находке ниже. "
-        f"Требований без нарушений: {clean} из {len(rows)}."
-    )
+    intro = ctx["requirements_intro"]
     table = _table(
         ["Требование", "ID в документе", "Статус"],
         ([r.requirement.id, r.requirement.source_id or "нет номера", r.status] for r in rows),
@@ -840,13 +855,20 @@ def _coverage_section(report: Report, ctx: dict[str, Any]) -> Json:
     blocks: list[Json] = [_para(intro)]
     if not cov.checked:
         blocks.append(_para(NOT_CHECKED_NOTE))
+    if ctx["coverage_parts_note"]:
+        blocks.append(_para(ctx["coverage_parts_note"]))
+    if cov.checked and not cov.rows:
+        blocks.append(_para(NO_REQUIREMENTS_NOTE))
     blocks.append(_para(f"Обозначения: {LEGEND}"))
     props = cov.requirement_properties
-    count = len(props)
-    first, rest = 0.12, 0.88 / max(count, 1)
+    count = len(props) + 1  # колонки свойств и «Набор»
+    first, rest = 0.11, 0.89 / count
     matrix = _table(
-        ["Требование", *(SHORT_LABELS[p] for p in props)],
-        ([row.requirement_id, *(cell_text(row.cells[p]) for p in props)] for row in cov.rows),
+        ["Требование", *(SHORT_LABELS[p] for p in props), SET_COLUMN],
+        (
+            [row.requirement_id, *(cell_text(row.cells[p]) for p in props), cell_text(row.set_cell)]
+            for row in cov.rows
+        ),
         [first, *([rest] * count)],
         mono=[0],
         hyph=list(range(1, count + 1)),
@@ -859,7 +881,10 @@ def _coverage_section(report: Report, ctx: dict[str, Any]) -> Json:
     )
     legend = _table(
         ["Колонка", "Свойство", "Пункты стандартов"],
-        ([SHORT_LABELS[p], p.label, "; ".join(p.refs)] for p in props),
+        [
+            *([SHORT_LABELS[p], p.label, "; ".join(p.refs)] for p in props),
+            [SET_COLUMN, SET_COLUMN_LABEL, "; ".join(SET_COLUMN_REFS)],
+        ],
         [0.14, 0.26, 0.6],
     )
     blocks += [

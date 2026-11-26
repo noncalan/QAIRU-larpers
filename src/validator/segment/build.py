@@ -13,7 +13,7 @@ from collections import Counter
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 
-from validator.ingest.blocks import KEY_VALUE_HEADERS
+from validator.ingest.blocks import KEY_VALUE_HEADERS, row_label
 from validator.models import (
     Block,
     BlockKind,
@@ -188,11 +188,14 @@ def _type(item: ModelItem | None) -> tuple[RequirementType, str | None]:
 def _source_id(doc: ParsedDocument, draft: Draft) -> str | None:
     """Метка из документа: найденная кодом, иначе названная моделью, если она дословно есть в блоке.
 
-    Метка от модели принимается, только если похожа на идентификатор (буквы и цифры, до 30 знаков)
-    и стоит в тексте блока отдельным словом: номер пункта или слово из текста меткой не станут.
+    Код находит метку в начале абзаца или пункта (``Block.source_id``) и в первой ячейке строки таблицы
+    («REQ-01 | …», ``row_label``): так номер есть и у нарезки без модели (#126). Метка от модели
+    принимается, только если похожа на идентификатор (буквы и цифры, до 30 знаков) и стоит в тексте блока
+    отдельным словом: номер пункта или слово из текста меткой не станут.
     """
-    if draft.block.source_id:
-        return draft.block.source_id
+    own = draft.block.source_id or row_label(draft.block)
+    if own:
+        return own
     claimed = draft.item.source_id.strip() if draft.item else ""
     if not claimed or len(claimed) > MAX_SOURCE_ID_CHARS or not _LABEL_LIKE.search(claimed):
         return None

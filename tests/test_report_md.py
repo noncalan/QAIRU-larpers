@@ -398,6 +398,26 @@ def test_failed_step_never_gives_green_light() -> None:
     assert "не полностью" in report.conclusion.headline
 
 
+def test_input_read_with_reservations_never_gives_green_light() -> None:
+    """#126: код 3 (вход с оговорками) не даёт зелёного итога, заголовок называет оговорку."""
+    clean = factory.clean_report()
+    diag = Diagnostic(
+        code="IN-050",
+        level=DiagLevel.WARNING,
+        message="Документ распознан OCR: цитаты сверены с распознанным текстом",
+        step="ingest",
+    )
+    ctx = _context_from(clean).model_copy(update={"diagnostics": [diag]})
+
+    report = build_report(ctx)
+
+    assert report.conclusion.traffic_light is TrafficLight.YELLOW
+    assert report.conclusion.headline.startswith(
+        "Проверка выполнена с оговорками (документ распознан OCR: цитаты сверены с распознанным текстом). "
+        "По прочитанному: "
+    )
+
+
 def test_unread_input_gives_not_performed_conclusion() -> None:
     unread = load("unread")
 

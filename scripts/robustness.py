@@ -4,10 +4,12 @@
     uv run python scripts/robustness.py --only model-limit    # один или несколько случаев
     uv run python scripts/robustness.py --record injection    # живой прогон (claude -p), запись для replay
 
-Три группы случаев (``CASES``):
+Четыре группы случаев (``CASES``):
 
 - ``broken-*``: 10 битых файлов из ``tests/fixtures/broken/`` (zip-бомба собирается на лету и в репозиторий
   не попадает). Модель до них не доходит, поэтому бэкенд ``fake``;
+- ``partial-*``: вход с оговорками, код 3 (#126): PDF обрезан, но страницы спасены; страница без текста;
+  пустой шаблон; текст не похож на требования. Проверка идёт, модель подменена бэкендом ``fake``;
 - ``model-*``: сбои модели на обычном документе. Подменён только процесс ``claude`` (``robustness_sim.py``),
   остальной путь агента настоящий;
 - ``injection``, ``english``, ``mixed-language``: документы с командой модели внутри, на английском и на двух
@@ -54,6 +56,8 @@ BROKEN_FILES = (
     "binary.md",
     "zip_bomb.docx",
 )
+PARTIAL_FILES = ("truncated.pdf", "mixed_scan.pdf", "headings_only.md", "not_requirements.md")
+"""Вход с оговорками (код 3, #126): прочитан частично, без текста на странице, пустой шаблон, не ТЗ."""
 INJECTION_CODE = "IN-082"
 
 
@@ -97,6 +101,17 @@ def build_cases() -> list[Case]:
             broken_factory.CASES[name].code,
         )
         for name in BROKEN_FILES
+    ]
+    cases += [
+        Case(
+            f"partial-{name.replace('.', '-')}",
+            "Вход с оговорками",
+            f"{name}: {broken_factory.CASES[name].what}",
+            _broken(name),
+            broken_factory.CASES[name].exit_code,
+            broken_factory.CASES[name].code,
+        )
+        for name in PARTIAL_FILES
     ]
     cases += [
         Case(f.slug, "Сбои модели", f.title, _fixture("compact.md"), 5, f.code, failure=f) for f in FAILURES
@@ -235,7 +250,8 @@ def write_summary(results: list[Result], target: Path, *, version: str) -> None:
         "",
         "Каждая строка это один прогон агента той же командой, что и обычная проверка, и отчёт, который "
         "он записал. Ни один случай не кончается трассировкой: агент пишет отчёт с причиной и подсказкой, "
-        "а код возврата говорит, что случилось: 0 проверка выполнена, 3 вход прочитан частично, "
+        "а код возврата говорит, что случилось: 0 проверка выполнена, 3 вход прочитан с оговорками "
+        "(частично, без текста на части страниц, пустой шаблон или не похож на требования), "
         "4 вход не обработать, 5 сбой модели. Как это устроено: раздел «Устойчивость» в "
         "[README](../../README.md).",
         "",

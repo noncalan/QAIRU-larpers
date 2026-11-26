@@ -144,8 +144,8 @@ class CheckLog:
 
     def details(self) -> list[str]:
         labels = (
-            (self.values_replaced, "значений без цитаты заменено пропуском"),
-            (self.numbers_replaced, "чисел ожидаемого результата без цитаты заменено пропуском"),
+            (self.values_replaced, "пропусков вместо значений без цитаты"),
+            (self.numbers_replaced, "пропусков вместо чисел ожидаемого результата без цитаты"),
             (self.claims_rejected, "выводов «тест написать можно» без подтверждённых значений не принято"),
             (self.unusable, "черновиков отброшено (нет ни результата, ни пропуска)"),
             (self.no_finding, "записей про несуществующие находки пропущено"),
@@ -338,16 +338,15 @@ def build_draft(
         if v.verified:
             log.values_verified += 1
             kept.append(v)
-        elif draft.replace(pattern, NO_QUOTE.format(value=v.value), v.value):
-            log.values_replaced += 1
+        else:  # считаем места, а не значения: столько пропусков покажут карточки и сводка (#118)
+            log.values_replaced += draft.replace(pattern, NO_QUOTE.format(value=v.value), v.value)
     for number in _expected_numbers(texts, kept):
         target = _canon(number)
 
         def same(m: re.Match[str], target: str = target) -> bool:
             return _canon(m.group(0)) == target and not _is_step_ref(m, len(texts["steps"]))
 
-        if draft.replace(NUMBER, NO_NUMBER_QUOTE.format(value=number), number, same):
-            log.numbers_replaced += 1
+        log.numbers_replaced += draft.replace(NUMBER, NO_NUMBER_QUOTE.format(value=number), number, same)
     rendered, gaps = _order(draft, entry.gaps)
     _unplaced(gaps, entry.gaps, rendered)
     if not gaps and not entry.can_write:
