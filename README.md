@@ -15,7 +15,7 @@
 | Что | Где |
 |---|---|
 | Запустить агента за 5 минут (в том числе без ключа и без подписки) | [Быстрый старт](#быстрый-старт) |
-| Отчёт на сдачу, который сделал этот агент по `requirements.pdf` | `reports/` (кладёт релиз v1.0, 27.11). Пока смотрите [пример первой страницы](#пример-отчёта) или соберите отчёт сами командой из «Пути А» |
+| Отчёт на сдачу, который сделал этот агент по `requirements.pdf` | Кандидат RC1 от 26.11: [`reports/v0.9-rc1/report.pdf`](reports/v0.9-rc1/report.pdf) (там же Markdown, запись прогона и [согласие форматов](reports/v0.9-rc1/formats.md)). Финальный отчёт кладёт релиз v1.0, 27.11 |
 | Как устроен агент | [Как это работает](#как-это-работает), подробно [`docs/architecture.md`](docs/architecture.md), решения [`docs/adr/`](docs/adr/README.md) |
 | Насколько он точен и чем лучше одного запроса в чат | [Качество агента](#качество-агента), сырые цифры [`evals/results/`](evals/results/summary.md) |
 | Битые файлы, сканы, сбои модели | [Устойчивость](#устойчивость), 20 готовых отчётов в [`reports/robustness/`](reports/robustness/README.md) |
@@ -69,7 +69,7 @@ uv run validator data/input/requirements.pdf out/report.pdf --backend replay --r
 
 Итог печатается в терминал, отчёт ложится в `out/report.pdf` и `out/report.md` (что ещё рядом, см. [Что получится](#что-получится)). Для Markdown и DOCX: `data/input/requirements.md` с `tests/fixtures/e2e/md/run`, `data/input/requirements.docx` с `tests/fixtures/e2e/docx/run`.
 
-Записи сделаны 26.11 с тремя проходами поиска, поэтому replay сам включает три прохода. После релиза v1.0 появится запись финального прогона в `reports/run/`, и наш отчёт на сдачу пересобирается так же.
+Записи сделаны 26.11 профилем по умолчанию (1 проход поиска). Отчёт кандидата RC1 пересобирается так же: `--replay reports/v0.9-rc1/run`. После релиза v1.0 появится запись финального прогона в `reports/run/`, и наш отчёт на сдачу пересобирается так же.
 
 Битые файлы проверяются вообще без модели, например `uv run validator tests/fixtures/broken/password.pdf out/broken/report.md` (все 20 случаев: [`tests/fixtures/broken/`](tests/fixtures/broken/README.md)).
 
@@ -285,7 +285,7 @@ uv run validator ВХОД ВЫХОД [опции]
 
 | Опция | Что делает |
 |---|---|
-| `--profile standard\|submit\|quick` | `standard` по умолчанию: 1 проход поиска на effort `medium`. `submit`: 1 проход на `xhigh`, для отчёта на сдачу. `quick` сейчас совпадает со `standard` |
+| `--profile standard\|submit\|quick` | `standard` по умолчанию: 1 проход поиска на effort `medium`, им сделан и отчёт на сдачу. `submit`: 1 проход на `xhigh`, опция: на нашем документе полноты не добавил, а проход в 1,6 раза дороже ([D-012](docs/decisions.md)). `quick` сейчас совпадает со `standard` |
 | `--passes N` | Число независимых проходов поиска (1–9). 3 стабильнее и вдвое дороже |
 | `--backend auto\|cli\|api\|replay\|fake` | `auto` по умолчанию: подписка, если `claude` установлен и вошёл в аккаунт, иначе API при заданном ключе, иначе replay из `--replay`. `fake` отвечает фикстурами тестов |
 | `--replay ПАПКА` | Папка `run/` прошлого прогона для replay |
@@ -341,7 +341,7 @@ CI гоняет то же на Ubuntu, Windows и macOS без ключей и �
 | `src/validator/` | Код агента: `cli.py`, `pipeline.py`, шаги конвейера, `llm/` (бэкенды модели), `prompts/`, `checklists/`, `report/` |
 | `tests/` | Тесты и фикстуры: записанные живые прогоны (`fixtures/e2e/`), битые файлы (`fixtures/broken/`), длинный документ (`fixtures/long/`) |
 | `data/input/` | Проверяемый документ кейса: `requirements.md` и сгенерированные из него `.pdf` и `.docx` |
-| `reports/` | Отчёт на сдачу (релиз v1.0) и отчёты на битых файлах `robustness/` |
+| `reports/` | Отчёт на сдачу (кандидат `v0.9-rc1/`, затем релиз v1.0) и отчёты на битых файлах `robustness/` |
 | `evals/` | Eval: судья, recall, precision, стабильность; результаты в `evals/results/` |
 | `docs/architecture.md`, `docs/adr/` | Архитектура и решения с альтернативами |
 | `docs/decisions.md` | Журнал решений команды |
