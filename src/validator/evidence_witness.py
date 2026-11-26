@@ -28,6 +28,7 @@ from typing import Final
 
 from pydantic import Field, ValidationError, field_validator
 
+from validator.config import call_timeout
 from validator.errors import LLM_BAD_RESPONSE, LLM_EVIDENCE_FAILED, LLM_WITNESS_CHECKED, LLMError
 from validator.evidence_common import (
     Lenient,
@@ -39,7 +40,6 @@ from validator.evidence_common import (
     render_finding,
     top_blocks,
 )
-from validator.ingest.blocks import render_for_model
 from validator.llm.base import LLMClient
 from validator.models import (
     DefectType,
@@ -55,6 +55,7 @@ from validator.models import (
     Witness,
     WitnessReading,
 )
+from validator.parts import focus_view
 from validator.prompting import PROMPTS_DIR, fill, load_prompt
 from validator.questions.editor import extract_json
 from validator.severity import distinct_places
@@ -137,18 +138,20 @@ def build_request(
 ) -> LLMRequest:
     model = cfg.model_for(LLMStep.EVIDENCE)
     findings = "\n\n".join(render_finding(m, located.get(m.mid, ())) for m in batch)
+    places = (b for m in batch for b in m.block_ids)
     prompt = fill(
-        load_prompt(USER_PROMPT.name), document=render_for_model(doc).rstrip("\n"), findings=findings
+        load_prompt(USER_PROMPT.name), document=focus_view(doc, places).rstrip("\n"), findings=findings
     )
+    system = load_prompt(SYSTEM_PROMPT.name).strip()
     return LLMRequest(
         step=LLMStep.EVIDENCE,
         call_index=CALL_INDEX,
         model=model.model,
         effort=model.effort,
-        system=load_prompt(SYSTEM_PROMPT.name).strip(),
+        system=system,
         prompt=prompt,
         json_schema=None,
-        timeout_s=cfg.call_timeout_s,
+        timeout_s=call_timeout(cfg, system, prompt),
     )
 
 

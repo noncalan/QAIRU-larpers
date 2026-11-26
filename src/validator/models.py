@@ -443,6 +443,7 @@ class SourceKind(StrEnum):
     PASS = "pass"  # noqa: S105 - проход поиска (шаг 4), не пароль
     LINT = "lint"  # правило линтера (шаг 3)
     CHECKLIST = "checklist"  # доменный чек-лист
+    SET_CHECK = "set_check"  # сверка требований между частями длинного документа (#38)
     ANSWER = "answer"  # сверка находок с ответами автора (--answers, #42)
 
 
@@ -603,6 +604,8 @@ class LLMStep(StrEnum):
     TEST_DRAFT = "test_draft"
     QUESTIONS = "questions"
     QUESTIONS_CRITIC = "questions_critic"
+    # Сверка требований между частями длинного документа (#38): противоречия и повторы.
+    SET_CHECK = "set_check"
     # Сверка находок с ответами автора (--answers, #42): вызывается, только если ответы есть.
     CLARIFY = "clarify"
     # Судья eval (#24): его вызывает только eval через тот же клиент модели, отдельно от агента.
@@ -856,6 +859,8 @@ class FindingSource(Contract):
             return f"проход {self.pass_index}"
         if self.kind is SourceKind.LINT:
             return f"линтер, правило {self.rule_id}"
+        if self.kind is SourceKind.SET_CHECK:
+            return "сверка требований между частями документа"
         if self.kind is SourceKind.ANSWER:
             return f"сверка с ответом автора {self.rule_id}"
         return f"чек-лист, пункт {self.rule_id}"
@@ -872,6 +877,13 @@ class CandidateFinding(Contract):
     scope: Scope = Scope.REQUIREMENT
     block_ids: list[str] = Field(default_factory=list)
     quotes: list[str] = Field(default_factory=list, description="Цитаты как их дала модель, сверит шаг 7")
+    quote_blocks: list[list[str]] = Field(
+        default_factory=list,
+        description=(
+            "Блоки каждой цитаты по порядку, если место знает код (сверка между частями, #38): одинаковый "
+            "текст в разных местах остаётся двумя цитатами; пусто: цитаты ищутся в block_ids"
+        ),
+    )
     explanation: str = Field(description="Почему это дефект и чем мешает разработке и тестированию")
     suggestion: str | None = Field(default=None, description="Формулировка с плейсхолдерами [уточнить: …]")
     blocks_testing: bool = Field(default=False, description="Мешает ли написать тест-кейс")
@@ -987,6 +999,10 @@ class MergedFinding(Contract):
     scope: Scope = Scope.REQUIREMENT
     block_ids: list[str] = Field(default_factory=list)
     quotes: list[str] = Field(default_factory=list)
+    quote_blocks: list[list[str]] = Field(
+        default_factory=list,
+        description="Блоки каждой цитаты, если место знает код (#38); пусто: цитата ищется в block_ids",
+    )
     explanation: str
     suggestion: str | None = None
     title: str | None = Field(
@@ -1390,6 +1406,7 @@ class RunConfig(Contract):
         default=False,
         description="Критик находок (шаг 6б, #39). По eval пока выключен, включается флагом --critic",
     )
+    ocr: bool = Field(default=True, description="Распознавать сканы, если есть Tesseract с русским (#38)")
 
     @property
     def out_dir(self) -> Path:
@@ -1582,6 +1599,19 @@ class Conclusion(Contract):
     ask_first: list[str] = Field(default_factory=list, description="Q-NN, блокирующие работу")
 
 
+class DocumentPart(Contract):
+    """Часть длинного документа (#38): нарезка и проходы поиска идут по частям, якоря общие."""
+
+    index: int = Field(ge=1)
+    sections: list[str] = Field(default_factory=list, description="Разделы верхнего уровня части")
+    first_block: str
+    last_block: str
+    blocks: int = 0
+    pages: str = Field(default="", description="Страницы PDF части: «12–25»; пусто для MD и DOCX")
+    tokens: int = Field(default=0, description="Оценка токенов части по символам")
+    context_blocks: int = Field(default=0, description="Блоков раздела терминов, добавленных для справки")
+
+
 class DocumentInfo(Contract):
     name: str
     path: str
@@ -1592,6 +1622,9 @@ class DocumentInfo(Contract):
     chars: int = 0
     blocks: int = 0
     extraction: str = ""
+    parts: list[DocumentPart] = Field(
+        default_factory=list, description="Части длинного документа (#38); пусто, если проверен целиком"
+    )
 
 
 # ---------------------------------------------------------------- матрица покрытия и самопроверка (#43)
@@ -1717,6 +1750,12 @@ class RunContext(Contract):
     segmentation: Segmentation | None = None
     lint_hits: list[CandidateFinding] = Field(default_factory=list)
     passes: list[PassResult] = Field(default_factory=list)
+    set_check: list[CandidateFinding] = Field(
+        default_factory=list, description="Кандидаты сверки требований между частями длинного документа (#38)"
+    )
+    parts: list[DocumentPart] = Field(
+        default_factory=list, description="Части длинного документа (#38); пусто, если проверен целиком"
+    )
     merged: list[MergedFinding] = Field(default_factory=list)
     verification: Verification | None = None
     questions: list[Question] = Field(default_factory=list)

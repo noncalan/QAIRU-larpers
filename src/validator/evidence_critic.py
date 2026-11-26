@@ -32,6 +32,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Final
 
+from validator.config import call_timeout
 from validator.errors import LLM_CRITIC_DECIDED, LLM_CRITIC_FAILED, LLMError
 from validator.evidence_common import Located, from_model, normalize_mid, one_line, render_finding
 from validator.evidence_critic_rules import (
@@ -42,7 +43,6 @@ from validator.evidence_critic_rules import (
     parse_reply,
     unanimous,
 )
-from validator.ingest.blocks import render_for_model
 from validator.llm.base import LLMClient
 from validator.models import (
     DefectType,
@@ -56,6 +56,7 @@ from validator.models import (
     Severity,
     Witness,
 )
+from validator.parts import focus_view
 from validator.prompting import PROMPTS_DIR, fill, load_prompt
 from validator.severity import severity_disputed, severity_for, table_severity
 
@@ -141,18 +142,19 @@ def build_request(batch: Sequence[Pick], located: Located, doc: ParsedDocument, 
     model = cfg.model_for(LLMStep.CRITIC)
     prompt = fill(
         load_prompt(USER_PROMPT.name),
-        document=render_for_model(doc).rstrip("\n"),
+        document=focus_view(doc, (b for p in batch for b in p.finding.block_ids)).rstrip("\n"),
         findings="\n\n".join(render_pick(p, located) for p in batch),
     )
+    system = load_prompt(SYSTEM_PROMPT.name).strip()
     return LLMRequest(
         step=LLMStep.CRITIC,
         call_index=CALL_INDEX,
         model=model.model,
         effort=model.effort,
-        system=load_prompt(SYSTEM_PROMPT.name).strip(),
+        system=system,
         prompt=prompt,
         json_schema=None,
-        timeout_s=cfg.call_timeout_s,
+        timeout_s=call_timeout(cfg, system, prompt),
     )
 
 

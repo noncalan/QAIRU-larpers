@@ -26,16 +26,20 @@ _READERS: dict[DocKind, Callable[[Path], ParsedLines]] = {
 }
 
 
-def parse(path: Path, kind: DocKind, *, pdf_backend: str | None = None) -> ParsedDocument:
+def parse(
+    path: Path, kind: DocKind, *, pdf_backend: str | None = None, ocr: bool | None = None
+) -> ParsedDocument:
     """Шаг 1: документ в блоки с якорями. Ошибки чтения приходят как ``InputError``.
 
     ``pdf_backend``: ``mupdf`` (по умолчанию) или ``pdfium``; для других форматов не используется.
+    ``ocr``: распознавать страницы PDF без текста, если в системе есть Tesseract с русским (#38); None
+    значит «по переменной ``VALIDATOR_OCR``».
     """
     reader = _READERS.get(kind)
     if reader is None:
         raise InputError(f"Формат {kind.value} не поддерживается", code=IN_UNSUPPORTED)
     if kind is DocKind.PDF:
-        return make_document(path, kind, parse_pdf(path, pdf_backend))
+        return make_document(path, kind, parse_pdf(path, pdf_backend, ocr=ocr))
     return make_document(path, kind, reader(path))
 
 

@@ -25,6 +25,7 @@ from dataclasses import dataclass, field
 
 from pydantic import ValidationError
 
+from validator.config import call_timeout
 from validator.errors import (
     LLM_BAD_RESPONSE,
     LLM_TEST_DRAFT_CHECKED,
@@ -32,7 +33,6 @@ from validator.errors import (
     LLMError,
 )
 from validator.evidence_testdraft_check import CheckLog, DraftEntry, build_draft
-from validator.ingest.blocks import render_for_model
 from validator.llm.base import LLMClient
 from validator.models import (
     CriticAction,
@@ -47,6 +47,7 @@ from validator.models import (
     Property,
     RunConfig,
 )
+from validator.parts import focus_view
 from validator.prompting import PROMPTS_DIR, fill, load_prompt
 from validator.questions.editor import extract_json
 
@@ -125,20 +126,22 @@ def build_request(
     batch: Sequence[MergedFinding], doc: ParsedDocument, cfg: RunConfig, call_index: int
 ) -> LLMRequest:
     model = cfg.model_for(LLMStep.TEST_DRAFT)
+    # Длинный документ целиком не отдаём: только разделы с местами находок пачки и раздел терминов (#38).
     prompt = fill(
         load_prompt(USER_PROMPT.name),
-        document=render_for_model(doc).rstrip("\n"),
+        document=focus_view(doc, (b for m in batch for b in m.block_ids)).rstrip("\n"),
         findings="\n\n".join(render_finding(m) for m in batch),
     )
+    system = load_prompt(SYSTEM_PROMPT.name).strip()
     return LLMRequest(
         step=LLMStep.TEST_DRAFT,
         call_index=call_index,
         model=model.model,
         effort=model.effort,
-        system=load_prompt(SYSTEM_PROMPT.name).strip(),
+        system=system,
         prompt=prompt,
         json_schema=None,
-        timeout_s=cfg.call_timeout_s,
+        timeout_s=call_timeout(cfg, system, prompt),
     )
 
 

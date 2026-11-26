@@ -62,12 +62,7 @@
   - Примечание модели: {{ td.note | cell }}
 {% endif %}
 {% endif %}
-{% if f.found_in %}
-- **Найдено:** в {{ f.found_in }} из {{ f.of }} проходов{% if f.sources %} ({{ f.sources | map(attribute="label") | join(", ") }}){% endif %}
-{% else %}
-- **Найдено:** {{ f.sources | map(attribute="label") | join(", ") if f.sources else "без модели" }}; проходы модели этого не отметили (0 из {{ f.of }})
-{% endif %}
-
+- **Найдено:** {{ found(f) }}
 {% if f.anchor_corrected %}
 - **Примечание:** место цитаты уточнил код (модель указала другой блок).
 {% endif %}
@@ -184,6 +179,14 @@
 **{{ c.headline }}**
 
 Разделы о требованиях не сформированы: документ не удалось прочитать. Исправьте вход по таблице выше и запустите проверку снова.
+{% if next_steps %}
+
+### Что сделать
+
+{% for step in next_steps %}
+- {{ step | cell }}
+{% endfor %}
+{% endif %}
 {% else %}
 ## 3. Как агент нарезал требования
 
@@ -192,6 +195,16 @@
 Нарезка упрощённая, без модели: каждый содержательный блок документа стал требованием. Цитату в таблицу подставил код.
 {% else %}
 Нарезку сделала модель по ID блоков, цитату в таблицу подставил код из текста документа.
+{% endif %}
+{% if report.document and report.document.parts %}
+
+{{ parts_note }}
+
+| Часть | Разделы | Блоки | Страницы | Токенов, оценка |
+|---|---|---|---|---|
+{% for part in report.document.parts %}
+| {{ part.index }} | {{ part.sections | join("; ") | cell(300) }} | {{ part.first_block }}–{{ part.last_block }} ({{ part.blocks }}{% if part.context_blocks %}, плюс {{ part.context_blocks }} из раздела терминов для справки{% endif %}) | {{ part.pages or "—" }} | {{ part.tokens }} |
+{% endfor %}
 {% endif %}
 
 | ID в отчёте | ID в документе | Краткая формулировка | Тип | Цитата | Где |

@@ -16,8 +16,8 @@ from collections.abc import Sequence
 
 from pydantic import Field, ValidationError, field_validator
 
+from validator.config import call_timeout
 from validator.errors import LLM_BAD_RESPONSE, LLMError
-from validator.ingest.blocks import render_for_model
 from validator.models import (
     AuthorAnswer,
     DefectType,
@@ -29,6 +29,7 @@ from validator.models import (
     Property,
     RunConfig,
 )
+from validator.parts import focus_view
 from validator.prompting import fill, load_prompt
 from validator.questions.editor import _Lenient, extract_json
 
@@ -185,9 +186,10 @@ def build_request(
 ) -> LLMRequest:
     model = cfg.model_for(LLMStep.CLARIFY)
     system = fill(load_prompt(SYSTEM_PROMPT), properties=_properties(), defect_types=_defect_types())
+    places = (b for f in findings for q in f.quotes if q.anchor for b in q.anchor.block_ids)
     prompt = fill(
         load_prompt(USER_PROMPT),
-        document=render_for_model(doc).rstrip("\n"),
+        document=focus_view(doc, places).rstrip("\n"),
         findings="\n\n".join(render_finding(f) for f in findings) or "Находок нет.",
         answers="\n\n".join(render_answer(a) for a in answers),
     )
@@ -199,7 +201,7 @@ def build_request(
         system=system.strip(),
         prompt=prompt,
         json_schema=None,
-        timeout_s=cfg.call_timeout_s,
+        timeout_s=call_timeout(cfg, system, prompt),
     )
 
 

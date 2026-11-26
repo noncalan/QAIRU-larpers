@@ -387,16 +387,29 @@ def _has_content(block: Block) -> bool:
     return fallback_label(block)[0] is BlockLabel.REQUIREMENT
 
 
-def from_answer(doc: ParsedDocument, answer: ModelAnswer) -> Segmentation:
-    """Нарезка по ответу модели: цитаты из документа, проверки кодом, номера по порядку документа."""
+def decide(doc: ParsedDocument, answer: ModelAnswer, notes: Notes) -> tuple[list[Draft], list[ExcludedBlock]]:
+    """Черновики требований и исключённые блоки по ответу модели, с полнотой; без нумерации.
+
+    ``doc`` может быть видом части длинного документа (#38): полнота проверяется по его блокам.
+    """
     if not answer.items and not answer.exclusions and any(_has_content(b) for b in doc.blocks):
         raise AnswerError("пустой ответ: ни требований, ни исключений")
-    notes = Notes(invalid=answer.invalid)
+    notes.invalid += answer.invalid
     drafts = _model_drafts(doc, answer.items, notes)
     if answer.items and not drafts:
         raise AnswerError("ни одна ссылка ответа не найдена в документе")
     excluded = _exclusions(doc, answer.exclusions, notes)
-    drafts, kept = cover(doc, drafts, excluded, notes)
+    return cover(doc, drafts, excluded, notes)
+
+
+def assemble(
+    doc: ParsedDocument,
+    drafts: Sequence[Draft],
+    kept: Sequence[ExcludedBlock],
+    notes: Notes,
+    mode: SegmentationMode = SegmentationMode.MODEL,
+) -> Segmentation:
+    """Нарезка из черновиков: номера ``R-NN`` по порядку документа, исключения по порядку, диагностика."""
     requirements = build_requirements(doc, drafts)
     order = {b.id: k for k, b in enumerate(doc.blocks)}
 
@@ -404,10 +417,32 @@ def from_answer(doc: ParsedDocument, answer: ModelAnswer) -> Segmentation:
         block_id, _, sentence = e.block_id.partition(".")
         return order.get(block_id, len(order)), int(sentence or 0)
 
-    kept.sort(key=position)
     return Segmentation(
         requirements=requirements,
-        excluded=kept,
-        mode=SegmentationMode.MODEL,
+        excluded=sorted(kept, key=position),
+        mode=mode,
         diagnostics=diagnostics(doc, notes, requirements),
     )
+
+
+def merge_notes(target: Notes, other: Notes) -> None:
+    """Заметки части длинного документа в общие заметки нарезки."""
+    for name in (
+        "unknown_refs",
+        "corrected_refs",
+        "parts_not_found",
+        "conflicts",
+        "uncovered",
+        "uncovered_signals",
+    ):
+        getattr(target, name).extend(getattr(other, name))
+    target.dropped_items += other.dropped_items
+    target.invalid += other.invalid
+    target.duplicates += other.duplicates
+
+
+def from_answer(doc: ParsedDocument, answer: ModelAnswer) -> Segmentation:
+    """Нарезка по ответу модели: цитаты из документа, проверки кодом, номера по порядку документа."""
+    notes = Notes()
+    drafts, kept = decide(doc, answer, notes)
+    return assemble(doc, drafts, kept, notes)

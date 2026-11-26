@@ -29,6 +29,7 @@ from enum import Enum
 from typing import Final, TypeVar
 
 from validator.ingest.blocks import EMPTY_CELL, is_empty_cell_quote
+from validator.merge import quote_hint
 from validator.models import (
     Anchor,
     BlockKind,
@@ -197,7 +198,7 @@ def check(
 
     Второе значение: все сверенные цитаты находки, включая ненайденные, для сводки.
     """
-    located = [locate(doc, q, m.block_ids) for q in m.quotes]
+    located = [locate(doc, q, quote_hint(m.quote_blocks, i, m.block_ids)) for i, q in enumerate(m.quotes)]
     quotes = [q for q, _ in located]
     verified = [q for q in quotes if q.verified]
     if not verified:

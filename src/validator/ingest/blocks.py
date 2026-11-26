@@ -604,7 +604,7 @@ def _header(block: Block, title: str | None) -> str:
     return f"[{block.id}] " + " | ".join(parts)
 
 
-def _document_title(doc: ParsedDocument) -> str | None:
+def document_title(doc: ParsedDocument) -> str | None:
     """Первый раздел, общий для всех блоков (заголовок-название документа), или None."""
     firsts = {b.section[0] if b.section else None for b in doc.blocks if b.kind is not BlockKind.FURNITURE}
     return next(iter(firsts)) if len(firsts) == 1 else None
@@ -639,30 +639,37 @@ def defuse_delimiters(text: str) -> str:
     return _DELIMITER_TAG.sub(f"<{ZERO_WIDTH}", text)
 
 
-def render_for_model(doc: ParsedDocument) -> str:
+def render_block(block: Block, title: str | None) -> list[str]:
+    """Строки одного блока в документе для модели; колонтитул не показывается (пустой список)."""
+    if block.kind is BlockKind.FURNITURE:
+        return []  # колонтитул и номер страницы: не документ, модели их не показываем
+    if block.kind is BlockKind.HEADING:
+        level = max(1, len(block.section))
+        return [f"[{block.id}] {'#' * level} {_heading_title(block.text)}"]
+    out = [_header(block, title)]
+    if block.kind is BlockKind.TABLE_ROW:
+        out.append(f"  {block.serialized}")
+    elif len(block.sentences) == 1:
+        out.append(f"  {_one_line(block.sentences[0].text)}")
+    elif block.sentences:
+        out.extend(f"  [{s.id}] {_one_line(s.text)}" for s in block.sentences)
+    else:
+        out.extend(f"  {line}" for line in block.text.splitlines() if line.strip())
+    return out
+
+
+def render_for_model(doc: ParsedDocument, blocks: Sequence[Block] | None = None) -> str:
     """Документ с ID блоков и предложений для модели (исследование 18, п. 3.2).
 
     Модель ссылается на ``B…`` и ``B….N``, а цитату по ним подставляет код. Текст документа здесь
     это данные, а не инструкции: обрамление и предупреждение об этом добавляет промпт шага.
     Формат согласован с описанием разметки в ``prompts/search_user.md`` (#14): заголовок одной строкой,
     у блока из одного предложения ID предложения не ставится, у строк таблиц «Колонка: значение; …».
+
+    ``blocks``: только эти блоки (часть длинного документа, #38); название документа и пути разделов
+    всё равно считаются по документу целиком, поэтому блок в части выглядит так же, как в целом.
     """
-    title = _document_title(doc)
-    out: list[str] = []
-    for block in doc.blocks:
-        if block.kind is BlockKind.FURNITURE:
-            continue  # колонтитул и номер страницы: не документ, модели их не показываем
-        if block.kind is BlockKind.HEADING:
-            level = max(1, len(block.section))
-            out.append(f"[{block.id}] {'#' * level} {_heading_title(block.text)}")
-            continue
-        out.append(_header(block, title))
-        if block.kind is BlockKind.TABLE_ROW:
-            out.append(f"  {block.serialized}")
-        elif len(block.sentences) == 1:
-            out.append(f"  {_one_line(block.sentences[0].text)}")
-        elif block.sentences:
-            out.extend(f"  [{s.id}] {_one_line(s.text)}" for s in block.sentences)
-        else:
-            out.extend(f"  {line}" for line in block.text.splitlines() if line.strip())
+    title = document_title(doc)
+    shown = doc.blocks if blocks is None else blocks
+    out = [line for block in shown for line in render_block(block, title)]
     return defuse_delimiters("\n".join(out)) + "\n"

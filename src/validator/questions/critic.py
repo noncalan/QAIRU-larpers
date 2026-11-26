@@ -25,13 +25,14 @@ from dataclasses import dataclass, field
 
 from pydantic import Field, ValidationError, ValidationInfo, field_validator
 
+from validator.config import call_timeout
 from validator.errors import (
     LLM_BAD_RESPONSE,
     LLM_QUESTIONS_CRITIC_FAILED,
     LLM_QUESTIONS_WITHDRAWN,
     LLMError,
 )
-from validator.ingest.blocks import defuse_delimiters, render_for_model
+from validator.ingest.blocks import defuse_delimiters
 from validator.llm.base import LLMClient
 from validator.models import (
     DiagLevel,
@@ -46,6 +47,7 @@ from validator.models import (
     RunConfig,
     WithdrawnQuestion,
 )
+from validator.parts import focus_view
 from validator.prompting import PROMPTS_DIR, fill, load_prompt
 from validator.questions.editor import _Lenient, extract_json
 from validator.questions.quotes import span, verify_quote
@@ -157,20 +159,22 @@ def render_question(q: Question) -> str:
 
 def build_request(questions: Sequence[Question], doc: ParsedDocument, cfg: RunConfig) -> LLMRequest:
     model = cfg.model_for(LLMStep.QUESTIONS_CRITIC)
+    places = (b for q in questions for x in q.quotes if x.anchor for b in x.anchor.block_ids)
     prompt = fill(
         load_prompt(USER_PROMPT.name),
-        document=render_for_model(doc).rstrip("\n"),
+        document=focus_view(doc, places).rstrip("\n"),
         questions="\n\n".join(render_question(q) for q in questions),
     )
+    system = load_prompt(SYSTEM_PROMPT.name).strip()
     return LLMRequest(
         step=LLMStep.QUESTIONS_CRITIC,
         call_index=CALL_INDEX,
         model=model.model,
         effort=model.effort,
-        system=load_prompt(SYSTEM_PROMPT.name).strip(),
+        system=system,
         prompt=prompt,
         json_schema=None,
-        timeout_s=cfg.call_timeout_s,
+        timeout_s=call_timeout(cfg, system, prompt),
     )
 
 

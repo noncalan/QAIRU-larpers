@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import inspect
 import re
+from collections import Counter
 
 import pytest
 
@@ -44,17 +46,17 @@ def test_error_becomes_diagnostic_with_action() -> None:
     assert (d.code, d.level, d.hint, d.location) == ("IN-001", DiagLevel.ERROR, "Проверьте путь", "x.pdf")
 
 
+_LITERAL_CODE = re.compile(r'^([A-Z_]+) = "([A-Z]{2,3}-\d{3})"', re.MULTILINE)
+
+
 def test_diagnostic_codes_are_unique() -> None:
-    """Один код диагностики значит одно: слияние веток не должно дать два смысла на один номер."""
-    codes = {
-        name: value
-        for name, value in vars(errors).items()
-        if name.isupper() and isinstance(value, str) and re.fullmatch(r"[A-Z]+-\d{3}", value)
-    }
-    by_value: dict[str, list[str]] = {}
-    for name, value in codes.items():
-        by_value.setdefault(value, []).append(name)
-    # IN_NO_REQUIREMENTS намеренный псевдоним IN_HEADINGS_ONLY (один «пустой шаблон»).
-    by_value["IN-081"] = [n for n in by_value.get("IN-081", []) if n != "IN_NO_REQUIREMENTS"]
-    clashes = {value: names for value, names in by_value.items() if len(names) > 1}
-    assert not clashes, f"Коды диагностики повторяются: {clashes}"
+    """Два смысла под одним кодом ломают отчёт и eval: коды каталога не повторяются (#38, #96).
+
+    Синоним одного смысла задаётся ссылкой на имя (``IN_NO_REQUIREMENTS = IN_HEADINGS_ONLY``), не строкой.
+    """
+    codes = _LITERAL_CODE.findall(inspect.getsource(errors))
+
+    repeated = {code: k for code, k in Counter(value for _, value in codes).items() if k > 1}
+
+    assert len(codes) > 50, "каталог кодов не найден"
+    assert repeated == {}
