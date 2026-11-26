@@ -35,6 +35,7 @@ from validator.models import (
 from validator.report import render_md
 from validator.report.coverage import build_coverage
 from validator.report.selfcheck import TZ_SECTIONS, check_report, selfcheck_diagnostics
+from validator.text import line_of
 
 
 def full() -> Report:
@@ -259,6 +260,24 @@ def test_quote_recheck_passes_when_document_has_the_text_at_the_anchor() -> None
             if q.anchor and q.located:
                 text[q.anchor.char_start : q.anchor.char_end] = list(q.located)  # длина фрагмента та же
     doc_text = "".join(text)
+    findings = []
+    for f in report.verification.findings:
+        quotes = []
+        for q in f.quotes:
+            if a := q.anchor:
+                anchor = a.model_copy(
+                    update={
+                        "line_start": line_of(doc_text, a.char_start),
+                        "line_end": line_of(doc_text, max(a.char_start, a.char_end - 1)),
+                    }
+                )
+                quotes.append(q.model_copy(update={"anchor": anchor}))
+            else:
+                quotes.append(q)
+        findings.append(f.model_copy(update={"quotes": quotes}))
+    report = report.model_copy(
+        update={"verification": report.verification.model_copy(update={"findings": findings})}
+    )
 
     sc = check(report, doc_text=doc_text)
 

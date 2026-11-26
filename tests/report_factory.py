@@ -62,12 +62,12 @@ from validator.models import (
 )
 from validator.models import DefectType as D
 from validator.questions.metrics import question_metrics
-from validator.report.build import FIRST_PAGE_ITEMS
+from validator.report.build import _ask_first, _fix_first
 from validator.report.coverage import build_coverage
 from validator.report.render_md import render_md
 from validator.report.run_metrics import discarded_by_reason, found_in_distribution
 from validator.report.selfcheck import check_report
-from validator.verify import summarize
+from validator.verify import light_with_questions, requirement_status, summarize, traffic_light
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "report"
 STARTED = datetime(2026, 1, 15, 9, 30, 0, tzinfo=UTC)
@@ -96,6 +96,7 @@ def passport(**changes: object) -> Passport:
         "models_actual": ["claude-opus-5-5"],
         "calls_total": 5,
         "calls_failed": 0,
+        "calls_cached": 1,
         "tokens": TokenUsage(input_tokens=30_000, output_tokens=12_000),
         "cost_usd": 1.62,
         "exit_code": ExitCode.OK,
@@ -344,9 +345,7 @@ def withdrawn_questions() -> list[WithdrawnQuestion]:
     return [WithdrawnQuestion(question=question, reason="Бронь хранится 30 дней", answer=answer)]
 
 
-def _verification(
-    found: list[Finding], reqs: list[Requirement], light: TrafficLight, reason: str
-) -> Verification:
+def _verification(found: list[Finding], reqs: list[Requirement]) -> Verification:
     seg = Segmentation(requirements=reqs)
     dropped = [
         DiscardedFinding(
@@ -376,11 +375,15 @@ def _verification(
             detail="Вместимость задана в разделе об ограничениях",
         ),
     ]
-    status = {r.id: [f.id for f in found if r.id in f.requirement_ids] for r in reqs}
+    status = requirement_status(found, seg)
+    light, reason = traffic_light(found, requirements=len(reqs))
+    quotes = [q for f in found for q in f.quotes]
+    if found:
+        quotes.append(_quote(REQS[0].quote, 100, 4))  # Сверенная цитата находки, снятой критиком.
     return Verification(
         findings=found,
         discarded=dropped if found else [],
-        summary=summarize(found, dropped if found else [], seg),
+        summary=summarize(found, dropped if found else [], seg, quotes=quotes, status=status),
         traffic_light=light,
         traffic_reason=reason,
         requirement_status=status,
@@ -388,15 +391,13 @@ def _verification(
 
 
 def _conclusion(ver: Verification, qs: list[Question]) -> Conclusion:
-    violations = [f for f in ver.findings if f.verdict is Verdict.VIOLATION]
-    violations.sort(key=lambda f: f.severity.rank)
-    blocking = [q.id for q in qs if q.priority is not QuestionPriority.P2]
+    fix_first = _fix_first(ver)
     light = ver.traffic_light
     return Conclusion(
         traffic_light=light,
-        headline=f"{light.label.capitalize()}: {ver.traffic_reason}",
-        fix_first=[f.id for f in violations[:FIRST_PAGE_ITEMS]],
-        ask_first=blocking[:FIRST_PAGE_ITEMS],
+        headline=f"{light.label[:1].upper()}{light.label[1:]}: {ver.traffic_reason}",
+        fix_first=fix_first,
+        ask_first=_ask_first(qs, fix_first),
     )
 
 
@@ -409,6 +410,7 @@ def _metrics(
         duration_s=pp.duration_s,
         calls_total=pp.calls_total,
         calls_failed=pp.calls_failed,
+        calls_cached=pp.calls_cached,
         tokens=pp.tokens,
         cost_usd=pp.cost_usd,
         candidates_total=s.findings_total + s.discarded_total + 2,
@@ -483,6 +485,7 @@ def _report(
     checklists: list[ChecklistUse] | None = None,
 ) -> Report:
     pp = pass_ or passport()
+    ver = light_with_questions(ver, qs)
     report = Report(
         status=status,
         passport=pp,
@@ -559,13 +562,13 @@ def checklist_uses() -> list[ChecklistUse]:
 def full_report() -> Report:
     """Критичная находка, неясность, нечёткая цитата, OCR, линтер, три вопроса, предупреждения, чек-листы."""
     found = findings()
-    ver = _verification(found, REQS, TrafficLight.RED, "критичных нарушений: 1")
+    ver = _verification(found, REQS)
     return _report(
         ver,
         questions(),
         REQS,
         checklists=checklist_uses(),
-        pass_=passport(checklists=["DT", "MON"]),
+        pass_=passport(checklists=["DT", "MON"], exit_code=ExitCode.PARTIAL_INPUT),
         status=ReportStatus.PARTIAL,
         withdrawn=withdrawn_questions(),
         input_diagnostics=[
@@ -592,7 +595,7 @@ def full_report() -> Report:
 
 def clean_report() -> Report:
     """Нарушений и вопросов нет: пустые разделы не пропадают."""
-    ver = _verification([], REQS[:3], TrafficLight.GREEN, "нарушений не найдено")
+    ver = _verification([], REQS[:3])
     return _report(ver, [], REQS[:3])
 
 
@@ -608,6 +611,7 @@ def unread_report() -> Report:
         models={},
         models_actual=[],
         calls_total=0,
+        calls_cached=0,
         tokens=TokenUsage(),
         cost_usd=None,
         backend_used=None,
