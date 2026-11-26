@@ -1,0 +1,231 @@
+{
+ "envelope_version": 1,
+ "key": "d82ee0ce407a46da64d3f926401df81db50627695f63e74e80826dbf29ef3ce3",
+ "call_id": "test_draft.3",
+ "step": "test_draft",
+ "call_index": 3,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T08:44:10.299338+00:00",
+ "payload": {
+  "duration_api_ms": 151260,
+  "stop_reason": "end_turn",
+  "session_id": "063dfc7b-78b3-4464-a02f-3195a55a1ca3",
+  "total_cost_usd": 0.26149360000000005,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 11800,
+   "cache_read_input_tokens": 2296,
+   "output_tokens": 21406,
+   "output_tokens_details": {
+    "thinking_tokens": 16271
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 11800,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 21406,
+     "cache_read_input_tokens": 2296,
+     "cache_creation_input_tokens": 11800,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 11800
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 21406,
+    "cacheReadInputTokens": 2296,
+    "cacheCreationInputTokens": 11800,
+    "webSearchRequests": 0,
+    "costUSD": 0.26149360000000005,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 16271,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 11800,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n**M-036.** Нужно знать, меняет ли метод состояние. Логика, особые правила, URL `saveLimit` и параметры `amount` и `enabled` везде описывают сохранение с заменой настройки. «Чтение порога» стоит только в одной ячейке паспорта. Результат однозначен, тест написать можно.\n\n**M-037.** Метод GET назван прямо, в примере curl он тоже есть (`-G`). Поведение при повторном вызове задано заменой настройки. Требования к кешу и безопасности повтора в документе нет, поэтому тест идёт по заданному контракту.\n\n**M-038.** Для держателя дополнительной карты правила доступа в документе нет. Есть «держатель активной карты», «владелец карты» и «клиент» без определений. Ожидаемый результат — пропуск.\n\n**M-040.** Для `enabled=2`, отсутствующего параметра и `cardId` длиннее 64 символов документ называет код 400 и тело «Некорректный запрос». Для нечислового и дробного `amount` есть и 400, и ветка ERROR для отклонённой суммы. Единого ответа нет, на это место ставлю пропуск.\n\n**M-041.** Состав тела при ERROR противоречив. В одном месте сказано «вернуть прежнее состояние», в другом приведён пример только с `result` и `message`. Тело ответа — пропуск.\n\n**M-044.** Документ прямо задаёт тип в ответе: `amount` и `enabled` — строки, пример `\"50000\"` и `\"1\"`. Тип в запросе другой, но это разные направления, а не противоречие. Тест написать можно.\n\n**M-045.** Обязателен ли заголовок Content-Type при запросе без тела, документ не говорит. Результат — пропуск.\n\n**M-046.** Условие, при котором возвращается 201, не названо. Код при первом и при повторном сохранении — пропуски.\n\n**M-047.** Для `amount=999` есть два несовместимых ответа: 400 «Некорректный запрос» и ERROR «Проверьте сумму» с кодом, который считается успешным. Код и тело — пропуск.\n\n**M-048.** При первом сохранении документ не выбирает между 200 и 201. Код — пропуск.\n\n**M-049.** Единственное условие для 403 — «доступ запрещен», а для чужой карты задан 404. Сценарий и тело 403 — пропуски.\n\n## Ответ\n\n```json\n{\n  \"drafts\": [\n    {\n      \"finding\": \"M-036\",\n      \"can_write\": true,\n      \"precondition\": \"Сессия владельца карты. У карты сохранена настройка: порог 30000, переключатель 0.\",\n      \"steps\": [\n        \"Вызвать saveLimit для этой карты с amount=50000 и enabled=1.\",\n        \"Прочитать настройку карты.\"\n      ],\n      \"expected\": \"Действующая настройка заменена: порог 50000, переключатель 1. Ответ: {\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}.\",\n      \"values\": [\n        {\"value\": \"Заменить настройку\", \"quote\": \"Заменить настройку и вернуть результат сохранения.\"},\n        {\"value\": \"{\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}\", \"quote\": \"{\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}\"}\n      ],\n      \"gaps\": [],\n      \"note\": \"Ячейка «чтение порога» в паспорте противоречит остальному тексту, но логика метода, особые правила и URL однозначно описывают сохранение. Для автора остаётся вопрос, к какому функциональному требованию привязать метод. Результат теста от этого не зависит.\"\n    },\n    {\n      \"finding\": \"M-037\",\n      \"can_write\": true,\n      \"precondition\": \"Сессия владельца карты. У карты есть настройка с другими значениями.\",\n      \"steps\": [\n        \"Отправить GET-запрос saveLimit с cardId своей карты, amount=50000, enabled=1.\",\n        \"Отправить тот же запрос повторно.\",\n        \"Прочитать настройку карты.\"\n      ],\n      \"expected\": \"Оба ответа: {\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}. Действующая настройка одна: порог 50000, переключатель 1.\",\n      \"values\": [\n        {\"value\": \"GET\", \"quote\": \"REST type: GET\"},\n        {\"value\": \"Повторное сохранение заменяет действующую настройку\", \"quote\": \"Повторное сохранение заменяет действующую настройку.\"},\n        {\"value\": \"{\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}\", \"quote\": \"{\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}\"}\n      ],\n      \"gaps\": [],\n      \"note\": \"Метод и поведение повтора в документе заданы однозначно, тест идёт по ним. Замечание про семантику GET и кеширование документ требованием не закрепляет.\"\n    },\n    {\n      \"finding\": \"M-038\",\n      \"can_write\": false,\n      \"precondition\": \"Клиент A — владелец основной карты. Клиент B — держатель дополнительной карты к ней. У клиента B есть сессия.\",\n      \"steps\": [\n        \"Войти под клиентом B.\",\n        \"Вызвать saveLimit для дополнительной карты с amount=50000 и enabled=1.\"\n      ],\n      \"expected\": \"[?1]\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"может ли держатель дополнительной карты задавать порог: в документе «держатель активной карты», «владелец карты» и «клиент» не определены для дополнительной карты, правило доступа и ответ при отказе не заданы\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-040\",\n      \"can_write\": false,\n      \"precondition\": \"Сессия владельца карты, карта существует. У карты есть настройка.\",\n      \"steps\": [\n        \"Вызвать saveLimit с enabled=2, остальные параметры допустимы.\",\n        \"Вызвать saveLimit без параметра enabled.\",\n        \"Вызвать saveLimit с cardId из 65 символов.\",\n        \"Вызвать saveLimit с amount=abc.\",\n        \"Вызвать saveLimit с amount=50000.5.\"\n      ],\n      \"expected\": \"Шаги 1–3: код 400 и тело {\\\"message\\\":\\\"Некорректный запрос\\\"}. Шаги 4–5: [?1].\",\n      \"values\": [\n        {\"value\": \"0 или 1\", \"quote\": \"Format: integer; Size: 1 знак; Mandatory: Да; Logic: 0 или 1\"},\n        {\"value\": \"1–64\", \"quote\": \"Size: 1–64\"},\n        {\"value\": \"параметры запроса заполнены неверно\", \"quote\": \"Ответ в случае, если параметры запроса заполнены неверно.\"},\n        {\"value\": \"400\", \"quote\": \"Если результат 400, 401 и далее — неуспешный.\"},\n        {\"value\": \"{\\\"message\\\":\\\"Некорректный запрос\\\"}\", \"quote\": \"{\\\"message\\\":\\\"Некорректный запрос\\\"}\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"код и тело ответа для нечислового и дробного amount: документ называет и 400 «Некорректный запрос» для неверно заполненных параметров, и result ERROR для отклонённой суммы; к какому случаю относятся такие значения, не сказано\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-041\",\n      \"can_write\": false,\n      \"precondition\": \"Сессия владельца карты. У карты сохранена настройка: порог 50000, переключатель 1.\",\n      \"steps\": [\n        \"Вызвать saveLimit с amount=999 и enabled=1.\"\n      ],\n      \"expected\": \"Сохранённая настройка осталась прежней (порог 50000, переключатель 1). Тело ответа: [?1].\",\n      \"values\": [\n        {\"value\": \"вернуть прежнее состояние\", \"quote\": \"При отклонении суммы вернуть прежнее состояние и результат ERROR.\"},\n        {\"value\": \"{\\\"result\\\":\\\"ERROR\\\",\\\"message\\\":\\\"Проверьте сумму\\\"}\", \"quote\": \"{\\\"result\\\":\\\"ERROR\\\",\\\"message\\\":\\\"Проверьте сумму\\\"}\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"состав тела ответа при отклонённой сумме: «вернуть прежнее состояние» можно читать как возврат прежних amount и enabled в ответе или как откат данных, а пример содержит только result и message\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-044\",\n      \"can_write\": true,\n      \"precondition\": \"Сессия владельца карты, карта существует.\",\n      \"steps\": [\n        \"Вызвать saveLimit с amount=50000 и enabled=1.\",\n        \"Проверить типы полей amount и enabled в теле JSON-ответа.\"\n      ],\n      \"expected\": \"В ответе amount и enabled — строки: {\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}.\",\n      \"values\": [\n        {\"value\": \"string\", \"quote\": \"Parameter: `amount`; Format: string; Logic: При успехе\"},\n        {\"value\": \"{\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}\", \"quote\": \"{\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}\"}\n      ],\n      \"gaps\": [],\n      \"note\": \"Тип в ответе документ задаёт прямо: строка в таблице ответа и в примере. Тип в запросе (integer) относится к другому направлению и тест не блокирует.\"\n    },\n    {\n      \"finding\": \"M-045\",\n      \"can_write\": false,\n      \"precondition\": \"Сессия владельца карты, карта существует. Заголовок Content-Type в запросе не передаётся.\",\n      \"steps\": [\n        \"Отправить saveLimit с допустимыми cardId, amount=50000, enabled=1 в query, без тела и без Content-Type.\"\n      ],\n      \"expected\": \"[?1]\",\n      \"values\": [\n        {\"value\": \"Тело не используется\", \"quote\": \"Тело не используется.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"принимается ли запрос без Content-Type и какой код и тело ответа, если нет: раздел Request body называет Content-Type application/json, но обязательность заголовка не задана, а тело не используется\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-046\",\n      \"can_write\": false,\n      \"precondition\": \"Сессия владельца карты. Для карты настройка ещё не сохранялась.\",\n      \"steps\": [\n        \"Вызвать saveLimit с amount=50000 и enabled=1.\",\n        \"Повторно вызвать saveLimit для той же карты с amount=60000 и enabled=1.\"\n      ],\n      \"expected\": \"Оба сохранения успешны. Код ответа на первое [?1], код ответа на повторное [?2].\",\n      \"values\": [\n        {\"value\": \"200 или 201\", \"quote\": \"Если результат 200 или 201 — успешный.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"код при первом сохранении: документ называет успешными 200 и 201, но условие для 201 не задано\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"код при повторном сохранении, заменяющем настройку: условие выбора между 200 и 201 не задано\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-047\",\n      \"can_write\": false,\n      \"precondition\": \"Сессия владельца карты, карта существует. Допустимый порог — от 1 000 до 1 000 000 ₸, сумма 999 ниже границы.\",\n      \"steps\": [\n        \"Вызвать saveLimit с amount=999 и enabled=1.\"\n      ],\n      \"expected\": \"Ответ на запрос: [?1].\",\n      \"values\": [\n        {\"value\": \"от 1 000 до 1 000 000 ₸ включительно\", \"quote\": \"Держатель активной карты KZT задаёт целый порог от 1 000 до 1 000 000 ₸ включительно.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"код и тело ответа для недопустимой суммы: «Ответ в случае, если параметры запроса заполнены неверно» (400, тело «Некорректный запрос») и пример {\\\"result\\\":\\\"ERROR\\\",\\\"message\\\":\\\"Проверьте сумму\\\"} из раздела 200, который по тексту считается успешным\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-048\",\n      \"can_write\": false,\n      \"precondition\": \"Сессия владельца карты. Для карты настройка ещё не сохранялась.\",\n      \"steps\": [\n        \"Вызвать saveLimit с amount=50000 и enabled=1.\"\n      ],\n      \"expected\": \"Код ответа [?1]. Тело: {\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}.\",\n      \"values\": [\n        {\"value\": \"{\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}\", \"quote\": \"{\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"код успешного ответа при первом сохранении: заголовок «200. Successful — Created» смешивает 200 и «Created», а 201 упомянут без условия\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-049\",\n      \"can_write\": false,\n      \"precondition\": \"[?1]\",\n      \"steps\": [\n        \"Вызвать saveLimit в условиях, где доступ к ресурсу запрещён.\"\n      ],\n      \"expected\": \"Код 403. Тело ответа: [?2].\",\n      \"values\": [\n        {\"value\": \"403\", \"quote\": \"403. Unsuccessful — Forbidden\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"сценарий, в котором возвращается 403: документ говорит только «на указанный ресурс доступ запрещен», а для чужой карты прямо задаёт 404\", \"part\": \"precondition\"},\n        {\"number\": 2, \"missing\": \"тело ответа 403: единственный блок в разделе 403 ({\\\"message\\\":\\\"Карта не найдена\\\"}) относится к ответу 404\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    }\n  ]\n}\n```",
+  "ttft_ms": 124556,
+  "type": "result",
+  "duration_ms": 153954,
+  "uuid": "e51dbe08-1e0e-42ad-8960-c8ed8e31c3c1",
+  "ttft_stream_ms": 934,
+  "time_to_request_ms": 60,
+  "time_to_request_phases_ms": {
+   "other": 6,
+   "system_prompt": 2,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 7,
+   "input_hooks": 2,
+   "conversation_append": 1,
+   "tool_pool_refresh": 1,
+   "init_message": 5,
+   "init_frame_send": 4,
+   "engine_pickup": 1,
+   "loop_entry": 3,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "request_announcements": 6,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 1,
+   "message_normalization": 3,
+   "client_creation": 3,
+   "request_build": 8
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 10,
+  "time_to_request_cpu_ms": 65,
+  "time_to_request_major_faults": 0,
+  "process_rss_mib_turn_start": 202,
+  "process_anon_mib_turn_start": 125,
+  "process_rss_mib_result": 195,
+  "process_anon_mib_result": 109,
+  "process_peak_rss_mib": 221,
+  "process_cpu_ms_turn": 1491,
+  "process_wall_ms_turn": 153954,
+  "tool_pool_build_count": 4,
+  "tool_pool_build_lapsed_count": 1,
+  "tool_pool_moved_at_lapse_count": 0,
+  "tool_pool_limit_ms": 30000,
+  "process_cpu_ms_streaming": 1211,
+  "process_wall_ms_streaming": 150377,
+  "main_stream_count": 1,
+  "main_stream_event_count": 911,
+  "main_stream_chunk_count": 906,
+  "process_turn_states": {
+   "main_stream": {
+    "cpu_ms": 1211,
+    "wall_ms": 150377,
+    "entries": 1
+   },
+   "first_event_wait": {
+    "cpu_ms": 147,
+    "wall_ms": 871,
+    "entries": 1
+   },
+   "before_first_request": {
+    "cpu_ms": 65,
+    "wall_ms": 61,
+    "entries": 1
+   },
+   "after_last_request": {
+    "cpu_ms": 68,
+    "wall_ms": 2645,
+    "entries": 1
+   }
+  },
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 1,
+   "cpu_ms": 7,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 1,
+   "render_ms": 1,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 2,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 1,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 2,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 3,
+   "record_attempt_ms": 0,
+   "other_ms": 1,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 1,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 934,
+  "time_to_request_from_spawn_ms": 5401690,
+  "warm_spare_claimed": false,
+  "flag_fetch_kick": "not_asked_warm",
+  "time_origin_ms": 1795682495305.7273,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "process_start_tuning": 0
+ }
+}
