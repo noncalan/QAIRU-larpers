@@ -132,7 +132,9 @@ def rc1_report(tmp_path_factory: pytest.TempPathFactory) -> Report:
     out = tmp_path_factory.mktemp("rc1") / "report.md"
     env = {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}
     env["PYTHONIOENCODING"] = "utf-8"
+    # запись RC1 старше текущего кода (#133 поменял вход segment.1): ответы только по номеру вызова (#132)
     args = [str(REQUIREMENTS[DocKind.PDF]), str(out), "--backend", "replay", "--replay", str(RC1_RUN)]
+    args.append("--replay-by-position")
     result = subprocess.run(
         [sys.executable, "-m", "validator", *args],
         capture_output=True,
