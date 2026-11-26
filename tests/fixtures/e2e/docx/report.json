@@ -7,16 +7,16 @@
     "document_sha256": "7fd7c1d145b0c4e01ac8a502856b08eaf0cdbddc896069271687f6a2a16022d5",
     "document_size_bytes": 16072,
     "document_pages": null,
-    "started_at": "2026-11-26T19:43:33.604455Z",
-    "finished_at": "2026-11-26T19:43:33.735286Z",
-    "duration_s": 0.13,
-    "agent_version": "cb0cc5c-dirty",
+    "started_at": "2026-11-26T22:21:40.810369Z",
+    "finished_at": "2026-11-26T22:21:41.144673Z",
+    "duration_s": 0.33,
+    "agent_version": "v0.9-rc1-16-ged82bb6-dirty",
     "agent_version_source": "git",
     "agent_dirty": true,
-    "agent_commit": "cb0cc5c",
+    "agent_commit": "ed82bb6",
     "prompts_sha256": "7dd96b1cffa406769efc8daf0df90f974ab4ef58757a546a07948210acc7492d",
-    "os": "Darwin 25.6.0 (arm64)",
-    "python": "3.12.10",
+    "os": "Linux 6.18.44-fc-v880 (x86_64)",
+    "python": "3.13.18",
     "backend_requested": "replay",
     "backend_used": "replay",
     "profile": "standard",
@@ -48,6 +48,16 @@
     "calls_total": 9,
     "calls_failed": 0,
     "calls_cached": 0,
+    "calls_replayed": 9,
+    "replay": {
+      "path": "tests/fixtures/e2e/docx/run",
+      "responses": 9,
+      "recorded_from": "2026-11-26T17:16:58.930792Z",
+      "recorded_to": "2026-11-26T17:31:39.601288Z",
+      "backends": [
+        "cli"
+      ]
+    },
     "tokens": {
       "input_tokens": 18,
       "output_tokens": 157920,
@@ -14027,7 +14037,7 @@
     ]
   },
   "metrics": {
-    "duration_s": 0.13,
+    "duration_s": 0.33,
     "calls_total": 9,
     "calls_failed": 0,
     "calls_cached": 0,

@@ -34,6 +34,8 @@
     "calls_total": 5,
     "calls_failed": 0,
     "calls_cached": 1,
+    "calls_replayed": 0,
+    "replay": null,
     "tokens": {
       "input_tokens": 30000,
       "output_tokens": 12000,
