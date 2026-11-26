@@ -1,0 +1,110 @@
+{
+ "envelope_version": 1,
+ "key": "654c2150b71509497f9a817f774c3d90379efdf4d7f1cc0e9e1d8308e9742d49",
+ "call_id": "questions_critic.1",
+ "step": "questions_critic",
+ "call_index": 1,
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T16:01:57.260326+00:00",
+ "payload": {
+  "duration_api_ms": 43012,
+  "stop_reason": "end_turn",
+  "session_id": "3ff60243-535c-41cb-b4d4-98eb067ee778",
+  "total_cost_usd": 0.19262,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 12274,
+   "cache_read_input_tokens": 0,
+   "output_tokens": 4721,
+   "output_tokens_details": {
+    "thinking_tokens": 2633
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 12274,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 4721,
+     "cache_read_input_tokens": 0,
+     "cache_creation_input_tokens": 12274,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 12274
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-opus-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 4721,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 12274,
+    "webSearchRequests": 0,
+    "costUSD": 0.19262,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2633,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n**Q-01.** В B004 сказано «своими… сотрудниками», но в B027 у Employee нет ссылки на владельца, а B041 («всех или по компании») не уточняет, чьих именно. Ответа нет. Формулировка в порядке, сценарий есть.\n\n**Q-02.** Состав тела в B042 скрыт за «...», о companyId при создании ничего не сказано. Ответа нет, ошибок нет.\n\n**Q-03.** «1:1» в B017 противоречит B039 и B041, где у компании подразумевается много сотрудников. Само противоречие — предмет вопроса, поэтому ответа нет. Разумное исправление одно: сотрудник состоит в одной компании или ни в одной, у компании много сотрудников. Отмечаю `obvious_fix`.\n\n**Q-04.** В B048 нет кода 401, поведение без сессии не описано. Ответа нет, ошибок нет.\n\n**Q-05.** Тело запроса входа в B031 не задано. Ответа нет. Конкретной ситуации, от которой зависит результат, в вопросе нет: спрашивается только формат.\n\n**Q-06.** В B037 сказано «только свои», но код ответа для чужого объекта не задан. Ответа нет, ошибок нет.\n\n**Q-07.** Коды успешных ответов нигде не указаны. Ответа нет. В одном вопросе собраны коды и тела для создания, удаления и выхода, то есть несколько решений: ошибка 2.\n\n**Q-08.** В B050 речь о CORS, а не о CSRF; про CSRF в документе ничего нет. Ответа нет, ошибок нет.\n\n**Q-09.** В B049 упомянут `@Pattern`, но в скобках перечислены примеры, и собственный валидатор Jakarta это не исключает. Проверка контрольного числа прямо не выбрана. Ответа нет.\n\n**Q-10.** В B025 обязательным помечено только name, остальные поля без пометки. В B061 тоже только name с `requiredMode = REQUIRED`, у inn пометки нет. Прямое следствие: обязательно только название. Ответ есть.\n\n**Q-11.** В B025 inn помечен как «уникальный» без уточнения области; в B064 неуникальный ИНН даёт 409. Уникальность без оговорок означает уникальность во всей таблице. Ответ есть.\n\n**Q-12.** Предмет вопроса — несогласованность длин в самом B025, и этот же B025 вопрос цитирует как неясное место. Ответа нет. Ошибок нет.\n\n**Q-13.** Не сказано, создаёт ли регистрация сессию. Ответа нет, ошибок нет.\n\n**Q-14.** Поведение при перепривязке в B043 не описано. Ответа нет, ошибок нет.\n\n**Q-15.** Семантика PUT в B044 не задана. Ответа нет, ошибок нет.\n\n## Ответ\n\n```json\n{\n  \"reviews\": [\n    {\"id\": \"Q-01\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-02\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-03\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": true, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-04\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-05\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": false, \"errors\": []},\n    {\"id\": \"Q-06\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-07\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": [2]},\n    {\"id\": \"Q-08\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-09\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-10\", \"answered\": true, \"answer\": \"Да, обязательным помечено только название, остальные поля необязательны\", \"answer_quote\": \"name (обязательное)\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-11\", \"answered\": true, \"answer\": \"Отказать с 409: ИНН уникален без оговорок, то есть во всей системе\", \"answer_quote\": \"Пример: попытка создания компании с неуникальным ИНН должна возвращать HTTP 409.\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-12\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-13\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-14\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-15\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []}\n  ]\n}\n```",
+  "ttft_ms": 28162,
+  "type": "result",
+  "duration_ms": 43373,
+  "uuid": "a3ca9925-951f-47d7-acb0-2217d62b384a",
+  "ttft_stream_ms": 2175,
+  "time_to_request_ms": 360,
+  "first_content_frame_ms": 2175,
+  "queued_turn_count": 0,
+  "result_index": 0
+ }
+}

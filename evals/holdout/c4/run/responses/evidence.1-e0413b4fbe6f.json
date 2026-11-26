@@ -1,0 +1,110 @@
+{
+ "envelope_version": 1,
+ "key": "e0413b4fbe6fa0448b474e2c289fc7a8f51dcb21499ac5f28bf9a02a041d8732",
+ "call_id": "evidence.1",
+ "step": "evidence",
+ "call_index": 1,
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T15:57:42.111238+00:00",
+ "payload": {
+  "duration_api_ms": 50492,
+  "stop_reason": "end_turn",
+  "session_id": "495aa1f6-5a97-4049-8443-e90bcf1401e0",
+  "total_cost_usd": 0.1714428,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 7189,
+   "cache_read_input_tokens": 1914,
+   "output_tokens": 5677,
+   "output_tokens_details": {
+    "thinking_tokens": 2886
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 7189,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 5677,
+     "cache_read_input_tokens": 1914,
+     "cache_creation_input_tokens": 7189,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 7189
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-opus-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 5677,
+    "cacheReadInputTokens": 1914,
+    "cacheCreationInputTokens": 7189,
+    "webSearchRequests": 0,
+    "costUSD": 0.1714428,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2886,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n- **M-008.** Само B017 «1:1» читается двояко: строго один к одному или «у сотрудника одна компания». B039 и B041 со множественным «сотрудников» с первым толкованием формально совместимы (0 или 1 сотрудник). Поэтому развожу два толкования B017. Сценарий: к компании уже привязан сотрудник, привязываем второго.\n- **M-014.** B025 допускает 10 или 12 цифр, схема в B061 допускает длину от 10 до 12. Сценарий: ИНН из 11 цифр. Swagger описывает его как допустимый, а по B025 он недопустим.\n- **M-002.** Модель Employee просто не задаёт владельца. Второго места или второго толкования нет, есть только неполнота. Сценарий потребовал бы придумать правило.\n- **M-007.** Одно место B014: «валидация ИНН» как проверка формата или как проверка контрольного числа. Беру ИНН «1234567890»: формат верен, контрольная цифра по расчёту 4, а не 0.\n- **M-012.** В документе 12-значный ИНН и 13-значный ОГРН друг другу не противоречат. Отклонение ОГРНИП из 15 цифр следует из B025 однозначно. Расхождение есть только с предметной областью, а не внутри документа.\n- **M-013.** Одно место B025: «уникальный» глобально или в пределах владельца, раз у Company есть `user`. Сценарий: два пользователя с одним и тем же ИНН.\n- **M-026.** Одно место B041: «всех» — всех в системе или всех своих. Беру двух пользователей, у каждого по компании с сотрудником. Сотрудников без компании не беру, чтобы не опираться на M-002.\n- **M-028.** Одно место B044: PUT как полная замена или как частичное обновление. Сценарий: PUT без поля middleName.\n- **M-030.** «Разрешить все» выполнимо и вместе с cookie: можно отражать любой origin при включённых credentials, без «*». Документ не требует кросс-доменного браузерного клиента. Отказ браузера при «*» следует из спецификации CORS, а не из документа, поэтому невыполнимого сценария нет.\n\n## Ответ\n\n```json\n{\n  \"witnesses\": [\n    {\n      \"id\": \"M-008\",\n      \"scenario\": \"У пользователя компания id=1, к ней уже привязан сотрудник A (id=10). Пользователь отправляет PATCH /api/employees/11/company с телом {\\\"companyId\\\": 1} для сотрудника B\",\n      \"readings\": [\n        {\n          \"quote\": \"Привязка сотрудника к компании (1:1 или null).\",\n          \"reading\": \"строго один к одному: у компании не больше одного сотрудника\",\n          \"expectation\": \"привязка B отклонена, у компании 1 остаётся один сотрудник A\"\n        },\n        {\n          \"quote\": \"Привязка сотрудника к компании (1:1 или null).\",\n          \"reading\": \"у каждого сотрудника не больше одной компании, у компании сотрудников может быть много\",\n          \"expectation\": \"B привязан, у компании 1 два сотрудника: A и B\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-014\",\n      \"scenario\": \"POST /api/companies с телом {\\\"name\\\": \\\"ООО Ромашка\\\", \\\"inn\\\": \\\"12345678901\\\"} (11 цифр); схема сгенерирована по примеру CompanyDTO\",\n      \"readings\": [\n        {\n          \"quote\": \"уникальный, 10/12 цифр\",\n          \"reading\": \"\",\n          \"expectation\": \"ИНН из 11 цифр недопустим, компания не создаётся\"\n        },\n        {\n          \"quote\": \"minLength = 10, maxLength = 12\",\n          \"reading\": \"\",\n          \"expectation\": \"в Swagger-схеме ИНН из 11 цифр описан как допустимый\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-002\",\n      \"scenario\": null,\n      \"readings\": [],\n      \"reason\": \"Неполнота: владелец сотрудника без компании нигде не задан, второго места или второго толкования нет; результат пришлось бы выдумать\"\n    },\n    {\n      \"id\": \"M-007\",\n      \"scenario\": \"POST /api/companies с телом {\\\"name\\\": \\\"ООО Ромашка\\\", \\\"inn\\\": \\\"1234567890\\\", \\\"ogrn\\\": \\\"1027700132195\\\"}; ИНН из 10 цифр, контрольная цифра по алгоритму должна быть 4, а не 0\",\n      \"readings\": [\n        {\n          \"quote\": \"Создание/редактирование/удаление компаний с валидацией ИНН, ОГРН.\",\n          \"reading\": \"валидация — только формат: 10 или 12 цифр\",\n          \"expectation\": \"компания создаётся\"\n        },\n        {\n          \"quote\": \"Создание/редактирование/удаление компаний с валидацией ИНН, ОГРН.\",\n          \"reading\": \"валидация включает проверку контрольного числа ИНН\",\n          \"expectation\": \"компания не создаётся, возвращается ошибка валидации ИНН\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-012\",\n      \"scenario\": null,\n      \"readings\": [],\n      \"reason\": \"Внутри документа расхождения нет: B025 однозначно требует ОГРН из 13 цифр при любом ИНН, ОГРНИП из 15 цифр отклоняется; конфликт только с предметной областью\"\n    },\n    {\n      \"id\": \"M-013\",\n      \"scenario\": \"Пользователь A создал компанию с ИНН 7707083893. Затем пользователь B отправляет POST /api/companies с тем же ИНН 7707083893\",\n      \"readings\": [\n        {\n          \"quote\": \"уникальный, 10/12 цифр\",\n          \"reading\": \"ИНН уникален во всей системе\",\n          \"expectation\": \"B получает HTTP 409, компания не создаётся\"\n        },\n        {\n          \"quote\": \"уникальный, 10/12 цифр\",\n          \"reading\": \"ИНН уникален в пределах компаний одного владельца\",\n          \"expectation\": \"компания пользователя B создаётся\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-026\",\n      \"scenario\": \"У пользователя A компания 1 с сотрудником E1, у пользователя B компания 2 с сотрудником E2. A отправляет GET /api/employees без companyId\",\n      \"readings\": [\n        {\n          \"quote\": \"Список сотрудников (всех или по компании).\",\n          \"reading\": \"«всех» — всех сотрудников системы\",\n          \"expectation\": \"в ответе E1 и E2\"\n        },\n        {\n          \"quote\": \"Список сотрудников (всех или по компании).\",\n          \"reading\": \"«всех» — всех сотрудников текущего пользователя\",\n          \"expectation\": \"в ответе только E1\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-028\",\n      \"scenario\": \"Сотрудник id=5: firstName «Иван», lastName «Петров», middleName «Сергеевич», age 30. Отправлен PUT /api/employees/5 с телом {\\\"firstName\\\": \\\"Иван\\\", \\\"lastName\\\": \\\"Петров\\\", \\\"age\\\": 31} без поля middleName\",\n      \"readings\": [\n        {\n          \"quote\": \"Обновить сотрудника.\",\n          \"reading\": \"PUT — полная замена ресурса\",\n          \"expectation\": \"age = 31, middleName = null\"\n        },\n        {\n          \"quote\": \"Обновить сотрудника.\",\n          \"reading\": \"PUT меняет только переданные поля\",\n          \"expectation\": \"age = 31, middleName остаётся «Сергеевич»\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-030\",\n      \"scenario\": null,\n      \"readings\": [],\n      \"reason\": \"«Разрешить все» выполнимо вместе с session cookie: можно отражать любой origin с включёнными credentials; документ не требует кросс-доменного браузерного клиента, а отказ браузера при «*» следует не из документа\"\n    }\n  ]\n}\n```",
+  "ttft_ms": 29622,
+  "type": "result",
+  "duration_ms": 50598,
+  "uuid": "156fc75b-fb96-4b56-9354-e590f6802623",
+  "ttft_stream_ms": 1823,
+  "time_to_request_ms": 105,
+  "first_content_frame_ms": 1823,
+  "queued_turn_count": 0,
+  "result_index": 0
+ }
+}
