@@ -10,12 +10,15 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from pathlib import Path
 
+from validator.evidence_metrics import evidence_metrics
 from validator.models import (
     Addressee,
     Anchor,
     Backend,
     ChecklistUse,
     Conclusion,
+    CriticAction,
+    CriticDecision,
     DiagLevel,
     Diagnostic,
     DiscardedFinding,
@@ -53,6 +56,8 @@ from validator.models import (
     Verdict,
     Verification,
     WithdrawnQuestion,
+    Witness,
+    WitnessReading,
     WorkStage,
 )
 from validator.models import DefectType as D
@@ -160,6 +165,10 @@ def _finding(n: int, **fields: object) -> Finding:
     return Finding.model_validate({**base, **fields})
 
 
+CANCEL_ANYTIME = "Отмена брони возможна в любое время до начала."
+ROOM_LIMIT = "В комнате не больше 12 мест."
+
+
 def findings() -> list[Finding]:
     return [
         _finding(
@@ -171,7 +180,7 @@ def findings() -> list[Finding]:
             blocks_testing=True,
             quotes=[
                 _quote(REQS[1].quote, 160, 5),
-                _quote("Отмена брони возможна в любое время до начала.", 700, 31),
+                _quote(CANCEL_ANYTIME, 700, 31),
             ],
             requirement_ids=["R-02"],
             explanation="Правило отмены в двух местах задаёт разный срок: за час и в любое время.",
@@ -180,6 +189,27 @@ def findings() -> list[Finding]:
                 FindingSource(kind=SourceKind.PASS, pass_index=1, checklist_item="DT-04"),
                 *(FindingSource(kind=SourceKind.PASS, pass_index=i) for i in (2, 3)),
             ],
+            witness=Witness(
+                scenario="Встреча начинается в 15:00, пользователь отменяет бронь в 14:30",
+                readings=[
+                    WitnessReading(
+                        quote=REQS[1].quote,
+                        expectation="отмена отклонена",
+                        located=_quote(REQS[1].quote, 160, 5),
+                    ),
+                    WitnessReading(
+                        quote=CANCEL_ANYTIME,
+                        expectation="бронь отменена",
+                        located=_quote(CANCEL_ANYTIME, 700, 31),
+                    ),
+                ],
+                checked=True,
+            ),
+            critic=CriticDecision(
+                action=CriticAction.KEEP,
+                reason="Два места задают разный срок отмены, общего правила в документе нет",
+                basis=_quote(CANCEL_ANYTIME, 700, 31),
+            ),
         ),
         _finding(
             2,
@@ -206,6 +236,17 @@ def findings() -> list[Finding]:
             explanation="Неясно, что считать «возможностью» и какое время считается ночью.",
             found_in=1,
             sources=[FindingSource(kind=SourceKind.PASS, pass_index=2)],
+            critic=CriticDecision(
+                action=CriticAction.DOWNGRADE,
+                reason="Ночное окно задаёт администратор, это не дефект требования",
+                severity=Severity.MINOR,
+                basis=_quote("по возможности ночью", 416, 13),
+                proposed=CriticAction.DROP,
+                note=(
+                    "Основание повторяет цитату самой находки, а не показывает ответ в другом месте "
+                    "документа. Код не снял находку, а понизил её важность на уровень."
+                ),
+            ),
         ),
         _finding(
             4,
@@ -231,6 +272,10 @@ def findings() -> list[Finding]:
             section_path=["Ограничения", "Права"],
             explanation="Раздел прав ролей не заполнен.",
             suggestion="Описать права ролей: [уточнить: роли и разрешённые действия].",
+            witness=Witness(
+                scenario="",
+                note="Свидетель не построен: второго места о правах ролей в документе нет.",
+            ),
             found_in=2,
             sources=[FindingSource(kind=SourceKind.PASS, pass_index=i) for i in (1, 2)],
         ),
@@ -312,7 +357,24 @@ def _verification(
                 explanation="Выдуманная цитата.",
             ),
             reason=DiscardReason.QUOTE_NOT_FOUND,
-        )
+        ),
+        DiscardedFinding(
+            finding=MergedFinding(
+                mid="M-011",
+                property=Property.COMPLETE,
+                defect_type=D.INCOMPLETE,
+                quotes=[REQS[0].quote],
+                title="Не задано, сколько человек вмещает комната",
+                explanation="Без вместимости нельзя проверить бронь на группу.",
+                critic=CriticDecision(
+                    action=CriticAction.DROP,
+                    reason="Вместимость задана в разделе об ограничениях",
+                    basis=_quote(ROOM_LIMIT, 820, 36),
+                ),
+            ),
+            reason=DiscardReason.CRITIC_REJECTED,
+            detail="Вместимость задана в разделе об ограничениях",
+        ),
     ]
     status = {r.id: [f.id for f in found if r.id in f.requirement_ids] for r in reqs}
     return Verification(
@@ -357,6 +419,7 @@ def _metrics(
         quotes_verified=verified,
         verified_quote_share=round(verified / s.quotes_total, 4) if s.quotes_total else None,
         questions=question_metrics(qs, withdrawn),
+        evidence=evidence_metrics([*_merged(ver.findings), *(d.finding for d in ver.discarded)]),
         steps=[
             StepMetrics(
                 step="segment",
@@ -390,6 +453,21 @@ def _metrics(
         discarded_by_reason=discarded_by_reason(ver),
         found_in=found_in_distribution(ver.findings),
     )
+
+
+def _merged(found: list[Finding]) -> list[MergedFinding]:
+    """Свидетель и решение критика находок отчёта в форме шага 6: из них считаются метрики шага."""
+    return [
+        MergedFinding(
+            mid=f.merged_id,
+            property=f.property,
+            defect_type=f.defect_type,
+            explanation=f.explanation,
+            witness=f.witness,
+            critic=f.critic,
+        )
+        for f in found
+    ]
 
 
 def _report(

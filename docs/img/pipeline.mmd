@@ -1,0 +1,67 @@
+%% Схема конвейера агента: исходник для docs/architecture.md, слайдов и README.
+%% Картинки pipeline.svg и pipeline.png собирает scripts/render_diagram.mjs (команда в docs/img/README.md).
+%% Правите схему здесь, затем копируете тот же текст в блок mermaid в docs/architecture.md и пересобираете картинки.
+flowchart TD
+    doc[/"Документ требований<br/>PDF · DOCX · Markdown"/]:::io
+
+    s0["<b>0 · Защищённый вход</b><br/>тип по содержимому, пароль, zip-бомба,<br/>пустой и обрезанный файл"]:::code
+    s1["<b>1 · Разбор в блоки с якорями</b><br/>страница, строка, ячейка таблицы<br/>ID блоков B001, предложений B001.2"]:::code
+
+    s2m["<b>2 · Нарезка</b><br/>модель называет ID блоков требований<br/>Sonnet 5.5 · medium · JSON по схеме"]:::model
+    s2c["код цитирует текст, ставит R-NN,<br/>проверяет ID, полноту и пересечения"]:::check
+    s3["<b>3 · Линтер L-01…L-10</b><br/>правила без модели"]:::code
+
+    s4m["<b>4 · Поиск дефектов, N проходов</b><br/>свободный текст, полная рубрика<br/>Opus 5.5 · medium (submit: xhigh)<br/>по умолчанию N = 1 (D-011)"]:::model
+    s4c["код разбирает ответ прохода,<br/>сверяет ID блоков"]:::check
+    s4b["<b>4б · Перенос в JSON</b><br/>только то, что код не разобрал<br/>Haiku 5.5 · medium"]:::model
+
+    s5["<b>5 · Слияние</b><br/>место + цитаты + свойство<br/>«найдено в N из K»"]:::code
+
+    s6a["<b>6а · Пример-свидетель</b><br/>сценарий и прочтение каждого места<br/>Opus 5.5 · high"]:::model
+    s6t["<b>6в · Попытка теста</b> (#40, в работе)<br/>черновик тест-кейса с пропусками [?]<br/>Sonnet 5.5 · high"]:::planned
+    s6b["<b>6б · Критик находок</b><br/>только с флагом --critic<br/>Opus 5.5 · high"]:::optional
+    s6c["код сверяет цитаты свидетеля<br/>и различие ожиданий; снять или понизить<br/>находку может только код"]:::check
+
+    s7["<b>7 · Верификатор</b><br/>каждая цитата сверена с документом,<br/>привязка к R-NN, важность по таблице,<br/>счётчики, светофор"]:::check
+
+    s8a["<b>8а · Кандидаты в вопросы</b><br/>из признаков находок"]:::code
+    s8m["<b>8б · Редактор вопросов</b><br/><b>8г · Критик-самоответ</b><br/>Opus 5.5 · high"]:::model
+    s8c["код сверяет цитаты, считает приоритет,<br/>снимает вопрос только по цитате-ответу"]:::check
+
+    s9["<b>9 · Отчёт</b><br/>одна модель Report → JSON, Markdown, PDF<br/>самопроверка по ТЗ п. 6"]:::code
+    out[/"report.md · report.pdf · report.json<br/>questions.yaml · run/ для replay"/]:::io
+
+    doc --> s0 --> s1
+    s0 -. "файл не читается:<br/>сразу отчёт-диагностика, код 4" .-> s9
+    s1 --> s2m --> s2c --> s3
+    s1 --> s4m --> s4c
+    s4c -. "не разобрано" .-> s4b
+    s4b --> s5
+    s4c --> s5
+    s3 --> s5
+    s5 --> s6a
+    s5 -.-> s6t
+    s5 -.-> s6b
+    s6a --> s6c
+    s6t -.-> s6c
+    s6b -.-> s6c
+    s6c --> s7
+    s2c -- "R-NN" --> s7
+    s7 --> s8a --> s8m --> s8c --> s9
+    s9 --> out
+
+    subgraph legend ["Обозначения"]
+        direction LR
+        l1["модель предлагает"]:::model
+        l2["код проверяет ответ модели"]:::check
+        l3["код без модели"]:::code
+        l4["по флагу"]:::optional
+        l5["в работе"]:::planned
+    end
+
+    classDef model fill:#fde7d2,stroke:#c46a12,color:#3d2200,stroke-width:1.5px
+    classDef check fill:#dcf2e1,stroke:#2e7d4a,color:#0f3a1d,stroke-width:1.5px
+    classDef code fill:#dde9f8,stroke:#2f62a8,color:#0d2545,stroke-width:1.5px
+    classDef optional fill:#fde7d2,stroke:#c46a12,color:#3d2200,stroke-width:1.5px,stroke-dasharray:6 4
+    classDef planned fill:#f2f2f2,stroke:#8a8a8a,color:#444444,stroke-width:1.5px,stroke-dasharray:6 4
+    classDef io fill:#ffffff,stroke:#555555,color:#222222

@@ -44,6 +44,8 @@ STEP_MODELS: dict[LLMStep, StepModel] = {
     LLMStep.TEST_DRAFT: StepModel(model=SONNET, effort=Effort.HIGH),
     LLMStep.QUESTIONS: StepModel(model=OPUS, effort=Effort.HIGH),
     LLMStep.QUESTIONS_CRITIC: StepModel(model=OPUS, effort=Effort.HIGH),
+    # Сверка находок с ответами автора (--answers, #42): та же модель, что у вопросов.
+    LLMStep.CLARIFY: StepModel(model=OPUS, effort=Effort.HIGH),
 }
 
 
@@ -114,6 +116,7 @@ def load_config(
     search_input: SearchInput | None = None,
     checklists: bool | None = None,
     env_file: Path | None = None,
+    critic: bool = False,
 ) -> RunConfig:
     load_env(env_file)
     pdf_engine = (pdf_backend or os.environ.get(PDF_BACKEND_ENV) or PDF_BACKEND).lower()
@@ -131,6 +134,7 @@ def load_config(
         cache_dir=CACHE_DIR,
         answers_path=answers_path,
         ask=ask,
+        critic=critic,
         max_budget_usd=max_budget_usd,
         pdf_backend=cast(PdfBackendName, pdf_engine),
         search_input=search_input if search_input is not None else SEARCH_INPUT,

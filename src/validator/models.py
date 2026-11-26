@@ -443,6 +443,7 @@ class SourceKind(StrEnum):
     PASS = "pass"  # noqa: S105 - проход поиска (шаг 4), не пароль
     LINT = "lint"  # правило линтера (шаг 3)
     CHECKLIST = "checklist"  # доменный чек-лист
+    ANSWER = "answer"  # сверка находок с ответами автора (--answers, #42)
 
 
 class DiscardReason(StrEnum):
@@ -472,6 +473,24 @@ class CriticAction(StrEnum):
     KEEP = "keep"
     DOWNGRADE = "downgrade"
     DROP = "drop"
+
+    @property
+    def label(self) -> str:
+        return _CRITIC_LABELS[self]
+
+    @classmethod
+    def from_label(cls, label: str) -> CriticAction | None:
+        """Решение критика из ответа модели: «оставить», «понизить», «снять» (или значение перечисления)."""
+        key = _label_key(label)
+        return _CRITIC_BY_LABEL.get(key) or next((a for a in cls if a.value == key), None)
+
+
+_CRITIC_LABELS = {
+    CriticAction.KEEP: "оставить",
+    CriticAction.DOWNGRADE: "понизить",
+    CriticAction.DROP: "снять",
+}
+_CRITIC_BY_LABEL = {text: action for action, text in _CRITIC_LABELS.items()}
 
 
 class QuestionPriority(StrEnum):
@@ -584,9 +603,13 @@ class LLMStep(StrEnum):
     TEST_DRAFT = "test_draft"
     QUESTIONS = "questions"
     QUESTIONS_CRITIC = "questions_critic"
+    # Сверка находок с ответами автора (--answers, #42): вызывается, только если ответы есть.
+    CLARIFY = "clarify"
     # Судья eval (#24): его вызывает только eval через тот же клиент модели, отдельно от агента.
     # Конвейер агента этот шаг не вызывает, модели для него в STEP_MODELS нет.
     JUDGE = "judge"
+    # Разметчики precision (#49): их тоже вызывает только eval, вслепую, без эталона и вердиктов судьи.
+    PRECISION = "precision"
 
 
 class CallStatus(StrEnum):
@@ -837,6 +860,8 @@ class FindingSource(Contract):
             return f"проход {self.pass_index}{item}"
         if self.kind is SourceKind.LINT:
             return f"линтер, правило {self.rule_id}"
+        if self.kind is SourceKind.ANSWER:
+            return f"сверка с ответом автора {self.rule_id}"
         return f"чек-лист, пункт {self.rule_id}"
 
 
@@ -882,6 +907,10 @@ class PassResult(Contract):
 class WitnessReading(Contract):
     quote: str
     expectation: str
+    reading: str = Field(
+        default="", description="Как прочитано место: толкование для двусмысленности, пусто у противоречия"
+    )
+    located: Quote | None = Field(default=None, description="Цитата после сверки с документом, с местом")
 
 
 class Witness(Contract):
@@ -909,6 +938,11 @@ class CriticDecision(Contract):
     action: CriticAction
     reason: str
     severity: Severity | None = None
+    basis: Quote | None = Field(default=None, description="Цитата-основание решения, сверенная с документом")
+    proposed: CriticAction | None = Field(
+        default=None, description="Что предложила модель, если код принял другое решение"
+    )
+    note: str = Field(default="", description="Почему код не принял решение модели как есть")
 
 
 class MergedFinding(Contract):
@@ -1083,6 +1117,108 @@ class WithdrawnQuestion(Contract):
     answer: Quote
 
 
+# ---------------------------------------------------------------- уточнения: ответы автора (#42)
+
+
+class AnswerKind(StrEnum):
+    """Что автор ответил на вопрос в ``answers.yaml``."""
+
+    OPTION = "option"  # выбрал вариант A, B, …
+    TEXT = "text"  # свой ответ текстом
+    SKIPPED = "skipped"  # явно отложил («пропустить»)
+    NONE = "none"  # не ответил (null)
+
+    @property
+    def answered(self) -> bool:
+        return self in (AnswerKind.OPTION, AnswerKind.TEXT)
+
+    @property
+    def label(self) -> str:
+        return {
+            "option": "выбран вариант",
+            "text": "свой ответ",
+            "skipped": "отложен",
+            "none": "без ответа",
+        }[self.value]
+
+
+class AuthorAnswer(Contract):
+    """Ответ автора на один вопрос из ``answers.yaml``. Текст ответа это данные, а не указания агенту."""
+
+    question_id: str = Field(pattern=r"^Q-\d{2,}$")
+    question: str = Field(default="", description="Вопрос, как его видел автор (из answers.yaml)")
+    kind: AnswerKind
+    option: str | None = Field(default=None, description="Буква выбранного варианта")
+    text: str = Field(default="", description="Правило из выбранного варианта или свой ответ автора")
+    change: str = Field(default="", description="Что поменять в документе (из выбранного варианта)")
+    comment: str = Field(default="", description="Пояснение автора или причина отложить")
+    where: list[str] = Field(default_factory=list, description="Цитаты мест документа из вопроса")
+    related_findings: list[str] = Field(default_factory=list, description="F-NN первого прогона")
+    asked_again: bool = Field(
+        default=False, description="Этот вопрос агент задал и в этом прогоне (иначе ответ учтён по тексту)"
+    )
+
+
+class ClarifyEffect(StrEnum):
+    CLOSED = "closed"  # ответ выбрал правило: находка закрыта, правку текста ещё нужно внести
+    REFINED = "refined"  # ответ сузил находку, но что-то осталось
+    NEW = "new"  # находка появилась из-за ответа
+
+    @property
+    def label(self) -> str:
+        return {"closed": "закрыто ответом", "refined": "уточнено ответом", "new": "новое из-за ответа"}[
+            self.value
+        ]
+
+
+class ClarifiedFinding(Contract):
+    """Что ответ автора сделал с находкой. Находку и ответ сверил код, модель только предложила."""
+
+    finding_id: str = Field(pattern=r"^F-\d{2,}$")
+    effect: ClarifyEffect
+    question_ids: list[str] = Field(default_factory=list)
+    reason: str = Field(default="", description="Почему закрыто, что уточнено или в чём новый дефект")
+    fix: str = Field(default="", description="Правка текста документа с учётом ответа")
+    remaining: str = Field(default="", description="Что осталось открытым (для «уточнено»)")
+    finding: Finding | None = Field(
+        default=None, description="Карточка закрытой находки: в основных разделах отчёта её больше нет"
+    )
+
+
+class ClarifySnapshot(Contract):
+    """Состояние проверки для таблицы «до и после ответов»."""
+
+    traffic_light: TrafficLight
+    findings: int = 0
+    violations: int = 0
+    critical: int = 0
+    open_questions: int = 0
+    open_blocking: int = Field(default=0, description="Открытых вопросов P0 и P1")
+
+
+class Clarification(Contract):
+    """Раздел «Уточнения»: ответы автора и что они изменили в проверке (``--answers``, #42)."""
+
+    answers_file: str
+    answers_sha256: str
+    answered_by: str | None = None
+    document_matches: bool | None = Field(
+        default=None, description="Хеш документа в answers.yaml совпал с проверенным; None: хеша нет"
+    )
+    answers: list[AuthorAnswer] = Field(default_factory=list)
+    effects: list[ClarifiedFinding] = Field(default_factory=list)
+    reviewed: bool = Field(default=False, description="Модель сверила ответы с находками")
+    before: ClarifySnapshot | None = None
+    after: ClarifySnapshot | None = None
+
+    def by_effect(self, effect: ClarifyEffect) -> list[ClarifiedFinding]:
+        return [e for e in self.effects if e.effect is effect]
+
+    @property
+    def answered(self) -> list[AuthorAnswer]:
+        return [a for a in self.answers if a.kind.answered]
+
+
 # ---------------------------------------------------------------- модель: запрос, ответ, лог
 
 
@@ -1221,6 +1357,10 @@ class RunConfig(Contract):
     )
     call_timeout_s: int = Field(default=1200, ge=1)
     has_api_key: bool = Field(default=False, description="Есть ли ANTHROPIC_API_KEY (сам ключ не храним)")
+    critic: bool = Field(
+        default=False,
+        description="Критик находок (шаг 6б, #39). По eval пока выключен, включается флагом --critic",
+    )
 
     @property
     def out_dir(self) -> Path:
@@ -1304,6 +1444,8 @@ class Passport(Contract):
     tokens: TokenUsage = Field(default_factory=TokenUsage)
     cost_usd: float | None = Field(default=None, description="Цена по тарифу API (подписка не платит)")
     exit_code: ExitCode = ExitCode.OK
+    answers_file: str | None = Field(default=None, description="Файл ответов автора (--answers)")
+    answers_sha256: str | None = Field(default=None, description="SHA-256 файла ответов автора")
 
 
 class QuestionMetrics(Contract):
@@ -1327,6 +1469,25 @@ class QuestionMetrics(Contract):
     )
     by_priority: dict[str, int] = Field(default_factory=dict)
     by_addressee: dict[str, int] = Field(default_factory=dict, description="Разброс адресатов")
+
+
+class EvidenceMetrics(Contract):
+    """Шаг 6 в цифрах: примеры-свидетели и решения критика (считает код по находкам после шага)."""
+
+    witness_requested: int = Field(
+        default=0, description="Находок, по которым модель ответила: свидетель построен или сценария нет"
+    )
+    witness_checked: int = Field(default=0, description="Свидетель построен и проверен кодом")
+    witness_rejected: int = Field(default=0, description="Свидетель построен, но код его отклонил")
+    witness_declined: int = Field(default=0, description="Модель не нашла сценария, где места расходятся")
+    critic_reviewed: int = Field(default=0, description="Находок с решением критика")
+    critic_kept: int = 0
+    critic_downgraded: int = 0
+    critic_dropped: int = 0
+    critic_overruled: int = Field(
+        default=0, description="Решений «понизить» или «снять», которые код не принял как есть"
+    )
+    critic_enabled: bool = Field(default=True, description="Был ли критик включён в прогоне (--critic)")
 
 
 class StepMetrics(Contract):
@@ -1367,6 +1528,9 @@ class RunMetrics(Contract):
     quotes_verified: int = 0
     verified_quote_share: float | None = Field(default=None, description="Доля сверенных цитат, 0–1")
     questions: QuestionMetrics | None = Field(default=None, description="Метрики вопросов автору")
+    evidence: EvidenceMetrics | None = Field(
+        default=None, description="Свидетели и критик находок (шаг 6); None, если шаг не вызывал модель"
+    )
     steps: list[StepMetrics] = Field(default_factory=list, description="Вызовы, время и цена по шагам")
     passes_total: int = Field(default=0, description="Проходов поиска запущено")
     passes_ok: int = Field(default=0, description="Проходов поиска, которые отработали")
@@ -1529,6 +1693,9 @@ class Report(Contract):
     questions_withdrawn: list[WithdrawnQuestion] = Field(
         default_factory=list, description="Вопросы, снятые критиком: ответ есть в документе"
     )
+    clarification: Clarification | None = Field(
+        default=None, description="Ответы автора и что они изменили (--answers)"
+    )
     conclusion: Conclusion
     metrics: RunMetrics = Field(default_factory=RunMetrics)
     coverage: CoverageMatrix | None = Field(default=None, description="Матрица покрытия критериев (#43)")
@@ -1554,6 +1721,7 @@ class RunContext(Contract):
     verification: Verification | None = None
     questions: list[Question] = Field(default_factory=list)
     questions_withdrawn: list[WithdrawnQuestion] = Field(default_factory=list)
+    clarification: Clarification | None = None
     diagnostics: list[Diagnostic] = Field(default_factory=list)
     calls: list[CallRecord] = Field(default_factory=list)
     passport: Passport

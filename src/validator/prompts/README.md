@@ -15,8 +15,11 @@
 | `search_system.md`, `search_user.md` | 4, проход поиска (#14) | Opus 5.5 | свободный текст в строгом формате, его разбирает код (`search_parse.py`) |
 | `search_checklists.md` | 4, раздел доменных чек-листов (#35) | Opus 5.5 | добавляется к `search_user.md` после документа, только если чек-лист сработал (`checklists/`); находка по пункту получает строку «Чек-лист: <ID>» |
 | `search_transfer_system.md`, `search_transfer_user.md` | 4б, перенос в JSON (#18) | Haiku 5.5 | JSON по `TRANSFER_SCHEMA` (`search_transfer.py`); вызывается, только если код не разобрал находки |
+| `witness_system.md`, `witness_user.md` | 6а, пример-свидетель (#39) | Opus 5.5 | рассуждение, затем ```json со списком `witnesses` (`evidence_witness.py`); цитаты и различие ожиданий проверяет код |
+| `critic_system.md`, `critic_user.md` | 6б, критик находок (#39, по умолчанию выключен, `--critic`) | Opus 5.5 | рассуждение, затем ```json со списком `decisions` (`evidence_critic.py`); снимает и понижает код по сверенной цитате-основанию |
 | `questions_system.md`, `questions_user.md` | 8б, редактор вопросов (#20) | Opus 5.5 | рассуждение, затем ```json со списком `questions` (`questions/editor.py`) |
 | `questions_critic_system.md`, `questions_critic_user.md` | 8г, критик-самоответ (#41) | Opus 5.5 | рассуждение, затем ```json со списком `reviews` (`questions/critic.py`); снимает вопрос код по сверенной цитате-ответу |
+| `clarify_system.md`, `clarify_user.md` | 8е, сверка с ответами автора (#42), только с `--answers` | Opus 5.5 | рассуждение, затем ```json со списками `effects` и `new_findings` (`clarify/model.py`); закрытие и новые находки проверяет код (`clarify/apply.py`) |
 
 Слоты в пользовательских промптах (`{document}`, `{findings}`, `{titles}`, `{checklists}`) подставляет `prompting.fill` за один проход, поэтому фигурные скобки в тексте документа не ломают шаблон.
 

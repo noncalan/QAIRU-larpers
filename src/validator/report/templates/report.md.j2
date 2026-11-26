@@ -37,6 +37,12 @@
 {% if f.suggestion %}
 - **Предложенная формулировка:** {{ f.suggestion | cell }}
 {% endif %}
+{% for e in evidence_lines.get(f.id, []) %}
+- **{{ e.head }}:** {{ e.text | cell }}
+{% for item in e.items %}
+  - {{ item | cell }}
+{% endfor %}
+{% endfor %}
 {% if questions_by_finding.get(f.id) %}
 - **Вопрос автору:** {{ questions_by_finding[f.id] | join(", ") }}
 {% endif %}
@@ -70,6 +76,10 @@
 
 {% if v %}
 Требований: **{{ v.summary.requirements_total }}** · нарушений: **{{ v.summary.violations }}** · критичных: **{{ v.summary.critical }}** · «неясно»: **{{ v.summary.unclear }}** · вопросов автору: **{{ r.questions | length }}**
+{% if clarify %}
+
+**Уточнения автора.** {{ clarify.summary_line }} Светофор до ответов: {{ clarify.compare[0][1] if clarify.compare else "—" }}. Подробности в разделе 6.
+{% endif %}
 
 ### Что исправить первым
 
@@ -229,6 +239,72 @@
 
 ## 6. Вопросы автору ТЗ
 
+{% if clarify %}
+### {{ clarify_title }}
+
+{{ clarify.intro }}
+
+{% for w in clarify.warnings %}
+> {{ w }}
+
+{% endfor %}
+{% if clarify.compare %}
+| | До ответов | После ответов |
+|---|---|---|
+{% for label, before, after in clarify.compare %}
+| {{ label }} | {{ before }} | {{ after }} |
+{% endfor %}
+
+{% endif %}
+**Ответы автора**
+
+| Вопрос | Ответ | Что изменилось |
+|---|---|---|
+{% for qid, answer, effect in clarify.answers %}
+| {{ qid }} | {{ answer | cell }} | {{ effect | cell }} |
+{% endfor %}
+
+{% if clarify.reviewed %}
+**Закрыто ответами.** {{ closed_note }}
+
+{% if clarify.closed %}
+| Находка | Ответ | Почему закрыто | Правка текста | Место в документе |
+|---|---|---|---|---|
+{% for head, qids, reason, fix, place in clarify.closed %}
+| {{ head | cell }} | {{ qids }} | {{ reason | cell }} | {{ fix | cell }} | {{ place | cell }} |
+{% endfor %}
+{% else %}
+Ответы не закрыли ни одной находки.
+{% endif %}
+{% endif %}
+
+{% if clarify.refined %}
+**Уточнено ответами.** Находки остались в разделах 4 и 5 с примечанием.
+
+| Находка | Ответ | Что уточнено | Что осталось открытым |
+|---|---|---|---|
+{% for fid, qids, reason, remaining in clarify.refined %}
+| {{ fid }} | {{ qids }} | {{ reason | cell }} | {{ remaining | cell }} |
+{% endfor %}
+
+{% endif %}
+{% if clarify.new %}
+**Новые находки из-за ответов.** Цитаты сверены с документом, карточки в разделах 4 и 5.
+
+| Находка | Ответ | Суть | Как исправить |
+|---|---|---|---|
+{% for head, qids, title, fix in clarify.new %}
+| {{ head | cell }} | {{ qids }} | {{ title | cell }} | {{ fix | cell }} |
+{% endfor %}
+
+{% endif %}
+**Какие вопросы остались открытыми:** {{ clarify.open_questions }}.
+
+{% if r.questions %}
+### Открытые вопросы
+
+{% endif %}
+{% endif %}
 {% if r.questions %}
 | ID | Приоритет | Адресат | Вопрос | Закрывает находки |
 |---|---|---|---|---|
@@ -299,8 +375,21 @@
 - Критичных: **{{ s.critical }}**{% if s.critical_ids %} ({{ s.critical_ids | join(", ") }}){% endif %}.
 - Критичные классы по ТЗ (непроверяемые, противоречивые, неполные): {% for f in critical_classes %}{{ f.id }} {{ f.defect_type.label }}{% if not loop.last %}, {% endif %}{% else %}не найдены{% endfor %}.
 - Вопросов автору: {{ r.questions | length }}.
+{% if clarify %}
+- Уточнения автора: {{ clarify.summary_line }}
+{% endif %}
 - Отброшено кодом: {{ s.discarded_total }}{% if s.discarded_by_reason %} ({% for reason, n in s.discarded_by_reason.items() %}{{ reason.label }}: {{ n }}{% if not loop.last %}; {% endif %}{% endfor %}){% endif %}.
 - Цитаты: сверено {{ s.quotes_exact + s.quotes_fuzzy }} из {{ s.quotes_total }} (точно {{ s.quotes_exact }}, нечётко {{ s.quotes_fuzzy }}).
+{% if critic_dropped %}
+
+### Находки, снятые критиком
+
+{{ critic_dropped_intro }}
+
+{% for item in critic_dropped %}
+- {{ item | cell }}
+{% endfor %}
+{% endif %}
 {% else %}
 Сводка недоступна: проверка выполнена не полностью.
 {% endif %}
@@ -347,6 +436,9 @@
 | Токены | вход {{ r.metrics.tokens.input_tokens }}, выход {{ r.metrics.tokens.output_tokens }}, запись в кеш {{ r.metrics.tokens.cache_creation_input_tokens }}, чтение из кеша {{ r.metrics.tokens.cache_read_input_tokens }} |
 | Время прогона | {{ r.metrics.duration_s if r.metrics.duration_s is not none else "—" }} с |
 | Цена по тарифу API | {{ r.metrics.cost_usd | money }} |
+{% for name, value in evidence_rows %}
+| {{ name }} | {{ value | cell }} |
+{% endfor %}
 {% set qm = r.metrics.questions %}
 {% if qm and qm.before_critic %}
 | Вопросов автору | {{ qm.total }}{% if qm.reviewed %} (до самопроверки {{ qm.before_critic }}, снято {{ qm.withdrawn }}: ответ есть в документе){% else %} (самопроверка не выполнена){% endif %} |
@@ -381,6 +473,9 @@
 {% for reason, n in m.discarded_by_reason.items() %}
 | Отброшено: {{ reason.label }} | {{ n }} |
 {% endfor %}
+{% if clarify %}
+| Сверка с ответами автора | {{ clarify.funnel }} |
+{% endif %}
 | После верификатора, в отчёте | {{ m.findings_total }} |
 {% if m.critic_reviewed %}
 | Критик: просмотрено, понижено, снято | {{ m.critic_reviewed }}, {{ m.critic_downgraded }}, {{ m.critic_dropped }} |

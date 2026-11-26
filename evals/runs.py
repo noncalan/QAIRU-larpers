@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from collections.abc import Iterable, Sequence
+from collections.abc import Container, Iterable, Sequence
 from enum import StrEnum
 from pathlib import Path
 
@@ -31,6 +31,7 @@ from validator.models import (
     Quote,
     QuoteMatch,
     Report,
+    Severity,
 )
 from validator.text import locate_quote, stable_key
 from validator.verify import empty_cell_quote
@@ -201,14 +202,19 @@ def _report_document(report: Report, fallback: Path, notes: list[str]) -> Path:
     return fallback
 
 
-def finding_keys(report: Report) -> list[str]:
-    """Ключи для Жаккара: ``stable_key`` требования и код свойства (находка набора: раздел или цитата)."""
+def finding_keys(report: Report, severities: Container[Severity] | None = None) -> list[str]:
+    """Ключи для Жаккара: ``stable_key`` требования и код свойства (находка набора: раздел или цитата).
+
+    ``severities``: брать только находки этой важности (по умолчанию все).
+    """
     requirements = (
         {r.id: r.stable_key for r in report.segmentation.requirements} if report.segmentation else {}
     )
     findings = report.verification.findings if report.verification else []
     keys: set[str] = set()
     for f in findings:
+        if severities is not None and f.severity not in severities:
+            continue
         anchors = [requirements[r] for r in f.requirement_ids if r in requirements]
         if not anchors:
             anchors = [_set_anchor(f)]
@@ -310,6 +316,13 @@ def _find_report(folder: Path) -> Path | None:
         if isinstance(data, dict) and "passport" in data and "conclusion" in data:
             return candidate
     return None
+
+
+def find_agent_report(path: Path) -> Path | None:
+    """Отчёт агента, который ``load_run`` возьмёт для этого пути (файл отчёта или папка прогона)."""
+    if path.is_file():
+        return path if path.suffix.lower() == ".json" else None
+    return _find_report(path) if path.is_dir() else None
 
 
 def load_run(path: Path, document: Path) -> RunData:

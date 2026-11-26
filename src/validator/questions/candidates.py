@@ -34,7 +34,7 @@ from validator.models import (
     Verdict,
     Verification,
 )
-from validator.questions.scoring import draft_gaps, is_contradiction, requirement_ids
+from validator.questions.scoring import draft_gaps, is_contradiction, proven_witness, requirement_ids
 
 CLARIFY = re.compile(r"\[\s*уточнить\b\s*:?\s*([^\]]*)\]", re.IGNORECASE)
 """Плейсхолдер в предложенной формулировке: ``[уточнить: что именно]``."""
@@ -105,7 +105,7 @@ def finding_origins(f: Finding) -> tuple[QuestionOrigin, ...]:
     if f.defect_type is DefectType.INJECTED_INSTRUCTION:
         return ()
     found: set[QuestionOrigin] = set()
-    if f.witness is not None:
+    if proven_witness(f):
         found.add(QuestionOrigin.WITNESS)
     if is_contradiction(f):
         found.add(QuestionOrigin.SET_CHECK)
@@ -127,7 +127,7 @@ def finding_origins(f: Finding) -> tuple[QuestionOrigin, ...]:
 def reasons(c: Candidate) -> list[str]:
     """Почему кандидат попал в вопросы, словами для редактора: по признакам его находок."""
     checks = (
-        (any(f.witness is not None for f in c.findings), "пример-свидетель: один сценарий, разные ожидания"),
+        (any(proven_witness(f) for f in c.findings), "пример-свидетель: один сценарий, разные ожидания"),
         (any(is_contradiction(f) for f in c.findings), "противоречие между требованиями"),
         (any(f.verdict is Verdict.UNCLEAR for f in c.findings), "вердикт «неясно»: не решить без автора"),
         (any(draft_gaps(f) for f in c.findings), "в черновике тест-кейса не хватает значений"),

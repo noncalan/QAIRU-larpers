@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Sequence
 
+from validator.evidence_metrics import evidence_metrics
 from validator.models import (
     CallStatus,
     ChecklistUse,
@@ -135,6 +136,7 @@ def _metrics(ctx: RunContext) -> RunMetrics:
         quotes_verified=verified,
         verified_quote_share=round(verified / quotes_total, 4) if quotes_total else None,
         questions=question_metrics(ctx.questions, ctx.questions_withdrawn) if ver else None,
+        evidence=evidence_metrics(ctx.merged, critic_enabled=ctx.cfg.critic),
         steps=step_metrics(ctx.calls),
         passes_total=len(ctx.passes),
         passes_ok=sum(p.ok for p in ctx.passes),
@@ -197,6 +199,7 @@ def build_report(ctx: RunContext) -> Report:
         verification=ctx.verification,
         questions=list(ctx.questions),
         questions_withdrawn=list(ctx.questions_withdrawn),
+        clarification=ctx.clarification,
         conclusion=_conclusion(ctx, errors),
         metrics=_metrics(ctx),
         coverage=_coverage(ctx),

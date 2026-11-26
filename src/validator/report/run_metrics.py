@@ -30,6 +30,7 @@ STEP_LABELS: dict[str, str] = {
     LLMStep.TEST_DRAFT.value: "Попытка тест-кейса",
     LLMStep.QUESTIONS.value: "Вопросы автору",
     LLMStep.QUESTIONS_CRITIC.value: "Критик вопросов",
+    LLMStep.CLARIFY.value: "Сверка с ответами автора",
     LLMStep.JUDGE.value: "Судья eval",
 }
 """Шаги по-русски; порядок словаря это порядок шагов конвейера."""
@@ -82,7 +83,7 @@ def discarded_by_reason(verification: Verification | None) -> dict[DiscardReason
 
 
 def critic_counts(verification: Verification | None) -> tuple[int, int, int]:
-    """Критик находок: просмотрено, понижено (в отчёте), снято. Нули, пока критика нет в конвейере."""
+    """Критик находок: просмотрено, понижено (в отчёте), снято. Нули, если критик выключен (#39)."""
     if verification is None:
         return 0, 0, 0
     kept = [f for f in verification.findings if f.critic is not None]
