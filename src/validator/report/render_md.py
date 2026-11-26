@@ -165,6 +165,9 @@ def checklist_state(use: ChecklistUse, enabled: bool) -> str:
 def checklists_passport(report: Report) -> str:
     """Строка паспорта: какие чек-листы ушли в промпт поиска."""
     p, uses = report.passport, report.checklists
+    failed = any(d.step == "checklists" and d.level is not DiagLevel.INFO for d in report.diagnostics)
+    if failed:
+        return "не выбраны: шаг выбора чек-листов упал, смотрите диагностику прогона"
     if not uses:
         return "—"
     if not p.checklists_enabled:

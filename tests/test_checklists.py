@@ -7,7 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from conftest import REQUIREMENTS
+from conftest import REQUIREMENTS, ROOT
+from report_factory import findings
 from validator.checklists import (
     CHECKLISTS_DIR,
     Checklist,
@@ -17,6 +18,7 @@ from validator.checklists import (
     select_checklists,
 )
 from validator.config import load_config
+from validator.errors import LLM_REPLAY_BY_POSITION, LLM_REPLAYED
 from validator.llm import FakeLLM
 from validator.models import (
     Backend,
@@ -30,7 +32,9 @@ from validator.models import (
     RunConfig,
     SourceKind,
 )
+from validator.pipeline import run
 from validator.prompting import fill, load_prompt
+from validator.questions.candidates import ORIGIN_ORDER, finding_origins
 from validator.search import SEARCH_USER, search, search_prompt
 from validator.search_parse import draft_from_raw, split_findings
 
@@ -124,7 +128,9 @@ def test_money_checklist_is_off_for_document_without_money(make_md: Callable[[st
     assert uses["MON"].matched_blocks == 0
 
 
-def test_money_checklist_is_on_when_money_words_in_two_blocks(make_md: Callable[[str], ParsedDocument]) -> None:
+def test_money_checklist_is_on_when_money_words_in_two_blocks(
+    make_md: Callable[[str], ParsedDocument],
+) -> None:
     sel = select_checklists(make_md(WITH_MONEY))
     uses = {u.id: u for u in sel.uses}
 
@@ -234,7 +240,9 @@ def test_search_sends_checklists_and_marks_finding_with_known_item(
     assert cand.source.checklist_item == expected  # API не включён: его пункт код не принимает
 
 
-def test_search_without_active_checklists_ignores_checklist_line(make_md: Callable[[str], ParsedDocument]) -> None:
+def test_search_without_active_checklists_ignores_checklist_line(
+    make_md: Callable[[str], ParsedDocument],
+) -> None:
     doc = make_md(WITH_MONEY)
     llm = FakeLLM(Path("/nonexistent"), {(LLMStep.SEARCH, 1): _envelope(_answer("Сумма заказа", "MON-01"))})
 
@@ -258,9 +266,6 @@ def test_source_label_names_checklist_item() -> None:
 
 
 def test_finding_marked_by_checklist_gives_checklist_question_origin() -> None:
-    from report_factory import findings
-
-    from validator.questions.candidates import finding_origins
 
     marked = findings()[0]  # F-01: один проход отметил пунктом DT-04, в правке есть [уточнить]
     plain = marked.model_copy(update={"sources": [FindingSource(kind=SourceKind.PASS, pass_index=1)]})
@@ -276,6 +281,26 @@ def test_cli_config_switches_checklists_off() -> None:
 
 
 def test_origin_order_knows_checklist() -> None:
-    from validator.questions.candidates import ORIGIN_ORDER
 
     assert QuestionOrigin.CHECKLIST in ORIGIN_ORDER
+
+
+def test_replay_of_recording_without_checklists_switches_them_off(tmp_path: Path) -> None:
+    """Запись контрольной точки B сделана с --no-checklists: replay по умолчанию находит проход по ключу."""
+
+    cfg = load_config(
+        REQUIREMENTS[DocKind.MD],
+        tmp_path / "report.md",
+        backend=Backend.REPLAY,
+        replay_dir=ROOT / "evals" / "results" / "checkpoint" / "b" / "run-1" / "run",
+    )
+
+    outcome = run(cfg)
+
+    assert outcome.report is not None
+    codes = {d.code for d in outcome.report.diagnostics}
+    assert LLM_REPLAY_BY_POSITION not in codes
+    assert LLM_REPLAYED in codes
+    assert outcome.report.passport.checklists_enabled is False
+    assert outcome.report.passport.checklists == []
+    assert any(u.triggered and not u.used for u in outcome.report.checklists)

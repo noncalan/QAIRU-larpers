@@ -138,8 +138,10 @@ class Selection:
 
 
 def _block_texts(doc: ParsedDocument) -> Iterable[str]:
+    """Текст блоков как в документе. У строк таблиц без «Колонка: значение»: иначе заголовок колонки
+    («Дата», «Статус») повторился бы в каждой строке, и одна таблица включила бы чек-лист сама."""
     for block in doc.blocks:
-        yield block.serialized or block.text
+        yield block.text
 
 
 def _word(text: str, match: re.Match[str]) -> str:
@@ -177,8 +179,8 @@ def select_checklists(
     """Какие чек-листы включить для документа: триггеры встретились хотя бы в ``min_blocks`` блоках.
 
     ``enabled=False`` (``--no-checklists``) считает триггеры для отчёта, но ни один чек-лист не идёт в
-    промпт. Совпадения ищутся по тексту блоков (строки таблиц в виде «Колонка: значение»), чтобы число
-    блоков было понятным человеку: «слова области встретились в 7 блоках».
+    промпт. Совпадения ищутся по тексту блоков, чтобы число блоков было понятным человеку: «слова
+    области встретились в 7 блоках».
     """
     lists = tuple(checklists) if checklists is not None else load_checklists()
     texts = list(_block_texts(doc))

@@ -457,7 +457,13 @@ def checklist_uses() -> list[ChecklistUse]:
             used=True,
         ),
         ChecklistUse(
-            id="API", title="API и интеграции", items=8, min_blocks=2, matched_blocks=0, triggered=False, used=False
+            id="API",
+            title="API и интеграции",
+            items=8,
+            min_blocks=2,
+            matched_blocks=0,
+            triggered=False,
+            used=False,
         ),
         ChecklistUse(
             id="PD",

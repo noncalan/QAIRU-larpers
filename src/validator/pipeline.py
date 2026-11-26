@@ -29,7 +29,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TypeVar
 
-from validator.checklists import select_checklists
+from validator.checklists import Selection, render_section, select_checklists
 from validator.errors import (
     CFG_NOT_IMPLEMENTED,
     IN_NO_TEXT,
@@ -37,6 +37,7 @@ from validator.errors import (
     INT_STEP_DEGRADED,
     INT_STEP_FAILED,
     LLM_ALL_PASSES_FAILED,
+    LLM_REPLAYED,
     OUT_OVERWRITES_INPUT,
     OUT_WRITE_FAILED,
     InputError,
@@ -48,6 +49,8 @@ from validator.ingest import guard, parse
 from validator.ingest.quality import review
 from validator.lint import lint
 from validator.llm import RecordingClient, align_config, instrument, make_client, write_calls_jsonl
+from validator.llm.base import LLMClient
+from validator.llm.replay import ReplayLLM
 from validator.merge import merge
 from validator.models import (
     Backend,
@@ -76,7 +79,7 @@ from validator.questions import build_questions, write_questions_yaml
 from validator.refs import humanize
 from validator.report import PdfRenderError, build_report, render_md, render_pdf
 from validator.report.selfcheck import check_report, selfcheck_diagnostics
-from validator.search import search
+from validator.search import search, search_request, search_text
 from validator.segment import fallback_segmentation, segment
 from validator.verify import light_with_questions, verify
 
@@ -251,10 +254,11 @@ def _execute(state: _State) -> None:
     chosen = _step(
         state,
         "checklists",
-        lambda: select_checklists(doc, enabled=cfg.checklists),
+        lambda: _choose_checklists(state, doc, client),
         lambda: None,
         action="Поиск идёт без доменных чек-листов",
     )
+    cfg = state.cfg
     state.checklists = list(chosen.uses) if chosen else []
     active = chosen.active if chosen else ()
     state.passes = _step(
@@ -322,6 +326,31 @@ def _execute(state: _State) -> None:
         lambda: before,
         action="ID блоков в текстах моделей оставлены как есть",
     )
+
+
+def _choose_checklists(state: _State, doc: ParsedDocument, client: LLMClient) -> Selection:
+    """Доменные чек-листы для поиска (#35). Replay записи без них (до #35 или ``--no-checklists``)
+    выключает их сам: иначе проход искался бы по другому ключу и брался бы из записи по номеру вызова."""
+    cfg = state.cfg
+    chosen = select_checklists(doc, enabled=cfg.checklists)
+    if not (isinstance(client, ReplayLLM) and chosen.active):
+        return chosen
+    text = search_text(doc, cfg)
+    with_lists = search_request(text, cfg, 1, render_section(chosen.active)).key
+    without = search_request(text, cfg, 1).key
+    if client.has_key(with_lists) or not client.has_key(without):
+        return chosen
+    state.cfg = cfg.model_copy(update={"checklists": False})
+    state.diagnostics.append(
+        Diagnostic(
+            code=LLM_REPLAYED,
+            level=DiagLevel.INFO,
+            message="Проход поиска в записи сделан без доменных чек-листов",
+            action="Replay идёт без чек-листов, как в записи",
+            step="checklists",
+        )
+    )
+    return select_checklists(doc, enabled=False)
 
 
 # ---------------------------------------------------------------- выходы

@@ -276,7 +276,13 @@ def _drafts(ctx: _Context, index: int, text: str, out: _Outcome) -> list[Draft]:
             location=f"search.{index}",
         )
     out.diagnostics.append(_transfer_note(ctx, index, p, moved, whole))
-    moved_drafts = [(pos, _tagged(d, tags.get(int(pos)))) for pos, d in moved.drafts]
+    # Метку фрагмента получает запись, только если фрагмент дал одну запись: у слипшихся находок
+    # строка «Чек-лист» относится к одной из них, и какой именно, неизвестно.
+    per_fragment = Counter(int(pos) for pos, _ in moved.drafts)
+    moved_drafts = [
+        (pos, _tagged(d, tags.get(int(pos)) if per_fragment[int(pos)] == 1 else None))
+        for pos, d in moved.drafts
+    ]
     return [d for _, d in sorted(p.drafts + moved_drafts, key=lambda pd: pd[0])]
 
 
