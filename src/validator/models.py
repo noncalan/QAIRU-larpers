@@ -945,7 +945,9 @@ class DraftValue(Contract):
     """Значение, которое черновик теста взял из документа, с цитатой-основанием (шаг 6, #40)."""
 
     value: str = Field(description="Значение как оно записано в черновике: «5», «30 секунд»")
-    quote: str = Field(description="Цитата из документа, откуда значение, как её дала модель")
+    quote: str = Field(
+        description="Цитата, откуда значение: фрагмент документа, если код его сверил, иначе ответ модели"
+    )
     verified: bool = Field(default=False, description="Код нашёл цитату в документе и значение в ней")
     anchor: Anchor | None = Field(default=None, description="Место цитаты, если она сверена")
 
