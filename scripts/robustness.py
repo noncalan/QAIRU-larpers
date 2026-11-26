@@ -175,6 +175,8 @@ def run_case(case: Case, work: Path, *, record: bool = False) -> Result:
         backend=_backend(case, record),
         replay_dir=(FIXTURES / case.slug / "run").relative_to(ROOT) if case.recorded and not record else None,
         cache=CacheMode.USE if record else CacheMode.OFF,
+        # Без распознавания сканов (#38): отчёты не зависят от того, стоит ли на машине Tesseract.
+        ocr=False,
     )
     cfg = cfg.model_copy(update={"has_api_key": False if not record else cfg.has_api_key})
     with contextlib.chdir(ROOT), simulated_claude(case.failure) if case.failure else contextlib.nullcontext():
@@ -239,6 +241,9 @@ def write_summary(results: list[Result], target: Path, *, version: str) -> None:
         "",
         f"Версия агента: `{version}`. Собрано {datetime.now(UTC):%d.%m.%Y %H:%M} UTC командой "
         "`uv run python scripts/robustness.py`.",
+        "",
+        "Прогоны идут без распознавания сканов (`ocr=False`), чтобы отчёты не зависели от машины: с "
+        "Tesseract и русским языком агент распознаёт `scan.pdf` сам и проверяет его с кодом 3 (#38).",
     ]
     for group in dict.fromkeys(r.case.group for r in results):
         lines += [

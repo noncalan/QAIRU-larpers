@@ -21,8 +21,9 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
+from validator.config import call_timeout
 from validator.errors import LLM_BAD_RESPONSE, LLMError
-from validator.ingest.blocks import defuse_delimiters, render_for_model
+from validator.ingest.blocks import defuse_delimiters
 from validator.llm.base import LLMClient
 from validator.models import (
     Finding,
@@ -33,6 +34,7 @@ from validator.models import (
     RequirementType,
     RunConfig,
 )
+from validator.parts import focus_view
 from validator.questions.candidates import Candidate, reasons
 from validator.questions.scoring import draft_gaps, priority, value
 
@@ -160,19 +162,23 @@ def build_request(
 ) -> LLMRequest:
     model = cfg.model_for(LLMStep.QUESTIONS)
     rendered = "\n\n".join(render_candidate(c, req_types) for c in candidates)
+    places = (
+        b for c in candidates for f in c.findings for q in f.quotes if q.anchor for b in q.anchor.block_ids
+    )
     prompt = _fill(
         USER_PROMPT.read_text(encoding="utf-8"),
-        {"document": render_for_model(doc).rstrip("\n"), "candidates": rendered},
+        {"document": focus_view(doc, places).rstrip("\n"), "candidates": rendered},
     )
+    system = SYSTEM_PROMPT.read_text(encoding="utf-8").strip()
     return LLMRequest(
         step=LLMStep.QUESTIONS,
         call_index=CALL_INDEX,
         model=model.model,
         effort=model.effort,
-        system=SYSTEM_PROMPT.read_text(encoding="utf-8").strip(),
+        system=system,
         prompt=prompt,
         json_schema=None,
-        timeout_s=cfg.call_timeout_s,
+        timeout_s=call_timeout(cfg, system, prompt),
     )
 
 

@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+import math
 from pathlib import Path
 
 from validator.errors import (
@@ -196,29 +197,37 @@ def _align_critic(cfg: RunConfig, client: ReplayLLM) -> tuple[RunConfig, list[Di
     return cfg.model_copy(update={"critic": True}), [info]
 
 
-def align_config(cfg: RunConfig, client: LLMClient) -> tuple[RunConfig, list[Diagnostic]]:
+def align_config(cfg: RunConfig, client: LLMClient, parts: int = 1) -> tuple[RunConfig, list[Diagnostic]]:
     """Для replay число проходов поиска и их модель берём из записи, а не из профиля по умолчанию.
 
     Иначе ``--backend replay`` без ``--profile`` пересобрал бы прогон ``quick`` как три прохода
     (два упали бы «нет ответа»), а прогон ``submit`` искал бы ответы с другим effort. Так же из записи
     берём, был ли включён критик находок (#39).
+
+    ``parts``: частей длинного документа (#38). Каждый проход идёт по каждой части, вызовов поиска в
+    записи ``parts × K``, поэтому проходов ``K = вызовов / parts``. Модель сверки между частями тоже
+    из записи.
     """
     if not isinstance(client, ReplayLLM):
         return cfg, []
     cfg, critic_info = _align_critic(cfg, client)
-    cfg, search_info = _align_search(cfg, client)
+    cfg, search_info = _align_search(cfg, client, parts)
     return cfg, [*critic_info, *search_info]
 
 
-def _align_search(cfg: RunConfig, client: ReplayLLM) -> tuple[RunConfig, list[Diagnostic]]:
+def _align_search(cfg: RunConfig, client: ReplayLLM, parts: int) -> tuple[RunConfig, list[Diagnostic]]:
     recorded = client.recorded(LLMStep.SEARCH)
     if not recorded:
         return cfg, []
-    passes = min(client.calls_in_recording(LLMStep.SEARCH), MAX_PASSES)
+    calls = client.calls_in_recording(LLMStep.SEARCH)
+    passes = min(math.ceil(calls / max(parts, 1)), MAX_PASSES)
     models = set(recorded.values())
     step_models = dict(cfg.step_models)
     if len(models) == 1:
         step_models[LLMStep.SEARCH] = models.pop()
+    checked = set(client.recorded(LLMStep.SET_CHECK).values())
+    if len(checked) == 1:
+        step_models[LLMStep.SET_CHECK] = checked.pop()
     if passes == cfg.passes and step_models == cfg.step_models:
         return cfg, []
     aligned = cfg.model_copy(update={"passes": passes, "step_models": step_models})

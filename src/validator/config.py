@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import math
 import os
 from dataclasses import dataclass
 from pathlib import Path
@@ -12,6 +13,7 @@ from typing import cast
 
 from dotenv import find_dotenv, load_dotenv
 
+from validator.ingest.ocr import ocr_enabled
 from validator.ingest.pdf_backends import BACKEND_NAMES, DEFAULT_BACKEND
 from validator.llm.fake import default_fixtures_dir
 from validator.models import (
@@ -44,6 +46,8 @@ STEP_MODELS: dict[LLMStep, StepModel] = {
     LLMStep.TEST_DRAFT: StepModel(model=SONNET, effort=Effort.HIGH),
     LLMStep.QUESTIONS: StepModel(model=OPUS, effort=Effort.HIGH),
     LLMStep.QUESTIONS_CRITIC: StepModel(model=OPUS, effort=Effort.HIGH),
+    # Сверка требований между частями длинного документа (#38): как проход поиска, effort из профиля.
+    LLMStep.SET_CHECK: StepModel(model=OPUS, effort=Effort.MEDIUM),
 }
 
 
@@ -69,6 +73,26 @@ SEARCH_INPUT = SearchInput.BLOCKS
 
 CALL_TIMEOUT_S = 1200
 """Таймаут одного вызова: проход Opus xhigh идёт до 7,5 минуты (исследование 21), берём с запасом."""
+MAX_CALL_TIMEOUT_S = 3600
+"""Потолок таймаута вызова с большим входом (``call_timeout``): дольше часа ответа не ждём."""
+
+CHARS_PER_TOKEN = 2.0
+"""Оценка токенов по символам. Замер на записанных живых прогонах (#36, ``tests/fixtures/e2e``): русский
+текст с разметкой блоков даёт 1,8–2,2 символа на токен. Берём меньшее круглое: оценка с запасом вверх."""
+LONG_DOC_TOKENS = 12_000
+"""Граница длинного документа (#38): документ для модели (с ID блоков) длиннее стольких токенов режется по
+разделам на части. Наш документ около 8,5 тыс.: проход поиска по нему уже выдаёт 22–32 тыс. токенов
+ответа (с рассуждением), а ``claude -p`` ограничивает ответ; часть больше этого рискует упереться в него
+и терять находки в середине («Lost in the Middle», исследование 18, п. 3.5). Таймаут вызова откалиброван
+на документ такого размера (``call_timeout``)."""
+PART_TARGET_TOKENS = 8_000
+"""Целевой размер части с запасом до ``LONG_DOC_TOKENS``: части набираются из целых разделов до этого
+размера, раздел больше ``LONG_DOC_TOKENS`` делится по подразделам, а без них по блокам."""
+GLOSSARY_MAX_TOKENS = 3_000
+"""Раздел терминов и определений добавляется в каждую часть для справки, если не длиннее этого."""
+FULL_VIEW_MAX_TOKENS = 60_000
+"""Документ длиннее этого вопросы автору и их критик видят не целиком, а разделы с цитатами кандидатов,
+раздел терминов и оглавление: иначе вход вызова подходит к пределу контекста модели."""
 
 CACHE_DIR = Path(".cache/validator")
 API_KEY_ENV = "ANTHROPIC_API_KEY"
@@ -81,10 +105,26 @@ PDF_BACKEND = DEFAULT_BACKEND
 
 
 def step_models(profile: Profile) -> dict[LLMStep, StepModel]:
-    """Модели шагов для профиля: профиль меняет только effort проходов поиска."""
+    """Модели шагов для профиля: профиль меняет effort проходов поиска и сверки частей длинного документа."""
     models = dict(STEP_MODELS)
     models[LLMStep.SEARCH] = StepModel(model=OPUS, effort=PROFILES[profile].search_effort)
+    models[LLMStep.SET_CHECK] = StepModel(model=OPUS, effort=PROFILES[profile].search_effort)
     return models
+
+
+def estimate_tokens(chars: int) -> int:
+    """Оценка токенов по числу символов (``CHARS_PER_TOKEN``), с округлением вверх."""
+    return math.ceil(chars / CHARS_PER_TOKEN)
+
+
+def call_timeout(cfg: RunConfig, *texts: str) -> int:
+    """Таймаут вызова растёт с размером входа (#38): базовый ``cfg.call_timeout_s`` рассчитан на вход до
+    ``LONG_DOC_TOKENS``, больше пропорционально, но не дольше ``MAX_CALL_TIMEOUT_S``."""
+    tokens = estimate_tokens(sum(len(t) for t in texts))
+    if tokens <= LONG_DOC_TOKENS:
+        return cfg.call_timeout_s
+    scaled = cfg.call_timeout_s * tokens // LONG_DOC_TOKENS
+    return max(cfg.call_timeout_s, min(MAX_CALL_TIMEOUT_S, scaled))
 
 
 def load_env(env_file: Path | None = None) -> None:
@@ -108,6 +148,7 @@ def load_config(
     max_budget_usd: float | None = None,
     pdf_backend: str | None = None,
     search_input: SearchInput | None = None,
+    ocr: bool | None = None,
     env_file: Path | None = None,
     critic: bool = False,
 ) -> RunConfig:
@@ -135,7 +176,18 @@ def load_config(
         fake_fixtures=default_fixtures_dir() if backend is Backend.FAKE else None,
         call_timeout_s=CALL_TIMEOUT_S,
         has_api_key=bool(os.environ.get(API_KEY_ENV, "").strip()),
+        ocr=ocr_enabled(ocr),
     )
 
 
-__all__ = ["PROFILES", "SEARCH_INPUT", "STEP_MODELS", "RunConfig", "load_config", "step_models"]
+__all__ = [
+    "PROFILES",
+    "SEARCH_INPUT",
+    "STEP_MODELS",
+    "RunConfig",
+    "call_timeout",
+    "estimate_tokens",
+    "load_config",
+    "ocr_enabled",
+    "step_models",
+]

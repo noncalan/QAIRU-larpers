@@ -48,7 +48,8 @@
     "pages": null,
     "chars": 1300,
     "blocks": 44,
-    "extraction": "Markdown, построчно"
+    "extraction": "Markdown, построчно",
+    "parts": []
   },
   "input_diagnostics": [],
   "diagnostics": [],

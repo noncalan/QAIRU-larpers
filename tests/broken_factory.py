@@ -207,7 +207,7 @@ CASES: dict[str, Case] = {
     "bad_xref.pdf": Case(_bad_xref_pdf, 0, "IN-041", "битая ссылка на таблицу xref, PDF восстановлен"),
     "password.pdf": Case(_encrypted_pdf, 4, "IN-020", "PDF с паролем на открытие"),
     "owner_only.pdf": Case(_owner_only_pdf, 0, "IN-022", "PDF с паролем владельца (запрет копирования)"),
-    "scan.pdf": Case(_scan(0), 4, "IN-071", "скан: страницы-картинки без текстового слоя"),
+    "scan.pdf": Case(_scan(0), 4, "IN-055", "скан: страницы-картинки без текстового слоя, OCR выключен"),
     "mixed_scan.pdf": Case(_scan(1), 3, "IN-051", "стр. 1 текстом, стр. 2 сканом"),
     "garbled_text.pdf": Case(_garbled_pdf, 4, "IN-052", "мусорный текстовый слой (шрифты без ToUnicode)"),
     "image.pdf": Case(_png, 4, "IN-010", "картинка PNG с расширением .pdf"),

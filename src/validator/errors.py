@@ -35,9 +35,12 @@ IN_PDF_BROKEN = "IN-040"
 IN_PDF_REPAIRED = "IN-041"
 IN_PDF_NO_PAGES = "IN-042"
 IN_PDF_SALVAGED = "IN-043"
+IN_OCR_APPLIED = "IN-050"  # текст страниц без текстового слоя распознан OCR (#38)
 IN_PAGES_WITHOUT_TEXT = "IN-051"
 IN_GARBLED_TEXT = "IN-052"
+IN_IMAGE_OCR = "IN-053"  # подано изображение: обёрнуто в PDF и распознано OCR (#38)
 IN_FURNITURE_REMOVED = "IN-054"
+IN_SCANNED = "IN-055"  # скан без распознавания: текста нет на большинстве страниц (#38)
 IN_ENCODING = "IN-061"
 IN_ENCODING_UNCERTAIN = "IN-062"
 IN_NO_TEXT = "IN-071"
@@ -77,6 +80,11 @@ LLM_QUESTIONS_FAILED = "LLM-050"
 LLM_QUESTIONS_CHECKED = "LLM-051"  # код поправил или отбросил карточки редактора вопросов
 LLM_QUESTIONS_CRITIC_FAILED = "LLM-052"  # критик-самоответ не сработал: вопросы не перепроверены
 LLM_QUESTIONS_WITHDRAWN = "LLM-053"  # ИНФО: критик снял вопросы, ответ на которые есть в документе
+LLM_QUESTIONS_SHORTLIST = "LLM-054"  # ИНФО: кандидатов больше, чем разбирает редактор; отданы главные (#38)
+LLM_LONG_DOCUMENT = "LLM-060"  # ИНФО: длинный документ проверен по частям, оценка вызовов и цены (#38)
+LLM_BUDGET_ESTIMATE = "LLM-061"  # оценка цены прогона выше --max-budget-usd (#38)
+LLM_SET_CHECK_FAILED = "LLM-062"  # сверка требований между частями длинного документа не удалась
+LLM_SET_CHECK_DROPPED = "LLM-063"  # ИНФО: код отбросил записи сверки (одна часть, неизвестные ID)
 
 # Настройки и флаги.
 CFG_BACKEND_UNAVAILABLE = "CFG-001"
