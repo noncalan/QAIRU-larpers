@@ -51,7 +51,7 @@ from validator.report.coverage import (
 )
 from validator.report.first_page import FixItem
 from validator.report.fmt import money, pct, plain, quote_plain, status_label, when, where
-from validator.report.passport_view import tokens_in, tokens_text
+from validator.report.passport_view import backend_line, replay_line, tokens_in, tokens_text
 from validator.report.render_md import PARTS_NOTE, SEGMENTATION_NOTE, report_context
 from validator.report.run_metrics import step_label
 from validator.report.testdraft_view import LABEL, DraftView
@@ -336,12 +336,6 @@ def _search_input(p: Passport) -> str:
 
 def _passport_section(report: Report, ctx: dict[str, Any]) -> Json:
     p = report.passport
-    if p.calls_total == 0:
-        backend = f"модель не вызывалась (запрошено: {p.backend_requested.label})"
-    else:
-        backend = (p.backend_used or p.backend_requested).label
-        if p.calls_cached:
-            backend += f"; из кеша {p.calls_cached} из {p.calls_total} ответов"
     rows = [
         ("Документ", ctx["passport_document"]),
         ("SHA-256 документа", p.document_sha256 or "—"),
@@ -349,7 +343,8 @@ def _passport_section(report: Report, ctx: dict[str, Any]) -> Json:
         ("Длительность", f"{p.duration_s if p.duration_s is not None else '—'} с"),
         ("Версия агента", ctx["passport_version"]),
         ("Хеш промптов", p.prompts_sha256[:12]),
-        ("Способ вызова модели", backend),
+        ("Способ вызова модели", backend_line(report)),
+        *([("Запись ответов модели", replay)] if (replay := replay_line(report)) else []),
         ("Модели по шагам", ctx["passport_models"]),
         ("Фактические модели", ", ".join(p.models_actual) or "—"),
         ("Профиль", f"{p.profile.value}, проходов поиска: {p.passes}{_search_input(p)}"),

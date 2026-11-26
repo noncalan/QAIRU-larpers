@@ -174,6 +174,26 @@ def test_replayed_report_has_all_sections(replayed: tuple[DocKind, Path, int]) -
     assert report.verification is not None and report.verification.findings
 
 
+def test_replayed_passport_names_the_record_and_its_share(replayed: tuple[DocKind, Path, int]) -> None:
+    """Пересборка не выдаёт себя за живой прогон (RC2): паспорт называет запись, когда и чем её писали,
+    и сколько ответов из неё взято («из записи 8 из 9»: без ``--answers`` сверка с ответами не нужна)."""
+    kind, out, _ = replayed
+    report = Report.model_validate_json((out / "report.json").read_text(encoding="utf-8"))
+    report_md = (out / "report.md").read_text(encoding="utf-8")
+    recorded = len(list((E2E / kind.value / "run" / "responses").glob("*.json")))
+    p = report.passport
+
+    assert p.replay is not None
+    assert p.replay.path == f"tests/fixtures/e2e/{kind.value}/run"
+    assert p.replay.responses == recorded
+    assert p.replay.backends == [Backend.CLI]
+    assert p.replay.recorded_from is not None and p.replay.recorded_to is not None
+    assert p.replay.recorded_from < p.replay.recorded_to
+    assert 0 < p.calls_replayed == p.calls_total <= recorded
+    assert f"из записи {p.calls_replayed} из {recorded} ответов, модель не вызывалась" in report_md
+    assert f"| Запись ответов модели | tests/fixtures/e2e/{kind.value}/run, записана 2026-" in report_md
+
+
 def test_replayed_report_matches_snapshot(replayed: tuple[DocKind, Path, int]) -> None:
     kind, out, _ = replayed
     actual_path = out / "report.json"

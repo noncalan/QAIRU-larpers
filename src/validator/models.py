@@ -1512,6 +1512,16 @@ class RunConfig(Contract):
         return self.step_models[step]
 
 
+class ReplaySource(Contract):
+    """Запись, из которой replay взял ответы модели: паспорт не выдаёт пересборку за живой прогон."""
+
+    path: str = Field(description="Папка run/ записи, как её прочитал replay")
+    responses: int = Field(default=0, description="Сколько ответов модели лежит в записи (responses/)")
+    recorded_from: datetime | None = Field(default=None, description="Начало первого вызова (calls.jsonl)")
+    recorded_to: datetime | None = Field(default=None, description="Конец последнего вызова записи")
+    backends: list[Backend] = Field(default_factory=list, description="Чем вызывали модель при записи")
+
+
 class Passport(Contract):
     """Паспорт прогона (ТЗ п. 6): документ, дата, модель, версия агента и окружение."""
 
@@ -1546,6 +1556,8 @@ class Passport(Contract):
     calls_cached: int = Field(
         default=0, description="Сколько вызовов ответил кеш этого же бэкенда: модель на них не вызывалась"
     )
+    calls_replayed: int = Field(default=0, description="Сколько вызовов ответила запись (--backend replay)")
+    replay: ReplaySource | None = Field(default=None, description="Запись, из которой взяты ответы модели")
     tokens: TokenUsage = Field(default_factory=TokenUsage)
     cost_usd: float | None = Field(default=None, description="Цена по тарифу API (подписка не платит)")
     exit_code: ExitCode = ExitCode.OK

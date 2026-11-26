@@ -154,7 +154,10 @@
 | Длительность | {{ p.duration_s if p.duration_s is not none else "—" }} с |
 | Версия агента | {{ passport_version | cell }} |
 | Хеш промптов | {{ p.prompts_sha256[:12] }} |
-| Способ вызова модели | {% if p.calls_total == 0 %}модель не вызывалась (запрошено: {{ p.backend_requested.label }}){% else %}{{ (p.backend_used or p.backend_requested).label }}{% if p.calls_cached %}; из кеша {{ p.calls_cached }} из {{ p.calls_total }} ответов{% endif %}{% endif %} |
+| Способ вызова модели | {{ passport_backend | cell }} |
+{% if passport_replay %}
+| Запись ответов модели | {{ passport_replay | cell }} |
+{% endif %}
 | Модели по шагам | {{ passport_models | cell }} |
 | Фактические модели | {{ p.models_actual | join(", ") if p.models_actual else "—" }} |
 | Профиль | {{ p.profile.value }}, проходов поиска: {{ p.passes }}{% if p.search_input.value == "raw" %}, поиск по тексту без ID блоков{% endif %} |

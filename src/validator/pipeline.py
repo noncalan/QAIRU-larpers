@@ -79,6 +79,7 @@ from validator.models import (
     ParsedDocument,
     PassResult,
     Question,
+    ReplaySource,
     Report,
     RunConfig,
     RunContext,
@@ -130,6 +131,8 @@ class _State:
     clarification: Clarification | None = None
     client: RecordingClient | None = None
     backend_used: Backend | None = None
+    replay: ReplaySource | None = None
+    """Запись, из которой replay взял ответы: паспорт пишет «из записи N из M» (RC2)."""
     pdf_written: bool = False
     questions_path: Path | None = None
     """Куда пишем вопросы: ``cfg.questions_path`` или другое имя, если там ответы автора."""
@@ -383,6 +386,7 @@ def _execute(state: _State) -> None:
     state.diagnostics.extend(aligned_diags)
     llm = instrument(cfg, client)
     state.client, state.backend_used = llm, client.backend
+    state.replay = client.source() if isinstance(client, ReplayLLM) else None
     _announce(state, plan)
     seg = _step(
         state,
@@ -573,6 +577,7 @@ def _context(
         calls=calls,
         exit_code=code,
         checklists=[u.id for u in state.checklists if u.used],
+        replay=state.replay,
     )
     return RunContext(
         cfg=cfg,
