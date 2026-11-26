@@ -7,13 +7,13 @@
     "document_sha256": "e7dae55e5453a250d93e335f5ff9c7f775f4457ccddd333f4a67e47b20d74381",
     "document_size_bytes": 13507,
     "document_pages": null,
-    "started_at": "2026-11-26T02:47:07.820770Z",
-    "finished_at": "2026-11-26T02:47:07.991427Z",
-    "duration_s": 0.17,
-    "agent_version": "07056a0-dirty",
+    "started_at": "2026-11-26T07:15:01.442636Z",
+    "finished_at": "2026-11-26T07:15:01.756688Z",
+    "duration_s": 0.31,
+    "agent_version": "cb055cf",
     "agent_version_source": "git",
-    "agent_dirty": true,
-    "prompts_sha256": "f99cb3738ad7dbe4aeaaa89b89dd043ed2bac0101cd482144f85017e1785f91b",
+    "agent_dirty": false,
+    "prompts_sha256": "f5ad10a75c7dac02be764e4b5170e2bf788b1b8cba6b001f0ecb1b42bbc557c5",
     "os": "Linux 6.18.44-fc-v880 (x86_64)",
     "python": "3.13.18",
     "backend_requested": "replay",
@@ -44,7 +44,9 @@
       "cache_read_input_tokens": 4759
     },
     "cost_usd": 3.6645,
-    "exit_code": 0
+    "exit_code": 0,
+    "answers_file": null,
+    "answers_sha256": null
   },
   "document": {
     "name": "requirements.md",
@@ -62,7 +64,7 @@
     {
       "code": "LLM-005",
       "level": "info",
-      "message": "Ответы модели взяты из записи прогона tests/fixtures/e2e/md/run (7 шт.)",
+      "message": "Ответы модели взяты из записи прогона tests/fixtures/e2e/md/run (8 шт.)",
       "action": "Модель не вызывалась, отчёт пересобран из записанных ответов",
       "hint": "",
       "location": null,
@@ -12613,6 +12615,7 @@
     }
   ],
   "questions_withdrawn": [],
+  "clarification": null,
   "conclusion": {
     "traffic_light": "red",
     "headline": "Начинать разработку и тестирование нельзя: 8 критичных нарушений мешают написать тест-кейсы (F-01, F-02, F-03, F-04, F-05 и ещё 3)",
@@ -12633,7 +12636,7 @@
     ]
   },
   "metrics": {
-    "duration_s": 0.17,
+    "duration_s": 0.31,
     "calls_total": 7,
     "calls_failed": 0,
     "calls_cached": 0,
