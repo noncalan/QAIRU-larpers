@@ -257,7 +257,7 @@ def findings() -> list[Finding]:
             requirement_ids=["R-06"],
             explanation="В одном требовании три действия: проверка каждого идёт отдельным тестом.",
             suggestion="Разделить на три требования: добавление, удаление, изменение цены.",
-            sources=[FindingSource(kind=SourceKind.LINT, rule_id="LNT-04")],
+            sources=[FindingSource(kind=SourceKind.LINT, rule_id="L-10")],
             found_in=1,
             of=1,
             notes=["Найдено правилом линтера."],

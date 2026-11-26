@@ -10,11 +10,10 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from validator.models import DraftGap, Finding, TestDraft
+from validator.models import DraftGap, DraftValue, Finding, TestDraft
 from validator.report.fmt import plain, where
 
 LABEL = "Попытка теста"
-NO_QUESTION = "отдельного вопроса автору нет"
 
 
 @dataclass(frozen=True)
@@ -47,7 +46,14 @@ def _gap_line(g: DraftGap) -> str:
         return f"{text} → {g.question_id} снят: ответ есть в документе"
     if g.question_id:
         return f"{text} → {g.question_id}"
-    return f"{text} → {NO_QUESTION}"
+    return text
+
+
+def _value_line(v: DraftValue) -> str:
+    """Значение из документа и его цитата; если значение и есть вся цитата, текст не повторяем."""
+    value, quote = plain(v.value), plain(v.quote, 200)
+    head = f"«{quote}»" if value == quote else f"«{value}»: «{quote}»"
+    return f"{head} ({where(v.anchor)})"
 
 
 def _status(draft: TestDraft) -> str:
@@ -78,9 +84,7 @@ def draft_view(f: Finding) -> DraftView | None:
         ("Шаги", _steps(d.steps) if d.steps else plain(d.action)),
         ("Ожидаемый результат", plain(d.expected)),
     ]
-    values = tuple(
-        f"«{plain(v.value)}»: «{plain(v.quote, 200)}» ({where(v.anchor)})" for v in d.values if v.verified
-    )
+    values = tuple(_value_line(v) for v in d.values if v.verified)
     return DraftView(
         status=_status(d),
         parts=tuple((label, text) for label, text in parts if text),

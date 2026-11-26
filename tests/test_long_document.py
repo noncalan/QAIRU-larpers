@@ -509,7 +509,7 @@ def test_pipeline_checks_long_document_by_parts(tmp_path: Path, monkeypatch: pyt
     assert len(cross) == 1 and len(cross[0].requirement_ids) == 2
     markdown = (tmp_path / "out" / "report.md").read_text(encoding="utf-8")
     assert "| Часть | Разделы |" in markdown
-    assert "сверка требований между частями документа; проходы поиска видят по одной части" in markdown
+    assert "сверкой требований между частями документа; проходы поиска видят по одной части" in markdown
 
 
 def test_budget_below_estimate_warns_before_calls(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

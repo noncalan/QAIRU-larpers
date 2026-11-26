@@ -8,6 +8,7 @@
 
 from __future__ import annotations
 
+import functools
 import re
 from collections import defaultdict
 from collections.abc import Callable, Sequence
@@ -17,12 +18,13 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
+from validator.checklists import load_checklists
+from validator.lint.rules import RULE_BY_ID
 from validator.models import (
     Addressee,
     ChecklistUse,
     CriticAction,
     CriticDecision,
-    DefectType,
     DiagLevel,
     DiscardReason,
     EvidenceMetrics,
@@ -34,6 +36,7 @@ from validator.models import (
     Requirement,
     Scope,
     Witness,
+    WitnessReading,
 )
 from validator.report import triage
 from validator.report.clarify_view import CLARIFY_TITLE, CLOSED_NOTE, clarify_view
@@ -45,16 +48,27 @@ from validator.report.coverage import (
     cell_text,
     coverage_totals,
 )
-from validator.report.fmt import FILTERS, found_text, plain, where
+from validator.report.first_page import (
+    TZ_CLASSES_TITLE,
+    critical_items,
+    fix_intro,
+    fix_items,
+    tz_class_findings,
+)
+from validator.report.fmt import FILTERS, ChecklistItems, found_text, plain, where
+from validator.report.passport_view import document_line, models_line, tokens_in, tokens_text, version_line
 from validator.report.run_metrics import step_label
 from validator.report.testdraft_view import draft_stats, draft_view, stats_line
+
+SEGMENTATION_NOTE = (
+    "Требования выделила модель, а цитату и место каждого требования код взял из текста документа."
+)
 
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
 NO_VIOLATIONS = "нарушений нет"
 """Статус требования без находок: слова из ТЗ п. 6, по ним тесты ищут каждое R-NN."""
 
 _BLANK_RUNS = re.compile(r"\n{3,}")
-_CRITICAL_CLASSES = frozenset(d for d in DefectType if d.critical_class)
 
 Resolver = Callable[[Quote, Sequence[str]], list[str]]
 """Раздел документа для цитаты (с запасным разделом находки): ``section_of`` в шаблонах."""
@@ -149,8 +163,32 @@ def _place(q: Quote, resolve: Resolver, fallback: Sequence[str] = ()) -> str:
     return where(q.anchor, resolve(q, fallback))
 
 
-def witness_line(w: Witness | None, resolve: Resolver, section: Sequence[str] = ()) -> EvidenceLine | None:
-    """Пример-свидетель в карточке: проверенный со сценарием и прочтениями, отклонённый или не построенный."""
+def _same_quote(a: Quote, b: Quote) -> bool:
+    if a.anchor is not None and b.anchor is not None:
+        return (a.anchor.char_start, a.anchor.char_end) == (b.anchor.char_start, b.anchor.char_end)
+    return plain(a.located or a.text) == plain(b.located or b.text)
+
+
+def _reading_source(
+    r: WitnessReading, quotes: Sequence[Quote], resolve: Resolver, section: Sequence[str]
+) -> str:
+    """Опора прочтения: «цитата 2» карточки, если это она (место уже есть выше), иначе цитата с местом."""
+    located = r.located
+    if located is not None:
+        number = next((i for i, q in enumerate(quotes, 1) if q.verified and _same_quote(q, located)), None)
+        if number is not None:
+            return f"по цитате {number}"
+    place = f" ({_place(located, resolve, section)})" if located else ""
+    return f"по «{plain(r.quote, 200)}»{place}"
+
+
+def witness_line(
+    w: Witness | None, resolve: Resolver, section: Sequence[str] = (), quotes: Sequence[Quote] = ()
+) -> EvidenceLine | None:
+    """Пример-свидетель в карточке: проверенный со сценарием и прочтениями, отклонённый или не построенный.
+
+    Прочтение, которое опирается на цитату карточки, ссылается на неё номером, без повтора текста и места.
+    """
     if w is None:
         return None
     if not w.checked:
@@ -162,8 +200,7 @@ def witness_line(w: Witness | None, resolve: Resolver, section: Sequence[str] = 
     items = []
     for r in w.readings:
         how = f"если понимать как «{plain(r.reading)}»: " if r.reading else ""
-        place = f" ({_place(r.located, resolve, section)})" if r.located else ""
-        items.append(f"{how}по «{plain(r.quote, 200)}»{place} → {plain(r.expectation)}")
+        items.append(f"{how}{_reading_source(r, quotes, resolve, section)} → {plain(r.expectation)}")
     return EvidenceLine(
         "Пример-свидетель (код сверил цитаты и различие ожиданий)", plain(w.scenario), tuple(items)
     )
@@ -249,7 +286,7 @@ def _evidence_lines(
     out: dict[str, list[EvidenceLine]] = {}
     for f in findings:
         section = sections.get(f.id, [])
-        lines = [witness_line(f.witness, resolve, section), critic_line(f.critic, resolve, section)]
+        lines = [witness_line(f.witness, resolve, section, f.quotes), critic_line(f.critic, resolve, section)]
         out[f.id] = [line for line in lines if line is not None]
     return out
 
@@ -317,6 +354,20 @@ def checklists_passport(report: Report) -> str:
     return f"{', '.join(u.title for u in used)} ({items} пунктов)"
 
 
+@functools.cache
+def checklist_items() -> ChecklistItems:
+    """Пункты доменных чек-листов: ID → (название чек-листа, вопрос), чтобы карточка говорила словами."""
+    return {i.id: (c.title, i.question) for c in load_checklists() for i in c.items}
+
+
+def lint_rules() -> dict[str, str]:
+    return {rule_id: rule.name for rule_id, rule in RULE_BY_ID.items()}
+
+
+def found(f: Finding) -> str:
+    return found_text(f, checklist_items(), lint_rules())
+
+
 def next_steps(report: Report) -> list[str]:
     """Что сделать человеку, если проверка не выполнена: подсказки ошибок входа без повторов (#38).
 
@@ -348,6 +399,9 @@ def report_context(report: Report) -> dict[str, Any]:
     }
     sections = _finding_sections(findings, requirements)
     resolve = _section_resolver(requirements)
+    by_finding = _questions_by_finding(report)
+    order = report.conclusion.fix_first
+    first = fix_items(order, {f.id: f for f in findings}, resolve, sections, by_finding)
     parent = {r.id: r.parent_id for r in requirements}
     keep = set(report.conclusion.fix_first) | {
         fid for q in report.questions if q.priority in blocking for fid in q.related_findings
@@ -373,7 +427,8 @@ def report_context(report: Report) -> dict[str, Any]:
         "empty_req": triage.NO_REQ_MAIN if req_minor else triage.NO_REQ_FINDINGS,
         "empty_set": triage.NO_SET_MAIN if set_minor else triage.NO_SET_FINDINGS,
         "review_line": triage.review_line(ver.summary, len(req_minor) + len(set_minor)) if ver else None,
-        "critical_classes": [f for f in findings if f.defect_type in _CRITICAL_CLASSES],
+        "tz_classes": tz_class_findings(findings),
+        "tz_classes_title": TZ_CLASSES_TITLE,
         "questions_by_id": {q.id: q for q in report.questions},
         "finding_sections": sections,
         "section_of": resolve,
@@ -381,7 +436,10 @@ def report_context(report: Report) -> dict[str, Any]:
         "critic_dropped": critic_dropped(report, resolve),
         "critic_dropped_intro": CRITIC_DROPPED_INTRO,
         "evidence_rows": evidence_metric_rows(report.metrics.evidence),
-        "questions_by_finding": _questions_by_finding(report),
+        "questions_by_finding": by_finding,
+        "fix_items": first,
+        "fix_intro": fix_intro(first),
+        "critical_items": critical_items(findings, order, resolve, sections, by_finding),
         "blocks_development": blocking[QuestionPriority.P0],
         "blocks_testing": blocking[QuestionPriority.P1],
         "input_status": _input_status(report),
@@ -390,7 +448,13 @@ def report_context(report: Report) -> dict[str, Any]:
         "checklist_state": checklist_state,
         "checklists_note": CHECKLISTS_NOTE,
         "next_steps": next_steps(report),
-        "found": found_text,
+        "found": found,
+        "segmentation_note": SEGMENTATION_NOTE,
+        "passport_document": document_line(report),
+        "passport_version": version_line(report),
+        "passport_models": models_line(report),
+        "tokens_text": tokens_text,
+        "tokens_in": tokens_in,
         "parts_note": PARTS_NOTE,
         "no_violations": NO_VIOLATIONS,
         "addressee_label": _addressee_label,
