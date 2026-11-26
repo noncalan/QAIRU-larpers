@@ -69,7 +69,18 @@ def _ask_first(questions: Sequence[Question]) -> list[str]:
     return [q.id for q in blocking[:FIRST_PAGE_ITEMS]]
 
 
-def _conclusion(ctx: RunContext, errors: Sequence[Diagnostic]) -> Conclusion:
+def _lower_first(message: str) -> str:
+    """«Документ …» → «документ …» внутри скобок заголовка; «PDF …» и «LLM …» не трогаем."""
+    if len(message) > 1 and message[0].isupper() and (message[1].islower() or message[1] == " "):
+        return message[0].lower() + message[1:]
+    return message
+
+
+def _conclusion(
+    ctx: RunContext, errors: Sequence[Diagnostic], cautions: Sequence[Diagnostic] = ()
+) -> Conclusion:
+    """Итог первой страницы. ``errors``: проверка неполная; ``cautions``: предупреждения входа (код 3,
+    вход прочитан с оговорками), тогда итог не зелёный и называет оговорку (#126)."""
     if ctx.doc is None:
         reason = errors[0].message if errors else "вход не прочитан"
         return Conclusion(
@@ -91,6 +102,10 @@ def _conclusion(ctx: RunContext, errors: Sequence[Diagnostic]) -> Conclusion:
     if errors:
         light = TrafficLight.RED if light is TrafficLight.RED else TrafficLight.YELLOW
         headline = f"Проверка выполнена не полностью ({errors[0].message}). По проверенной части: {reason}"
+    elif cautions:
+        light = TrafficLight.RED if light is TrafficLight.RED else TrafficLight.YELLOW
+        caution = _lower_first(cautions[0].message)
+        headline = f"Проверка выполнена с оговорками ({caution}). По прочитанному: {reason}"
     return Conclusion(
         traffic_light=light,
         headline=headline,
@@ -201,7 +216,7 @@ def build_report(ctx: RunContext) -> Report:
         questions=list(ctx.questions),
         questions_withdrawn=list(ctx.questions_withdrawn),
         clarification=ctx.clarification,
-        conclusion=_conclusion(ctx, errors),
+        conclusion=_conclusion(ctx, errors, [d for d in inputs if d.level is DiagLevel.WARNING]),
         metrics=_metrics(ctx),
         coverage=_coverage(ctx),
         checklists=_checklists(ctx),

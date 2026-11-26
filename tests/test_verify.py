@@ -48,7 +48,13 @@ from validator.questions import QuestionsOutcome
 from validator.report.fmt import quote_text
 from validator.segment import fallback_segmentation
 from validator.severity import SEVERITY_TABLE, severity_disputed, table_severity
-from validator.verify import TRAFFIC_RULE, light_with_questions, traffic_light, verify
+from validator.verify import (
+    NO_REQUIREMENTS_REASON,
+    TRAFFIC_RULE,
+    light_with_questions,
+    traffic_light,
+    verify,
+)
 
 LIBRARY = """# Библиотека
 
@@ -697,6 +703,15 @@ def test_critical_without_blocking_testing_is_yellow_and_named() -> None:
         "нарушений, которые мешают написать тест-кейсы, нет, но есть 1 критичное нарушение без влияния "
         "на тест-кейсы (F-01) и 1 важное нарушение (F-02)"
     )
+
+
+def test_document_without_requirements_is_red_not_green() -> None:
+    """#126: нет требований, нет и нарушений, но разрабатывать и тестировать нечего."""
+    light, reason = traffic_light([], requirements=0)
+
+    assert light is TrafficLight.RED
+    assert reason == NO_REQUIREMENTS_REASON
+    assert traffic_light([], requirements=3)[0] is TrafficLight.GREEN
 
 
 @pytest.mark.parametrize(
