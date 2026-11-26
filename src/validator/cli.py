@@ -94,6 +94,9 @@ def main(
         bool, typer.Option("--ask", help="Задать главные вопросы в терминале и сразу проверить с ответами")
     ] = False,
     max_budget_usd: Annotated[float | None, typer.Option(min=0.01, help="Стоп по цене прогона, $")] = None,
+    critic: Annotated[
+        bool, typer.Option("--critic", help="Включить критика находок (шаг 6б, по eval пока выключен)")
+    ] = False,
     pdf_backend: Annotated[
         str | None,
         typer.Option("--pdf-backend", help="Движок PDF: mupdf (по умолчанию) или pdfium (без копилефта)"),
@@ -131,6 +134,7 @@ def main(
             ask=ask,
             max_budget_usd=max_budget_usd,
             pdf_backend=pdf_backend,
+            critic=critic,
             search_input=search_input,
         )
     except ValueError as exc:

@@ -474,6 +474,24 @@ class CriticAction(StrEnum):
     DOWNGRADE = "downgrade"
     DROP = "drop"
 
+    @property
+    def label(self) -> str:
+        return _CRITIC_LABELS[self]
+
+    @classmethod
+    def from_label(cls, label: str) -> CriticAction | None:
+        """Решение критика из ответа модели: «оставить», «понизить», «снять» (или значение перечисления)."""
+        key = _label_key(label)
+        return _CRITIC_BY_LABEL.get(key) or next((a for a in cls if a.value == key), None)
+
+
+_CRITIC_LABELS = {
+    CriticAction.KEEP: "оставить",
+    CriticAction.DOWNGRADE: "понизить",
+    CriticAction.DROP: "снять",
+}
+_CRITIC_BY_LABEL = {text: action for action, text in _CRITIC_LABELS.items()}
+
 
 class QuestionPriority(StrEnum):
     """Приоритет вопроса автору (исследование 17, п. 3.2): считает код."""
@@ -590,6 +608,8 @@ class LLMStep(StrEnum):
     # Судья eval (#24): его вызывает только eval через тот же клиент модели, отдельно от агента.
     # Конвейер агента этот шаг не вызывает, модели для него в STEP_MODELS нет.
     JUDGE = "judge"
+    # Разметчики precision (#49): их тоже вызывает только eval, вслепую, без эталона и вердиктов судьи.
+    PRECISION = "precision"
 
 
 class CallStatus(StrEnum):
@@ -883,6 +903,10 @@ class PassResult(Contract):
 class WitnessReading(Contract):
     quote: str
     expectation: str
+    reading: str = Field(
+        default="", description="Как прочитано место: толкование для двусмысленности, пусто у противоречия"
+    )
+    located: Quote | None = Field(default=None, description="Цитата после сверки с документом, с местом")
 
 
 class Witness(Contract):
@@ -910,6 +934,11 @@ class CriticDecision(Contract):
     action: CriticAction
     reason: str
     severity: Severity | None = None
+    basis: Quote | None = Field(default=None, description="Цитата-основание решения, сверенная с документом")
+    proposed: CriticAction | None = Field(
+        default=None, description="Что предложила модель, если код принял другое решение"
+    )
+    note: str = Field(default="", description="Почему код не принял решение модели как есть")
 
 
 class MergedFinding(Contract):
@@ -1321,6 +1350,10 @@ class RunConfig(Contract):
     search_input: SearchInput = Field(default=SearchInput.BLOCKS, description="Вход поиска (#37, D-011)")
     call_timeout_s: int = Field(default=1200, ge=1)
     has_api_key: bool = Field(default=False, description="Есть ли ANTHROPIC_API_KEY (сам ключ не храним)")
+    critic: bool = Field(
+        default=False,
+        description="Критик находок (шаг 6б, #39). По eval пока выключен, включается флагом --critic",
+    )
 
     @property
     def out_dir(self) -> Path:
@@ -1427,6 +1460,25 @@ class QuestionMetrics(Contract):
     by_addressee: dict[str, int] = Field(default_factory=dict, description="Разброс адресатов")
 
 
+class EvidenceMetrics(Contract):
+    """Шаг 6 в цифрах: примеры-свидетели и решения критика (считает код по находкам после шага)."""
+
+    witness_requested: int = Field(
+        default=0, description="Находок, по которым модель ответила: свидетель построен или сценария нет"
+    )
+    witness_checked: int = Field(default=0, description="Свидетель построен и проверен кодом")
+    witness_rejected: int = Field(default=0, description="Свидетель построен, но код его отклонил")
+    witness_declined: int = Field(default=0, description="Модель не нашла сценария, где места расходятся")
+    critic_reviewed: int = Field(default=0, description="Находок с решением критика")
+    critic_kept: int = 0
+    critic_downgraded: int = 0
+    critic_dropped: int = 0
+    critic_overruled: int = Field(
+        default=0, description="Решений «понизить» или «снять», которые код не принял как есть"
+    )
+    critic_enabled: bool = Field(default=True, description="Был ли критик включён в прогоне (--critic)")
+
+
 class StepMetrics(Contract):
     """Вызовы модели одного шага: сколько, сколько заняли и стоили (по записям ``calls.jsonl``)."""
 
@@ -1465,6 +1517,9 @@ class RunMetrics(Contract):
     quotes_verified: int = 0
     verified_quote_share: float | None = Field(default=None, description="Доля сверенных цитат, 0–1")
     questions: QuestionMetrics | None = Field(default=None, description="Метрики вопросов автору")
+    evidence: EvidenceMetrics | None = Field(
+        default=None, description="Свидетели и критик находок (шаг 6); None, если шаг не вызывал модель"
+    )
     steps: list[StepMetrics] = Field(default_factory=list, description="Вызовы, время и цена по шагам")
     passes_total: int = Field(default=0, description="Проходов поиска запущено")
     passes_ok: int = Field(default=0, description="Проходов поиска, которые отработали")

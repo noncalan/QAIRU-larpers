@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "## Рассуждение\n\n**M-001.** Ф-2 [B023] относит покупку к месяцу по дате совершения по Алматы. Критерий приёмки [B039] берёт покупку от 31 января 23:58 и проводит её 1 февраля в 00:03 по Алматы, а ожидает рост февральского счётчика. В документе нет правила, которое их согласует: ни определения «даты совершения» как даты проведения, ни исключения для операций на границе месяцев. Часовой пояс для 23:58 не указан. Если бы это было время не по Алматы, совершение пришлось бы на время после проведения, а это невозможно. Значит, в одном сценарии Ф-2 и критерий дают разные результаты. От этого зависит, какой счётчик вырастет и придёт ли push. Основной сценарий нельзя однозначно реализовать и протестировать, поэтому важность «критично» обоснована.\n\n## Ответ\n\n```json\n{\n  \"decisions\": [\n    {\n      \"id\": \"M-001\",\n      \"decision\": \"оставить\",\n      \"severity\": null,\n      \"reason\": \"По Ф-2 покупка от 31 января относится к январю, а критерий приёмки для того же сценария ждёт рост февральского счётчика. Правила, которое их согласует, в документе нет, поэтому одна реализация не пройдёт одну из проверок.\",\n      \"basis_quote\": \"Месяц определяется по дате совершения покупки в Алматы.\"\n    }\n  ]\n}\n```",
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 9824,
+    "cache_read_input_tokens": 2097,
+    "output_tokens": 985,
+    "output_tokens_details": {
+      "thinking_tokens": 484
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 9824,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 985,
+        "cache_read_input_tokens": 2097,
+        "cache_creation_input_tokens": 9824,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 9824
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 985,
+      "cacheReadInputTokens": 2097,
+      "cacheCreationInputTokens": 9824,
+      "webSearchRequests": 0,
+      "costUSD": 0.0987194,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 484,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 9824,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "total_cost_usd": 0.0987194,
+  "session_id": "00000000-0000-0000-0000-000000000000"
+}

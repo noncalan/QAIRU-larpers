@@ -244,6 +244,7 @@
       "by_priority": {},
       "by_addressee": {}
     },
+    "evidence": null,
     "steps": [
       {
         "step": "segment",

@@ -111,6 +111,7 @@ def load_config(
     pdf_backend: str | None = None,
     search_input: SearchInput | None = None,
     env_file: Path | None = None,
+    critic: bool = False,
 ) -> RunConfig:
     load_env(env_file)
     pdf_engine = (pdf_backend or os.environ.get(PDF_BACKEND_ENV) or PDF_BACKEND).lower()
@@ -128,6 +129,7 @@ def load_config(
         cache_dir=CACHE_DIR,
         answers_path=answers_path,
         ask=ask,
+        critic=critic,
         max_budget_usd=max_budget_usd,
         pdf_backend=cast(PdfBackendName, pdf_engine),
         search_input=search_input if search_input is not None else SEARCH_INPUT,

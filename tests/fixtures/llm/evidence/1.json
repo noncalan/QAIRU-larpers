@@ -1,0 +1,60 @@
+{
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "## Рассуждение\n\n**M-001.** Сопоставил Ф-2 [B023] («месяц по дате совершения покупки в Алматы») и критерий приёмки [B039]. Сценарий: покупка совершена 31 января в 23:58 по Алматы, проведена 1 февраля в 00:03 по Алматы. По Ф-2 сумма должна попасть в январский счётчик, а по критерию приёмки — в февральский. Одна покупка не может увеличить оба счётчика, поэтому свидетель есть.\n\n## Ответ\n\n```json\n{\n  \"witnesses\": [\n    {\n      \"id\": \"M-001\",\n      \"scenario\": \"Покупка на 4 000 ₸ совершена картой KZT 31 января в 23:58 по Алматы и проведена процессингом 1 февраля в 00:03 по Алматы; до неё январский и февральский счётчики равны 0 ₸\",\n      \"readings\": [\n        {\n          \"quote\": \"Месяц определяется по дате совершения покупки в Алматы.\",\n          \"reading\": \"\",\n          \"expectation\": \"январский счётчик стал 4 000 ₸, февральский остался 0 ₸\"\n        },\n        {\n          \"quote\": \"Февральский счётчик вырос на 4 000 ₸\",\n          \"reading\": \"\",\n          \"expectation\": \"февральский счётчик стал 4 000 ₸\"\n        }\n      ],\n      \"reason\": \"\"\n    }\n  ]\n}\n```",
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 9521,
+    "cache_read_input_tokens": 2077,
+    "output_tokens": 690,
+    "output_tokens_details": {
+      "thinking_tokens": 204
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 9521,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 690,
+        "cache_read_input_tokens": 2077,
+        "cache_creation_input_tokens": 9521,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 9521
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "modelUsage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 690,
+      "cacheReadInputTokens": 2077,
+      "cacheCreationInputTokens": 9521,
+      "webSearchRequests": 0,
+      "costUSD": 0.0903914,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 204,
+      "cacheCreationEphemeral5mInputTokens": 0,
+      "cacheCreationEphemeral1hInputTokens": 9521,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "total_cost_usd": 0.0903914,
+  "session_id": "00000000-0000-0000-0000-000000000000"
+}
