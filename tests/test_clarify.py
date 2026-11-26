@@ -22,6 +22,7 @@ from conftest import FIXTURES_LLM, REQUIREMENTS, ROOT
 from questions_helpers import cli_payload
 from validator.clarify import clarify, load_answers
 from validator.clarify.apply import recount
+from validator.cli import _read_line
 from validator.config import load_config
 from validator.errors import CFG_ANSWERS_MISMATCH, LLM_CLARIFY_CHECKED, LLM_CLARIFY_FAILED, OUT_KEEPS_ANSWERS
 from validator.ingest import parse
@@ -401,6 +402,17 @@ def test_cli_ask_writes_answers_and_reruns_with_them(tmp_path: Path) -> None:
     report = Report.model_validate_json((tmp_path / "report.json").read_text(encoding="utf-8"))
     assert report.clarification is not None
     assert len(report.clarification.answered) == 2
+
+
+def test_read_line_replaces_bytes_that_are_not_utf8(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Ревью #144: байты не в UTF-8 на входе терминала приходят суррогатами и роняли запись отчёта (код 1)."""
+    monkeypatch.setattr("builtins.input", lambda _prompt: "\udcff\udcfe ответ")
+
+    line = _read_line("> ")
+
+    assert line is not None
+    line.encode("utf-8")
+    assert line.endswith("ответ")
 
 
 def test_cli_answers_in_same_folder_keep_author_file(tmp_path: Path) -> None:

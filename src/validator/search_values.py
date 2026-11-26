@@ -23,28 +23,42 @@ def norm(text: str) -> str:
 
 
 _OPENING_QUOTES = ("“", "„", '"')
+_PAIRED_QUOTE = re.compile(r"[“„\"]([^“”„\"]+)[”“\"]")
+_QUOTE_JOINERS = frozenset({"", "и", "или", "и/или", "плюс", "and", "or"})
+"""Что стоит между двумя цитатами одного поля: «A» и «B»; всё остальное («— см. также «B»») пояснение."""
+_JOINER_EDGES = " \t,;:.—–-/+"
 
 
-def quotes_in(value: str) -> list[str]:
-    """Цитаты в «ёлочках» верхнего уровня: «A» и «B» дают две, вложенные «…» остаются внутри.
-
-    Без ёлочек берутся пары “…” или "…", если значение с них начинается; иначе значение целиком без
-    кавычек по краям: в «Система обрабатывает "срочные" заявки» кавычки внутри цитаты, а не вокруг неё.
-    """
+def _guillemet_quotes(value: str) -> list[str]:
+    """Цитаты в «ёлочках» верхнего уровня; после пояснения вроде «— см. также» новые цитаты не берутся."""
     found: list[str] = []
-    depth, start = 0, 0
+    depth, start, last_end = 0, 0, 0
     for i, ch in enumerate(value):
         if ch == "«":
             depth += 1
             if depth == 1:
+                if found and norm(value[last_end:i]).strip(_JOINER_EDGES) not in _QUOTE_JOINERS:
+                    break
                 start = i + 1
         elif ch == "»" and depth:
             depth -= 1
             if depth == 0:
                 found.append(value[start:i].strip())
-    if not found and value.lstrip().startswith(_OPENING_QUOTES):
-        found = [m.group(1).strip() for m in re.finditer(r"[“„\"]([^“”„\"]+)[”“\"]", value)]
-    found = [q for q in found if q]
+                last_end = i + 1
+    return found
+
+
+def quotes_in(value: str) -> list[str]:
+    """Цитаты поля: «A» и «B» дают две, вложенные «…» остаются внутри.
+
+    Если значение начинается с “ „ или прямой кавычки, цитата это то, что внутри этих кавычек, а «ёлочки» в
+    ней вложенные: иначе внутренний фрагмент подменил бы цитату. Без кавычек вокруг берётся значение целиком
+    без кавычек по краям: в «Система обрабатывает "срочные" заявки» кавычки внутри цитаты, а не вокруг неё.
+    """
+    found: list[str] = []
+    if value.lstrip().startswith(_OPENING_QUOTES):
+        found = [m.group(1).strip() for m in _PAIRED_QUOTE.finditer(value)]
+    found = [q for q in found or _guillemet_quotes(value) if q]
     if found:
         return found
     bare = value.strip().rstrip(";").strip().strip("\"'“”„`«» ")

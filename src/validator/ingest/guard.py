@@ -13,12 +13,14 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import logging
 from pathlib import Path
 
 import pymupdf
 
 from validator.errors import (
+    IN_DATA_FORMAT,
     IN_EMPTY,
     IN_EXTENSION_MISMATCH,
     IN_IMAGE_OCR,
@@ -116,6 +118,50 @@ def _image(path: Path, head: bytes, workdir: Path | None, ocr: bool | None) -> P
     return Probe(kind=DocKind.PDF, diagnostics=[note], read_path=target)
 
 
+MAX_JSON_BYTES = 5 * 1024 * 1024
+"""Больший файл на JSON не проверяем: настоящий документ требований в JSON-объект не превращается."""
+_CSV_DELIMITERS = (",", ";", "\t")
+_CSV_SAMPLE_LINES = 5
+
+
+def _is_csv(head: bytes) -> bool:
+    """Таблица: первые строки (минимум три) без точки в конце и с одинаковым числом разделителей."""
+    lines = [line for line in head.decode("utf-8", errors="replace").splitlines() if line.strip()]
+    lines = lines[:_CSV_SAMPLE_LINES]
+    if len(lines) < _CSV_SAMPLE_LINES - 2 or any(line.rstrip().endswith(".") for line in lines):
+        return False
+    return any(
+        lines[0].count(delimiter) >= 1
+        and all(line.count(delimiter) == lines[0].count(delimiter) for line in lines)
+        for delimiter in _CSV_DELIMITERS
+    )
+
+
+def _data_format(path: Path, head: bytes, size: int) -> str | None:
+    """Название формата данных (JSON, XML, CSV), если файл похож на них, а не на текст требований."""
+    start = head.lstrip(b"\xef\xbb\xbf \t\r\n")[:5]
+    if start.startswith(b"<?xml"):
+        return "XML"
+    if start[:1] in (b"{", b"[") and size <= MAX_JSON_BYTES:
+        try:
+            json.loads(path.read_bytes().decode("utf-8-sig"))
+        except (OSError, UnicodeDecodeError, ValueError):
+            return None
+        return "JSON"
+    return "CSV" if _is_csv(head) else None
+
+
+def _data_probe(name: str) -> Probe:
+    note = input_diag(
+        IN_DATA_FORMAT,
+        DiagLevel.WARNING,
+        f"Файл похож на {name}, а не на текст требований",
+        "Файл прочитан как обычный текст, проверка выполнена по нему",
+        "Пришлите документ требований в PDF, DOCX или Markdown (.md)",
+    )
+    return Probe(kind=DocKind.MD, diagnostics=[note])
+
+
 def _probe(sniffed: Sniffed, path: Path, head: bytes, workdir: Path | None, ocr: bool | None) -> Probe:
     """Глубокая проверка по типу содержимого: формат для разборщика или отказ с диагностикой."""
     by_extension = EXTENSION_KIND.get(path.suffix.lower())
@@ -135,7 +181,8 @@ def _probe(sniffed: Sniffed, path: Path, head: bytes, workdir: Path | None, ocr:
                 "иначе пришлите исходный документ в PDF или DOCX",
             )
         case Sniffed.TEXT:
-            return Probe(kind=DocKind.MD)
+            data_format = _data_format(path, head, path.stat().st_size)
+            return _data_probe(data_format) if data_format else Probe(kind=DocKind.MD)
         case Sniffed.HTML if by_extension is DocKind.MD:
             return Probe(kind=DocKind.MD)  # Markdown может начинаться с HTML-разметки
         case Sniffed.HTML:

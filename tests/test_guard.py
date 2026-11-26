@@ -236,6 +236,47 @@ def test_html_page_is_unsupported_but_markdown_with_html_is_read(tmp_path: Path)
     assert not guard(tmp_path / "spec.md").fatal
 
 
+def test_html_fragment_without_doctype_is_unsupported_html(tmp_path: Path) -> None:
+    (tmp_path / "frag.html").write_bytes("<h1>Требования</h1><p>FR-1. Система должна работать.</p>".encode())
+
+    result = guard(tmp_path / "frag.html")
+
+    assert result.fatal
+    assert [d.code for d in result.diagnostics] == ["IN-010"]
+
+
+@pytest.mark.parametrize(
+    ("name", "text"),
+    [
+        ("req.json", '{"requirements": [{"id": "FR-1", "text": "Система должна работать."}]}'),
+        ("req.xml", '<?xml version="1.0" encoding="UTF-8"?><reqs><r id="FR-1">Система работает.</r></reqs>'),
+        ("req.csv", "id;text\nFR-1;Система должна работать быстро\nFR-2;Система должна быть удобной\n"),
+    ],
+)
+def test_data_file_is_read_as_text_with_warning(tmp_path: Path, name: str, text: str) -> None:
+    (tmp_path / name).write_text(text, encoding="utf-8")
+
+    result = guard(tmp_path / name)
+
+    assert not result.fatal
+    assert ("IN-012", DiagLevel.WARNING) in [(d.code, d.level) for d in result.diagnostics]
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "[x] Система должна работать.\n",
+        "[Ссылка]: https://example.org\n\n# Требования\n\nСистема должна работать.\n",
+        "Система должна хранить данные, сроки, права.\nСистема должна быть быстрой, удобной, надёжной.\n"
+        "Система должна быть доступной, понятной, простой.\n",
+    ],
+)
+def test_ordinary_text_gets_no_data_warning(tmp_path: Path, text: str) -> None:
+    (tmp_path / "doc.md").write_text(text, encoding="utf-8")
+
+    assert "IN-012" not in {d.code for d in guard(tmp_path / "doc.md").diagnostics}
+
+
 # ---------------------------------------------------------------- после разбора
 
 
