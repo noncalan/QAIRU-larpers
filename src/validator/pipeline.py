@@ -583,7 +583,9 @@ def _emergency_md(state: _State, code: ExitCode) -> str:
 def _selfcheck(state: _State, report: Report) -> tuple[SelfCheck | None, list[Diagnostic]]:
     """Самопроверка отчёта (#43). Её собственный сбой не должен стоить отчёта: предупреждение INT-002."""
     try:
-        check = check_report(report, render_md(report), state.doc.text if state.doc else None)
+        doc = state.doc
+        text, blocks = (doc.text, doc.blocks) if doc else (None, None)
+        check = check_report(report, render_md(report), text, blocks)
         return check, selfcheck_diagnostics(check)
     except Exception:  # самопроверка вспомогательна: отчёт важнее, причина идёт в лог
         logger.exception("Самопроверка отчёта упала")

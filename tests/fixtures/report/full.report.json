@@ -108,7 +108,8 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": []
         },
         "atomic_parts": [],
         "entities": {},
@@ -143,7 +144,8 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": []
         },
         "atomic_parts": [],
         "entities": {},
@@ -178,7 +180,8 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": []
         },
         "atomic_parts": [],
         "entities": {},
@@ -214,7 +217,8 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": []
         },
         "atomic_parts": [],
         "entities": {},
@@ -250,7 +254,8 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": []
         },
         "atomic_parts": [],
         "entities": {},
@@ -286,7 +291,8 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": []
         },
         "atomic_parts": [],
         "entities": {},
@@ -335,7 +341,8 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": []
             }
           },
           {
@@ -357,7 +364,8 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": []
             }
           }
         ],
@@ -421,7 +429,8 @@
                   "row": null,
                   "cell": null,
                   "column": null,
-                  "extraction": "text"
+                  "extraction": "text",
+                  "section": []
                 }
               }
             },
@@ -448,7 +457,8 @@
                   "row": null,
                   "cell": null,
                   "column": null,
-                  "extraction": "text"
+                  "extraction": "text",
+                  "section": []
                 }
               }
             }
@@ -480,7 +490,8 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": []
             }
           },
           "proposed": null,
@@ -521,7 +532,8 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": []
             }
           }
         ],
@@ -590,7 +602,8 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": []
             }
           }
         ],
@@ -639,7 +652,8 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": []
             }
           },
           "proposed": "drop",
@@ -680,7 +694,8 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": []
             }
           }
         ],
@@ -744,7 +759,8 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "ocr"
+              "extraction": "ocr",
+              "section": []
             }
           }
         ],
@@ -867,7 +883,8 @@
                 "row": null,
                 "cell": null,
                 "column": null,
-                "extraction": "text"
+                "extraction": "text",
+                "section": []
               }
             },
             "proposed": null,
@@ -973,7 +990,8 @@
             "row": null,
             "cell": null,
             "column": null,
-            "extraction": "text"
+            "extraction": "text",
+            "section": []
           }
         }
       ],
@@ -1066,7 +1084,8 @@
             "row": null,
             "cell": null,
             "column": null,
-            "extraction": "text"
+            "extraction": "text",
+            "section": []
           }
         }
       ],
@@ -1160,7 +1179,8 @@
               "row": null,
               "cell": null,
               "column": null,
-              "extraction": "text"
+              "extraction": "text",
+              "section": []
             }
           },
           "common_sense": false,
@@ -1189,7 +1209,8 @@
           "row": null,
           "cell": null,
           "column": null,
-          "extraction": "text"
+          "extraction": "text",
+          "section": []
         }
       }
     }

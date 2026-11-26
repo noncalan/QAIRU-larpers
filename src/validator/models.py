@@ -672,6 +672,10 @@ class Anchor(Contract):
     cell: int | None = Field(default=None, description="Ячейка в строке таблицы, с 1")
     column: str | None = Field(default=None, description="Заголовок колонки ячейки")
     extraction: Extraction = Field(default=Extraction.TEXT, description="Откуда взят текст")
+    section: list[str] = Field(
+        default_factory=list,
+        description="Путь заголовков над началом фрагмента: раздел, в котором фрагмент стоит в документе",
+    )
 
 
 class SourceLine(Contract):
