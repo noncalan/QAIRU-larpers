@@ -505,13 +505,25 @@ def test_parts_of_one_numbered_item_match_with_soft_similarity(tmp_path: Path) -
     assert pairs["R-01.2"].score is not None and pairs["R-01.2"].score < REQ_SIMILARITY
 
 
-def test_same_quote_and_severity_with_other_property_are_distinct_findings(tmp_path: Path) -> None:
+def test_same_quote_and_severity_with_other_property_is_the_same_finding(tmp_path: Path) -> None:
     old = report([req("R-01", AUDIT)], [finding("F-01", AUDIT, ["R-01"], prop="SET-CONS")])
     new = report([req("R-01", AUDIT)], [finding("F-05", AUDIT, ["R-01"], prop="SET-COMPL")], sha="bbb")
 
-    got = classes(diff(tmp_path, old, new))
+    (d,) = diff(tmp_path, old, new).findings
 
-    assert got == {"F-01_old": FindingClass.VANISHED, "F-05_new": FindingClass.NEW_UNCHANGED}
+    assert d.cls is FindingClass.REMAINED
+    assert "SET-CONS → SET-COMPL" in d.reason
+
+
+def test_defect_on_rewritten_requirement_is_not_both_fixed_and_regression(tmp_path: Path) -> None:
+    """Фразу переписали, дефект того же свойства остался: цитаты разные, но это одна находка."""
+    old = report([req("R-01", NOTIFY)], [finding("F-01", "о важных событиях", ["R-01"])])
+    new = report([req("R-01", NOTIFY_NEW)], [finding("F-03", "как можно скорее", ["R-01"])], sha="bbb")
+
+    (d,) = diff(tmp_path, old, new, (NOTIFY, NOTIFY_NEW)).findings
+
+    assert d.cls is FindingClass.REMAINED
+    assert "изменено, но находка не закрыта" in d.reason
 
 
 def test_new_critical_does_not_hide_behind_old_minor_on_same_quote(tmp_path: Path) -> None:

@@ -236,6 +236,28 @@ def _score(
     return 1 + _SCORE_TYPE * (old.defect_type == new.defect_type)
 
 
+def _score_same_defect(old: FindingView, new: FindingView, req_map: dict[str, str], edited: set[str]) -> int:
+    """Второй круг для находок без пары: дефект тот же, хотя строгие условия первого круга не сошлись.
+
+    Без него один оставшийся дефект попадает сразу в два класса и завышает «исправлено»:
+
+    * **Требование правили, находка осталась.** Свойство то же, требование то же и оно изменено. Общей
+      цитаты тут быть не может: старая цитата стоит на прежнем тексте, новая на исправленном. Первый круг
+      записал бы старую находку в «исправлено», а новую в «новое на изменённом месте».
+    * **Та же цитата и важность, другое свойство.** Модель относит один дефект то к одному свойству
+      стандарта, то к другому. Важность обязана совпасть, чтобы новая критичная находка не спряталась
+      за старой мелкой на том же месте.
+    """
+    if old.scope != new.scope:
+        return 0
+    if old.property == new.property:
+        mapped = {req_map[rid] for rid in old.requirement_ids if rid in edited and rid in req_map}
+        return 2 * bool(mapped.intersection(new.requirement_ids))
+    if old.severity != new.severity or not _quotes_overlap(old, new):
+        return 0
+    return 1
+
+
 def _greedy_pairs(scored: list[tuple[int, int, int]]) -> list[tuple[int, int]]:
     pairs: list[tuple[int, int]] = []
     used_old: set[int] = set()
@@ -250,7 +272,7 @@ def _greedy_pairs(scored: list[tuple[int, int, int]]) -> list[tuple[int, int]]:
 
 
 def _pair_findings(
-    old: ReportView, new: ReportView, req_map: dict[str, str], same_document: bool
+    old: ReportView, new: ReportView, req_map: dict[str, str], same_document: bool, edited: set[str]
 ) -> list[tuple[int, int]]:
     # В копиях одного анализа могут повторяться находки без цитат или ссылок.
     if old == new or (
@@ -263,7 +285,7 @@ def _pair_findings(
         return [_section(finding, by_id) for finding in report.findings]
 
     old_sections, new_sections = sections(old), sections(new)
-    return _greedy_pairs(
+    first = _greedy_pairs(
         [
             (score, i, j)
             for i, before in enumerate(old.findings)
@@ -271,6 +293,18 @@ def _pair_findings(
             if (score := _score(before, after, req_map, old_sections[i], new_sections[j]))
         ]
     )
+    used_old = {i for i, _ in first}
+    used_new = {j for _, j in first}
+    second = _greedy_pairs(
+        [
+            (score, i, j)
+            for i, before in enumerate(old.findings)
+            if i not in used_old
+            for j, after in enumerate(new.findings)
+            if j not in used_new and (score := _score_same_defect(before, after, req_map, edited))
+        ]
+    )
+    return first + second
 
 
 def _short(text: str, limit: int = 80) -> str:
@@ -324,6 +358,8 @@ def _remained(o: FindingView, n: FindingView, req_status: dict[str, ReqStatus]) 
     edited = [r for r in o.requirement_ids if req_status.get(r) is ReqStatus.CHANGED]
     if edited:
         notes.append(f"требование {', '.join(edited)} изменено, но находка не закрыта")
+    if o.property != n.property:
+        notes.append(f"та же цитата, модель сменила свойство: {o.property} → {n.property}")
     if o.severity != n.severity:
         notes.append(
             f"важность {_SEVERITY.get(o.severity, o.severity)} → {_SEVERITY.get(n.severity, n.severity)}"
@@ -339,7 +375,8 @@ def match_findings(
     old_pairs = {p.old.id: p for p in pairs if p.old is not None}
     new_pairs = {p.new.id: p for p in pairs if p.new is not None}
     old_status = {} if where.same_document else {rid: p.status for rid, p in old_pairs.items()}
-    matched = _pair_findings(old, new, req_map, where.same_document)
+    edited = {rid for rid, p in old_pairs.items() if p.status is ReqStatus.CHANGED}
+    matched = _pair_findings(old, new, req_map, where.same_document, edited)
     out = [_remained(old.findings[i], new.findings[j], old_status) for i, j in matched]
     used_old = {i for i, _ in matched}
     used_new = {j for _, j in matched}
