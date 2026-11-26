@@ -328,7 +328,7 @@ def test_more_than_limit_is_cut(doc: ParsedDocument) -> None:
     ]
     log = CheckLog()
 
-    questions = finalize(drafts, findings, {}, log)
+    questions = finalize(drafts, findings, log)
 
     assert len(questions) == MAX_QUESTIONS
     assert log.over_limit == 20 - MAX_QUESTIONS
@@ -477,18 +477,17 @@ def test_no_candidates_means_no_model_call(doc: ParsedDocument, tmp_path: Path) 
 def test_shortlist_takes_highest_priority_and_keeps_document_order(doc: ParsedDocument) -> None:
     """Кандидаты C-01 (P1, ценность 6), C-02 (P0, 8), C-03 (P1, 1): сначала приоритет, потом ценность."""
     cands = collect_candidates(verification(library_findings(doc)))
-    req_types = {r.id: r.type for r in segmentation(doc).requirements}
 
-    assert shortlist(cands, req_types) == cands
-    assert [c.cid for c in shortlist(cands, req_types, limit=1)] == ["C-02"]
-    assert [c.cid for c in shortlist(cands, req_types, limit=2)] == ["C-01", "C-02"]
+    assert shortlist(cands) == cands
+    assert [c.cid for c in shortlist(cands, limit=1)] == ["C-02"]
+    assert [c.cid for c in shortlist(cands, limit=2)] == ["C-01", "C-02"]
 
 
 def test_editor_sees_only_the_shortlist_on_a_long_document(
     doc: ParsedDocument, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Кандидатов больше, чем разбирает редактор (#38): лишние не идут в вызов и не считаются пропущенными."""
-    monkeypatch.setattr(questions_step, "shortlist", lambda cands, types: shortlist(cands, types, limit=2))
+    monkeypatch.setattr(questions_step, "shortlist", lambda cands: shortlist(cands, limit=2))
     reply = editor_text(
         [card(["C-02"], "Сколько секунд допустимо на продление?", quotes=[EXTEND])], dropped("C-01")
     )

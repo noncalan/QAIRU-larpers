@@ -28,7 +28,6 @@ from validator.models import (
     QuestionOption,
     QuestionOrigin,
     Quote,
-    RequirementType,
 )
 from validator.questions.candidates import ORIGIN_ORDER, Candidate
 from validator.questions.editor import EditorCard, EditorOption, normalize_candidate_id
@@ -260,21 +259,20 @@ def _finding_number(fid: str) -> int:
 class _Ranker:
     """Приоритет и ценность карточки по её находкам; ключ сортировки."""
 
-    def __init__(self, findings: Mapping[str, Finding], req_types: Mapping[str, RequirementType]) -> None:
+    def __init__(self, findings: Mapping[str, Finding]) -> None:
         self.findings = findings
-        self.req_types = req_types
 
     def related(self, draft: CardDraft) -> list[Finding]:
         return [self.findings[i] for i in draft.finding_ids if i in self.findings]
 
     def key(self, draft: CardDraft) -> tuple[int, int, int, str]:
         related = self.related(draft)
-        rank = priority_rank(priority(related, self.req_types))
+        rank = priority_rank(priority(related))
         return rank, -value(related), draft.position, draft.question
 
     def question(self, draft: CardDraft, number: int) -> Question:
         related = sorted(self.related(draft), key=lambda f: _finding_number(f.id))
-        p = priority(related, self.req_types)
+        p = priority(related)
         return Question(
             id=f"Q-{number:02d}",
             priority=p,
@@ -295,7 +293,6 @@ class _Ranker:
 def finalize(
     drafts: Sequence[CardDraft],
     findings: Mapping[str, Finding],
-    req_types: Mapping[str, RequirementType],
     log: CheckLog,
     *,
     merge_similar: bool = True,
@@ -305,7 +302,7 @@ def finalize(
     ``merge_similar=False`` для шаблонных карточек запасного пути: у них общий шаблон формулировки,
     поэтому сходство текста ничего не говорит; повторы там снимает правило «одна находка, один вопрос».
     """
-    ranker = _Ranker(findings, req_types)
+    ranker = _Ranker(findings)
     unique = _merge_duplicates(drafts, log) if merge_similar else list(drafts)
     ranked = sorted(unique, key=ranker.key)
     kept: list[CardDraft] = []
