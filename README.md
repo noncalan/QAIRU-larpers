@@ -324,7 +324,7 @@ CI гоняет то же на Ubuntu, Windows и macOS без ключей и �
 
 ### Лицензии
 
-Код агента распространяется под лицензией **MIT** (файл `LICENSE` в корне). Он зависит от библиотек с открытыми лицензиями (версии в [`uv.lock`](uv.lock)): MIT (typer, pydantic, pdfplumber, python-docx, razdel, rapidfuzz, charset-normalizer, filetype, msoffcrypto-tool, PyYAML), BSD (python-dotenv, httpx2, jinja2, lxml, olefile, pypdfium2), Apache-2.0 (anthropic, typst), MPL-2.0 (pikepdf). Шрифты отчёта Liberation (SIL OFL) лежат в `src/validator/report/fonts/`.
+Код агента распространяется под лицензией **MIT** (файл `LICENSE` в корне). Он зависит от библиотек с открытыми лицензиями (версии в [`uv.lock`](uv.lock)): MIT (typer, pydantic, pdfplumber, python-docx, razdel, rapidfuzz, charset-normalizer, filetype, msoffcrypto-tool, PyYAML), BSD (python-dotenv, httpx2, jinja2, lxml, olefile, pypdfium2), Apache-2.0 (anthropic, typst), MPL-2.0 (pikepdf). Шрифты отчёта Liberation (SIL OFL) и запасной DejaVu Sans (лицензия Bitstream Vera, для знаков ₸ и ₽) лежат в `src/validator/report/fonts/`.
 
 **Исключение: PyMuPDF под AGPL-3.0** (или коммерческой лицензией Artifex). Это движок PDF по умолчанию. Чтобы работать без AGPL, например внутри банка, достаточно флага `--pdf-backend pdfium` (pypdfium2, BSD и Apache-2.0): оба движка дают один и тот же текст, это сравнивают тесты. Почему так устроено: [ADR-0006](docs/adr/0006-pdf-engine-behind-interface.md).
 
