@@ -1,0 +1,122 @@
+{
+  "schema": "mutations/1",
+  "copy": "req-multi-1",
+  "kind": "multi",
+  "source": "data/input/requirements.md",
+  "source_sha256": "e7dae55e5453a250d93e335f5ff9c7f775f4457ccddd333f4a67e47b20d74381",
+  "copy_sha256": "dd9826d740dd83aecb867dffb65a405b189e0a63131040528b05190984913f68",
+  "seed": 51,
+  "mutations": [
+    {
+      "id": "req-multi-1-01",
+      "operator": "M6",
+      "name": "Склеить требования",
+      "expected_properties": [
+        "IND-SING"
+      ],
+      "section": "Уведомление о расходах по карте / Часть B. REST API / Логика работы метода",
+      "original": "1. Проверить пользовательскую сессию.\n2. Проверить принадлежность карты клиенту.",
+      "replacement": "1. Проверить пользовательскую сессию и/или проверить принадлежность карты клиенту.",
+      "start": 5978,
+      "end": 6060,
+      "line": 117,
+      "match_spans": [
+        [
+          5978,
+          6060
+        ]
+      ],
+      "note": ""
+    },
+    {
+      "id": "req-multi-1-02",
+      "operator": "M9",
+      "name": "Безличное «обеспечивается»",
+      "expected_properties": [
+        "IND-UNAMB"
+      ],
+      "section": "Уведомление о расходах по карте / Часть A. Новый функционал / Нефункциональные требования",
+      "original": "Сервис передаёт push на отправку в течение минуты после получения события.",
+      "replacement": "Передаётся push на отправку в течение минуты после получения события.",
+      "start": 2260,
+      "end": 2329,
+      "line": 46,
+      "match_spans": [
+        [
+          2260,
+          2329
+        ]
+      ],
+      "note": "Сервис"
+    },
+    {
+      "id": "req-multi-1-03",
+      "operator": "M1",
+      "name": "Размыть число",
+      "expected_properties": [
+        "IND-UNAMB",
+        "IND-VERIF"
+      ],
+      "section": "Уведомление о расходах по карте / Часть A. Новый функционал / Требования к изменениям",
+      "original": "от 1 000 до 1 000 000 ₸ включительно",
+      "replacement": "в разумных пределах",
+      "start": 1410,
+      "end": 1429,
+      "line": 37,
+      "match_spans": [
+        [
+          1410,
+          1429
+        ]
+      ],
+      "note": "от 1 000 до 1 000 000 ₸ включительно"
+    },
+    {
+      "id": "req-multi-1-04",
+      "operator": "M10",
+      "name": "Заглушка",
+      "expected_properties": [
+        "IND-COMPL",
+        "SET-COMPL"
+      ],
+      "section": "Уведомление о расходах по карте / Часть A. Новый функционал / Критерии приемки",
+      "original": "Февральский счётчик вырос на 4 000 ₸",
+      "replacement": "TBD",
+      "start": 3046,
+      "end": 3049,
+      "line": 64,
+      "match_spans": [
+        [
+          3046,
+          3049
+        ]
+      ],
+      "note": "Февральский счётчик вырос на 4 000 ₸"
+    },
+    {
+      "id": "req-multi-1-05",
+      "operator": "M4",
+      "name": "Висячая ссылка",
+      "expected_properties": [
+        "IND-COMPL",
+        "IND-CORR",
+        "IND-TRACE",
+        "SET-COMPL"
+      ],
+      "section": "Уведомление о расходах по карте / Часть B. REST API / Статусы",
+      "original": "",
+      "replacement": " Исключения обрабатываются в соответствии с регламентом РГ-17.",
+      "start": 7549,
+      "end": 7611,
+      "line": 161,
+      "match_spans": [
+        [
+          7549,
+          7611
+        ]
+      ],
+      "note": ""
+    }
+  ],
+  "skipped": []
+}

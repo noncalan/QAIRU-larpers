@@ -1,0 +1,128 @@
+{
+  "schema": "mutations/1",
+  "copy": "req-multi-4",
+  "kind": "multi",
+  "source": "data/input/requirements.md",
+  "source_sha256": "e7dae55e5453a250d93e335f5ff9c7f775f4457ccddd333f4a67e47b20d74381",
+  "copy_sha256": "e4993fd65fe6f530b6eab75ae19b1da1a4aeeb644ad08411e1c257d12e26c999",
+  "seed": 54,
+  "mutations": [
+    {
+      "id": "req-multi-4-01",
+      "operator": "M9",
+      "name": "Безличное «обеспечивается»",
+      "expected_properties": [
+        "IND-UNAMB"
+      ],
+      "section": "Уведомление о расходах по карте / Часть A. Новый функционал / Требования к интеграции",
+      "original": "Приложение читает и сохраняет настройки через дочерний документ «Уведомление о расходах по карте — REST API».",
+      "replacement": "Читается и сохраняется настройки через дочерний документ «Уведомление о расходах по карте — REST API».",
+      "start": 2511,
+      "end": 2613,
+      "line": 52,
+      "match_spans": [
+        [
+          2511,
+          2613
+        ]
+      ],
+      "note": "Приложение"
+    },
+    {
+      "id": "req-multi-4-02",
+      "operator": "M8",
+      "name": "Непроверяемая формулировка",
+      "expected_properties": [
+        "IND-VERIF",
+        "IND-UNAMB"
+      ],
+      "section": "Уведомление о расходах по карте / Часть A. Новый функционал / Требования к тестированию",
+      "original": "",
+      "replacement": "\n\nИнтерфейс должен быть интуитивно понятным, а работа системы стабильной.",
+      "start": 2772,
+      "end": 2845,
+      "line": 57,
+      "match_spans": [
+        [
+          2772,
+          2845
+        ]
+      ],
+      "note": ""
+    },
+    {
+      "id": "req-multi-4-03",
+      "operator": "M2",
+      "name": "Убрать единицу или границу",
+      "expected_properties": [
+        "IND-UNAMB",
+        "IND-VERIF",
+        "IND-COMPL"
+      ],
+      "section": "Уведомление о расходах по карте / Часть A. Новый функционал / Требования к изменениям",
+      "original": " включительно",
+      "replacement": "",
+      "start": 1433,
+      "end": 1433,
+      "line": 37,
+      "match_spans": [
+        [
+          1362,
+          1434
+        ]
+      ],
+      "note": "граница"
+    },
+    {
+      "id": "req-multi-4-04",
+      "operator": "M4",
+      "name": "Висячая ссылка",
+      "expected_properties": [
+        "IND-COMPL",
+        "IND-CORR",
+        "IND-TRACE",
+        "SET-COMPL"
+      ],
+      "section": "Уведомление о расходах по карте / Часть B. REST API / Особые правила",
+      "original": "",
+      "replacement": " Порядок обработки описан в разделе 9.6.",
+      "start": 6466,
+      "end": 6506,
+      "line": 128,
+      "match_spans": [
+        [
+          6466,
+          6506
+        ]
+      ],
+      "note": ""
+    },
+    {
+      "id": "req-multi-4-05",
+      "operator": "M3",
+      "name": "Второе значение параметра",
+      "expected_properties": [
+        "SET-CONS",
+        "IND-CORR"
+      ],
+      "section": "Уведомление о расходах по карте / Часть B. REST API",
+      "original": "",
+      "replacement": "\n\nСервис передаёт push на отправку в течение 5 минут после получения события.",
+      "start": 5414,
+      "end": 5491,
+      "line": 99,
+      "match_spans": [
+        [
+          5414,
+          5491
+        ],
+        [
+          2264,
+          2338
+        ]
+      ],
+      "note": "исходное значение: в течение минуты"
+    }
+  ],
+  "skipped": []
+}

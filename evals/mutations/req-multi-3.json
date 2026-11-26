@@ -1,0 +1,124 @@
+{
+  "schema": "mutations/1",
+  "copy": "req-multi-3",
+  "kind": "multi",
+  "source": "data/input/requirements.md",
+  "source_sha256": "e7dae55e5453a250d93e335f5ff9c7f775f4457ccddd333f4a67e47b20d74381",
+  "copy_sha256": "3df0ff8de22f8a505ba62e2ec8539807eb086c9a1a3b847a6911ced487cf0d30",
+  "seed": 53,
+  "mutations": [
+    {
+      "id": "req-multi-3-01",
+      "operator": "M6",
+      "name": "Склеить требования",
+      "expected_properties": [
+        "IND-SING"
+      ],
+      "section": "Уведомление о расходах по карте / Часть B. REST API / Логика работы метода",
+      "original": "2. Проверить принадлежность карты клиенту.\n3. Проверить сумму и переключатель.",
+      "replacement": "2. Проверить принадлежность карты клиенту и/или проверить сумму и переключатель.",
+      "start": 6067,
+      "end": 6147,
+      "line": 118,
+      "match_spans": [
+        [
+          6067,
+          6147
+        ]
+      ],
+      "note": ""
+    },
+    {
+      "id": "req-multi-3-02",
+      "operator": "M7",
+      "name": "Решение вместо требования",
+      "expected_properties": [
+        "IND-APPR"
+      ],
+      "section": "Уведомление о расходах по карте / Часть B. REST API / Особые правила",
+      "original": "",
+      "replacement": " Решение строится на Spring Boot 3 с кешем в Redis.",
+      "start": 6334,
+      "end": 6385,
+      "line": 123,
+      "match_spans": [
+        [
+          6334,
+          6385
+        ]
+      ],
+      "note": ""
+    },
+    {
+      "id": "req-multi-3-03",
+      "operator": "M1",
+      "name": "Размыть число",
+      "expected_properties": [
+        "IND-UNAMB",
+        "IND-VERIF"
+      ],
+      "section": "Уведомление о расходах по карте / Часть A. Новый функционал / Нефункциональные требования",
+      "original": "в течение минуты",
+      "replacement": "своевременно",
+      "start": 2310,
+      "end": 2322,
+      "line": 46,
+      "match_spans": [
+        [
+          2310,
+          2322
+        ]
+      ],
+      "note": "в течение минуты"
+    },
+    {
+      "id": "req-multi-3-04",
+      "operator": "M5",
+      "name": "Удалить ветку ошибки",
+      "expected_properties": [
+        "IND-COMPL",
+        "SET-COMPL"
+      ],
+      "section": "Уведомление о расходах по карте / Часть B. REST API / Статусы",
+      "original": "**403.** Ответ в случае, если на указанный ресурс доступ запрещен.  \n",
+      "replacement": "",
+      "start": 7943,
+      "end": 7943,
+      "line": 174,
+      "match_spans": [
+        [
+          7866,
+          7942
+        ],
+        [
+          7943,
+          8009
+        ]
+      ],
+      "note": "строка"
+    },
+    {
+      "id": "req-multi-3-05",
+      "operator": "M10",
+      "name": "Заглушка",
+      "expected_properties": [
+        "IND-COMPL",
+        "SET-COMPL"
+      ],
+      "section": "Уведомление о расходах по карте / Часть B. REST API / Ответ",
+      "original": "«0» или «1»",
+      "replacement": "TBD",
+      "start": 7479,
+      "end": 7482,
+      "line": 156,
+      "match_spans": [
+        [
+          7479,
+          7482
+        ]
+      ],
+      "note": "«0» или «1»"
+    }
+  ],
+  "skipped": []
+}
