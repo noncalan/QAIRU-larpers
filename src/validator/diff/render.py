@@ -20,9 +20,8 @@ _QUOTE_LIMIT = 160
 _TEXT_LIMIT = 120
 
 NOISE_NOTE = (
-    "Агент между прогонами находит не ровно одно и то же: модель недетерминирована. Поэтому находка, "
-    "место которой в документе не менялось, не считается ни исправленной, ни новой. Эти строки не "
-    "входят в «исправлено» и в регрессии, их стоит просмотреть, но не засчитывать."
+    "Агент может находить разные дефекты при повторных прогонах. Расхождения на неизменённых местах "
+    "и находки с непроверенным местом не засчитываются как исправления или возможные регрессии."
 )
 
 
@@ -38,8 +37,11 @@ class Totals:
     remained_critical: int
     regressions: int
     regressions_critical: int
+    new_critical: int
+    current_critical: int
     vanished: int
     noise_new: int
+    unverified_place: int
     reqs: dict[str, int]
 
 
@@ -51,6 +53,7 @@ def totals(result: DiffResult) -> Totals:
     fixed = result.of(FindingClass.FIXED)
     remained = result.of(FindingClass.REMAINED)
     regressions = result.of(FindingClass.NEW_CHANGED)
+    unknown = result.of(FindingClass.PLACE_UNKNOWN)
     return Totals(
         old_findings=len(result.old.findings),
         old_critical=sum(1 for f in result.old.findings if f.severity == CRITICAL),
@@ -60,8 +63,15 @@ def totals(result: DiffResult) -> Totals:
         remained_critical=_critical(remained),
         regressions=len(regressions),
         regressions_critical=_critical(regressions),
+        new_critical=(
+            _critical(regressions)
+            + _critical(result.of(FindingClass.NEW_UNCHANGED))
+            + _critical([d for d in unknown if d.new is not None])
+        ),
+        current_critical=sum(1 for finding in result.new.findings if finding.severity == CRITICAL),
         vanished=len(result.of(FindingClass.VANISHED)),
         noise_new=len(result.of(FindingClass.NEW_UNCHANGED)),
+        unverified_place=len(unknown),
         reqs={s.value: len(result.reqs(s)) for s in ReqStatus},
     )
 
@@ -103,14 +113,16 @@ def _quote(f: FindingView | None) -> str:
 def _verdict(result: DiffResult, t: Totals) -> str:
     """Ответ первой страницы: можно ли теперь начинать разработку."""
     new_light = result.new.traffic_light
-    if new_light == TrafficLight.GREEN and not t.regressions_critical:
+    if new_light == TrafficLight.GREEN and not t.current_critical:
         return "Да: новая версия прошла проверку без критичных нарушений."
-    if new_light == TrafficLight.RED or t.remained_critical or t.regressions_critical:
-        blockers = t.remained_critical + t.regressions_critical
+    if t.current_critical:
+        blockers = t.current_critical
         return (
             f"Нет: в новой версии остаются критичные нарушения ({blockers}), их нужно исправить до начала "
             "разработки и тестирования."
         )
+    if new_light == TrafficLight.RED:
+        return "Нет: проверка новой версии дала красный светофор. Причина указана в отчёте проверки."
     return "С оговорками: критичных нарушений нет, но важные остались. Список ниже."
 
 
@@ -128,8 +140,9 @@ def _first_page(result: DiffResult, t: Totals) -> list[str]:
         f"- Осталось: **{t.remained}** (критичных {t.remained_critical}).",
         f"- Новое на изменённых местах, возможная регрессия от правок: **{t.regressions}** "
         f"(критичных {t.regressions_critical}).",
-        f"- Не засчитано, нестабильность модели: пропало без правки {t.vanished}, новое на неизменённом "
-        f"месте {t.noise_new}.",
+        f"- Всего новых критичных находок: **{t.new_critical}**.",
+        f"- На неизменённых местах: пропало {t.vanished}, появилось {t.noise_new}.",
+        f"- Изменение места не подтверждено: {t.unverified_place}.",
         f"- Требования: без изменений {t.reqs['unchanged']}, изменено {t.reqs['changed']}, удалено "
         f"{t.reqs['removed']}, добавлено {t.reqs['added']}.",
     ]
@@ -224,7 +237,7 @@ def _findings_part(result: DiffResult) -> list[str]:
         "",
         *_finding_table(other, "Других оставшихся находок нет."),
         "",
-        "## 4. Нестабильность модели: не засчитано",
+        "## 4. Расхождения без подтверждённой правки",
         "",
         NOISE_NOTE,
         "",
@@ -235,21 +248,21 @@ def _findings_part(result: DiffResult) -> list[str]:
         "### 4.2. Новое на неизменённом месте",
         "",
         *_finding_table(result.of(FindingClass.NEW_UNCHANGED), "Таких находок нет."),
+        "",
+        "### 4.3. Изменение места не подтверждено",
+        "",
+        *_finding_table(result.of(FindingClass.PLACE_UNKNOWN), "Таких находок нет."),
     ]
 
 
 def _req_rows(pairs: Sequence[ReqPair]) -> list[str]:
-    changed = [p for p in pairs if p.status is not ReqStatus.UNCHANGED]
-    unchanged = len(pairs) - len(changed)
-    lines = [f"Без изменений: {unchanged}. Ниже только изменённые, удалённые и добавленные."]
-    if not changed:
-        return [*lines, "", "Изменённых требований нет."]
-    lines += [
-        "",
+    if not pairs:
+        return ["Требований нет."]
+    lines = [
         "| Было | Стало | Статус | Как сопоставлено | Текст было | Текст стало |",
         "|---|---|---|---|---|---|",
     ]
-    for p in changed:
+    for p in pairs:
         how = p.how.label + (f", {p.score:.0f} %" if p.score is not None else "")
         lines.append(
             f"| {p.old.id if p.old else '—'} | {p.new.id if p.new else '—'} | {p.status.label} | {how} "
@@ -264,9 +277,9 @@ def _method() -> list[str]:
         "## 6. Как сделано сравнение",
         "",
         "Сравнение не вызывает модель: оно читает два готовых отчёта агента и, если переданы, тексты обеих "
-        "версий документа. Требования сопоставлены сначала по хешу текста (stable_key), затем по номеру в "
-        f"документе, затем по похожести текста не ниже {REQ_SIMILARITY:.0f} %. Находки сопоставлены по "
-        "свойству стандарта и месту: общее требование или общая цитата. Подробности: docs/version-diff.md.",
+        "версий документа. Требования сопоставлены по хешу текста (stable_key), номеру и разделу документа "
+        f"или похожести текста от {REQ_SIMILARITY:.0f} %. Для пары находок должны совпадать свойство, "
+        "место и фрагмент цитаты. Подробности приведены в docs/version-diff.md.",
     ]
 
 
@@ -348,8 +361,10 @@ def render_json(result: DiffResult) -> dict[str, Any]:
             "remained_critical": t.remained_critical,
             "regressions": t.regressions,
             "regressions_critical": t.regressions_critical,
+            "new_critical": t.new_critical,
             "vanished_without_edit": t.vanished,
             "new_on_unchanged_place": t.noise_new,
+            "unverified_place": t.unverified_place,
             "requirements": t.reqs,
         },
         "requirements": [

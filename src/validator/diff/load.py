@@ -8,7 +8,9 @@
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -80,6 +82,7 @@ class PassportView:
     passes: int | None
     models: dict[str, str] = field(default_factory=dict)
     cost_usd: float | None = None
+    models_actual: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -96,18 +99,25 @@ class ReportView:
     status: str
 
 
-def _need(data: Any, key: str, where: str, path: Path) -> Any:
+def _need(
+    data: Any, key: str, where: str, path: Path, expected: type | tuple[type, ...] | None = None
+) -> Any:
+    hint = "Сравнение читает report.json агента validator. Проверьте, что это он, а не другой JSON."
     if not isinstance(data, dict) or key not in data:
-        raise ReportReadError(
-            f"В отчёте {path} нет поля {where}{key}",
-            "Сравнение читает report.json агента validator. Проверьте, что это он, а не другой JSON.",
-        )
-    return data[key]
+        raise ReportReadError(f"В отчёте {path} нет поля {where}{key}", hint)
+    value = data[key]
+    if expected is not None:
+        types = expected if isinstance(expected, tuple) else (expected,)
+        if type(value) not in types:
+            raise ReportReadError(f"В отчёте {path} неверный тип поля {where}{key}", hint)
+    return value
 
 
-def _list(data: Any, key: str) -> list[Any]:
-    value = data.get(key) if isinstance(data, dict) else None
-    return value if isinstance(value, list) else []
+def _strings(data: Any, key: str, where: str, path: Path) -> tuple[str, ...]:
+    items = _need(data, key, where, path, list)
+    if any(not isinstance(item, str) for item in items):
+        raise ReportReadError(f"В отчёте {path} поле {where}{key} должно быть массивом строк")
+    return tuple(items)
 
 
 def _str(data: Any, key: str, default: str = "") -> str:
@@ -130,63 +140,74 @@ def _where(anchor: Any) -> str:
     return ", ".join(parts)
 
 
-def _quote(raw: Any) -> QuoteView | None:
+def _quote(raw: Any, where: str, path: Path) -> QuoteView | None:
     if isinstance(raw, str):
-        return QuoteView(raw, "")
-    if not isinstance(raw, dict):
-        return None
-    text = _str(raw, "located") or _str(raw, "text")
+        return QuoteView(raw, "") if raw else None
+    text = _need(raw, "text", where, path, str)
+    located = _need(raw, "located", where, path, (str, type(None))) if "located" in raw else None
+    text = located or text
     return QuoteView(text, _where(raw.get("anchor"))) if text else None
 
 
 def _requirement(raw: Any, path: Path) -> ReqView:
-    rid = _need(raw, "id", "segmentation.requirements[].", path)
-    quote = _need(raw, "quote", f"segmentation.requirements[{rid}].", path)
-    section = raw.get("section_path")
+    rid = _need(raw, "id", "segmentation.requirements[].", path, str)
+    where = f"segmentation.requirements[{rid}]."
     return ReqView(
-        id=str(rid),
-        quote=str(quote),
-        stable_key=_str(raw, "stable_key"),
-        source_id=raw.get("source_id") if isinstance(raw.get("source_id"), str) else None,
+        id=rid,
+        quote=_need(raw, "quote", where, path, str),
+        stable_key=_need(raw, "stable_key", where, path, str),
+        source_id=_need(raw, "source_id", where, path, (str, type(None))) if "source_id" in raw else None,
         source_locator=_str(raw, "source_locator"),
-        section_path=tuple(str(s) for s in section) if isinstance(section, list) else (),
+        section_path=_strings(raw, "section_path", where, path),
     )
 
 
 def _finding(raw: Any, path: Path) -> FindingView:
-    fid = str(_need(raw, "id", "verification.findings[].", path))
-    prop = str(_need(raw, "property", f"verification.findings[{fid}].", path))
-    quotes = tuple(q for q in (_quote(x) for x in _list(raw, "quotes")) if q is not None)
-    section = raw.get("section_path")
+    fid = _need(raw, "id", "verification.findings[].", path, str)
+    where = f"verification.findings[{fid}]."
+    quotes = _need(raw, "quotes", where, path, list)
     return FindingView(
         id=fid,
-        property=prop,
-        defect_type=_str(raw, "defect_type"),
-        severity=_str(raw, "severity", "major"),
-        verdict=_str(raw, "verdict", "violation"),
-        scope=_str(raw, "scope", "requirement"),
+        property=_need(raw, "property", where, path, str),
+        defect_type=_need(raw, "defect_type", where, path, str),
+        severity=_need(raw, "severity", where, path, str),
+        verdict=_need(raw, "verdict", where, path, str),
+        scope=_need(raw, "scope", where, path, str),
         title=_str(raw, "title") or _str(raw, "explanation"),
-        quotes=quotes,
-        requirement_ids=tuple(str(r) for r in _list(raw, "requirement_ids")),
-        section_path=tuple(str(s) for s in section) if isinstance(section, list) else (),
+        quotes=tuple(q for q in (_quote(x, f"{where}quotes[{i}].", path) for i, x in enumerate(quotes)) if q),
+        requirement_ids=_strings(raw, "requirement_ids", where, path),
+        section_path=_strings(raw, "section_path", where, path),
     )
 
 
 def _passport(raw: Any, path: Path) -> PassportView:
-    _need(raw, "agent_version", "passport.", path)
-    models = raw.get("models")
-    passes = raw.get("passes")
-    cost = raw.get("cost_usd")
+    where = "passport."
+    models = _need(raw, "models", where, path, dict)
+    if any(not isinstance(value, str) for value in models.values()):
+        raise ReportReadError(f"В отчёте {path} поле passport.models должно содержать строки")
+    started_at = _need(raw, "started_at", where, path, str)
+    try:
+        datetime.fromisoformat(started_at)
+    except ValueError as exc:
+        raise ReportReadError(f"В отчёте {path} неверная дата в поле passport.started_at") from exc
+    cost = _need(raw, "cost_usd", where, path, (int, float, type(None))) if "cost_usd" in raw else None
+    try:
+        cost_usd = float(cost) if cost is not None else None
+    except OverflowError as exc:
+        raise ReportReadError(f"В отчёте {path} неверное число в поле passport.cost_usd") from exc
+    if cost_usd is not None and not math.isfinite(cost_usd):
+        raise ReportReadError(f"В отчёте {path} неверное число в поле passport.cost_usd")
     return PassportView(
-        document_name=_str(raw, "document_name"),
-        document_sha256=_str(raw, "document_sha256"),
-        agent_version=_str(raw, "agent_version"),
-        prompts_sha256=_str(raw, "prompts_sha256"),
-        started_at=_str(raw, "started_at"),
-        profile=_str(raw, "profile"),
-        passes=passes if isinstance(passes, int) else None,
-        models={str(k): str(v) for k, v in models.items()} if isinstance(models, dict) else {},
-        cost_usd=float(cost) if isinstance(cost, int | float) else None,
+        document_name=_need(raw, "document_name", where, path, str),
+        document_sha256=_need(raw, "document_sha256", where, path, (str, type(None))) or "",
+        agent_version=_need(raw, "agent_version", where, path, str),
+        prompts_sha256=_need(raw, "prompts_sha256", where, path, str),
+        started_at=started_at,
+        profile=_need(raw, "profile", where, path, str),
+        passes=_need(raw, "passes", where, path, int),
+        models=models,
+        cost_usd=cost_usd,
+        models_actual=_strings(raw, "models_actual", where, path) if "models_actual" in raw else (),
     )
 
 
@@ -208,6 +229,8 @@ def _read_json(path: Path) -> Any:
             f"Отчёт {path} не читается как JSON: строка {exc.lineno}, позиция {exc.colno}",
             "Файл повреждён или обрезан: перезапишите его прогоном validator.",
         ) from exc
+    except (ValueError, RecursionError) as exc:
+        raise ReportReadError(f"Отчёт {path} содержит недопустимое число или вложенность JSON") from exc
     except OSError as exc:
         raise ReportReadError(f"Не удалось прочитать отчёт {path}", "Проверьте права на файл.") from exc
 
@@ -217,7 +240,7 @@ def load_report(path: Path) -> ReportView:
     data = _read_json(path)
     if not isinstance(data, dict):
         raise ReportReadError(f"Отчёт {path} не объект JSON", "Укажите report.json агента validator.")
-    passport = _passport(_need(data, "passport", "", path), path)
+    passport = _need(data, "passport", "", path, dict)
     segmentation = data.get("segmentation")
     verification = data.get("verification")
     if not isinstance(segmentation, dict) or not isinstance(verification, dict):
@@ -226,15 +249,21 @@ def load_report(path: Path) -> ReportView:
             "Сравнивать можно только отчёты, где проверка выполнена. Смотрите раздел «Диагностика».",
         )
     conclusion = data.get("conclusion") if isinstance(data.get("conclusion"), dict) else {}
+    if "traffic_light" in verification:
+        traffic_light = _need(verification, "traffic_light", "verification.", path, str)
+    else:
+        traffic_light = _need(conclusion, "traffic_light", "conclusion.", path, str)
+    requirements = _need(segmentation, "requirements", "segmentation.", path, list)
+    findings = _need(verification, "findings", "verification.", path, list)
     return ReportView(
         path=str(path),
-        passport=passport,
-        requirements=tuple(_requirement(r, path) for r in _list(segmentation, "requirements")),
-        findings=tuple(_finding(f, path) for f in _list(verification, "findings")),
-        traffic_light=_str(verification, "traffic_light") or _str(conclusion, "traffic_light"),
+        passport=_passport(passport, path),
+        requirements=tuple(_requirement(r, path) for r in requirements),
+        findings=tuple(_finding(f, path) for f in findings),
+        traffic_light=traffic_light,
         headline=_str(conclusion, "headline"),
-        questions=len(_list(data, "questions")),
-        status=_str(data, "status"),
+        questions=len(_need(data, "questions", "", path, list)),
+        status=_need(data, "status", "", path, str),
     )
 
 

@@ -1,8 +1,7 @@
 """Сопоставление двух версий: требования, затем находки, затем классы находок. Без модели.
 
-Порядок для требований: ``stable_key`` (текст не менялся) → номер в документе (``source_id``) →
-похожесть текста (rapidfuzz) не ниже ``REQ_SIMILARITY``. Находки сопоставляем по свойству и месту:
-общее требование (через пары требований) или общая цитата после ``normalize``.
+Порядок для требований: ``stable_key`` → номер и раздел документа → похожесть текста.
+Находки сопоставляем по свойству, пересечению цитат и месту в документе.
 
 Главное правило классов: исчезновение находки засчитывается как «исправлено», только если её место в
 документе изменилось. Если цитата дословно осталась, находка «пропала без правки»: это нестабильность
@@ -12,13 +11,14 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Callable, Hashable, Iterable, Sequence
 from dataclasses import dataclass
 
 from rapidfuzz import fuzz
 
 from validator.diff.load import FindingView, ReportView, ReqView
 from validator.diff.model import DiffResult, FindingClass, FindingDiff, MatchHow, ReqPair, ReqStatus
+from validator.models import Scope
 from validator.text import MIN_FUZZY_CHARS, normalize
 
 REQ_SIMILARITY = 70.0
@@ -34,10 +34,7 @@ QUOTE_OVERLAP = 90.0
 
 _SEP = "\x00"
 _SEVERITY = {"critical": "критично", "major": "важно", "minor": "незначительно"}
-_SCORE_REQ = 2
-_SCORE_QUOTE = 3
 _SCORE_TYPE = 1
-_SCORE_SECTION = 1
 
 
 def _norm(text: str) -> str:
@@ -48,14 +45,18 @@ def _norm(text: str) -> str:
 
 
 def _pair_by_key(
-    old: list[ReqView], new: list[ReqView], key: str, how: MatchHow, out: list[ReqPair]
+    old: list[ReqView],
+    new: list[ReqView],
+    key: Callable[[ReqView], Hashable | None],
+    how: MatchHow,
+    out: list[ReqPair],
 ) -> tuple[list[ReqView], list[ReqView]]:
     """Пары по значению поля, если оно уникально с обеих сторон; остаток возвращаем."""
 
-    def unique(items: list[ReqView]) -> dict[str, ReqView]:
-        seen: dict[str, list[ReqView]] = {}
+    def unique(items: list[ReqView]) -> dict[Hashable, ReqView]:
+        seen: dict[Hashable, list[ReqView]] = {}
         for r in items:
-            value = getattr(r, key)
+            value = key(r)
             if value:
                 seen.setdefault(value, []).append(r)
         return {k: v[0] for k, v in seen.items() if len(v) == 1}
@@ -111,8 +112,8 @@ def _pair_within_source(
     groups: dict[tuple[str, tuple[str, ...]], tuple[list[ReqView], list[ReqView]]] = {}
     for side, items in enumerate((old, new)):
         for r in items:
-            if r.source_id:
-                groups.setdefault((r.source_id, r.section_path), ([], []))[side].append(r)
+            if (key := _source_key(r)) is not None:
+                groups.setdefault(key, ([], []))[side].append(r)
     paired: set[tuple[int, str]] = set()
     for left, right in groups.values():
         before = len(out)
@@ -124,11 +125,15 @@ def _pair_within_source(
     return [r for r in old if (0, r.id) not in paired], [r for r in new if (1, r.id) not in paired]
 
 
+def _source_key(req: ReqView) -> tuple[str, tuple[str, ...]] | None:
+    return (req.source_id, tuple(map(_norm, req.section_path))) if req.source_id else None
+
+
 def match_requirements(old: Sequence[ReqView], new: Sequence[ReqView]) -> list[ReqPair]:
     """Пары требований старой и новой версии, по порядку старой версии, добавленные в конце."""
     out: list[ReqPair] = []
-    rest_old, rest_new = _pair_by_key(list(old), list(new), "stable_key", MatchHow.STABLE_KEY, out)
-    rest_old, rest_new = _pair_by_key(rest_old, rest_new, "source_id", MatchHow.SOURCE_ID, out)
+    rest_old, rest_new = _pair_by_key(list(old), list(new), lambda r: r.stable_key, MatchHow.STABLE_KEY, out)
+    rest_old, rest_new = _pair_by_key(rest_old, rest_new, _source_key, MatchHow.SOURCE_ID, out)
     rest_old, rest_new = _pair_within_source(rest_old, rest_new, out)
     rest_old, rest_new = _pair_greedy(rest_old, rest_new, REQ_SIMILARITY, MatchHow.SIMILARITY, out)
     out.extend(ReqPair(ReqStatus.REMOVED, o, None) for o in rest_old)
@@ -155,6 +160,7 @@ class Places:
     old_text: str
     new_text: str
     from_documents: bool
+    same_document: bool
 
     def changed(self, quote: str) -> bool | None:
         """Место цитаты старой версии изменилось в новой: True; осталось дословно: False; не знаем: None."""
@@ -174,11 +180,13 @@ class Places:
 def places(
     old: ReportView, new: ReportView, old_text: str | None = None, new_text: str | None = None
 ) -> Places:
+    old_sha = old.passport.document_sha256
+    same_document = bool(old_sha and old_sha == new.passport.document_sha256)
     if old_text is not None and new_text is not None:
-        return Places(_norm(old_text), _norm(new_text), True)
+        return Places(_norm(old_text), _norm(new_text), True, same_document)
     corpus_old = _SEP.join(_norm(r.quote) for r in old.requirements)
     corpus_new = _SEP.join(_norm(r.quote) for r in new.requirements)
-    return Places(corpus_old, corpus_new, False)
+    return Places(corpus_old, corpus_new, False, same_document)
 
 
 # --- находки ----------------------------------------------------------------------------------
@@ -198,31 +206,34 @@ def _quotes_overlap(a: FindingView, b: FindingView) -> bool:
     return False
 
 
-def _score(o: FindingView, n: FindingView, req_map: dict[str, str]) -> int:
-    """Насколько старая и новая находка про одно и то же; 0 значит не пара."""
-    if o.property != n.property:
-        return 0
-    mapped = {req_map[r] for r in o.requirement_ids if r in req_map}
-    by_req = bool(mapped & set(n.requirement_ids))
-    by_quote = _quotes_overlap(o, n)
-    if not by_req and not by_quote:
-        return 0
-    score = _SCORE_REQ * by_req + _SCORE_QUOTE * by_quote
-    score += _SCORE_TYPE * (o.defect_type == n.defect_type)
-    score += _SCORE_SECTION * (bool(o.section_path) and o.section_path == n.section_path)
-    return score
+def _section(finding: FindingView, sections: dict[str, tuple[str, ...]]) -> tuple[str, ...] | None:
+    if finding.section_path:
+        return tuple(map(_norm, finding.section_path))
+    if not finding.requirement_ids:
+        return ()
+    linked = {sections.get(rid) for rid in finding.requirement_ids}
+    return next(iter(linked)) if len(linked) == 1 else None
 
 
-def _score_other_property(o: FindingView, n: FindingView) -> int:
-    """Второй круг: та же цитата и важность, но модель назвала другое свойство стандарта.
-
-    Модель нередко относит один и тот же дефект то к одному свойству, то к другому. Без этого круга
-    такая пара попала бы сразу в «пропало без правки» и в «новое на неизменённом месте». Важность
-    должна совпасть, чтобы новая критичная находка не спряталась за старой мелкой на том же месте.
-    """
-    if o.property == n.property or o.severity != n.severity or not _quotes_overlap(o, n):
+def _score(
+    old: FindingView,
+    new: FindingView,
+    req_map: dict[str, str],
+    old_section: tuple[str, ...] | None,
+    new_section: tuple[str, ...] | None,
+) -> int:
+    if old.property != new.property or old.scope != new.scope:
         return 0
-    return _SCORE_QUOTE + _SCORE_TYPE * (o.defect_type == n.defect_type)
+    if old.scope == Scope.REQUIREMENT:
+        mapped = {req_map[rid] for rid in old.requirement_ids if rid in req_map}
+        same_place = bool(mapped.intersection(new.requirement_ids))
+    elif old.scope == Scope.SET:
+        same_place = old_section is not None and old_section == new_section
+    else:
+        return 0
+    if not same_place or not _quotes_overlap(old, new):
+        return 0
+    return 1 + _SCORE_TYPE * (old.defect_type == new.defect_type)
 
 
 def _greedy_pairs(scored: list[tuple[int, int, int]]) -> list[tuple[int, int]]:
@@ -239,23 +250,27 @@ def _greedy_pairs(scored: list[tuple[int, int, int]]) -> list[tuple[int, int]]:
 
 
 def _pair_findings(
-    old: Sequence[FindingView], new: Sequence[FindingView], req_map: dict[str, str]
+    old: ReportView, new: ReportView, req_map: dict[str, str], same_document: bool
 ) -> list[tuple[int, int]]:
-    first = _greedy_pairs(
-        [(s, i, j) for i, o in enumerate(old) for j, n in enumerate(new) if (s := _score(o, n, req_map))]
-    )
-    used_old = {i for i, _ in first}
-    used_new = {j for _, j in first}
-    second = _greedy_pairs(
+    # В копиях одного анализа могут повторяться находки без цитат или ссылок.
+    if old == new or (
+        same_document and old.requirements == new.requirements and old.findings == new.findings
+    ):
+        return [(i, i) for i in range(len(old.findings))]
+
+    def sections(report: ReportView) -> list[tuple[str, ...] | None]:
+        by_id = {r.id: tuple(map(_norm, r.section_path)) for r in report.requirements}
+        return [_section(finding, by_id) for finding in report.findings]
+
+    old_sections, new_sections = sections(old), sections(new)
+    return _greedy_pairs(
         [
-            (s, i, j)
-            for i, o in enumerate(old)
-            if i not in used_old
-            for j, n in enumerate(new)
-            if j not in used_new and (s := _score_other_property(o, n))
+            (score, i, j)
+            for i, before in enumerate(old.findings)
+            for j, after in enumerate(new.findings)
+            if (score := _score(before, after, req_map, old_sections[i], new_sections[j]))
         ]
     )
-    return first + second
 
 
 def _short(text: str, limit: int = 80) -> str:
@@ -263,40 +278,43 @@ def _short(text: str, limit: int = 80) -> str:
     return one if len(one) <= limit else one[: limit - 1] + "…"
 
 
-def _touched(f: FindingView, req_status: dict[str, ReqStatus], statuses: tuple[ReqStatus, ...]) -> str:
-    touched = [r for r in f.requirement_ids if req_status.get(r) in statuses]
-    return ", ".join(f"{r} {req_status[r].label}" for r in touched)
+def _proven_edit(quote: str, finding: FindingView, pairs: dict[str, ReqPair], old_side: bool) -> bool:
+    """В отчётах без документов сверяем цитату с обоими фрагментами одного требования."""
+    normalized = _norm(quote)
+    for rid in finding.requirement_ids:
+        pair = pairs.get(rid)
+        if pair is None or pair.status is not ReqStatus.CHANGED or pair.old is None or pair.new is None:
+            continue
+        source = pair.old if old_side else pair.new
+        counterpart = pair.new if old_side else pair.old
+        if normalized and normalized in _norm(source.quote) and normalized not in _norm(counterpart.quote):
+            return True
+    return False
 
 
-def _classify_gone(f: FindingView, where: Places, req_status: dict[str, ReqStatus]) -> FindingDiff:
-    """Находки нет в новой версии: исправлено, если её место правили; иначе пропала без правки.
+def _classify_unmatched(
+    finding: FindingView, where: Places, pairs: dict[str, ReqPair], *, old_side: bool
+) -> FindingDiff:
+    old = finding if old_side else None
+    new = None if old_side else finding
+    edited_class = FindingClass.FIXED if old_side else FindingClass.NEW_CHANGED
+    other_class = FindingClass.VANISHED if old_side else FindingClass.NEW_UNCHANGED
 
-    Решают цитаты. Требования смотрим, только если ни одну цитату не удалось найти в старой версии:
-    цитата, которая дословно осталась, сильнее того, что соседнюю фразу требования правили.
-    """
-    verdicts = [where.changed(q.text) for q in f.quotes]
-    for q, changed in zip(f.quotes, verdicts, strict=True):
-        if changed:
-            return FindingDiff(FindingClass.FIXED, f, None, f"место цитаты изменено: «{_short(q.text)}»")
-    labels = _touched(f, req_status, (ReqStatus.CHANGED, ReqStatus.REMOVED))
-    if labels and all(v is None for v in verdicts):
-        return FindingDiff(FindingClass.FIXED, f, None, f"требование {labels}")
+    if where.same_document:
+        return FindingDiff(other_class, old, new, "хеш документа совпадает, место не менялось")
+
+    check = where.changed if old_side else where.appeared
+    confirmed_unchanged = False
+    for quote in finding.quotes:
+        verdict = check(quote.text)
+        if verdict is False:
+            confirmed_unchanged = True
+        if verdict and (where.from_documents or _proven_edit(quote.text, finding, pairs, old_side)):
+            return FindingDiff(edited_class, old, new, f"место цитаты изменено: «{_short(quote.text)}»")
+    if confirmed_unchanged:
+        return FindingDiff(other_class, old, new, "цитата есть в обеих версиях")
     return FindingDiff(
-        FindingClass.VANISHED, f, None, "цитата дословно осталась в новой версии, а находки нет"
-    )
-
-
-def _classify_new(f: FindingView, where: Places, req_status: dict[str, ReqStatus]) -> FindingDiff:
-    """Новая находка: на изменённом месте (возможная регрессия) или на неизменённом (шум модели)."""
-    verdicts = [where.appeared(q.text) for q in f.quotes]
-    for q, appeared in zip(f.quotes, verdicts, strict=True):
-        if appeared:
-            return FindingDiff(FindingClass.NEW_CHANGED, None, f, f"цитата из правки: «{_short(q.text)}»")
-    labels = _touched(f, req_status, (ReqStatus.CHANGED, ReqStatus.ADDED))
-    if labels and all(v is None for v in verdicts):
-        return FindingDiff(FindingClass.NEW_CHANGED, None, f, f"требование {labels}")
-    return FindingDiff(
-        FindingClass.NEW_UNCHANGED, None, f, "место не менялось: в старой версии модель это не отметила"
+        FindingClass.PLACE_UNKNOWN, old, new, "по доступным данным изменение места находки не подтверждено"
     )
 
 
@@ -306,8 +324,6 @@ def _remained(o: FindingView, n: FindingView, req_status: dict[str, ReqStatus]) 
     edited = [r for r in o.requirement_ids if req_status.get(r) is ReqStatus.CHANGED]
     if edited:
         notes.append(f"требование {', '.join(edited)} изменено, но находка не закрыта")
-    if o.property != n.property:
-        notes.append(f"та же цитата, модель сменила свойство: {o.property} → {n.property}")
     if o.severity != n.severity:
         notes.append(
             f"важность {_SEVERITY.get(o.severity, o.severity)} → {_SEVERITY.get(n.severity, n.severity)}"
@@ -320,14 +336,23 @@ def match_findings(
 ) -> list[FindingDiff]:
     pairs = list(pairs)
     req_map = {p.old.id: p.new.id for p in pairs if p.old is not None and p.new is not None}
-    old_status = {p.old.id: p.status for p in pairs if p.old is not None}
-    new_status = {p.new.id: p.status for p in pairs if p.new is not None}
-    matched = _pair_findings(old.findings, new.findings, req_map)
+    old_pairs = {p.old.id: p for p in pairs if p.old is not None}
+    new_pairs = {p.new.id: p for p in pairs if p.new is not None}
+    old_status = {} if where.same_document else {rid: p.status for rid, p in old_pairs.items()}
+    matched = _pair_findings(old, new, req_map, where.same_document)
     out = [_remained(old.findings[i], new.findings[j], old_status) for i, j in matched]
     used_old = {i for i, _ in matched}
     used_new = {j for _, j in matched}
-    out += [_classify_gone(f, where, old_status) for i, f in enumerate(old.findings) if i not in used_old]
-    out += [_classify_new(f, where, new_status) for j, f in enumerate(new.findings) if j not in used_new]
+    out.extend(
+        _classify_unmatched(f, where, old_pairs, old_side=True)
+        for i, f in enumerate(old.findings)
+        if i not in used_old
+    )
+    out.extend(
+        _classify_unmatched(f, where, new_pairs, old_side=False)
+        for j, f in enumerate(new.findings)
+        if j not in used_new
+    )
     return out
 
 
@@ -343,16 +368,20 @@ def _warnings(old: ReportView, new: ReportView, where: Places) -> list[str]:
             + (", разные промпты" if a.prompts_sha256 != b.prompts_sha256 else "")
             + "): часть разницы может быть от агента, а не от правок документа."
         )
-    if a.models != b.models or (a.profile, a.passes) != (b.profile, b.passes):
+    if (
+        a.models != b.models
+        or set(a.models_actual) != set(b.models_actual)
+        or (a.profile, a.passes) != (b.profile, b.passes)
+    ):
         out.append(
             "Отчёты сделаны с разными моделями или настройками прогона (профиль, число проходов): "
             "часть разницы может быть от этого, а не от правок."
         )
-    if a.document_sha256 and a.document_sha256 == b.document_sha256:
-        out.append("Хеш документа в обоих отчётах одинаковый: документ не менялся, вся разница от модели.")
+    if where.same_document:
+        out.append("Хеш документа в обоих отчётах одинаковый. Различия отчётов не отражают правки документа.")
     if not where.from_documents:
         out.append(
-            "Тексты документов не переданы (--old-doc, --new-doc): изменённые места определены по цитатам "
+            "Тексты документов не переданы (--old-doc, --new-doc). Правки сверены по цитатам "
             "требований из отчётов. Цитаты вне требований (примеры, таблицы) так не сверить."
         )
     for view in (old, new):

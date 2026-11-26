@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -185,7 +186,7 @@ def test_requirement_order_follows_old_version_then_added() -> None:
 def _two_versions() -> tuple[dict[str, Any], dict[str, Any]]:
     """Старая версия: 4 находки. Новая: экспорт исправлен, уведомление правили неудачно."""
     old = report(
-        [req("R-01", LOGIN), req("R-02", EXPORT), req("R-03", AUDIT), req("R-04", NOTIFY)],
+        [req("R-01", LOGIN), req("R-02", EXPORT, "REQ-2"), req("R-03", AUDIT), req("R-04", NOTIFY)],
         [
             finding("F-01", "быстро выгружает", ["R-02"], severity="critical"),
             finding("F-02", LOGIN, ["R-01"], prop="IND-COMPL"),
@@ -194,7 +195,7 @@ def _two_versions() -> tuple[dict[str, Any], dict[str, Any]]:
         ],
     )
     new = report(
-        [req("R-01", LOGIN), req("R-02", EXPORT_FIXED), req("R-03", AUDIT), req("R-04", NOTIFY_NEW)],
+        [req("R-01", LOGIN), req("R-02", EXPORT_FIXED, "REQ-2"), req("R-03", AUDIT), req("R-04", NOTIFY_NEW)],
         [
             finding("F-01", LOGIN, ["R-01"], prop="IND-COMPL"),
             finding("F-02", "как можно скорее", ["R-04"], prop="IND-VERIF", severity="critical"),
@@ -240,13 +241,13 @@ def test_document_texts_decide_fixed_for_quotes_outside_requirements(tmp_path: P
     without = classes(diff(tmp_path, old, new))
     with_texts = classes(diff(tmp_path, old, new, (old_text, new_text)))
 
-    assert without["F-01_old"] is FindingClass.VANISHED  # без текстов место не сверить, не засчитываем
+    assert without["F-01_old"] is FindingClass.PLACE_UNKNOWN
     assert with_texts["F-01_old"] is FindingClass.FIXED
 
 
 def test_quote_match_ignores_case_quotes_and_line_breaks(tmp_path: Path) -> None:
     old = report([req("R-01", AUDIT)], [finding("F-01", "в журнал\nаудита", ["R-01"])])
-    new = report([req("R-01", AUDIT)], [finding("F-07", "В ЖУРНАЛ аудита", [])], sha="bbb")
+    new = report([req("R-01", AUDIT)], [finding("F-07", "В ЖУРНАЛ аудита", ["R-01"])], sha="bbb")
 
     (d,) = diff(tmp_path, old, new).findings
 
@@ -283,6 +284,14 @@ def test_same_agent_and_documents_given_give_no_warnings(tmp_path: Path) -> None
     assert diff(tmp_path, old, new, ("a", "b")).warnings == ()
 
 
+def test_different_actual_models_give_warning_even_when_settings_match(tmp_path: Path) -> None:
+    old, new = _two_versions()
+    old["passport"]["models_actual"] = ["model-a"]
+    new["passport"]["models_actual"] = ["model-b"]
+
+    assert any("разными моделями" in warning for warning in diff(tmp_path, old, new).warnings)
+
+
 def test_markdown_first_page_answers_can_we_start(tmp_path: Path) -> None:
     old, new = _two_versions()
 
@@ -295,7 +304,7 @@ def test_markdown_first_page_answers_can_we_start(tmp_path: Path) -> None:
     assert (
         md.index("### 3.1. Критичные") < md.index("### 3.2. Новое на изменённом месте") < md.index("### 3.3")
     )
-    assert "## 4. Нестабильность модели" in md
+    assert "## 4. Расхождения без подтверждённой правки" in md
 
 
 def test_json_is_serializable_and_has_summary(tmp_path: Path) -> None:
@@ -305,7 +314,9 @@ def test_json_is_serializable_and_has_summary(tmp_path: Path) -> None:
 
     assert data["summary"]["fixed"] == 2
     assert data["summary"]["regressions_critical"] == 1
-    assert {f["class"] for f in data["findings"]} == {c.value for c in FindingClass}
+    assert {f["class"] for f in data["findings"]} == {
+        c.value for c in FindingClass if c is not FindingClass.PLACE_UNKNOWN
+    }
 
 
 # --- устойчивость входа -------------------------------------------------------------------------
@@ -370,9 +381,11 @@ def test_real_report_against_itself_has_nothing_fixed(path: Path) -> None:
 # --- CLI ----------------------------------------------------------------------------------------
 
 
-def _cli(*args: str) -> subprocess.CompletedProcess[str]:
+def _cli(*args: str, cwd: Path) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [sys.executable, "-m", "validator.diff", *args],
+        cwd=cwd,
+        env={**os.environ, "PYTHONIOENCODING": "utf-8"},
         capture_output=True,
         text=True,
         encoding="utf-8",
@@ -384,9 +397,10 @@ def test_cli_writes_markdown_and_json(tmp_path: Path) -> None:
     old, new = _two_versions()
     out, js = tmp_path / "out" / "diff.md", tmp_path / "diff.json"
 
-    proc = _cli(
-        str(write(tmp_path, "o.json", old)), str(write(tmp_path, "n.json", new)), str(out), "--json", str(js)
-    )
+    write(tmp_path, "o.json", old)
+    write(tmp_path, "n.json", new)
+
+    proc = _cli("o.json", "n.json", "out/diff.md", "--json", "diff.json", cwd=tmp_path)
 
     assert proc.returncode == ExitCode.OK, proc.stderr
     assert "Исправлено 2 из 4" in proc.stdout
@@ -400,7 +414,7 @@ def test_cli_writes_markdown_and_json(tmp_path: Path) -> None:
     ids=["no-args", "wrong-suffix", "one-doc"],
 )
 def test_cli_bad_arguments_exit_2(tmp_path: Path, args: list[str]) -> None:
-    proc = _cli(*args)
+    proc = _cli(*args, cwd=tmp_path)
 
     assert proc.returncode == ExitCode.USAGE
     assert "Traceback" not in proc.stderr
@@ -410,11 +424,37 @@ def test_cli_unreadable_report_exit_4_without_traceback(tmp_path: Path) -> None:
     bad = tmp_path / "bad.json"
     bad.write_text("{", encoding="utf-8")
 
-    proc = _cli(str(bad), str(bad), str(tmp_path / "d.md"))
+    proc = _cli("bad.json", "bad.json", "d.md", cwd=tmp_path)
 
     assert proc.returncode == ExitCode.INPUT
     assert "не читается как JSON" in proc.stderr
     assert "Traceback" not in proc.stderr
+
+
+@pytest.mark.parametrize(
+    "args",
+    [
+        ["d.md", "--json", "./o.json"],
+        ["v1.md", "--old-doc", "./v1.md", "--new-doc", "v2.md"],
+    ],
+    ids=["json-over-report", "markdown-over-document"],
+)
+def test_cli_rejects_output_alias_of_input(tmp_path: Path, args: list[str]) -> None:
+    old, new = _two_versions()
+    old_report = write(tmp_path, "o.json", old)
+    write(tmp_path, "n.json", new)
+    old_doc = tmp_path / "v1.md"
+    old_doc.write_text(LOGIN, encoding="utf-8")
+    (tmp_path / "v2.md").write_text(AUDIT, encoding="utf-8")
+    before = old_report.read_bytes()
+
+    proc = _cli("o.json", "n.json", *args, cwd=tmp_path)
+
+    assert proc.returncode == ExitCode.USAGE
+    assert "совпадает с входным" in proc.stderr
+    assert old_report.read_bytes() == before
+    assert old_doc.read_text(encoding="utf-8") == LOGIN
+    assert not (tmp_path / "d.md").exists()
 
 
 def test_cli_reads_document_versions(tmp_path: Path) -> None:
@@ -423,15 +463,10 @@ def test_cli_reads_document_versions(tmp_path: Path) -> None:
     (tmp_path / "v2.md").write_text(f"# Spec\n\n{LOGIN}\n\n{EXPORT_FIXED}\n", encoding="utf-8")
     out = tmp_path / "d.md"
 
-    proc = _cli(
-        str(write(tmp_path, "o.json", old)),
-        str(write(tmp_path, "n.json", new)),
-        str(out),
-        "--old-doc",
-        str(tmp_path / "v1.md"),
-        "--new-doc",
-        str(tmp_path / "v2.md"),
-    )
+    write(tmp_path, "o.json", old)
+    write(tmp_path, "n.json", new)
+
+    proc = _cli("o.json", "n.json", "d.md", "--old-doc", "v1.md", "--new-doc", "v2.md", cwd=tmp_path)
 
     assert proc.returncode == ExitCode.OK, proc.stderr
     assert "| Тексты документов | переданы |" in out.read_text(encoding="utf-8")
@@ -448,14 +483,15 @@ def test_verbatim_quote_beats_edited_neighbour_sentence(tmp_path: Path) -> None:
     assert d.cls is FindingClass.VANISHED  # требование правили, но не в этой фразе
 
 
-def test_unknown_quote_falls_back_to_requirement_status(tmp_path: Path) -> None:
+@pytest.mark.parametrize("old_side", [True, False], ids=["disappeared", "appeared"])
+def test_unknown_quote_does_not_prove_edit(tmp_path: Path, old_side: bool) -> None:
     old = report([req("R-01", NOTIFY)], [finding("F-01", "цитата, которой нет в тексте", ["R-01"])])
     new = report([req("R-01", NOTIFY_NEW)], [], sha="bbb")
 
-    (d,) = diff(tmp_path, old, new).findings
+    (d,) = diff(tmp_path, old, new).findings if old_side else diff(tmp_path, new, old).findings
 
-    assert d.cls is FindingClass.FIXED
-    assert "R-01 изменено" in d.reason
+    assert d.cls is FindingClass.PLACE_UNKNOWN
+    assert "изменение места находки не подтверждено" in d.reason
 
 
 def test_parts_of_one_numbered_item_match_with_soft_similarity(tmp_path: Path) -> None:
@@ -469,14 +505,13 @@ def test_parts_of_one_numbered_item_match_with_soft_similarity(tmp_path: Path) -
     assert pairs["R-01.2"].score is not None and pairs["R-01.2"].score < REQ_SIMILARITY
 
 
-def test_same_quote_and_severity_with_other_property_is_the_same_finding(tmp_path: Path) -> None:
+def test_same_quote_and_severity_with_other_property_are_distinct_findings(tmp_path: Path) -> None:
     old = report([req("R-01", AUDIT)], [finding("F-01", AUDIT, ["R-01"], prop="SET-CONS")])
     new = report([req("R-01", AUDIT)], [finding("F-05", AUDIT, ["R-01"], prop="SET-COMPL")], sha="bbb")
 
-    (d,) = diff(tmp_path, old, new).findings
+    got = classes(diff(tmp_path, old, new))
 
-    assert d.cls is FindingClass.REMAINED
-    assert "SET-CONS → SET-COMPL" in d.reason
+    assert got == {"F-01_old": FindingClass.VANISHED, "F-05_new": FindingClass.NEW_UNCHANGED}
 
 
 def test_new_critical_does_not_hide_behind_old_minor_on_same_quote(tmp_path: Path) -> None:
@@ -490,6 +525,111 @@ def test_new_critical_does_not_hide_behind_old_minor_on_same_quote(tmp_path: Pat
     got = classes(diff(tmp_path, old, new))
 
     assert got == {"F-01_old": FindingClass.VANISHED, "F-01_new": FindingClass.NEW_UNCHANGED}
+
+
+def test_same_source_number_in_different_sections_is_not_an_identity(tmp_path: Path) -> None:
+    old = report([req("R-01", BACKUP, "REQ-1")], [])
+    moved = {**req("R-02", AUDIT, "REQ-1"), "section_path": ["Аудит"]}
+    new = report([moved], [], sha="bbb")
+
+    assert [p.status for p in diff(tmp_path, old, new).requirements] == [ReqStatus.REMOVED, ReqStatus.ADDED]
+
+
+@pytest.mark.parametrize(
+    ("old_quote", "new_quote", "new_link"),
+    [(AUDIT, AUDIT, "R-02"), ("Каждое действие", "журнал аудита", "R-01")],
+)
+def test_requirement_finding_needs_both_same_requirement_and_overlapping_quote(
+    tmp_path: Path, old_quote: str, new_quote: str, new_link: str
+) -> None:
+    reqs = [req("R-01", AUDIT), req("R-02", BACKUP)]
+    old = report(reqs, [finding("F-01", old_quote, ["R-01"])])
+    new = report(reqs, [finding("F-02", new_quote, [new_link])], sha="bbb")
+
+    assert not diff(tmp_path, old, new).of(FindingClass.REMAINED)
+
+
+def test_set_finding_matches_with_section_inferred_from_links(tmp_path: Path) -> None:
+    reqs = [
+        req("R-01", AUDIT),
+        {**req("R-02", BACKUP), "section_path": ["Другое"]},
+    ]
+    before = finding("F-01", AUDIT, ["R-01"], scope="set")
+    after = {**finding("F-02", AUDIT, ["R-01"], scope="set"), "section_path": []}
+    other = {**after, "id": "F-03", "requirement_ids": ["R-02"]}
+
+    result = diff(tmp_path, report(reqs, [before]), report(reqs, [after, other], sha="bbb"))
+
+    assert [(d.old.id, d.new.id) for d in result.of(FindingClass.REMAINED) if d.old and d.new] == [
+        ("F-01", "F-02")
+    ]
+    assert classes(result)["F-03_new"] is FindingClass.NEW_UNCHANGED
+
+
+def test_identical_document_hash_cannot_create_fixes_or_regressions(tmp_path: Path) -> None:
+    old = report([req("R-01", EXPORT, "REQ-1")], [finding("F-01", EXPORT, ["R-01"])])
+    new = report(
+        [req("R-01", EXPORT_FIXED, "REQ-1")],
+        [finding("F-02", EXPORT_FIXED, ["R-01"], prop="IND-VERIF")],
+    )
+
+    result = diff(tmp_path, old, new, (EXPORT, EXPORT_FIXED))
+
+    assert classes(result) == {"F-01_old": FindingClass.VANISHED, "F-02_new": FindingClass.NEW_UNCHANGED}
+    assert all("хеш документа совпадает" in d.reason for d in result.findings)
+
+
+def test_unmatched_critical_counts_in_both_verdict_and_gate_summary(tmp_path: Path) -> None:
+    reqs = [req("R-01", AUDIT)]
+    old = report(reqs, [])
+    new = report(
+        reqs,
+        [
+            finding("F-01", AUDIT, ["R-01"], severity="critical"),
+            finding("F-02", "Цитата не найдена", ["R-01"], severity="critical"),
+        ],
+        sha="bbb",
+        light="red",
+    )
+
+    result = diff(tmp_path, old, new)
+
+    summary = render_json(result)["summary"]
+    assert summary["new_critical"] == 2
+    assert (summary["new_on_unchanged_place"], summary["unverified_place"]) == (1, 1)
+    assert totals(result).regressions_critical == 0
+    md = render_markdown(result)
+    assert "остаются критичные нарушения (2)" in md
+    assert "### 4.3. Изменение места не подтверждено" in md
+    assert "| R-01 | R-01 | без изменений |" in md
+
+
+@pytest.mark.parametrize(
+    ("section", "key", "bad"),
+    [
+        ("segmentation", "requirements", {}),
+        ("verification", "findings", None),
+        ("passport", "document_sha256", []),
+        ("passport", "prompts_sha256", 7),
+        ("passport", "started_at", "вчера"),
+        ("passport", "passes", True),
+        ("passport", "models", {"search": 7}),
+    ],
+)
+def test_report_rejects_invalid_fields(tmp_path: Path, section: str, key: str, bad: Any) -> None:
+    data = report([], [])
+    data[section][key] = bad
+
+    with pytest.raises(ReportReadError, match=rf"{section}\.{key}"):
+        load_report(write(tmp_path, "bad.json", data))
+
+
+def test_report_rejects_missing_findings_array(tmp_path: Path) -> None:
+    data = report([], [])
+    del data["verification"]["findings"]
+
+    with pytest.raises(ReportReadError, match=r"verification\.findings"):
+        load_report(write(tmp_path, "bad.json", data))
 
 
 # --- демо «было → стало» ------------------------------------------------------------------------

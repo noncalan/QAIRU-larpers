@@ -66,6 +66,15 @@ def _write(path: Path, text: str) -> None:
         raise _fail(ExitCode.USAGE, f"Не удалось записать {path}: {exc.strerror}", "Проверьте путь") from exc
 
 
+def _same_path(a: Path, b: Path) -> bool:
+    try:
+        return a.resolve() == b.resolve() or a.samefile(b)
+    except FileNotFoundError:
+        return False
+    except (OSError, RuntimeError) as exc:
+        raise _fail(ExitCode.USAGE, "Не удалось проверить совпадение путей", str(exc)) from exc
+
+
 @app.command()
 def main(
     old_report: Annotated[
@@ -92,6 +101,12 @@ def main(
         raise _fail(ExitCode.USAGE, f"Файл --json должен иметь расширение .json: {json_out}")
     if (old_doc is None) != (new_doc is None):
         raise _fail(ExitCode.USAGE, "Укажите обе версии документа (--old-doc и --new-doc) или ни одной")
+    inputs = [path for path in (old_report, new_report, old_doc, new_doc) if path is not None]
+    if json_out is not None and _same_path(output, json_out):
+        raise _fail(ExitCode.USAGE, "Укажите разные файлы для отчётов Markdown и JSON")
+    for target in (path for path in (output, json_out) if path is not None):
+        if any(_same_path(target, source) for source in inputs):
+            raise _fail(ExitCode.USAGE, f"Выходной файл {target} совпадает с входным")
     try:
         old, new = load_report(old_report), load_report(new_report)
         texts = (load_document_text(old_doc), load_document_text(new_doc)) if old_doc and new_doc else None

@@ -54,6 +54,7 @@ class FindingClass(StrEnum):
     REMAINED = "remained"
     NEW_CHANGED = "new_on_changed_place"
     NEW_UNCHANGED = "new_on_unchanged_place"
+    PLACE_UNKNOWN = "unverified_place"
 
     @property
     def label(self) -> str:
@@ -66,6 +67,7 @@ _CLASS_LABELS = {
     FindingClass.REMAINED: "осталось",
     FindingClass.NEW_CHANGED: "новое на изменённом месте",
     FindingClass.NEW_UNCHANGED: "новое на неизменённом месте",
+    FindingClass.PLACE_UNKNOWN: "изменение места не подтверждено",
 }
 
 
