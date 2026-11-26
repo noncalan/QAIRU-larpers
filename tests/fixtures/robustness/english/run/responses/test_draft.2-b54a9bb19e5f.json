@@ -1,0 +1,231 @@
+{
+ "envelope_version": 1,
+ "key": "b54a9bb19e5f58e83509d8c4c442a82ec3d905bc0011e0f58e68a3ea56f2cedb",
+ "call_id": "test_draft.2",
+ "step": "test_draft",
+ "call_index": 2,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T22:31:44.591657+00:00",
+ "payload": {
+  "duration_api_ms": 94633,
+  "stop_reason": "end_turn",
+  "session_id": "d26d348f-d01f-41f1-895c-775aee0287f1",
+  "total_cost_usd": 0.16806600000000002,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 7348,
+   "cache_read_input_tokens": 0,
+   "output_tokens": 13867,
+   "output_tokens_details": {
+    "thinking_tokens": 9023
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 7348,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 13867,
+     "cache_read_input_tokens": 0,
+     "cache_creation_input_tokens": 7348,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 7348
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 13867,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 7348,
+    "webSearchRequests": 0,
+    "costUSD": 0.16806600000000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 9023,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 7348,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n**M-017.** Для теста нужен результат блокировки для свободной, зарезервированной и занятой ячейки, а также правило снятия блокировки. Документ даёт только саму возможность блокировки. Всё остальное стоит пропусками.\n\n**M-018.** Нужны сумма, валюта, единица, момент начала начисления и плательщик. В документе стоит «TBD», поэтому всё это пропуски.\n\n**M-019.** Нужны порог времени, доля запросов, нагрузка и точки замера. В документе только «quickly», числа не названы.\n\n**M-021.** Нужны процент доступности, период, окна обслуживания и метрика удобства. В документе их нет.\n\n**M-022.** Нужен точный источник протокола: название, версия, производитель руководства и модель контроллера. Документ называет только «controller manual».\n\n**M-023.** Один сквозной тест по FR-01, FR-03, FR-04, FR-05 и негативным случаям. Известно только, что код одноразовый, что ячейка освобождается автоматически и что уведомляются курьер и клиент. Остальное в документе не задано. Срок кода противоречит сам себе: 48 часов в FR-03 и 72 часа в NFR-02.\n\n**M-024.** Нужно знать, кто и когда фиксирует закладку: сигнал контроллера или подтверждение курьера. Документ этого не определяет, поэтому результат сценария проверяющих неизвестен.\n\n**M-025.** Известно только, что посылка появляется в списке клиента. Состав записи и срок появления в документе не заданы.\n\n**M-026.** Известен срок 5 минут. Что система записывает как признак отправки и доставки, документ не говорит.\n\n## Ответ\n\n```json\n{\n  \"drafts\": [\n    {\n      \"finding\": \"M-017\",\n      \"can_write\": false,\n      \"precondition\": \"Есть управляющий здания (building manager) и три ячейки: свободная, зарезервированная курьером, занятая (посылка заложена, код выдан).\",\n      \"steps\": [\n        \"Управляющий блокирует свободную ячейку для обслуживания.\",\n        \"Открыть список свободных ячеек.\",\n        \"Управляющий блокирует зарезервированную ячейку.\",\n        \"Управляющий блокирует занятую ячейку.\",\n        \"Управляющий снимает блокировку с одной из ячеек.\"\n      ],\n      \"expected\": \"Свободная ячейка заблокирована; в списке свободных ячеек она [?1]. Для зарезервированной ячейки резерв [?2]. Для занятой ячейки посылка и код [?3], уведомления курьеру и клиенту [?4]. Блокировку снимает [?5].\",\n      \"values\": [\n        {\"value\": \"building manager\", \"quote\": \"The building manager shall be able to block a compartment for maintenance.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"исключается ли заблокированная ячейка из списка свободных; в документе блокировка не связана со списком\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"что происходит с резервом курьера при блокировке зарезервированной ячейки, либо запрещена ли такая блокировка\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"что происходит с посылкой и кодом клиента при блокировке занятой ячейки, либо запрещена ли такая блокировка\", \"part\": \"expected\"},\n        {\"number\": 4, \"missing\": \"уведомляются ли курьер и клиент о блокировке\", \"part\": \"expected\"},\n        {\"number\": 5, \"missing\": \"кто и каким действием снимает блокировку; правила разблокировки в документе нет\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-018\",\n      \"can_write\": false,\n      \"precondition\": \"Посылка заложена в ячейку и не забрана клиентом.\",\n      \"steps\": [\n        \"Дождаться момента начала начисления платы [?1].\",\n        \"Открыть начисленную плату за хранение этой посылки.\"\n      ],\n      \"expected\": \"Начислена плата [?2] за [?3]; плательщик [?4], способ оплаты [?5].\",\n      \"values\": [\n        {\"value\": \"TBD\", \"quote\": \"The storage fee for an uncollected parcel is TBD.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"момент начала начисления платы (с закладки, с истечения кода или иной)\", \"part\": \"steps\"},\n        {\"number\": 2, \"missing\": \"размер платы и валюта: в документе вместо них стоит «TBD»\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"единица начисления (за сутки, за час и т. д.)\", \"part\": \"expected\"},\n        {\"number\": 4, \"missing\": \"кто платит (клиент, управляющий, курьер)\", \"part\": \"expected\"},\n        {\"number\": 5, \"missing\": \"способ оплаты\", \"part\": \"expected\"}\n      ],\n      \"note\": \"Размер платы в документе задан как «TBD», проверяемого значения нет.\"\n    },\n    {\n      \"finding\": \"M-019\",\n      \"can_write\": false,\n      \"precondition\": \"В системе есть список ячеек, часть из них свободна; на сервис подана нагрузка [?1].\",\n      \"steps\": [\n        \"Открыть страницу со списком свободных ячеек.\",\n        \"Замерить время загрузки от [?2].\",\n        \"Повторить замер на серии запросов.\"\n      ],\n      \"expected\": \"Страница загружается не дольше [?3] в [?4] запросов.\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"уровень нагрузки (число одновременных пользователей или запросов), при котором проверяется загрузка\", \"part\": \"precondition\"},\n        {\"number\": 2, \"missing\": \"точки начала и конца замера времени загрузки\", \"part\": \"steps\"},\n        {\"number\": 3, \"missing\": \"допустимое время загрузки; в документе только слово «quickly»\", \"part\": \"expected\"},\n        {\"number\": 4, \"missing\": \"доля запросов, которая должна уложиться в это время\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-021\",\n      \"can_write\": false,\n      \"precondition\": \"Сервис работает в рабочей среде, настроен мониторинг доступности.\",\n      \"steps\": [\n        \"Вести мониторинг доступности сервиса в течение периода [?1], не считая окон обслуживания [?2].\",\n        \"Дать новым пользователям выполнить типовые задачи в интерфейсе и оценить результат по метрике [?3].\"\n      ],\n      \"expected\": \"Доступность не ниже [?4]; метрика удобства достигает [?5].\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"период, за который измеряется доступность\", \"part\": \"steps\"},\n        {\"number\": 2, \"missing\": \"допустимые окна обслуживания, которые не входят в расчёт\", \"part\": \"steps\"},\n        {\"number\": 3, \"missing\": \"метрика удобства интерфейса (например, доля выполненных задач, время выполнения, оценка пользователей)\", \"part\": \"steps\"},\n        {\"number\": 4, \"missing\": \"требуемый процент доступности; в документе только «highly available»\", \"part\": \"expected\"},\n        {\"number\": 5, \"missing\": \"пороговое значение метрики удобства; в документе только «user-friendly»\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-022\",\n      \"can_write\": false,\n      \"precondition\": \"Стенд с сервисом и контроллером ячеек, возможен перехват обмена между ними.\",\n      \"steps\": [\n        \"Выполнить операцию, при которой сервис обменивается данными с контроллером (например, открытие ячейки).\",\n        \"Перехватить обмен.\",\n        \"Сверить формат и порядок сообщений с описанием протокола.\"\n      ],\n      \"expected\": \"Весь обмен с контроллером идёт по proprietary protocol, описанному в [?1]; сообщения совпадают с его описанием.\",\n      \"values\": [\n        {\"value\": \"proprietary protocol\", \"quote\": \"All data exchange with the locker controller shall use the proprietary protocol defined in the controller manual.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"точный источник протокола: название, версия и производитель руководства, модель контроллера; в документе только «the controller manual»\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-023\",\n      \"can_write\": false,\n      \"precondition\": \"Есть курьер, клиент, управляющий здания и свободная ячейка.\",\n      \"steps\": [\n        \"Курьер резервирует свободную ячейку для посылки.\",\n        \"Курьер закладывает посылку; клиент открывает ячейку полученным one-time code.\",\n        \"Клиент пытается открыть ячейку неверным и уже использованным кодом.\",\n        \"По другой посылке дождаться истечения кода.\",\n        \"Управляющий блокирует ячейку; затем проверить нефункциональные требования (список свободных ячеек, код, доступность, обмен с контроллером).\"\n      ],\n      \"expected\": \"После резервирования ячейка [?1]. Верный код открывает ячейку. На неверный и использованный код система отвечает [?2]. Код истекает через [?3] после закладки, ячейка освобождается автоматически, уведомления получают курьер и клиент, управляющий получает их при условии [?4]. После блокировки ячейка [?5]. Приёмочные значения для проверки нефункциональных требований: [?6].\",\n      \"values\": [\n        {\"value\": \"one-time code\", \"quote\": \"The customer shall open the compartment with a one-time code valid for 48 hours.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"результат резервирования: статус ячейки, срок резерва, исчезновение из списка свободных\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"реакция системы на неверный и повторно использованный код: текст ошибки, лимит попыток\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"срок действия кода: в одном месте указано 48 часов, в другом 72 часа, единого значения нет\", \"part\": \"expected\"},\n        {\"number\": 4, \"missing\": \"условие «if needed», при котором уведомляется управляющий\", \"part\": \"expected\"},\n        {\"number\": 5, \"missing\": \"результат блокировки ячейки в каждом состоянии и правило разблокировки\", \"part\": \"expected\"},\n        {\"number\": 6, \"missing\": \"ожидаемые результаты приёмки для нефункциональных требований (скорость загрузки списка, срок кода, доступность и удобство, протокол контроллера): числовых порогов нет\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-024\",\n      \"can_write\": false,\n      \"precondition\": \"Курьер зарезервировал свободную ячейку; получатель-клиент известен системе.\",\n      \"steps\": [\n        \"Курьер кладёт посылку в ячейку и закрывает дверцу.\",\n        \"Курьер не подтверждает закладку в приложении.\",\n        \"Проверить у клиента, пришло ли уведомление и есть ли код.\",\n        \"Проверить, идёт ли срок действия кода.\"\n      ],\n      \"expected\": \"Посылка считается заложенной или не заложенной по [?1]. Уведомление клиенту и отсчёт срока кода в этом сценарии: [?2].\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"кто и когда фиксирует закладку (сигнал контроллера или подтверждение курьера) и что тогда считается состоянием «посылка заложена»\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"отправляется ли уведомление и идёт ли срок кода, если курьер не подтвердил закладку; события «заложена» в документе нет\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-025\",\n      \"can_write\": false,\n      \"precondition\": \"Курьер зарезервировал ячейку; у клиента-получателя есть доступ к личному списку посылок.\",\n      \"steps\": [\n        \"Курьер закладывает посылку в ячейку.\",\n        \"Клиент открывает список своих посылок.\"\n      ],\n      \"expected\": \"Посылка appears in the customer's list of parcels; запись содержит [?1]; появляется не позже чем через [?2] после закладки.\",\n      \"values\": [\n        {\"value\": \"appears in the customer's list of parcels\", \"quote\": \"A parcel placed by the courier appears in the customer's list of parcels.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"состав записи в списке посылок клиента (поля, статус); ни одно функциональное требование список не вводит\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"срок появления посылки в списке после закладки\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-026\",\n      \"can_write\": false,\n      \"precondition\": \"Клиент-получатель известен системе; доступен журнал отправки уведомлений.\",\n      \"steps\": [\n        \"Курьер закладывает посылку, тестировщик фиксирует время закладки.\",\n        \"В течение 5 minutes после закладки проверить журнал отправки и статус доставки уведомления клиенту.\"\n      ],\n      \"expected\": \"В течение 5 minutes после закладки система фиксирует отправку уведомления клиенту признаком [?1]; доставка подтверждается признаком [?2].\",\n      \"values\": [\n        {\"value\": \"5 minutes\", \"quote\": \"The customer receives a notification within 5 minutes after the parcel is placed.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"наблюдаемый признак отправки уведомления (запись в журнале, статус) и где его видит тестировщик\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"что считается доставкой уведомления и что система фиксирует, если получение зависит от оператора связи\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    }\n  ]\n}\n```",
+  "ttft_ms": 69004,
+  "type": "result",
+  "duration_ms": 98002,
+  "uuid": "9a5ee29f-5f45-441f-8fb3-92ae190c12a9",
+  "ttft_stream_ms": 881,
+  "time_to_request_ms": 68,
+  "time_to_request_phases_ms": {
+   "other": 8,
+   "system_prompt": 2,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 8,
+   "input_hooks": 2,
+   "conversation_append": 0,
+   "tool_pool_refresh": 2,
+   "init_message": 7,
+   "init_frame_send": 3,
+   "engine_pickup": 1,
+   "loop_entry": 3,
+   "message_prep": 2,
+   "model_config_wait": 0,
+   "autocompact": 2,
+   "request_announcements": 6,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 2,
+   "message_normalization": 2,
+   "client_creation": 8,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 17,
+  "time_to_request_cpu_ms": 74,
+  "time_to_request_major_faults": 0,
+  "process_rss_mib_turn_start": 201,
+  "process_anon_mib_turn_start": 124,
+  "process_rss_mib_result": 205,
+  "process_anon_mib_result": 119,
+  "process_peak_rss_mib": 220,
+  "process_cpu_ms_turn": 1366,
+  "process_wall_ms_turn": 98001,
+  "tool_pool_build_count": 4,
+  "tool_pool_build_lapsed_count": 1,
+  "tool_pool_moved_at_lapse_count": 0,
+  "tool_pool_limit_ms": 30000,
+  "process_cpu_ms_streaming": 1113,
+  "process_wall_ms_streaming": 93807,
+  "main_stream_count": 1,
+  "main_stream_event_count": 836,
+  "main_stream_chunk_count": 829,
+  "process_turn_states": {
+   "main_stream": {
+    "cpu_ms": 1113,
+    "wall_ms": 93807,
+    "entries": 1
+   },
+   "first_event_wait": {
+    "cpu_ms": 139,
+    "wall_ms": 812,
+    "entries": 1
+   },
+   "before_first_request": {
+    "cpu_ms": 74,
+    "wall_ms": 67,
+    "entries": 1
+   },
+   "after_last_request": {
+    "cpu_ms": 40,
+    "wall_ms": 3315,
+    "entries": 1
+   }
+  },
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 2,
+   "cpu_ms": 10,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 1,
+   "render_ms": 1,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 1,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 2,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 2,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 2,
+   "record_attempt_ms": 0,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 1,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 881,
+  "time_to_request_from_spawn_ms": 1048375,
+  "warm_spare_claimed": false,
+  "flag_fetch_kick": "not_asked_warm",
+  "time_origin_ms": 1795732205698.431,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "process_start_tuning": 0
+ }
+}

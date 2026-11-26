@@ -59,6 +59,10 @@ BROKEN_FILES = (
 PARTIAL_FILES = ("truncated.pdf", "mixed_scan.pdf", "headings_only.md", "not_requirements.md")
 """Вход с оговорками (код 3, #126): прочитан частично, без текста на странице, пустой шаблон, не ТЗ."""
 INJECTION_CODE = "IN-082"
+STALE_RECORDINGS = frozenset({"injection"})
+"""Записи, сделанные до правок промптов: пока их не перезаписали (``--record``), они проигрываются по шагу
+и номеру вызова (флаг разработки ``--replay-by-position``, в отчёте ``LLM-016``, #132). Записи english и
+mixed-language сделаны заново 27.11 (#54) и находятся по ключу запроса."""
 
 
 @dataclass(frozen=True)
@@ -189,9 +193,7 @@ def run_case(case: Case, work: Path, *, record: bool = False) -> Result:
         profile=case.profile,
         backend=_backend(case, record),
         replay_dir=(FIXTURES / case.slug / "run").relative_to(ROOT) if case.recorded and not record else None,
-        # Записи injection, english и mixed-language сделаны до правок промптов (в отчётах LLM-016): пока их
-        # не перезаписали, они проигрываются по шагу и номеру вызова, как раньше (#132, флаг разработки).
-        replay_by_position=case.recorded and not record,
+        replay_by_position=case.recorded and case.slug in STALE_RECORDINGS and not record,
         cache=CacheMode.USE if record else CacheMode.OFF,
         # Без распознавания сканов (#38): отчёты не зависят от того, стоит ли на машине Tesseract.
         ocr=False,

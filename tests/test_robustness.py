@@ -17,6 +17,7 @@ import pytest
 from scripts.robustness import (
     FIXTURES,
     REPORTS,
+    STALE_RECORDINGS,
     Case,
     Result,
     build_cases,
@@ -24,7 +25,7 @@ from scripts.robustness import (
     run_case,
 )
 from test_smoke import REPORT_SECTIONS
-from validator.errors import IN_INJECTION, INT_STEP_FAILED
+from validator.errors import IN_INJECTION, INT_STEP_FAILED, LLM_REPLAY_BY_POSITION
 from validator.ingest import defuse_delimiters, parse, render_for_model
 from validator.ingest.injection import review, scan
 from validator.lint import lint
@@ -91,6 +92,14 @@ def test_partial_input_gives_code_3_and_a_full_report(case: Case, results: dict[
     assert case.code in codes_of(result)
     assert "Traceback" not in md
     assert all(f"## {n}. " in md for n in range(1, 7))
+
+
+@pytest.mark.parametrize(
+    "case", [c for c in RECORDED if c.slug not in STALE_RECORDINGS], ids=lambda c: c.slug
+)
+def test_fresh_recording_is_replayed_by_request_key(case: Case, results: dict[str, Result]) -> None:
+    """Запись на текущих промптах находится по ключу запроса: в витрине нет предупреждения ``LLM-016``."""
+    assert LLM_REPLAY_BY_POSITION not in codes_of(results[case.slug])
 
 
 def test_committed_reports_cover_every_case() -> None:
