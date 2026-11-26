@@ -3,6 +3,8 @@ name = "qairu-validator"
 version = "0.1.0"
 description = "AI Requirements Validator: команда QAIRU larpers, BCC-HUB x MNU AI Agent Challenge 2026"
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.11"
 # Все зависимости агента кладёт каркас (#15), чтобы задачам волны 1 не пришлось трогать этот файл.
 dependencies = [
