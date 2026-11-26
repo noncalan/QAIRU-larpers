@@ -336,7 +336,8 @@ def _stability_section(cfg: ConfigResult) -> list[str]:
     lines = [f"## {cfg.title}", "", f"Результат: `{_rel(cfg.path)}`", "", head, *rows, ""]
     if any(r["calls"]["reused"] for r in cfg.runs):
         lines += [
-            "ᵃ часть ответов взята из кеша своего прогона после сброса лимита: время не живое, цена полная.",
+            "ᵃ часть ответов взята из кеша своего прогона (например, нарезка или повтор после сбоя): "
+            "время не живое, цена полная.",
             "",
         ]
     findings = [r["findings"] for r in cfg.runs]

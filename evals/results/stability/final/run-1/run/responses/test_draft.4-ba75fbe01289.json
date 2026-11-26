@@ -1,0 +1,231 @@
+{
+ "envelope_version": 1,
+ "key": "ba75fbe0128997687a29c7090a5d030674e6a6000a4a4e0be7515b55fbc03fa4",
+ "call_id": "test_draft.4",
+ "step": "test_draft",
+ "call_index": 4,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T22:53:55.176560+00:00",
+ "payload": {
+  "duration_api_ms": 51216,
+  "stop_reason": "end_turn",
+  "session_id": "453c62cf-7ee9-454c-aa6a-6712475a107d",
+  "total_cost_usd": 0.1141856,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 10148,
+   "cache_read_input_tokens": 2296,
+   "output_tokens": 7336,
+   "output_tokens_details": {
+    "thinking_tokens": 4886
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 10148,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 7336,
+     "cache_read_input_tokens": 2296,
+     "cache_creation_input_tokens": 10148,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 10148
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 7336,
+    "cacheReadInputTokens": 2296,
+    "cacheCreationInputTokens": 10148,
+    "webSearchRequests": 0,
+    "costUSD": 0.1141856,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 4886,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 10148,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n**M-051.** Для теста нужно знать код, условие и тело для каждого статуса. Для 401 без авторизации и для 500 код и тело в документе есть. Для истёкшего токена код не назван, и не сказано, считается ли он «запросом без авторизации». Условие, при котором сервер отвечает 500, тоже не названо, поэтому на этих местах стоят пропуски.\n\n**M-052.** Для теста нужен код ответа при успешном сохранении. Заголовок раздела говорит «200 … Created», B097.1 допускает 200 и 201, а в общем перечне назван только 200. Единого кода нет, поэтому код получает пропуск. Тело успешного ответа в документе есть.\n\n**M-053.** Для теста нужны код и тело ответа на сумму вне диапазона. По B107 это ответ с `result: ERROR` под заголовком 200. По B103.2 неверные параметры дают 400 с телом «Некорректный запрос». Единого результата нет, поэтому код и тело получают пропуски. Из документа брать можно только то, что настройка остаётся прежней.\n\n**M-054.** Для теста нужен код ответа на чужую карту. B108.2 даёт 403, B114.1 даёт 404, и единого значения нет. Тело есть только у 404, поэтому тело тоже становится пропуском.\n\n## Ответ\n\n```json\n{\n  \"drafts\": [\n    {\n      \"finding\": \"M-051\",\n      \"can_write\": false,\n      \"precondition\": \"Dev-среда. Карта demo-42 принадлежит пользователю, у пользователя есть действующая сессия, а также токен с истёкшим сроком.\",\n      \"steps\": [\n        \"Отправить GET /alerts/saveLimit с cardId=demo-42, amount=50000, enabled=1 без заголовка Authorization.\",\n        \"Повторить запрос с истёкшим Bearer-токеном.\",\n        \"Создать условие внутренней ошибки сервера: [?1] — и повторить запрос с действующим токеном.\"\n      ],\n      \"expected\": \"1) Код 401, тело {\\\"message\\\":\\\"Требуется вход\\\"}. 2) Для истёкшего токена: [?2]. 3) Код 500, тело {\\\"message\\\":\\\"Ошибка сервиса\\\"}.\",\n      \"values\": [\n        {\"value\": \"401\", \"quote\": \"401. Unsuccessful — Unauthorized\"},\n        {\"value\": \"Требуется вход\", \"quote\": \"{\\\"message\\\":\\\"Требуется вход\\\"}\"},\n        {\"value\": \"500\", \"quote\": \"500. Unsuccessful — Internal server error\"},\n        {\"value\": \"Ошибка сервиса\", \"quote\": \"{\\\"message\\\":\\\"Ошибка сервиса\\\"}\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"условие, при котором метод возвращает 500: в документе сказано только «произошла внутренняя ошибка сервера», как её воспроизвести, не названо\", \"part\": \"steps\"},\n        {\"number\": 2, \"missing\": \"код и тело ответа при истёкшем токене: не сказано, относится ли он к «запросу без необходимой авторизации» (401) или к другому случаю; единого перечня «код — условие — тело» нет\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-052\",\n      \"can_write\": false,\n      \"precondition\": \"Dev-среда. Карта demo-42 принадлежит пользователю, активна, в KZT. У пользователя есть действующая сессия.\",\n      \"steps\": [\n        \"Отправить GET /alerts/saveLimit с cardId=demo-42, amount=50000, enabled=1 и Bearer-токеном владельца карты.\"\n      ],\n      \"expected\": \"Код ответа [?1]. Тело: {\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}.\",\n      \"values\": [\n        {\"value\": \"{\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}\", \"quote\": \"{\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"единый код успешного ответа: заголовок «200. Successful — Created» намекает на 201, перечень статусов называет 200, а правило ответа допускает и 200, и 201\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-053\",\n      \"can_write\": false,\n      \"precondition\": \"Dev-среда. Карта demo-42 принадлежит пользователю. Сохранена настройка: порог 50000, enabled=1. У пользователя есть действующая сессия.\",\n      \"steps\": [\n        \"Отправить GET /alerts/saveLimit с cardId=demo-42, amount=999, enabled=1 и Bearer-токеном владельца карты (сумма ниже нижней границы диапазона).\",\n        \"Прочитать настройку карты demo-42.\"\n      ],\n      \"expected\": \"Код ответа [?1], тело ответа [?2]. Настройка карты осталась прежней: порог 50000, enabled=1.\",\n      \"values\": [\n        {\"value\": \"прежнее состояние\", \"quote\": \"При отклонении суммы вернуть прежнее состояние и результат ERROR.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"код ответа на сумму вне диапазона: ответ с result ERROR описан под заголовком «200», но 200 по правилу ответа означает успех, а «параметры заполнены неверно» ведут к 400\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"тело ответа на неверную сумму: {\\\"result\\\":\\\"ERROR\\\",\\\"message\\\":\\\"Проверьте сумму\\\"} (вариант с 200) или {\\\"message\\\":\\\"Некорректный запрос\\\"} (вариант с 400); выбор зависит от неопределённого кода\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-054\",\n      \"can_write\": false,\n      \"precondition\": \"Dev-среда. Есть пользователь A с действующей сессией и карта другого клиента B, которая существует в системе.\",\n      \"steps\": [\n        \"Отправить GET /alerts/saveLimit с cardId карты клиента B, amount=50000, enabled=1 и Bearer-токеном пользователя A.\"\n      ],\n      \"expected\": \"Код ответа [?1], тело ответа [?2].\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"код ответа для чужой карты: одно место документа называет 403 («доступ запрещён»), другое — 404 («для чужой карты возвращается 404»); условие, при котором вообще возвращается 403, не названо\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"тело ответа для чужой карты: у 404 есть тело {\\\"message\\\":\\\"Карта не найдена\\\"}, у 403 тела в документе нет; выбор зависит от неопределённого кода\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    }\n  ]\n}\n```",
+  "ttft_ms": 38092,
+  "type": "result",
+  "duration_ms": 54716,
+  "uuid": "d3d0871d-3f9c-4c18-ba81-d23085fbffa6",
+  "ttft_stream_ms": 828,
+  "time_to_request_ms": 65,
+  "time_to_request_phases_ms": {
+   "other": 6,
+   "system_prompt": 2,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 8,
+   "input_hooks": 2,
+   "conversation_append": 1,
+   "tool_pool_refresh": 1,
+   "init_message": 6,
+   "init_frame_send": 3,
+   "engine_pickup": 2,
+   "loop_entry": 3,
+   "message_prep": 1,
+   "model_config_wait": 5,
+   "autocompact": 1,
+   "request_announcements": 5,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 1,
+   "message_normalization": 2,
+   "client_creation": 5,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 15,
+  "time_to_request_cpu_ms": 75,
+  "time_to_request_major_faults": 0,
+  "process_rss_mib_turn_start": 199,
+  "process_anon_mib_turn_start": 121,
+  "process_rss_mib_result": 205,
+  "process_anon_mib_result": 120,
+  "process_peak_rss_mib": 220,
+  "process_cpu_ms_turn": 849,
+  "process_wall_ms_turn": 54716,
+  "tool_pool_build_count": 4,
+  "tool_pool_build_lapsed_count": 1,
+  "tool_pool_moved_at_lapse_count": 0,
+  "tool_pool_limit_ms": 30000,
+  "process_cpu_ms_streaming": 613,
+  "process_wall_ms_streaming": 50444,
+  "main_stream_count": 1,
+  "main_stream_event_count": 436,
+  "main_stream_chunk_count": 430,
+  "process_turn_states": {
+   "main_stream": {
+    "cpu_ms": 613,
+    "wall_ms": 50444,
+    "entries": 1
+   },
+   "first_event_wait": {
+    "cpu_ms": 122,
+    "wall_ms": 761,
+    "entries": 1
+   },
+   "before_first_request": {
+    "cpu_ms": 75,
+    "wall_ms": 65,
+    "entries": 1
+   },
+   "after_last_request": {
+    "cpu_ms": 39,
+    "wall_ms": 3446,
+    "entries": 1
+   }
+  },
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 2,
+   "cpu_ms": 11,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 4,
+   "ambient_wait_ms": 1,
+   "render_ms": 1,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 2,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 1,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 1,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 1
+  },
+  "first_content_frame_ms": 828,
+  "time_to_request_from_spawn_ms": 413566,
+  "warm_spare_claimed": false,
+  "flag_fetch_kick": "not_asked_warm",
+  "time_origin_ms": 1795733579537.0762,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "process_start_tuning": 0
+ }
+}
