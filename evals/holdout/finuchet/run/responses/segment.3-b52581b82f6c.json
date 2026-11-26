@@ -1,0 +1,1626 @@
+{
+ "envelope_version": 1,
+ "key": "b52581b82f6c8ee7f30ba0b3c68a0e461914a598afad853ea87d4d10e71dcd0b",
+ "call_id": "segment.3",
+ "step": "segment",
+ "call_index": 3,
+ "model": "claude-sonnet-5-5",
+ "effort": "medium",
+ "backend": "cli",
+ "saved_at": "2026-11-26T22:51:49.263259+00:00",
+ "payload": {
+  "duration_api_ms": 41733,
+  "stop_reason": "tool_use",
+  "session_id": "dc7547ee-0fa6-479e-afd2-9128a61c16b7",
+  "total_cost_usd": 0.1414221,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 12357,
+   "cache_read_input_tokens": 5101,
+   "output_tokens": 9148,
+   "output_tokens_details": {
+    "thinking_tokens": 0
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 12357,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 9148,
+     "cache_read_input_tokens": 5101,
+     "cache_creation_input_tokens": 12357,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 12357
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 9148,
+    "cacheReadInputTokens": 5101,
+    "cacheCreationInputTokens": 12357,
+    "webSearchRequests": 0,
+    "costUSD": 0.1414221,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 12357,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 2,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "{\"requirements\":[{\"refs\":[\"B049.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"4.2.1\",\"summary\":\"Контроль вводимых данных на тип, диапазон и обязательность заполнения\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"вводимые данные\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B049.3\"],\"part_start\":\"Некорректно заполненное поле\",\"part_end\":\"поясняющим сообщением\",\"type\":\"ui\",\"subtype\":\"\",\"source_id\":\"4.2.1\",\"summary\":\"Некорректное поле выделяется и сопровождается поясняющим сообщением\",\"entities\":[],\"links\":[],\"depends_on\":\"B049.2\"},{\"refs\":[\"B049.3\"],\"part_start\":\"сохранение данных при\",\"part_end\":\"не выполняется\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"4.2.1\",\"summary\":\"При ошибке в поле сохранение данных не выполняется\",\"entities\":[],\"links\":[],\"depends_on\":\"B049.2\"},{\"refs\":[\"B049.4\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"4.2.1\",\"summary\":\"На каждой форме проверяется отклонение пустых обязательных и внедиапазонных значений\",\"entities\":[],\"links\":[],\"depends_on\":\"B049.2\"},{\"refs\":[\"B050.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"4.2.2\",\"summary\":\"Операции изменения нескольких таблиц выполняются в одной транзакции БД\",\"entities\":[{\"kind\":\"system\",\"value\":\"база данных\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B050.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"4.2.2\",\"summary\":\"При ошибке транзакция полностью откатывается\",\"entities\":[{\"kind\":\"event\",\"value\":\"ошибка транзакции\"}],\"links\":[],\"depends_on\":\"B050.2\"},{\"refs\":[\"B050.4\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"4.2.2\",\"summary\":\"Сбой в переводе: после перезапуска операции нет, остатки не изменились\",\"entities\":[],\"links\":[],\"depends_on\":\"B050.2\"},{\"refs\":[\"B051.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"4.2.3\",\"summary\":\"Реализован глобальный обработчик необработанных исключений\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B051.3\"],\"part_start\":\"Аварийное завершение работы\",\"part_end\":\"не допускается\",\"type\":\"nfr\",\"subtype\":\"\",\"source_id\":\"4.2.3\",\"summary\":\"Аварийное завершение приложения не допускается\",\"entities\":[],\"links\":[],\"depends_on\":\"B051.2\"},{\"refs\":[\"B051.3\"],\"part_start\":\"при возникновении исключения\",\"part_end\":\"описанием ситуации\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"4.2.3\",\"summary\":\"При исключении пользователю выводится сообщение на русском с описанием\",\"entities\":[{\"kind\":\"event\",\"value\":\"исключение\"}],\"links\":[],\"depends_on\":\"B051.2\"},{\"refs\":[\"B051.3\"],\"part_start\":\"а полная техническая информация\",\"part_end\":\"в журнал работы\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"4.2.3\",\"summary\":\"Техническая информация об исключении записывается в журнал\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"текст исключения, стек вызовов, время\"}],\"links\":[],\"depends_on\":\"B051.2\"},{\"refs\":[\"B051.4\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.2.3\",\"summary\":\"Журналы в файлах с ежедневной ротацией, хранение не менее 14 суток\",\"entities\":[{\"kind\":\"period\",\"value\":\"14 суток\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B051.5\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"4.2.3\",\"summary\":\"Вызов исключения: сообщение, продолжение работы, запись в журнале\",\"entities\":[],\"links\":[],\"depends_on\":\"B051.2\"},{\"refs\":[\"B052.2\"],\"part_start\":\"При каждом запуске\",\"part_end\":\"файла базы данных\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"4.2.4\",\"summary\":\"При каждом запуске автоматически создаётся резервная копия файла БД\",\"entities\":[{\"kind\":\"event\",\"value\":\"запуск программы\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B052.2\"],\"part_start\":\"в каталоге резервных копий\",\"part_end\":\"удаляются автоматически\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.2.4\",\"summary\":\"Хранятся 5 последних копий, старые удаляются автоматически\",\"entities\":[{\"kind\":\"amount\",\"value\":\"5 копий\"}],\"links\":[],\"depends_on\":\"B052.2\"},{\"refs\":[\"B052.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"4.2.4\",\"summary\":\"После 7 запусков в каталоге ровно 5 копий с корректными отметками\",\"entities\":[{\"kind\":\"amount\",\"value\":\"7 запусков\"}],\"links\":[],\"depends_on\":\"B052.2\"},{\"refs\":[\"B053.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"nfr\",\"subtype\":\"\",\"source_id\":\"4.2.5\",\"summary\":\"Время восстановления после повреждения БД не более 5 мин\",\"entities\":[{\"kind\":\"period\",\"value\":\"5 мин\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B053.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"4.2.5\",\"summary\":\"Повреждение БД, восстановление, время фиксируется в протоколе\",\"entities\":[],\"links\":[],\"depends_on\":\"B053.2\"},{\"refs\":[\"B054.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"nfr\",\"subtype\":\"\",\"source_id\":\"4.2.6\",\"summary\":\"Наработка на отказ не менее 40 ч непрерывной работы\",\"entities\":[{\"kind\":\"period\",\"value\":\"40 ч\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B054.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"4.2.6\",\"summary\":\"Прогон не менее 8 ч без отказов, рост памяти не более 20 %\",\"entities\":[{\"kind\":\"period\",\"value\":\"8 ч\"},{\"kind\":\"amount\",\"value\":\"20 %\"}],\"links\":[],\"depends_on\":\"B054.2\"},{\"refs\":[\"B055.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"nfr\",\"subtype\":\"\",\"source_id\":\"4.2.7\",\"summary\":\"Бизнес-логика покрыта модульными тестами не менее 70 %\",\"entities\":[{\"kind\":\"amount\",\"value\":\"70 %\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B055.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"4.2.7\",\"summary\":\"К приёмке все модульные и интеграционные тесты проходят успешно\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B055.4\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"4.2.7\",\"summary\":\"Запуск сборки и тестов; отчёт покрытия и результаты прилагаются\",\"entities\":[],\"links\":[],\"depends_on\":\"B055.2\"},{\"refs\":[\"B057.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.3.1\",\"summary\":\"Климатические условия: 15–25 °C, влажность 40–80 %, давление 84–107 кПа\",\"entities\":[{\"kind\":\"amount\",\"value\":\"15–25 °C\"},{\"kind\":\"amount\",\"value\":\"40–80 %\"},{\"kind\":\"amount\",\"value\":\"84–107 кПа\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B057.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.3.1\",\"summary\":\"Специальных требований к среде от программы нет\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B058.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.3.2\",\"summary\":\"Эксплуатация одним пользователем на персональном компьютере\",\"entities\":[{\"kind\":\"actor\",\"value\":\"один пользователь\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B058.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.3.2\",\"summary\":\"Регламентное техническое обслуживание не требуется\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B058.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"other\",\"subtype\":\"\",\"source_id\":\"4.3.2\",\"summary\":\"Рекомендуется резервная копия БД на внешний носитель не реже раза в месяц\",\"entities\":[{\"kind\":\"period\",\"value\":\"раз в месяц\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B059.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.3.3\",\"summary\":\"Нужен один пользователь с навыками Windows, знакомый с руководством\",\"entities\":[{\"kind\":\"actor\",\"value\":\"пользователь\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B059.3\"],\"part_start\":\"Время освоения программы\",\"part_end\":\"превышать 1 ч\",\"type\":\"nfr\",\"subtype\":\"\",\"source_id\":\"4.3.3\",\"summary\":\"Время освоения по руководству не более 1 ч\",\"entities\":[{\"kind\":\"period\",\"value\":\"1 ч\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B059.3\"],\"part_start\":\"Наличие в штате\",\"part_end\":\"не требуется\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.3.3\",\"summary\":\"Администратор БД или системный программист не требуются\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B060.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.3.4\",\"summary\":\"Режим работы пользователя периодический, до 1 ч в сутки\",\"entities\":[{\"kind\":\"period\",\"value\":\"до 1 ч в сутки\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B060.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"nfr\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Постоянное подключение к Интернету не требуется; функции доступны автономно\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B062\",\"B063\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.4.1\",\"summary\":\"Процессор x64, не менее 2 ядер, не ниже 1,8 ГГц\",\"entities\":[{\"kind\":\"amount\",\"value\":\"2 ядра, 1,8 ГГц\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B064\"],\"part_start\":\"оперативная память — не\",\"part_end\":\"не менее 4 ГБ;\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.4.1\",\"summary\":\"Оперативная память не менее 4 ГБ\",\"entities\":[{\"kind\":\"amount\",\"value\":\"4 ГБ\"}],\"links\":[],\"depends_on\":\"B062\"},{\"refs\":[\"B064\",\"B065\"],\"part_start\":\"свободное пространство на\",\"part_end\":\"резервных копий;\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.4.1\",\"summary\":\"Свободное место не менее 500 МБ: 200 МБ дистрибутив, 300 МБ данные\",\"entities\":[{\"kind\":\"amount\",\"value\":\"500 МБ\"}],\"links\":[],\"depends_on\":\"B062\"},{\"refs\":[\"B066\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.4.1\",\"summary\":\"Монитор с разрешением не ниже 1366×768\",\"entities\":[{\"kind\":\"amount\",\"value\":\"1366×768\"}],\"links\":[],\"depends_on\":\"B062\"},{\"refs\":[\"B067\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.4.1\",\"summary\":\"Клавиатура и мышь или эквивалентное указательное устройство\",\"entities\":[],\"links\":[],\"depends_on\":\"B062\"},{\"refs\":[\"B068\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.4.2\",\"summary\":\"Рекомендуемая конфигурация: x64 4 ядра 2,4 ГГц, 8 ГБ, SSD, 1920×1080\",\"entities\":[{\"kind\":\"amount\",\"value\":\"8 ГБ\"},{\"kind\":\"amount\",\"value\":\"1920×1080\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B069\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.4.3\",\"summary\":\"Дополнительно: принтер А4 по необходимости, внешний накопитель для копий\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B070\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.4.4\",\"summary\":\"Сетевое оборудование и Интернет не требуются\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B072.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.5.1\",\"summary\":\"Работа под Windows 10 x64 21H2+ и Windows 11 x64\",\"entities\":[{\"kind\":\"system\",\"value\":\"Windows 10 21H2+, Windows 11\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B072.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.5.1\",\"summary\":\"Работа под иными ОС не требуется\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B073.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.5.2\",\"summary\":\"Разработка на C# 14 и .NET 10 LTS\",\"entities\":[{\"kind\":\"system\",\"value\":\"C# 14, .NET 10\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B073.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.5.2\",\"summary\":\"Тип проекта WPF, целевая платформа net10.0-windows\",\"entities\":[{\"kind\":\"system\",\"value\":\"WPF\"},{\"kind\":\"data_field\",\"value\":\"net10.0-windows\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B073.4\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.5.2\",\"summary\":\"Установлена среда .NET 10 Desktop Runtime либо self-contained поставка\",\"entities\":[{\"kind\":\"system\",\"value\":\".NET 10 Desktop Runtime\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B074.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.5.3\",\"summary\":\"Архитектура MVVM со слоями представления, служб и доступа к данным\",\"entities\":[{\"kind\":\"system\",\"value\":\"MVVM\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B074.3\"],\"part_start\":\"Внедрение зависимостей выполняется\",\"part_end\":\"DependencyInjection;\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.5.3\",\"summary\":\"Внедрение зависимостей через Microsoft.Extensions.DependencyInjection\",\"entities\":[{\"kind\":\"system\",\"value\":\"Microsoft.Extensions.DependencyInjection\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B074.3\"],\"part_start\":\"конфигурация приложения — средствами\",\"part_end\":\"appsettings.json\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.5.3\",\"summary\":\"Конфигурация через Microsoft.Extensions.Configuration (appsettings.json)\",\"entities\":[{\"kind\":\"system\",\"value\":\"Microsoft.Extensions.Configuration\"},{\"kind\":\"data_field\",\"value\":\"appsettings.json\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B075.2\",\"B076\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.5.4\",\"summary\":\"Использовать библиотеки и средства из таблицы 4.1, допустимы более поздние версии\",\"entities\":[{\"kind\":\"system\",\"value\":\"таблица 4.1\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B077.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.5.5\",\"summary\":\"Разработка в Visual Studio 2026 или Rider; сборка и тесты через dotnet CLI\",\"entities\":[{\"kind\":\"system\",\"value\":\"Visual Studio 2026, Rider, dotnet CLI\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B077.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.5.5\",\"summary\":\"Версии кода в Git, репозиторий на GitHub\",\"entities\":[{\"kind\":\"system\",\"value\":\"Git, GitHub\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B078.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"data\",\"subtype\":\"\",\"source_id\":\"4.5.6\",\"summary\":\"Данные хранятся в файле SQLite в профиле пользователя\",\"entities\":[{\"kind\":\"system\",\"value\":\"SQLite\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B078.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"integration\",\"subtype\":\"\",\"source_id\":\"4.5.6\",\"summary\":\"Обмен с внешними программами через CSV, UTF-8, разделитель «;», RFC 4180\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"CSV UTF-8\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B078.4\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"data\",\"subtype\":\"\",\"source_id\":\"4.5.6\",\"summary\":\"Кодировка текстовых файлов и исходного кода — UTF-8\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"UTF-8\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B078.5\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"data\",\"subtype\":\"\",\"source_id\":\"4.5.6\",\"summary\":\"Дата и время в формате ИСО 8601\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"ИСО 8601\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B079.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"nfr\",\"subtype\":\"\",\"source_id\":\"4.5.7\",\"summary\":\"Пароль хранится только как хеш PBKDF2-HMAC-SHA256, ≥100 000 итераций, соль ≥16 байт\",\"entities\":[{\"kind\":\"amount\",\"value\":\"100 000 итераций\"},{\"kind\":\"amount\",\"value\":\"16 байт\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B079.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"nfr\",\"subtype\":\"\",\"source_id\":\"4.5.7\",\"summary\":\"Не хранятся персональные данные третьих лиц и нет передачи за пределы компьютера\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B085.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.8.1\",\"summary\":\"Язык интерфейса и сообщений — русский\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B085.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.8.1\",\"summary\":\"Ресурсы интерфейса в файлах ресурсов для локализации без изменения кода\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B086\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.8.2\",\"summary\":\"Исходный код соответствует Microsoft C# Coding Conventions\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B087\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"4.8.2\",\"summary\":\"Публичные типы и члены сопровождаются XML-комментариями\",\"entities\":[],\"links\":[],\"depends_on\":\"B086\"},{\"refs\":[\"B089\",\"B090\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"5.1\",\"summary\":\"Состав документации по ЕСПД согласно таблице 5.1\",\"entities\":[{\"kind\":\"system\",\"value\":\"ЕСПД\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B091.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"5.2\",\"summary\":\"Документы оформляются на А4 по ГОСТ 19.106-78: шрифт, интервал, отступ, поля\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"Times New Roman 14 пт\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B091.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"5.2\",\"summary\":\"Сквозная нумерация страниц внизу по центру, на титульном листе без номера\",\"entities\":[],\"links\":[],\"depends_on\":\"B091.1\"},{\"refs\":[\"B092.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"5.3\",\"summary\":\"Документация передаётся Заказчику в электронном виде DOCX и (или) PDF\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"DOCX, PDF\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B092.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"other\",\"subtype\":\"\",\"source_id\":\"5.3\",\"summary\":\"В репозитории размещается README.md с описанием, инструкцией и списком библиотек\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"README.md\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B095.1\",\"B095.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"other\",\"subtype\":\"\",\"source_id\":\"6.1\",\"summary\":\"Технико-экономические показатели разработки по таблице 6.1\",\"entities\":[{\"kind\":\"amount\",\"value\":\"180 чел.-ч\"},{\"kind\":\"period\",\"value\":\"15 недель\"}],\"links\":[],\"depends_on\":\"B094\"},{\"refs\":[\"B096.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"6.2\",\"summary\":\"Рассчитано на индивидуальное применение, тиражирование не планируется\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B099.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"process\",\"subtype\":\"\",\"source_id\":\"7.1\",\"summary\":\"Разработка в пять стадий по ГОСТ 19.102-77\",\"entities\":[{\"kind\":\"amount\",\"value\":\"пять стадий\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B099.2\",\"B100\",\"B101\",\"B103.1\",\"B103.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"process\",\"subtype\":\"\",\"source_id\":\"7.1\",\"summary\":\"Стадии, этапы, сроки и результаты по таблице 7.1\",\"entities\":[{\"kind\":\"period\",\"value\":\"07.09.2026 — 21.12.2026\"}],\"links\":[],\"depends_on\":\"B099.1\"},{\"refs\":[\"B104\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"7.2\",\"summary\":\"Изменение сроков этапов по согласованию с руководителем с оформлением изменения к ТЗ\",\"entities\":[{\"kind\":\"actor\",\"value\":\"руководитель\"}],\"links\":[],\"depends_on\":\"\"}],\"excluded\":[{\"block\":\"B049.1\",\"label\":\"context\",\"reason\":\"название подпункта\"},{\"block\":\"B050.1\",\"label\":\"context\",\"reason\":\"название подпункта\"},{\"block\":\"B051.1\",\"label\":\"context\",\"reason\":\"название подпункта\"},{\"block\":\"B052.1\",\"label\":\"context\",\"reason\":\"название подпункта\"},{\"block\":\"B053.1\",\"label\":\"context\",\"reason\":\"название подпункта\"},{\"block\":\"B054.1\",\"label\":\"context\",\"reason\":\"название подпункта\"},{\"block\":\"B055.1\",\"label\":\"context\",\"reason\":\"название подпункта\"},{\"block\":\"B059.1\",\"label\":\"context\",\"reason\":\"название подпункта\"},{\"block\":\"B072.1\",\"label\":\"context\",\"reason\":\"название подпункта\"},{\"block\":\"B073.1\",\"label\":\"context\",\"reason\":\"название подпункта\"},{\"block\":\"B074.1\",\"label\":\"context\",\"reason\":\"название подпункта\"},{\"block\":\"B075.1\",\"label\":\"context\",\"reason\":\"название подпункта\"},{\"block\":\"B077.1\",\"label\":\"context\",\"reason\":\"название подпункта\"},{\"block\":\"B078.1\",\"label\":\"context\",\"reason\":\"название подпункта\"},{\"block\":\"B079.1\",\"label\":\"context\",\"reason\":\"название подпункта\"},{\"block\":\"B081\",\"label\":\"context\",\"reason\":\"раздел не применяется, пояснение\"},{\"block\":\"B083\",\"label\":\"context\",\"reason\":\"раздел не применяется, пояснение\"},{\"block\":\"B094\",\"label\":\"context\",\"reason\":\"отсылка к таблице показателей\"},{\"block\":\"B096.1\",\"label\":\"context\",\"reason\":\"название подпункта\"},{\"block\":\"B096.3\",\"label\":\"context\",\"reason\":\"пояснение учебной ценности\"},{\"block\":\"B097\",\"label\":\"context\",\"reason\":\"сравнение с аналогами, обоснование\"}]}",
+  "structured_output": {
+   "requirements": [
+    {
+     "refs": [
+      "B049.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "4.2.1",
+     "summary": "Контроль вводимых данных на тип, диапазон и обязательность заполнения",
+     "entities": [
+      {
+       "kind": "data_field",
+       "value": "вводимые данные"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B049.3"
+     ],
+     "part_start": "Некорректно заполненное поле",
+     "part_end": "поясняющим сообщением",
+     "type": "ui",
+     "subtype": "",
+     "source_id": "4.2.1",
+     "summary": "Некорректное поле выделяется и сопровождается поясняющим сообщением",
+     "entities": [],
+     "links": [],
+     "depends_on": "B049.2"
+    },
+    {
+     "refs": [
+      "B049.3"
+     ],
+     "part_start": "сохранение данных при",
+     "part_end": "не выполняется",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "4.2.1",
+     "summary": "При ошибке в поле сохранение данных не выполняется",
+     "entities": [],
+     "links": [],
+     "depends_on": "B049.2"
+    },
+    {
+     "refs": [
+      "B049.4"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "acceptance",
+     "subtype": "",
+     "source_id": "4.2.1",
+     "summary": "На каждой форме проверяется отклонение пустых обязательных и внедиапазонных значений",
+     "entities": [],
+     "links": [],
+     "depends_on": "B049.2"
+    },
+    {
+     "refs": [
+      "B050.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "4.2.2",
+     "summary": "Операции изменения нескольких таблиц выполняются в одной транзакции БД",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "база данных"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B050.3"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "4.2.2",
+     "summary": "При ошибке транзакция полностью откатывается",
+     "entities": [
+      {
+       "kind": "event",
+       "value": "ошибка транзакции"
+      }
+     ],
+     "links": [],
+     "depends_on": "B050.2"
+    },
+    {
+     "refs": [
+      "B050.4"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "acceptance",
+     "subtype": "",
+     "source_id": "4.2.2",
+     "summary": "Сбой в переводе: после перезапуска операции нет, остатки не изменились",
+     "entities": [],
+     "links": [],
+     "depends_on": "B050.2"
+    },
+    {
+     "refs": [
+      "B051.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "4.2.3",
+     "summary": "Реализован глобальный обработчик необработанных исключений",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B051.3"
+     ],
+     "part_start": "Аварийное завершение работы",
+     "part_end": "не допускается",
+     "type": "nfr",
+     "subtype": "",
+     "source_id": "4.2.3",
+     "summary": "Аварийное завершение приложения не допускается",
+     "entities": [],
+     "links": [],
+     "depends_on": "B051.2"
+    },
+    {
+     "refs": [
+      "B051.3"
+     ],
+     "part_start": "при возникновении исключения",
+     "part_end": "описанием ситуации",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "4.2.3",
+     "summary": "При исключении пользователю выводится сообщение на русском с описанием",
+     "entities": [
+      {
+       "kind": "event",
+       "value": "исключение"
+      }
+     ],
+     "links": [],
+     "depends_on": "B051.2"
+    },
+    {
+     "refs": [
+      "B051.3"
+     ],
+     "part_start": "а полная техническая информация",
+     "part_end": "в журнал работы",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "4.2.3",
+     "summary": "Техническая информация об исключении записывается в журнал",
+     "entities": [
+      {
+       "kind": "data_field",
+       "value": "текст исключения, стек вызовов, время"
+      }
+     ],
+     "links": [],
+     "depends_on": "B051.2"
+    },
+    {
+     "refs": [
+      "B051.4"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.2.3",
+     "summary": "Журналы в файлах с ежедневной ротацией, хранение не менее 14 суток",
+     "entities": [
+      {
+       "kind": "period",
+       "value": "14 суток"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B051.5"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "acceptance",
+     "subtype": "",
+     "source_id": "4.2.3",
+     "summary": "Вызов исключения: сообщение, продолжение работы, запись в журнале",
+     "entities": [],
+     "links": [],
+     "depends_on": "B051.2"
+    },
+    {
+     "refs": [
+      "B052.2"
+     ],
+     "part_start": "При каждом запуске",
+     "part_end": "файла базы данных",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "4.2.4",
+     "summary": "При каждом запуске автоматически создаётся резервная копия файла БД",
+     "entities": [
+      {
+       "kind": "event",
+       "value": "запуск программы"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B052.2"
+     ],
+     "part_start": "в каталоге резервных копий",
+     "part_end": "удаляются автоматически",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.2.4",
+     "summary": "Хранятся 5 последних копий, старые удаляются автоматически",
+     "entities": [
+      {
+       "kind": "amount",
+       "value": "5 копий"
+      }
+     ],
+     "links": [],
+     "depends_on": "B052.2"
+    },
+    {
+     "refs": [
+      "B052.3"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "acceptance",
+     "subtype": "",
+     "source_id": "4.2.4",
+     "summary": "После 7 запусков в каталоге ровно 5 копий с корректными отметками",
+     "entities": [
+      {
+       "kind": "amount",
+       "value": "7 запусков"
+      }
+     ],
+     "links": [],
+     "depends_on": "B052.2"
+    },
+    {
+     "refs": [
+      "B053.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "nfr",
+     "subtype": "",
+     "source_id": "4.2.5",
+     "summary": "Время восстановления после повреждения БД не более 5 мин",
+     "entities": [
+      {
+       "kind": "period",
+       "value": "5 мин"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B053.3"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "acceptance",
+     "subtype": "",
+     "source_id": "4.2.5",
+     "summary": "Повреждение БД, восстановление, время фиксируется в протоколе",
+     "entities": [],
+     "links": [],
+     "depends_on": "B053.2"
+    },
+    {
+     "refs": [
+      "B054.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "nfr",
+     "subtype": "",
+     "source_id": "4.2.6",
+     "summary": "Наработка на отказ не менее 40 ч непрерывной работы",
+     "entities": [
+      {
+       "kind": "period",
+       "value": "40 ч"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B054.3"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "acceptance",
+     "subtype": "",
+     "source_id": "4.2.6",
+     "summary": "Прогон не менее 8 ч без отказов, рост памяти не более 20 %",
+     "entities": [
+      {
+       "kind": "period",
+       "value": "8 ч"
+      },
+      {
+       "kind": "amount",
+       "value": "20 %"
+      }
+     ],
+     "links": [],
+     "depends_on": "B054.2"
+    },
+    {
+     "refs": [
+      "B055.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "nfr",
+     "subtype": "",
+     "source_id": "4.2.7",
+     "summary": "Бизнес-логика покрыта модульными тестами не менее 70 %",
+     "entities": [
+      {
+       "kind": "amount",
+       "value": "70 %"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B055.3"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "acceptance",
+     "subtype": "",
+     "source_id": "4.2.7",
+     "summary": "К приёмке все модульные и интеграционные тесты проходят успешно",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B055.4"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "acceptance",
+     "subtype": "",
+     "source_id": "4.2.7",
+     "summary": "Запуск сборки и тестов; отчёт покрытия и результаты прилагаются",
+     "entities": [],
+     "links": [],
+     "depends_on": "B055.2"
+    },
+    {
+     "refs": [
+      "B057.1"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.3.1",
+     "summary": "Климатические условия: 15–25 °C, влажность 40–80 %, давление 84–107 кПа",
+     "entities": [
+      {
+       "kind": "amount",
+       "value": "15–25 °C"
+      },
+      {
+       "kind": "amount",
+       "value": "40–80 %"
+      },
+      {
+       "kind": "amount",
+       "value": "84–107 кПа"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B057.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.3.1",
+     "summary": "Специальных требований к среде от программы нет",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B058.1"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.3.2",
+     "summary": "Эксплуатация одним пользователем на персональном компьютере",
+     "entities": [
+      {
+       "kind": "actor",
+       "value": "один пользователь"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B058.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.3.2",
+     "summary": "Регламентное техническое обслуживание не требуется",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B058.3"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "other",
+     "subtype": "",
+     "source_id": "4.3.2",
+     "summary": "Рекомендуется резервная копия БД на внешний носитель не реже раза в месяц",
+     "entities": [
+      {
+       "kind": "period",
+       "value": "раз в месяц"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B059.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.3.3",
+     "summary": "Нужен один пользователь с навыками Windows, знакомый с руководством",
+     "entities": [
+      {
+       "kind": "actor",
+       "value": "пользователь"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B059.3"
+     ],
+     "part_start": "Время освоения программы",
+     "part_end": "превышать 1 ч",
+     "type": "nfr",
+     "subtype": "",
+     "source_id": "4.3.3",
+     "summary": "Время освоения по руководству не более 1 ч",
+     "entities": [
+      {
+       "kind": "period",
+       "value": "1 ч"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B059.3"
+     ],
+     "part_start": "Наличие в штате",
+     "part_end": "не требуется",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.3.3",
+     "summary": "Администратор БД или системный программист не требуются",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B060.1"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.3.4",
+     "summary": "Режим работы пользователя периодический, до 1 ч в сутки",
+     "entities": [
+      {
+       "kind": "period",
+       "value": "до 1 ч в сутки"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B060.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "nfr",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Постоянное подключение к Интернету не требуется; функции доступны автономно",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B062",
+      "B063"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.4.1",
+     "summary": "Процессор x64, не менее 2 ядер, не ниже 1,8 ГГц",
+     "entities": [
+      {
+       "kind": "amount",
+       "value": "2 ядра, 1,8 ГГц"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B064"
+     ],
+     "part_start": "оперативная память — не",
+     "part_end": "не менее 4 ГБ;",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.4.1",
+     "summary": "Оперативная память не менее 4 ГБ",
+     "entities": [
+      {
+       "kind": "amount",
+       "value": "4 ГБ"
+      }
+     ],
+     "links": [],
+     "depends_on": "B062"
+    },
+    {
+     "refs": [
+      "B064",
+      "B065"
+     ],
+     "part_start": "свободное пространство на",
+     "part_end": "резервных копий;",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.4.1",
+     "summary": "Свободное место не менее 500 МБ: 200 МБ дистрибутив, 300 МБ данные",
+     "entities": [
+      {
+       "kind": "amount",
+       "value": "500 МБ"
+      }
+     ],
+     "links": [],
+     "depends_on": "B062"
+    },
+    {
+     "refs": [
+      "B066"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.4.1",
+     "summary": "Монитор с разрешением не ниже 1366×768",
+     "entities": [
+      {
+       "kind": "amount",
+       "value": "1366×768"
+      }
+     ],
+     "links": [],
+     "depends_on": "B062"
+    },
+    {
+     "refs": [
+      "B067"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.4.1",
+     "summary": "Клавиатура и мышь или эквивалентное указательное устройство",
+     "entities": [],
+     "links": [],
+     "depends_on": "B062"
+    },
+    {
+     "refs": [
+      "B068"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.4.2",
+     "summary": "Рекомендуемая конфигурация: x64 4 ядра 2,4 ГГц, 8 ГБ, SSD, 1920×1080",
+     "entities": [
+      {
+       "kind": "amount",
+       "value": "8 ГБ"
+      },
+      {
+       "kind": "amount",
+       "value": "1920×1080"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B069"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.4.3",
+     "summary": "Дополнительно: принтер А4 по необходимости, внешний накопитель для копий",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B070"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.4.4",
+     "summary": "Сетевое оборудование и Интернет не требуются",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B072.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.5.1",
+     "summary": "Работа под Windows 10 x64 21H2+ и Windows 11 x64",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "Windows 10 21H2+, Windows 11"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B072.3"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.5.1",
+     "summary": "Работа под иными ОС не требуется",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B073.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.5.2",
+     "summary": "Разработка на C# 14 и .NET 10 LTS",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "C# 14, .NET 10"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B073.3"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.5.2",
+     "summary": "Тип проекта WPF, целевая платформа net10.0-windows",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "WPF"
+      },
+      {
+       "kind": "data_field",
+       "value": "net10.0-windows"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B073.4"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.5.2",
+     "summary": "Установлена среда .NET 10 Desktop Runtime либо self-contained поставка",
+     "entities": [
+      {
+       "kind": "system",
+       "value": ".NET 10 Desktop Runtime"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B074.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.5.3",
+     "summary": "Архитектура MVVM со слоями представления, служб и доступа к данным",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "MVVM"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B074.3"
+     ],
+     "part_start": "Внедрение зависимостей выполняется",
+     "part_end": "DependencyInjection;",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.5.3",
+     "summary": "Внедрение зависимостей через Microsoft.Extensions.DependencyInjection",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "Microsoft.Extensions.DependencyInjection"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B074.3"
+     ],
+     "part_start": "конфигурация приложения — средствами",
+     "part_end": "appsettings.json",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.5.3",
+     "summary": "Конфигурация через Microsoft.Extensions.Configuration (appsettings.json)",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "Microsoft.Extensions.Configuration"
+      },
+      {
+       "kind": "data_field",
+       "value": "appsettings.json"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B075.2",
+      "B076"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.5.4",
+     "summary": "Использовать библиотеки и средства из таблицы 4.1, допустимы более поздние версии",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "таблица 4.1"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B077.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.5.5",
+     "summary": "Разработка в Visual Studio 2026 или Rider; сборка и тесты через dotnet CLI",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "Visual Studio 2026, Rider, dotnet CLI"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B077.3"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.5.5",
+     "summary": "Версии кода в Git, репозиторий на GitHub",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "Git, GitHub"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B078.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "data",
+     "subtype": "",
+     "source_id": "4.5.6",
+     "summary": "Данные хранятся в файле SQLite в профиле пользователя",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "SQLite"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B078.3"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "integration",
+     "subtype": "",
+     "source_id": "4.5.6",
+     "summary": "Обмен с внешними программами через CSV, UTF-8, разделитель «;», RFC 4180",
+     "entities": [
+      {
+       "kind": "data_field",
+       "value": "CSV UTF-8"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B078.4"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "data",
+     "subtype": "",
+     "source_id": "4.5.6",
+     "summary": "Кодировка текстовых файлов и исходного кода — UTF-8",
+     "entities": [
+      {
+       "kind": "data_field",
+       "value": "UTF-8"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B078.5"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "data",
+     "subtype": "",
+     "source_id": "4.5.6",
+     "summary": "Дата и время в формате ИСО 8601",
+     "entities": [
+      {
+       "kind": "data_field",
+       "value": "ИСО 8601"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B079.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "nfr",
+     "subtype": "",
+     "source_id": "4.5.7",
+     "summary": "Пароль хранится только как хеш PBKDF2-HMAC-SHA256, ≥100 000 итераций, соль ≥16 байт",
+     "entities": [
+      {
+       "kind": "amount",
+       "value": "100 000 итераций"
+      },
+      {
+       "kind": "amount",
+       "value": "16 байт"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B079.3"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "nfr",
+     "subtype": "",
+     "source_id": "4.5.7",
+     "summary": "Не хранятся персональные данные третьих лиц и нет передачи за пределы компьютера",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B085.1"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.8.1",
+     "summary": "Язык интерфейса и сообщений — русский",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B085.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.8.1",
+     "summary": "Ресурсы интерфейса в файлах ресурсов для локализации без изменения кода",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B086"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.8.2",
+     "summary": "Исходный код соответствует Microsoft C# Coding Conventions",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B087"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "4.8.2",
+     "summary": "Публичные типы и члены сопровождаются XML-комментариями",
+     "entities": [],
+     "links": [],
+     "depends_on": "B086"
+    },
+    {
+     "refs": [
+      "B089",
+      "B090"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "5.1",
+     "summary": "Состав документации по ЕСПД согласно таблице 5.1",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "ЕСПД"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B091.1"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "5.2",
+     "summary": "Документы оформляются на А4 по ГОСТ 19.106-78: шрифт, интервал, отступ, поля",
+     "entities": [
+      {
+       "kind": "data_field",
+       "value": "Times New Roman 14 пт"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B091.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "5.2",
+     "summary": "Сквозная нумерация страниц внизу по центру, на титульном листе без номера",
+     "entities": [],
+     "links": [],
+     "depends_on": "B091.1"
+    },
+    {
+     "refs": [
+      "B092.1"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "5.3",
+     "summary": "Документация передаётся Заказчику в электронном виде DOCX и (или) PDF",
+     "entities": [
+      {
+       "kind": "data_field",
+       "value": "DOCX, PDF"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B092.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "other",
+     "subtype": "",
+     "source_id": "5.3",
+     "summary": "В репозитории размещается README.md с описанием, инструкцией и списком библиотек",
+     "entities": [
+      {
+       "kind": "data_field",
+       "value": "README.md"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B095.1",
+      "B095.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "other",
+     "subtype": "",
+     "source_id": "6.1",
+     "summary": "Технико-экономические показатели разработки по таблице 6.1",
+     "entities": [
+      {
+       "kind": "amount",
+       "value": "180 чел.-ч"
+      },
+      {
+       "kind": "period",
+       "value": "15 недель"
+      }
+     ],
+     "links": [],
+     "depends_on": "B094"
+    },
+    {
+     "refs": [
+      "B096.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "6.2",
+     "summary": "Рассчитано на индивидуальное применение, тиражирование не планируется",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B099.1"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "process",
+     "subtype": "",
+     "source_id": "7.1",
+     "summary": "Разработка в пять стадий по ГОСТ 19.102-77",
+     "entities": [
+      {
+       "kind": "amount",
+       "value": "пять стадий"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B099.2",
+      "B100",
+      "B101",
+      "B103.1",
+      "B103.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "process",
+     "subtype": "",
+     "source_id": "7.1",
+     "summary": "Стадии, этапы, сроки и результаты по таблице 7.1",
+     "entities": [
+      {
+       "kind": "period",
+       "value": "07.09.2026 — 21.12.2026"
+      }
+     ],
+     "links": [],
+     "depends_on": "B099.1"
+    },
+    {
+     "refs": [
+      "B104"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "7.2",
+     "summary": "Изменение сроков этапов по согласованию с руководителем с оформлением изменения к ТЗ",
+     "entities": [
+      {
+       "kind": "actor",
+       "value": "руководитель"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    }
+   ],
+   "excluded": [
+    {
+     "block": "B049.1",
+     "label": "context",
+     "reason": "название подпункта"
+    },
+    {
+     "block": "B050.1",
+     "label": "context",
+     "reason": "название подпункта"
+    },
+    {
+     "block": "B051.1",
+     "label": "context",
+     "reason": "название подпункта"
+    },
+    {
+     "block": "B052.1",
+     "label": "context",
+     "reason": "название подпункта"
+    },
+    {
+     "block": "B053.1",
+     "label": "context",
+     "reason": "название подпункта"
+    },
+    {
+     "block": "B054.1",
+     "label": "context",
+     "reason": "название подпункта"
+    },
+    {
+     "block": "B055.1",
+     "label": "context",
+     "reason": "название подпункта"
+    },
+    {
+     "block": "B059.1",
+     "label": "context",
+     "reason": "название подпункта"
+    },
+    {
+     "block": "B072.1",
+     "label": "context",
+     "reason": "название подпункта"
+    },
+    {
+     "block": "B073.1",
+     "label": "context",
+     "reason": "название подпункта"
+    },
+    {
+     "block": "B074.1",
+     "label": "context",
+     "reason": "название подпункта"
+    },
+    {
+     "block": "B075.1",
+     "label": "context",
+     "reason": "название подпункта"
+    },
+    {
+     "block": "B077.1",
+     "label": "context",
+     "reason": "название подпункта"
+    },
+    {
+     "block": "B078.1",
+     "label": "context",
+     "reason": "название подпункта"
+    },
+    {
+     "block": "B079.1",
+     "label": "context",
+     "reason": "название подпункта"
+    },
+    {
+     "block": "B081",
+     "label": "context",
+     "reason": "раздел не применяется, пояснение"
+    },
+    {
+     "block": "B083",
+     "label": "context",
+     "reason": "раздел не применяется, пояснение"
+    },
+    {
+     "block": "B094",
+     "label": "context",
+     "reason": "отсылка к таблице показателей"
+    },
+    {
+     "block": "B096.1",
+     "label": "context",
+     "reason": "название подпункта"
+    },
+    {
+     "block": "B096.3",
+     "label": "context",
+     "reason": "пояснение учебной ценности"
+    },
+    {
+     "block": "B097",
+     "label": "context",
+     "reason": "сравнение с аналогами, обоснование"
+    }
+   ]
+  },
+  "ttft_ms": 41758,
+  "type": "result",
+  "duration_ms": 41802,
+  "uuid": "41d7a414-f889-4ed9-82f1-5ce95caf8394",
+  "ttft_stream_ms": 924,
+  "time_to_request_ms": 55,
+  "time_to_request_phases_ms": {
+   "other": 7,
+   "system_prompt": 2,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 7,
+   "input_hooks": 2,
+   "conversation_append": 1,
+   "tool_pool_refresh": 1,
+   "init_message": 4,
+   "init_frame_send": 3,
+   "engine_pickup": 0,
+   "loop_entry": 4,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "request_announcements": 4,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 2,
+   "message_normalization": 2,
+   "client_creation": 4,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 5,
+  "time_to_request_cpu_ms": 59,
+  "time_to_request_major_faults": 0,
+  "process_rss_mib_turn_start": 203,
+  "process_anon_mib_turn_start": 124,
+  "process_rss_mib_result": 210,
+  "process_anon_mib_result": 123,
+  "process_peak_rss_mib": 223,
+  "process_cpu_ms_turn": 1086,
+  "process_wall_ms_turn": 41801,
+  "tool_pool_build_count": 4,
+  "tool_pool_build_lapsed_count": 1,
+  "tool_pool_moved_at_lapse_count": 0,
+  "tool_pool_limit_ms": 30000,
+  "process_cpu_ms_streaming": 884,
+  "process_wall_ms_streaming": 40856,
+  "main_stream_count": 1,
+  "main_stream_event_count": 1227,
+  "main_stream_chunk_count": 1218,
+  "process_turn_states": {
+   "main_stream": {
+    "cpu_ms": 884,
+    "wall_ms": 40856,
+    "entries": 1
+   },
+   "first_event_wait": {
+    "cpu_ms": 119,
+    "wall_ms": 867,
+    "entries": 1
+   },
+   "before_first_request": {
+    "cpu_ms": 59,
+    "wall_ms": 56,
+    "entries": 1
+   },
+   "after_last_request": {
+    "cpu_ms": 24,
+    "wall_ms": 22,
+    "entries": 1
+   }
+  },
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 2,
+   "cpu_ms": 9,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 2,
+   "render_ms": 0,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 1,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 1,
+   "new_schemas": 1
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 2,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 1,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 2,
+   "record_attempt_ms": 0,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 1,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 924,
+  "time_to_request_from_spawn_ms": 31123,
+  "warm_spare_claimed": false,
+  "flag_fetch_kick": "not_asked_warm",
+  "time_origin_ms": 1795733466685.7983,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "process_start_tuning": 0
+ }
+}

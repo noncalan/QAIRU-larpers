@@ -1,0 +1,231 @@
+{
+ "envelope_version": 1,
+ "key": "76311e63136d8d05feb805b00adda3ef7733c2372c2e9d942216d23e27506f01",
+ "call_id": "test_draft.9",
+ "step": "test_draft",
+ "call_index": 9,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T23:04:44.146536+00:00",
+ "payload": {
+  "duration_api_ms": 21471,
+  "stop_reason": "end_turn",
+  "session_id": "5d60edab-3bf7-492f-9ca9-af3d62e0c76c",
+  "total_cost_usd": 0.1179356,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 21413,
+   "cache_read_input_tokens": 2296,
+   "output_tokens": 3205,
+   "output_tokens_details": {
+    "thinking_tokens": 1251
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 21413,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 3205,
+     "cache_read_input_tokens": 2296,
+     "cache_creation_input_tokens": 21413,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 21413
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 3205,
+    "cacheReadInputTokens": 2296,
+    "cacheCreationInputTokens": 21413,
+    "webSearchRequests": 0,
+    "costUSD": 0.1179356,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1251,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 21413,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n**M-124.** Для результата нужны: критерий, по которому ответы на вопросы считаются достаточными, и итог условия при длительности вне 10–15 мин. В документе есть только сам диапазон «от 10 до 15 мин». Критерия оценки ответов и результата при выходе за диапазон нет, поэтому ставлю пропуски.\n\n**M-125.** Нужно знать, в какой документ записывается замечание. В документе три места: «протокол» в 8.5, «протокол испытаний» в 8.2 и «протокол защиты (акт сдачи-приёмки)» в 8.6. Какой из них содержит замечания, не сказано, поэтому ожидаемый результат — пропуск. Известно только, что запись идёт с указанием срока устранения.\n\n**M-126.** Нужны исходы для двух случаев: замечание не устранено в срок и повторные испытания не пройдены. Известно лишь, что повторные испытания проводятся в объёме, который определяет руководитель. Кто назначает срок, что происходит при его нарушении и сколько циклов допускается, документ не говорит. Это пропуски.\n\n## Ответ\n\n```json\n{\n  \"drafts\": [\n    {\n      \"finding\": \"M-124\",\n      \"can_write\": false,\n      \"precondition\": \"Все остальные условия приёмки выполнены. Программа запущена на компьютере минимальной конфигурации, руководитель работы присутствует.\",\n      \"steps\": [\n        \"Провести демонстрацию работы программы продолжительностью 8 мин (тестировщик выбирает значение вне диапазона).\",\n        \"Руководитель задаёт вопросы по программе, исполнитель отвечает.\",\n        \"Зафиксировать, выполнено ли условие о демонстрации.\"\n      ],\n      \"expected\": \"Условие о демонстрации признаётся [?1]. Ответы исполнителя считаются достаточными, если [?2].\",\n      \"values\": [\n        {\"value\": \"от 10 до 15 мин\", \"quote\": \"проведена демонстрация работы программы продолжительностью от 10 до 15 мин с ответами на вопросы руководителя работы.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"результат условия при длительности демонстрации меньше 10 или больше 15 мин: в документе указан только допустимый диапазон, последствия выхода за него не названы\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"критерий оценки ответов на вопросы руководителя: сколько вопросов и какие ответы считаются достаточными для выполнения условия\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-125\",\n      \"can_write\": false,\n      \"precondition\": \"Идёт приёмка. Испытания проведены, оформляются протокол испытаний и протокол защиты (акт сдачи-приёмки). При приёмке выявлено одно замечание.\",\n      \"steps\": [\n        \"Зафиксировать выявленное замечание с указанием срока устранения.\",\n        \"Открыть протокол испытаний и протокол защиты (акт сдачи-приёмки).\",\n        \"Найти запись о замечании и сроке его устранения.\"\n      ],\n      \"expected\": \"Запись о замечании и сроке устранения находится в документе [?1].\",\n      \"values\": [\n        {\"value\": \"с указанием срока устранения\", \"quote\": \"Замечания, выявленные при приёмке, фиксируются в протоколе с указанием срока устранения.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"в каком именно документе фиксируются замечания: в тексте 8.5 сказано просто «в протоколе», а в документе есть протокол испытаний (8.2) и протокол защиты, он же акт сдачи-приёмки (8.6)\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-126\",\n      \"can_write\": false,\n      \"precondition\": \"При приёмке выявлено замечание, срок устранения [?1] и записан в протокол.\",\n      \"steps\": [\n        \"Не устранять замечание до наступления срока.\",\n        \"Зафиксировать состояние приёмки после истечения срока.\",\n        \"Устранить замечание и провести повторные испытания в объёме, определённом руководителем работы; в одном из прогонов повторные испытания не пройдены.\",\n        \"Зафиксировать состояние приёмки после непройденных повторных испытаний.\"\n      ],\n      \"expected\": \"После истечения срока без устранения приёмка получает статус [?2]. После непройденных повторных испытаний приёмка получает статус [?3], допустимое число циклов повторных испытаний [?4], результат оформляется в [?5].\",\n      \"values\": [\n        {\"value\": \"в объёме, определяемом руководителем работы\", \"quote\": \"После устранения замечаний проводятся повторные испытания в объёме, определяемом руководителем работы.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"кто и по какому правилу устанавливает срок устранения замечания: в документе сказано только, что срок указывается\", \"part\": \"precondition\"},\n        {\"number\": 2, \"missing\": \"последствия неустранения замечания в срок (отказ в приёмке, продление срока, иное)\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"результат приёмки, если повторные испытания не пройдены\", \"part\": \"expected\"},\n        {\"number\": 4, \"missing\": \"максимальное число циклов «замечание — устранение — повторные испытания»\", \"part\": \"expected\"},\n        {\"number\": 5, \"missing\": \"в каком документе и в какой форме оформляется результат повторных испытаний\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    }\n  ]\n}\n```",
+  "ttft_ms": 10427,
+  "type": "result",
+  "duration_ms": 24457,
+  "uuid": "23e25580-474b-4f5d-86b8-027e83efd177",
+  "ttft_stream_ms": 1079,
+  "time_to_request_ms": 51,
+  "time_to_request_phases_ms": {
+   "other": 6,
+   "system_prompt": 1,
+   "resume_other": 1,
+   "process_user_input": 2,
+   "input_attachments": 6,
+   "input_hooks": 2,
+   "conversation_append": 0,
+   "tool_pool_refresh": 1,
+   "init_message": 4,
+   "init_frame_send": 3,
+   "engine_pickup": 1,
+   "loop_entry": 3,
+   "message_prep": 1,
+   "model_config_wait": 0,
+   "autocompact": 1,
+   "request_announcements": 4,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 1,
+   "message_normalization": 3,
+   "client_creation": 4,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 0,
+  "time_to_request_cpu_ms": 55,
+  "time_to_request_major_faults": 0,
+  "process_rss_mib_turn_start": 201,
+  "process_anon_mib_turn_start": 124,
+  "process_rss_mib_result": 206,
+  "process_anon_mib_result": 121,
+  "process_peak_rss_mib": 222,
+  "process_cpu_ms_turn": 650,
+  "process_wall_ms_turn": 24456,
+  "tool_pool_build_count": 3,
+  "tool_pool_build_lapsed_count": 0,
+  "tool_pool_moved_at_lapse_count": 0,
+  "tool_pool_limit_ms": 30000,
+  "process_cpu_ms_streaming": 442,
+  "process_wall_ms_streaming": 20435,
+  "main_stream_count": 1,
+  "main_stream_event_count": 349,
+  "main_stream_chunk_count": 343,
+  "process_turn_states": {
+   "main_stream": {
+    "cpu_ms": 442,
+    "wall_ms": 20435,
+    "entries": 1
+   },
+   "first_event_wait": {
+    "cpu_ms": 101,
+    "wall_ms": 1027,
+    "entries": 1
+   },
+   "before_first_request": {
+    "cpu_ms": 55,
+    "wall_ms": 50,
+    "entries": 1
+   },
+   "after_last_request": {
+    "cpu_ms": 52,
+    "wall_ms": 2944,
+    "entries": 1
+   }
+  },
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 1,
+   "cpu_ms": 6,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 0,
+   "render_ms": 0,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 2,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 1,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 2,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 2,
+   "record_attempt_ms": 0,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1079,
+  "time_to_request_from_spawn_ms": 823319,
+  "warm_spare_claimed": false,
+  "flag_fetch_kick": "not_asked_warm",
+  "time_origin_ms": 1795734258885.418,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "process_start_tuning": 0
+ }
+}
