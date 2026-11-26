@@ -20,6 +20,7 @@
     "backend_used": null,
     "profile": "standard",
     "passes": 3,
+    "search_input": "blocks",
     "models": {},
     "models_actual": [],
     "calls_total": 0,
@@ -79,6 +80,18 @@
     "quotes_total": 0,
     "quotes_verified": 0,
     "verified_quote_share": null,
-    "questions": null
-  }
+    "questions": null,
+    "steps": [],
+    "passes_total": 0,
+    "passes_ok": 0,
+    "candidates_passes": 0,
+    "candidates_lint": 0,
+    "discarded_by_reason": {},
+    "critic_reviewed": 0,
+    "critic_downgraded": 0,
+    "critic_dropped": 0,
+    "found_in": []
+  },
+  "coverage": null,
+  "selfcheck": null
 }

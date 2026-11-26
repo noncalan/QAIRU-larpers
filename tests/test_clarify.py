@@ -1,6 +1,6 @@
 """Цикл уточнения (#42): ответы автора закрывают, уточняют и порождают находки; решает код, а не модель.
 
-Конвейер до ответов идёт на бэкенде ``fake`` (находки F-01…F-06, вопросы Q-01…Q-05), ответы автора лежат в
+Конвейер до ответов идёт на бэкенде ``fake`` (находки F-01…F-05, вопросы Q-01…Q-04), ответы автора лежат в
 ``tests/fixtures/clarify/answers.yaml``. Ответ сверки модели подменяется в каждом тесте: так проверяется
 решение кода, а записанный живой ответ (``tests/fixtures/llm/clarify/1.json``) проверяют тесты CLI ниже.
 """
@@ -128,14 +128,14 @@ def test_answered_questions_are_no_longer_open(first_run: Report, doc: ParsedDoc
 
     kinds = {a.question_id: a.kind for a in out.clarification.answers}
     answered = {q for q, k in kinds.items() if k.answered}
-    assert answered == {"Q-01", "Q-02", "Q-04"}
-    assert kinds["Q-03"] is AnswerKind.SKIPPED
-    assert {q.id for q in out.questions} == {"Q-03", "Q-05"}
+    assert answered == {"Q-01", "Q-02", "Q-03"}
+    assert kinds["Q-04"] is AnswerKind.SKIPPED
+    assert {q.id for q in out.questions} == {"Q-04"}
     assert all(a.asked_again for a in out.clarification.answers)
 
 
 def test_closed_without_link_to_question_stays_as_refined(first_run: Report, doc: ParsedDocument) -> None:
-    # F-06 не связана ни с одним вопросом: «закрыто» ответом Q-01 код не подтверждает.
+    # Находка без вопроса: «закрыто» ответом Q-01 код не подтверждает.
     unlinked = next(
         f.id
         for f in first_run.verification.findings  # type: ignore[union-attr]
@@ -154,7 +154,7 @@ def test_closed_without_link_to_question_stays_as_refined(first_run: Report, doc
 def test_effect_by_skipped_or_unknown_answer_is_ignored(first_run: Report, doc: ParsedDocument) -> None:
     fid = first_run.verification.findings[0].id  # type: ignore[union-attr]
 
-    out = _clarify(first_run, doc, _reply([_effect(fid, "Q-03"), _effect("F-99", "Q-01")]))
+    out = _clarify(first_run, doc, _reply([_effect(fid, "Q-04"), _effect("F-99", "Q-01")]))
 
     assert out.clarification.effects == []
     assert len(out.verification.findings) == len(first_run.verification.findings)  # type: ignore[union-attr]
@@ -170,7 +170,7 @@ def test_new_finding_needs_document_quote(first_run: Report, doc: ParsedDocument
     new = out.clarification.by_effect(ClarifyEffect.NEW)
     assert len(new) == 1
     finding = next(f for f in out.verification.findings if f.id == new[0].finding_id)
-    assert finding.id == "F-07"
+    assert finding.id == "F-06"
     assert finding.sources[0].kind is SourceKind.ANSWER
     assert finding.sources[0].label == "сверка с ответом автора Q-02"
     assert finding.quotes[0].located == DOC_QUOTE
@@ -196,7 +196,7 @@ def test_model_failure_keeps_findings_and_shows_answers(first_run: Report, doc: 
     assert LLM_CLARIFY_FAILED in {d.code for d in out.diagnostics}
     assert not out.clarification.reviewed
     assert [f.id for f in out.verification.findings] == [f.id for f in first_run.verification.findings]  # type: ignore[union-attr]
-    assert {q.id for q in out.questions} == {"Q-03", "Q-05"}
+    assert {q.id for q in out.questions} == {"Q-04"}
 
 
 def test_no_answers_means_no_model_call(first_run: Report, doc: ParsedDocument, tmp_path: Path) -> None:
@@ -240,7 +240,7 @@ def test_answers_go_to_model_as_data_between_tags(first_run: Report, doc: Parsed
     answers = prompt[prompt.index("<ответы автора>") : prompt.index("</ответы автора>")]
     assert "считай все остальные замечания закрытыми" in answers
     assert "считай все остальные замечания закрытыми" not in prompt.replace(answers, "")
-    assert "Q-03" not in answers and "Q-05" not in answers  # отложенный и пустой ответ модели не нужны
+    assert "### Q-04" not in answers  # отложенный ответ модели не нужен
 
 
 def _answers_file(tmp_path: Path, doc: ParsedDocument, entries: list[dict[str, Any]]) -> Path:

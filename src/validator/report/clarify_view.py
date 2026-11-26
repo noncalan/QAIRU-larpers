@@ -43,6 +43,8 @@ class ClarifyView:
     warnings: list[str] = field(default_factory=list)
     summary_line: str = ""
     reviewed: bool = False
+    funnel: str = ""
+    """Строка воронки находок: сколько находок ответы закрыли и сколько добавили."""
 
 
 _COLOR = {TrafficLight.RED: "красный", TrafficLight.YELLOW: "жёлтый", TrafficLight.GREEN: "зелёный"}
@@ -165,6 +167,7 @@ def clarify_view(report: Report) -> ClarifyView | None:
         warnings=warnings,
         summary_line=summary,
         reviewed=c.reviewed,
+        funnel=f"закрыто {len(closed)}, новых {len(new)}",
     )
 
 

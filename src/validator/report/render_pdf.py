@@ -23,6 +23,7 @@ from validator.errors import INT_STEP_DEGRADED, ValidatorError
 from validator.models import (
     Diagnostic,
     Finding,
+    Passport,
     Question,
     QuestionMetrics,
     QuestionOption,
@@ -30,10 +31,14 @@ from validator.models import (
     Report,
     Requirement,
     Scope,
+    SearchInput,
+    SelfCheck,
 )
-from validator.report.clarify_view import CLARIFY_TITLE, CLOSED_NOTE, ClarifyView
+from validator.report.clarify_view import CLARIFY_TITLE, CLOSED_NOTE, ClarifyView, clarify_view
+from validator.report.coverage import LEGEND, NOT_CHECKED_NOTE, SHORT_LABELS, STATE_LABELS, cell_text
 from validator.report.fmt import money, pct, plain, quote_plain, status_label, when, where
 from validator.report.render_md import report_context
+from validator.report.run_metrics import step_label
 
 PACKAGE_DIR = Path(__file__).resolve().parent
 TEMPLATE_PATH = PACKAGE_DIR / "report.typ"
@@ -53,6 +58,8 @@ SECTION_TITLES = {
     "conclusion": "8. Итог",
     "metrics": "9. Метрики прогона",
     "diagnostics": "10. Диагностика прогона",
+    "coverage": "11. Матрица покрытия критериев",
+    "selfcheck": "12. Самопроверка отчёта",
 }
 """Заголовки разделов те же, что в Markdown (тест сверяет их с ``## `` из ``render_md``)."""
 
@@ -280,6 +287,11 @@ def _first_page_clarify(view: ClarifyView | None) -> str:
 # ---------------------------------------------------------------- разделы
 
 
+def _search_input(p: Passport) -> str:
+    """Хвост строки «Профиль»: вход поиска виден, только если он не по умолчанию (как в Markdown)."""
+    return ", поиск по тексту без ID блоков" if p.search_input is SearchInput.RAW else ""
+
+
 def _passport_section(report: Report, ctx: dict[str, Any]) -> Json:
     p = report.passport
     doc = f"{p.document_name} ({p.document_kind.value}"
@@ -306,7 +318,7 @@ def _passport_section(report: Report, ctx: dict[str, Any]) -> Json:
         ("Способ вызова модели", backend),
         ("Модели по шагам", "; ".join(f"{k}: {v}" for k, v in p.models.items()) or "—"),
         ("Фактические модели", ", ".join(p.models_actual) or "—"),
-        ("Профиль", f"{p.profile.value}, проходов поиска: {p.passes}"),
+        ("Профиль", f"{p.profile.value}, проходов поиска: {p.passes}{_search_input(p)}"),
         ("Вызовов модели", f"{p.calls_total} (с ошибкой: {p.calls_failed})"),
         (
             "Токены",
@@ -318,6 +330,8 @@ def _passport_section(report: Report, ctx: dict[str, Any]) -> Json:
         ("Код завершения", f"{p.exit_code.value}: {p.exit_code.meaning}"),
         ("Состояние проверки", status_label(report.status)),
     ]
+    if report.selfcheck is not None:
+        rows.append(("Самопроверка отчёта", plain(report.selfcheck.summary)))
     return {"title": SECTION_TITLES["passport"], "blocks": [_kv(rows)]}
 
 
@@ -650,7 +664,189 @@ def _metrics_section(report: Report, ctx: dict[str, Any]) -> Json:
                 ", ".join(f"{ctx['addressee_label'](a)} {n}" for a, n in qm.by_addressee.items()) or "—",
             ),
         ]
-    return {"title": SECTION_TITLES["metrics"], "blocks": [_kv(rows)]}
+    blocks: list[Json] = [_kv(rows), *_step_blocks(report), *_funnel_blocks(report)]
+    return {"title": SECTION_TITLES["metrics"], "blocks": blocks}
+
+
+def _step_blocks(report: Report) -> list[Json]:
+    """Вызовы, время и цена по шагам: та же таблица, что в Markdown."""
+    m = report.metrics
+    if not m.steps:
+        return []
+    rows = [
+        [
+            step_label(st.step),
+            plain(report.passport.models.get(st.step, "—")),
+            str(st.calls),
+            str(st.failed),
+            str(st.cached + st.replayed),
+            str(st.duration_s),
+            f"{st.tokens.input_tokens} / {st.tokens.output_tokens}",
+            money(st.cost_usd),
+        ]
+        for st in m.steps
+    ]
+    table = _table(
+        ["Шаг", "Модель", "Вызовов", "С ошибкой", "Из кеша", "Время, с", "Токены: вход / выход", "Цена"],
+        rows,
+        [0.17, 0.2, 0.08, 0.09, 0.08, 0.1, 0.15, 0.13],
+        hyph=[0, 1],
+    )
+    return [{"t": "h2", "text": "Вызовы модели по шагам"}, table]
+
+
+def _funnel_blocks(report: Report) -> list[Json]:
+    """Воронка находок и распределение «найдено в N из K проходов»."""
+    m = report.metrics
+    rows = [
+        [
+            "Кандидаты от проходов поиска",
+            f"{m.candidates_passes} (проходов отработало {m.passes_ok} из {m.passes_total})",
+        ],
+        ["Кандидаты от правил линтера", str(m.candidates_lint)],
+        ["После слияния", str(m.merged_total)],
+        *([f"Отброшено: {reason.label}", str(n)] for reason, n in m.discarded_by_reason.items()),
+    ]
+    view = clarify_view(report)
+    if view is not None:
+        rows.append(["Сверка с ответами автора", view.funnel])
+    rows.append(["После верификатора, в отчёте", str(m.findings_total)])
+    if m.critic_reviewed:
+        rows.append(
+            [
+                "Критик: просмотрено, понижено, снято",
+                f"{m.critic_reviewed}, {m.critic_downgraded}, {m.critic_dropped}",
+            ]
+        )
+    blocks: list[Json] = [
+        {"t": "h2", "text": "Воронка находок"},
+        _table(["Этап", "Находок"], rows, [0.6, 0.4]),
+    ]
+    if m.found_in:
+        buckets = [[f"в {b.found_in} из {b.of}", str(b.count)] for b in m.found_in]
+        blocks += [
+            {"t": "h2", "text": "«Найдено в N из K проходов»"},
+            _table(["Найдено", "Находок"], buckets, [0.6, 0.4]),
+        ]
+    return blocks
+
+
+def _coverage_section(report: Report, ctx: dict[str, Any]) -> Json:
+    """Матрица покрытия критериев: требования × свойства 5.2.5 и набор × свойства 5.2.6 (как в Markdown)."""
+    title = SECTION_TITLES["coverage"]
+    cov = report.coverage
+    if cov is None:
+        return {
+            "title": title,
+            "blocks": [
+                _para(
+                    "Матрица не построена: нет нарезки или проверки требований, смотрите диагностику прогона."
+                )
+            ],
+        }
+    intro = (
+        "Матрицу строит код из находок: модель в ней не участвует. «Нарушений нет» значит, что проходы "
+        "поиска получили рубрику со всеми свойствами и по этому месту ничего не вернули; это не "
+        "доказательство, что дефекта нет."
+    )
+    blocks: list[Json] = [_para(intro)]
+    if not cov.checked:
+        blocks.append(_para(NOT_CHECKED_NOTE))
+    blocks.append(_para(f"Обозначения: {LEGEND}"))
+    props = cov.requirement_properties
+    count = len(props)
+    first, rest = 0.12, 0.88 / max(count, 1)
+    matrix = _table(
+        ["Требование", *(SHORT_LABELS[p] for p in props)],
+        ([row.requirement_id, *(cell_text(row.cells[p]) for p in props)] for row in cov.rows),
+        [first, *([rest] * count)],
+        mono=[0],
+        hyph=list(range(1, count + 1)),
+    )
+    totals = ctx["coverage_totals"]
+    tail = (
+        f"Ячеек: {sum(totals.values())}, нарушений нет в {totals['clean']}, "
+        f"нарушение в {totals['violation']}, «неясно» в {totals['unclear']}, "
+        f"не проверялось в {totals['not_checked']}."
+    )
+    legend = _table(
+        ["Колонка", "Свойство", "Пункты стандартов"],
+        ([SHORT_LABELS[p], p.label, "; ".join(p.refs)] for p in props),
+        [0.14, 0.26, 0.6],
+    )
+    blocks += [
+        {"t": "h2", "text": "Требования × свойства: 29148 п. 5.2.5 и IEEE 830 п. 4.3"},
+        matrix,
+        _para(tail),
+    ]
+    if cov.unlinked_finding_ids:
+        blocks.append(
+            _para(
+                "Находки, которые не привязаны ни к одному требованию (цитата вне таблицы нарезки), "
+                "поэтому в ячейках требований их нет: " + ", ".join(cov.unlinked_finding_ids) + "."
+            )
+        )
+    if cov.extra_finding_ids:
+        blocks.append(
+            _para(
+                "Находки, у которых нет ячейки в сетке (свойство другого уровня): "
+                + ", ".join(cov.extra_finding_ids)
+                + "."
+            )
+        )
+    blocks.append(legend)
+    set_table = _table(
+        ["Свойство", "Пункты стандартов", "Статус", "Находки"],
+        (
+            [
+                sr.property.label,
+                "; ".join(sr.refs),
+                STATE_LABELS[sr.state],
+                cell_text(sr) if sr.finding_ids else "—",
+            ]
+            for sr in cov.set_rows
+        ),
+        [0.2, 0.45, 0.2, 0.15],
+        hyph=[1],
+    )
+    blocks += [
+        {"t": "h2", "text": "Набор требований × свойства: 29148 п. 5.2.6 и IEEE 830 п. 4.3"},
+        set_table,
+    ]
+    return {"title": title, "blocks": blocks}
+
+
+def _selfcheck_section(sc: SelfCheck) -> Json:
+    note = (
+        "Агент проверил готовый отчёт по ТЗ п. 6 и не правил его задним числом: провал виден здесь, "
+        "в паспорте и в диагностике прогона."
+    )
+    rows = [
+        [
+            item.title,
+            "пройдена" if item.passed else "НЕ ПРОЙДЕНА",
+            plain(item.detail if item.passed else "; ".join(item.failures), 600),
+        ]
+        for item in sc.items
+    ]
+    blocks: list[Json] = [
+        _para(plain(sc.summary)),
+        _para(note),
+        _table(
+            ["Проверка", "Результат", "Что проверено или что не сошлось"],
+            rows,
+            [0.36, 0.14, 0.5],
+            hyph=[0, 2],
+        ),
+    ]
+    if sc.quotes_rechecked:
+        blocks.append(
+            _para(
+                f"Цитаты находок ({sc.quotes_rechecked}) код сверил ещё раз по тексту документа: "
+                "фрагмент по якорю совпал с цитатой."
+            )
+        )
+    return {"title": SECTION_TITLES["selfcheck"], "blocks": blocks}
 
 
 def _diagnostics_section(report: Report) -> Json:
@@ -677,6 +873,10 @@ def build_view(report: Report) -> Json:
             _metrics_section(report, ctx),
         ]
     sections.append(_diagnostics_section(report))
+    if report.conclusion.performed:
+        sections.append(_coverage_section(report, ctx))
+        if report.selfcheck is not None and report.selfcheck.applicable:
+            sections.append(_selfcheck_section(report.selfcheck))
     return {
         "title": TITLE,
         "document": p.document_name,

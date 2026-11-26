@@ -43,6 +43,7 @@ IN_ENCODING_UNCERTAIN = "IN-062"
 IN_NO_TEXT = "IN-071"
 IN_NOT_REQUIREMENTS = "IN-080"
 IN_HEADINGS_ONLY = "IN-081"
+IN_INJECTION = "IN-082"  # ИНФО: в тексте документа команды модели, они не выполняются
 IN_NO_REQUIREMENTS = IN_HEADINGS_ONLY  # нарезка без требований: тот же «пустой шаблон» (исследование 04)
 IN_PARSE_FAILED = "IN-099"
 
@@ -85,6 +86,8 @@ CFG_ANSWERS_MISMATCH = "CFG-021"  # ПРЕДУПРЕЖДЕНИЕ: ответы �
 # Внутренние ошибки агента.
 INT_STEP_FAILED = "INT-001"
 INT_STEP_DEGRADED = "INT-002"
+INT_SELFCHECK_FAILED = "INT-003"  # самопроверка отчёта: нарушена целостность (находка без якоря, счётчики)
+INT_SELFCHECK_WARNING = "INT-004"  # самопроверка отчёта: не хватает раздела ТЗ п. 6, содержимое верно
 
 # Запись отчёта.
 OUT_WRITE_FAILED = "OUT-001"

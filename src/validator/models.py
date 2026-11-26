@@ -557,6 +557,15 @@ class CacheMode(StrEnum):
     OFF = "off"
 
 
+class SearchInput(StrEnum):
+    """Какой текст видят проходы поиска (#37, D-011, п. 2)."""
+
+    BLOCKS = "blocks"
+    """Документ с ID блоков и предложений (``render_for_model``), блоки называет модель."""
+    RAW = "raw"
+    """Канонический текст без ID блоков, блоки находит код по цитатам."""
+
+
 class Effort(StrEnum):
     LOW = "low"
     MEDIUM = "medium"
@@ -1309,6 +1318,7 @@ class RunConfig(Contract):
     step_models: dict[LLMStep, StepModel] = Field(default_factory=dict)
     fake_fixtures: Path | None = Field(default=None, description="Папка фикстур для бэкенда fake")
     pdf_backend: PdfBackendName = Field(default="mupdf", description="Движок PDF (#26)")
+    search_input: SearchInput = Field(default=SearchInput.BLOCKS, description="Вход поиска (#37, D-011)")
     call_timeout_s: int = Field(default=1200, ge=1)
     has_api_key: bool = Field(default=False, description="Есть ли ANTHROPIC_API_KEY (сам ключ не храним)")
 
@@ -1382,6 +1392,7 @@ class Passport(Contract):
     backend_used: Backend | None = None
     profile: Profile
     passes: int
+    search_input: SearchInput = Field(default=SearchInput.BLOCKS, description="Вход поиска (#37, D-011)")
     models: dict[str, str] = Field(default_factory=dict, description="Шаг → «модель · effort»")
     models_actual: list[str] = Field(default_factory=list, description="Фактические модели из ответов")
     calls_total: int = 0
@@ -1416,6 +1427,29 @@ class QuestionMetrics(Contract):
     by_addressee: dict[str, int] = Field(default_factory=dict, description="Разброс адресатов")
 
 
+class StepMetrics(Contract):
+    """Вызовы модели одного шага: сколько, сколько заняли и стоили (по записям ``calls.jsonl``)."""
+
+    step: str = Field(description="Значение LLMStep")
+    calls: int = Field(default=0, description="Вызовов (повтор после сбоя не отдельный вызов)")
+    failed: int = 0
+    cached: int = 0
+    replayed: int = 0
+    duration_s: float = Field(default=0.0, description="Сумма времени всех попыток вызовов шага")
+    tokens: TokenUsage = Field(default_factory=TokenUsage)
+    cost_usd: float | None = Field(
+        default=None, description="Цена по тарифу API; None: цены нет ни у одной попытки"
+    )
+
+
+class FoundInBucket(Contract):
+    """Сколько находок отчёта найдено в ``found_in`` из ``of`` проходов поиска."""
+
+    found_in: int
+    of: int
+    count: int
+
+
 class RunMetrics(Contract):
     duration_s: float | None = None
     calls_total: int = 0
@@ -1431,6 +1465,20 @@ class RunMetrics(Contract):
     quotes_verified: int = 0
     verified_quote_share: float | None = Field(default=None, description="Доля сверенных цитат, 0–1")
     questions: QuestionMetrics | None = Field(default=None, description="Метрики вопросов автору")
+    steps: list[StepMetrics] = Field(default_factory=list, description="Вызовы, время и цена по шагам")
+    passes_total: int = Field(default=0, description="Проходов поиска запущено")
+    passes_ok: int = Field(default=0, description="Проходов поиска, которые отработали")
+    candidates_passes: int = Field(default=0, description="Кандидатов от проходов поиска")
+    candidates_lint: int = Field(default=0, description="Кандидатов от правил линтера")
+    discarded_by_reason: dict[DiscardReason, int] = Field(
+        default_factory=dict, description="Отброшено верификатором по причинам"
+    )
+    critic_reviewed: int = Field(default=0, description="Находок, по которым критик дал решение")
+    critic_downgraded: int = Field(default=0, description="Критик понизил важность (находки в отчёте)")
+    critic_dropped: int = Field(default=0, description="Критик снял находку")
+    found_in: list[FoundInBucket] = Field(
+        default_factory=list, description="Распределение «найдено в N из K проходов» по находкам отчёта"
+    )
 
 
 class Conclusion(Contract):
@@ -1455,6 +1503,91 @@ class DocumentInfo(Contract):
     extraction: str = ""
 
 
+# ---------------------------------------------------------------- матрица покрытия и самопроверка (#43)
+
+
+class CellState(StrEnum):
+    """Состояние ячейки матрицы покрытия: свойство стандарта по требованию или по набору."""
+
+    CLEAN = "clean"  # свойство проверяли, нарушений не нашли
+    VIOLATION = "violation"
+    UNCLEAR = "unclear"
+    NOT_CHECKED = "not_checked"  # ни один проход поиска не отработал: «нет нарушений» было бы неправдой
+
+
+class CoverageCell(Contract):
+    state: CellState
+    finding_ids: list[str] = Field(default_factory=list, description="F-NN, которые держат ячейку")
+
+
+class CoverageRow(Contract):
+    """Строка матрицы: требование × свойства 29148 п. 5.2.5 и IEEE 830 п. 4.3 уровня требования."""
+
+    requirement_id: str
+    cells: dict[Property, CoverageCell] = Field(default_factory=dict)
+
+
+class SetCoverageRow(Contract):
+    """Строка матрицы набора: свойство 29148 п. 5.2.6 или IEEE 830 п. 4.3 со ссылками на находки."""
+
+    property: Property
+    state: CellState
+    finding_ids: list[str] = Field(default_factory=list)
+    refs: list[str] = Field(default_factory=list, description="Пункты стандартов, как в карточках находок")
+
+
+class CoverageMatrix(Contract):
+    """Матрица покрытия критериев (ТЗ п. 5): код строит её из находок, модель в ней не участвует."""
+
+    requirement_properties: list[Property] = Field(default_factory=list)
+    rows: list[CoverageRow] = Field(default_factory=list)
+    set_rows: list[SetCoverageRow] = Field(default_factory=list)
+    extra_finding_ids: list[str] = Field(
+        default_factory=list, description="Находки, которым в сетке нет ячейки (свойство другого уровня)"
+    )
+    unlinked_finding_ids: list[str] = Field(
+        default_factory=list,
+        description="Находки уровня требования, не привязанные ни к одному требованию нарезки",
+    )
+    checked: bool = Field(default=True, description="Хотя бы один проход поиска отработал")
+
+
+class SelfCheckItem(Contract):
+    """Одна проверка отчёта. ``integrity``: провал значит, что в отчёт попало неверное, а не неполное."""
+
+    id: str
+    title: str
+    passed: bool
+    integrity: bool = True
+    detail: str = ""
+    failures: list[str] = Field(default_factory=list, description="Что именно не сошлось, до 10 строк")
+
+
+class SelfCheck(Contract):
+    """Самопроверка отчёта по ТЗ п. 6: только проверяет и сообщает, отчёт задним числом не правит."""
+
+    applicable: bool = Field(default=True, description="False: разделы о требованиях не формировались")
+    sections_found: int = 0
+    sections_total: int = 0
+    findings_total: int = 0
+    findings_anchored: int = Field(default=0, description="Находок с якорем и сверенной цитатой")
+    quotes_total: int = Field(default=0, description="Цитат в находках отчёта")
+    quotes_verified: int = 0
+    quotes_rechecked: int = Field(
+        default=0, description="Цитат, которые код ещё раз сверил с текстом документа"
+    )
+    items: list[SelfCheckItem] = Field(default_factory=list)
+    summary: str = Field(default="", description="Строка паспорта")
+
+    @property
+    def passed(self) -> bool:
+        return all(item.passed for item in self.items)
+
+    @property
+    def integrity_ok(self) -> bool:
+        return all(item.passed for item in self.items if item.integrity)
+
+
 class Report(Contract):
     """Всё содержимое отчёта. report.json это сериализация этой модели, из неё рендерятся MD и PDF."""
 
@@ -1477,6 +1610,8 @@ class Report(Contract):
     )
     conclusion: Conclusion
     metrics: RunMetrics = Field(default_factory=RunMetrics)
+    coverage: CoverageMatrix | None = Field(default=None, description="Матрица покрытия критериев (#43)")
+    selfcheck: SelfCheck | None = Field(default=None, description="Самопроверка отчёта по ТЗ п. 6 (#43)")
 
 
 class RunContext(Contract):

@@ -61,7 +61,8 @@ def fake_run(
 ) -> tuple[DocKind, Path, int]:
     kind: DocKind = request.param
     out = tmp_path_factory.mktemp(kind.value) / "report.md"
-    result = run_cli(REQUIREMENTS[kind], out, "--backend", "fake")
+    # Три прохода явно: по умолчанию один (D-011), а smoke проверяет и слияние проходов.
+    result = run_cli(REQUIREMENTS[kind], out, "--backend", "fake", "--passes", "3")
     return kind, out, result.returncode
 
 
@@ -194,6 +195,23 @@ def test_unknown_option_is_usage_error_in_russian() -> None:
 
 def test_report_must_be_md_or_pdf(tmp_path: Path) -> None:
     result = run_cli(REQUIREMENTS[DocKind.MD], tmp_path / "report.txt", "--backend", "fake")
+
+    assert result.returncode == ExitCode.USAGE
+
+
+def test_raw_search_input_reaches_passport(tmp_path: Path) -> None:
+    out = tmp_path / "report.md"
+
+    result = run_cli(REQUIREMENTS[DocKind.MD], out, "--backend", "fake", "--search-input", "raw")
+
+    assert result.returncode == ExitCode.OK, result.stderr
+    report = Report.model_validate_json(out.with_suffix(".json").read_text(encoding="utf-8"))
+    assert report.passport.search_input == "raw"
+    assert report.verification is not None and report.verification.findings
+
+
+def test_unknown_search_input_is_usage_error() -> None:
+    result = run_cli(REQUIREMENTS[DocKind.MD], "out/report.md", "--search-input", "html", "--backend", "fake")
 
     assert result.returncode == ExitCode.USAGE
 

@@ -16,7 +16,7 @@ paths = ['''^evals/(cache|results)/''', '''^tests/fixtures/''']
 regexes = ['''^[0-9a-f]{64}$''']
 
 [[allowlists]]
-description = "Поле stable_key в снапшотах отчёта (tests/fixtures/e2e): 12 первых знаков sha256 нормализованной цитаты, а не секрет"
+description = "Поле stable_key в снапшотах отчёта (tests/fixtures/e2e) и в записанных прогонах eval (evals/results): 12 первых знаков sha256 нормализованной цитаты, а не секрет"
 condition = "AND"
-paths = ['''^tests/fixtures/''']
+paths = ['''^tests/fixtures/''', '''^evals/results/''']
 regexes = ['''^[0-9a-f]{12}$''']

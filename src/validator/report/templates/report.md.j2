@@ -121,13 +121,16 @@
 | Способ вызова модели | {% if p.calls_total == 0 %}модель не вызывалась (запрошено: {{ p.backend_requested.label }}){% else %}{{ (p.backend_used or p.backend_requested).label }}{% endif %} |
 | Модели по шагам | {% for step, label in p.models.items() %}{{ step }}: {{ label }}{% if not loop.last %}; {% endif %}{% else %}—{% endfor %} |
 | Фактические модели | {{ p.models_actual | join(", ") if p.models_actual else "—" }} |
-| Профиль | {{ p.profile.value }}, проходов поиска: {{ p.passes }} |
+| Профиль | {{ p.profile.value }}, проходов поиска: {{ p.passes }}{% if p.search_input.value == "raw" %}, поиск по тексту без ID блоков{% endif %} |
 | Вызовов модели | {{ p.calls_total }} (с ошибкой: {{ p.calls_failed }}) |
 | Токены | вход {{ p.tokens.input_tokens }}, выход {{ p.tokens.output_tokens }}, запись в кеш {{ p.tokens.cache_creation_input_tokens }}, чтение из кеша {{ p.tokens.cache_read_input_tokens }} |
 | Цена по тарифу API | {{ p.cost_usd | money }} |
 | Окружение | {{ p.os | cell }}, Python {{ p.python }} |
 | Код завершения | {{ p.exit_code.value }}: {{ p.exit_code.meaning }} |
 | Состояние проверки | {{ r.status | status_label }} |
+{% if r.selfcheck %}
+| Самопроверка отчёта | {{ r.selfcheck.summary | cell }} |
+{% endif %}
 
 ## 2. Диагностика входа
 
@@ -412,6 +415,45 @@
 | Вопросы: дубли с находками, повторы | {{ qm.obvious_fix }}, {{ qm.duplicate_pairs }} |
 | Вопросы: адресаты | {% for a, n in qm.by_addressee.items() %}{{ addressee_label(a) }} {{ n }}{% if not loop.last %}, {% endif %}{% else %}—{% endfor %} |
 {% endif %}
+{% set m = r.metrics %}
+{% if m.steps %}
+
+### Вызовы модели по шагам
+
+| Шаг | Модель | Вызовов | С ошибкой | Из кеша | Время, с | Токены: вход / выход | Цена по тарифу API |
+|---|---|---|---|---|---|---|---|
+{% for st in m.steps %}
+| {{ step_label(st.step) }} | {{ p.models.get(st.step, "—") | cell }} | {{ st.calls }} | {{ st.failed }} | {{ st.cached + st.replayed }} | {{ st.duration_s }} | {{ st.tokens.input_tokens }} / {{ st.tokens.output_tokens }} | {{ st.cost_usd | money }} |
+{% endfor %}
+{% endif %}
+
+### Воронка находок
+
+| Этап | Находок |
+|---|---|
+| Кандидаты от проходов поиска | {{ m.candidates_passes }} (проходов отработало {{ m.passes_ok }} из {{ m.passes_total }}) |
+| Кандидаты от правил линтера | {{ m.candidates_lint }} |
+| После слияния | {{ m.merged_total }} |
+{% for reason, n in m.discarded_by_reason.items() %}
+| Отброшено: {{ reason.label }} | {{ n }} |
+{% endfor %}
+{% if clarify %}
+| Сверка с ответами автора | {{ clarify.funnel }} |
+{% endif %}
+| После верификатора, в отчёте | {{ m.findings_total }} |
+{% if m.critic_reviewed %}
+| Критик: просмотрено, понижено, снято | {{ m.critic_reviewed }}, {{ m.critic_downgraded }}, {{ m.critic_dropped }} |
+{% endif %}
+{% if m.found_in %}
+
+### «Найдено в N из K проходов»
+
+| Найдено | Находок |
+|---|---|
+{% for b in m.found_in %}
+| в {{ b.found_in }} из {{ b.of }} | {{ b.count }} |
+{% endfor %}
+{% endif %}
 {% endif %}
 
 ## {{ "10. " if c.performed else "" }}Диагностика прогона
@@ -420,4 +462,72 @@
 {{ diag_table(r.diagnostics) }}
 {% else %}
 Замечаний к прогону нет.
+{% endif %}
+{% if c.performed %}
+
+## 11. Матрица покрытия критериев
+
+{% if r.coverage %}
+{% set cov = r.coverage %}
+Матрицу строит код из находок: модель в ней не участвует. «Нарушений нет» значит, что проходы поиска получили рубрику со всеми свойствами и по этому месту ничего не вернули; это не доказательство, что дефекта нет.
+
+{% if not cov.checked %}
+{{ coverage_not_checked_note }}
+
+{% endif %}
+Обозначения: {{ coverage_legend }}
+
+### Требования × свойства: ISO/IEC/IEEE 29148:2018, п. 5.2.5, и IEEE 830-1998, п. 4.3
+
+| Требование | {% for prop in cov.requirement_properties %}{{ coverage_short[prop] }} | {% endfor %}
+
+|---|{% for prop in cov.requirement_properties %}---|{% endfor %}
+
+{% for row in cov.rows %}
+| {{ row.requirement_id }} | {% for prop in cov.requirement_properties %}{{ coverage_text(row.cells[prop]) }} | {% endfor %}
+
+{% endfor %}
+
+Ячеек: {{ coverage_totals.values() | sum }}, нарушений нет в {{ coverage_totals["clean"] }}, нарушение в {{ coverage_totals["violation"] }}, «неясно» в {{ coverage_totals["unclear"] }}, не проверялось в {{ coverage_totals["not_checked"] }}.
+{% if cov.unlinked_finding_ids %}
+Находки, которые не привязаны ни к одному требованию (цитата вне таблицы нарезки), поэтому в ячейках требований их нет: {{ cov.unlinked_finding_ids | join(", ") }}.
+{% endif %}
+{% if cov.extra_finding_ids %}
+Находки, у которых нет ячейки в сетке (свойство другого уровня): {{ cov.extra_finding_ids | join(", ") }}.
+{% endif %}
+
+| Колонка | Свойство | Пункты стандартов |
+|---|---|---|
+{% for prop in cov.requirement_properties %}
+| {{ coverage_short[prop] }} | {{ prop.label }} | {{ prop.refs | join("; ") | cell }} |
+{% endfor %}
+
+### Набор требований × свойства: ISO/IEC/IEEE 29148:2018, п. 5.2.6, и IEEE 830-1998, п. 4.3
+
+| Свойство | Пункты стандартов | Статус | Находки |
+|---|---|---|---|
+{% for sr in cov.set_rows %}
+| {{ sr.property.label }} | {{ sr.refs | join("; ") | cell }} | {{ coverage_state_label[sr.state] }} | {{ coverage_text(sr) if sr.finding_ids else "—" }} |
+{% endfor %}
+{% else %}
+Матрица не построена: нет нарезки или проверки требований, смотрите диагностику прогона.
+{% endif %}
+{% endif %}
+{% if r.selfcheck and r.selfcheck.applicable %}
+
+## 12. Самопроверка отчёта
+
+**{{ r.selfcheck.summary | cell }}**
+
+Агент проверил готовый отчёт по ТЗ п. 6 и не правил его задним числом: провал виден здесь, в паспорте и в диагностике прогона.
+
+| Проверка | Результат | Что проверено или что не сошлось |
+|---|---|---|
+{% for item in r.selfcheck.items %}
+| {{ item.title | cell }} | {{ "пройдена" if item.passed else "НЕ ПРОЙДЕНА" }} | {{ item.detail | cell if item.passed else (item.failures | join("; ") | cell(600)) }} |
+{% endfor %}
+{% if r.selfcheck.quotes_rechecked %}
+
+Цитаты находок ({{ r.selfcheck.quotes_rechecked }}) код сверил ещё раз по тексту документа: фрагмент по якорю совпал с цитатой.
+{% endif %}
 {% endif %}

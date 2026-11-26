@@ -1,0 +1,231 @@
+{
+ "envelope_version": 1,
+ "key": "dab8957757701f99caaacf59eb3d53e8888e6fbf1475b5899ce6ee8fa1f43c27",
+ "call_id": "search.1",
+ "step": "search",
+ "call_index": 1,
+ "model": "claude-opus-5-5",
+ "effort": "medium",
+ "backend": "cli",
+ "saved_at": "2026-11-26T02:18:23.158244+00:00",
+ "payload": {
+  "duration_api_ms": 85009,
+  "stop_reason": "end_turn",
+  "session_id": "96f7e909-ceea-4d36-ae4d-9939fcafe08a",
+  "total_cost_usd": 0.23372360000000003,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 2912,
+   "cache_read_input_tokens": 6298,
+   "output_tokens": 10458,
+   "output_tokens_details": {
+    "thinking_tokens": 1446
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 2912,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 10458,
+     "cache_read_input_tokens": 6298,
+     "cache_creation_input_tokens": 2912,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 2912
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-opus-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 10458,
+    "cacheReadInputTokens": 6298,
+    "cacheCreationInputTokens": 2912,
+    "webSearchRequests": 0,
+    "costUSD": 0.23372360000000003,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1446,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 2912,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Обзор документа\n\n- Цель (B004.1): заменить бумажный журнал управляющего домом. Измеримого показателя нет.\n- Участники (B004.2): courier, customer, building manager. Других ролей нет, права доступа не описаны.\n- Сущности:\n  - parcel: B006, B007, B011, B014, B018, B019;\n  - compartment: «locker compartment», «compartment», «free compartment» в B006–B010, B013;\n  - one-time code / code: B008, B009, B014;\n  - notification: B007, B009, B019;\n  - customer's list of parcels: только B018;\n  - locker controller: B016.\n- Состояния ячейки по тексту: free (B006, B013), reserved (B006), occupied (B007), released (B009), blocked (B010). Модели переходов нет.\n- События:\n  - резерв ячейки (B006);\n  - закладка посылки, «placed» (B007, B014, B018, B019);\n  - открытие ячейки кодом (B008);\n  - истечение кода (B009);\n  - блокировка (B010).\n- Величины:\n  - срок кода 48 ч (B008) против 72 ч от закладки (B014);\n  - уведомление «as soon as possible» (B007) против 5 мин (B019);\n  - плата за хранение TBD (B011);\n  - «quickly» (B013), «highly available» (B015).\n- Интерфейсы: веб-сервис (B002.2), протокол контроллера по «controller manual» (B016). Канал уведомлений не указан.\n- Словарь: compartment = locker compartment; code = one-time code; «placed» — без синонимов; «release» не определён.\n- Решения системы:\n  - выдать резерв ячейки (условия: есть ли free ячейка, заблокирована ли);\n  - принять код (условия: срок, ранее использован ли, верен ли);\n  - освободить ячейку (срок истёк; посылка внутри или нет);\n  - уведомлять ли building manager («if needed»);\n  - начислять ли плату (TBD).\n- Приоритеты есть только у FR. У NFR и AC нет приоритетов и нет трассировки к FR.\n\n## Находки\n\n### Отдельные требования\n\n#### Н-1. У документа нет даты, автора и ссылки на источник\n- Блоки: B002.1\n- Цитата: «Version 0.2.»\n- Свойство: Traceable (прослеживаемость), IEEE 830-1998, п. 4.3.8\n- Тип дефекта: прослеживаемость и оформление\n- Вердикт: нарушение\n- Почему мешает: нельзя установить, какая редакция актуальна, кто её владелец и из какого источника пришли требования.\n- Тест: не мешает\n- Важность: низко\n- Как исправить: «Version 0.2, [уточнить: дата], author: [уточнить: автор], source: [уточнить: родительский документ или запрос]»\n\n#### Н-2. Резервирование ячейки описано без срока резерва и без реакции на отсутствие свободных ячеек\n- Блоки: B006\n- Цитата: «The courier shall be able to reserve a free locker compartment for a parcel before delivery.»\n- Свойство: Complete (полнота требования), ISO/IEC/IEEE 29148:2018, п. 5.2.5; IEEE 830-1998, п. 4.3.3\n- Тип дефекта: неполнота\n- Вердикт: нарушение\n- Почему мешает: не задано, сколько держится резерв, что происходит, если курьер не заложил посылку, и что видит курьер, когда свободных ячеек нет.\n- Тест: мешает, нет срока резерва и ожидаемого ответа при отсутствии свободной ячейки\n- Важность: средне\n- Как исправить: «When the courier requests a reservation, the system shall reserve one free compartment for [уточнить: N минут]; if the parcel is not placed within this time, the system shall cancel the reservation; if no free compartment exists, the system shall reject the request with message [уточнить: текст]»\n\n#### Н-3. Срок отправки уведомления задан словами «as soon as possible»\n- Блоки: B007\n- Цитата: «The system shall send the customer a notification as soon as possible after the parcel is placed in the compartment.»\n- Свойство: Verifiable (проверяемость), Unambiguous (однозначность), ISO/IEC/IEEE 29148:2018, п. 5.2.5, 5.2.7; IEEE 830-1998, п. 4.3.6\n- Тип дефекта: непроверяемость\n- Вердикт: нарушение\n- Почему мешает: в требовании нет числа; 5 минут появляются только в AC-02, и неясно, обязательство это или лишь порог приёмки.\n- Тест: мешает, нет предельного времени и доли случаев\n- Важность: средне\n- Как исправить: «The system shall send the customer a notification within 5 minutes after the parcel is placed in [уточнить: доля случаев, например 99 %]»\n\n#### Н-4. Не указан канал и содержание уведомления\n- Блоки: B007, B009\n- Цитата: «The system shall send the customer a notification»\n- Свойство: Complete (полнота требования), ISO/IEC/IEEE 29148:2018, п. 5.2.5; IEEE 830-1998, п. 4.3.3\n- Тип дефекта: неполнота\n- Вердикт: нарушение\n- Почему мешает: разработчик не знает, отправлять SMS, e-mail или push и включать ли код в текст; тестировщик не знает, где проверять получение.\n- Тест: мешает, нет канала и состава сообщения\n- Важность: средне\n- Как исправить: «The notification shall be sent via [уточнить: канал] and shall contain [уточнить: код, адрес шкафа, номер ячейки, срок действия кода]»\n\n#### Н-5. Срок действия кода не привязан к начальному моменту\n- Блоки: B008\n- Цитата: «The customer shall open the compartment with a one-time code valid for 48 hours.»\n- Свойство: Unambiguous (однозначность), ISO/IEC/IEEE 29148:2018, п. 5.2.5; IEEE 830-1998, п. 4.3.2\n- Тип дефекта: двусмысленность\n- Вердикт: нарушение\n- Сценарий: посылка заложена в 10:00, уведомление ушло в 10:20 → если отсчёт от закладки, код истекает в 10:00 через двое суток → если отсчёт от уведомления, в 10:20.\n- Почему мешает: граничный тест на истечение кода получит разные ожидаемые результаты.\n- Тест: мешает, нет момента начала отсчёта\n- Важность: средне\n- Как исправить: «The one-time code shall be valid for [уточнить: 48 или 72] hours counted from the moment the parcel is placed in the compartment»\n\n#### Н-6. Нет реакции на неверный, просроченный или повторно использованный код\n- Блоки: B008\n- Цитата: «The customer shall open the compartment with a one-time code valid for 48 hours.»\n- Свойство: Complete (полнота требования), ISO/IEC/IEEE 29148:2018, п. 5.2.5; IEEE 830-1998, п. 4.3.3\n- Тип дефекта: неполнота\n- Вердикт: нарушение\n- Почему мешает: негативные тесты нельзя написать, и нет защиты от перебора кода.\n- Тест: мешает, нет ожидаемого ответа на неверный, просроченный и повторный код и нет лимита попыток\n- Важность: критично\n- Как исправить: «If the entered code is wrong, expired or already used, the system shall keep the compartment closed and show [уточнить: текст]; after [уточнить: N] wrong attempts the system shall [уточнить: действие]»\n\n#### Н-7. Условие уведомления управляющего задано словами «if needed»\n- Блоки: B009\n- Цитата: «The system shall release the compartment automatically when the code expires and notify the courier, the customer and, if needed, the building manager.»\n- Свойство: Unambiguous (однозначность), Verifiable (проверяемость), ISO/IEC/IEEE 29148:2018, п. 5.2.5, 5.2.7\n- Тип дефекта: двусмысленность\n- Вердикт: нарушение\n- Сценарий: код истёк, посылка в ячейке → по одному толкованию уведомить управляющего → по другому не уведомлять.\n- Почему мешает: условие уведомления управляющего не определено, ожидаемого результата у теста нет.\n- Тест: мешает, нет условия уведомления управляющего\n- Важность: средне\n- Как исправить: «When the code expires, the system shall notify the building manager if [уточнить: условие]»\n\n#### Н-8. FR-04 объединяет освобождение ячейки и уведомления трёх участников\n- Блоки: B009\n- Цитата: «The system shall release the compartment automatically when the code expires and notify the courier, the customer and, if needed, the building manager.»\n- Свойство: Singular (единичность), ISO/IEC/IEEE 29148:2018, п. 5.2.5\n- Тип дефекта: составное требование\n- Вердикт: нарушение\n- Почему мешает: обязательства нельзя трассировать и принимать по отдельности.\n- Тест: не мешает\n- Важность: низко\n- Как исправить: «FR-04a: When the code expires, the system shall [уточнить: действие с ячейкой]. FR-04b: When the code expires, the system shall notify the courier and the customer via [уточнить: канал]. FR-04c: [уточнить: условие уведомления управляющего]»\n\n#### Н-9. Неясно, что значит «release», если посылка ещё в ячейке\n- Блоки: B009\n- Цитата: «The system shall release the compartment automatically when the code expires»\n- Свойство: Feasible (выполнимость), Complete (полнота требования), ISO/IEC/IEEE 29148:2018, п. 5.2.5\n- Тип дефекта: невыполнимость\n- Вердикт: неясно\n- Сценарий: код истёк, посылка не забрана → если ячейка становится free, её зарезервирует другой курьер, хотя внутри лежит чужая посылка → если остаётся занятой, «release» ничего не меняет.\n- Почему мешает: нужно узнать у автора, кто и как забирает посылку и в какое состояние переходит ячейка.\n- Тест: мешает, нет итогового состояния ячейки и судьбы посылки\n- Важность: критично\n- Как исправить: «When the code expires and the parcel is not collected, the system shall set the compartment to state [уточнить: состояние] and [уточнить: кто изымает посылку]; the compartment becomes free only after [уточнить: событие]»\n\n#### Н-10. Блокировка ячейки описана без снятия блокировки и без сценария с занятой ячейкой\n- Блоки: B010\n- Цитата: «The building manager shall be able to block a compartment for maintenance.»\n- Свойство: Complete (полнота требования), ISO/IEC/IEEE 29148:2018, п. 5.2.5; IEEE 830-1998, п. 4.3.3\n- Тип дефекта: неполнота\n- Вердикт: нарушение\n- Почему мешает: не описаны разблокировка, блокировка зарезервированной или занятой ячейки и судьба действующего кода.\n- Тест: мешает, нет ожидаемого результата блокировки reserved и occupied ячейки\n- Важность: средне\n- Как исправить: «The building manager shall be able to block and unblock a compartment; a blocked compartment shall not be offered for reservation; blocking a reserved or occupied compartment shall [уточнить: отклонить или иное действие]»\n\n#### Н-11. Плата за хранение не задана (TBD)\n- Блоки: B011\n- Цитата: «The storage fee for an uncollected parcel is TBD.»\n- Свойство: Complete (полнота набора), ISO/IEC/IEEE 29148:2018, п. 5.2.6; IEEE 830-1998, п. 4.3.3.1\n- Тип дефекта: незаполненное место\n- Вердикт: нарушение\n- Почему мешает: начисление денег нельзя реализовать и проверить; не определено, с какого момента посылка «uncollected» и кто платит.\n- Тест: мешает, нет суммы, единицы, момента начала начисления и плательщика\n- Важность: критично\n- Как исправить: «For a parcel not collected within [уточнить: срок] after placement, the system shall charge [уточнить: плательщик] [уточнить: сумма и валюта] per [уточнить: период]»\n\n#### Н-12. Время загрузки страницы задано словом «quickly»\n- Блоки: B013.2\n- Цитата: «The page with the list of free compartments shall load quickly.»\n- Свойство: Verifiable (проверяемость), ISO/IEC/IEEE 29148:2018, п. 5.2.5, 5.2.7; IEEE 830-1998, п. 4.3.6\n- Тип дефекта: непроверяемость\n- Вердикт: нарушение\n- Почему мешает: нагрузочный тест нельзя пройти или провалить.\n- Тест: мешает, нет времени, доли запросов, нагрузки и точек начала и конца измерения\n- Важность: средне\n- Как исправить: «The page with the list of free compartments shall load within [уточнить: N] seconds for [уточнить: доля] of requests at [уточнить: число] concurrent users, measured from request to full render»\n\n#### Н-13. Правило о сроке кода стоит в нефункциональных требованиях и повторяет FR-03\n- Блоки: B014.2, B008\n- Цитата: «A one-time code shall remain valid for 72 hours after the parcel is placed.»\n- Свойство: Modifiable (модифицируемость), IEEE 830-1998, п. 4.3.7; Appropriate (уместность), ISO/IEC/IEEE 29148:2018, п. 5.2.5\n- Тип дефекта: дублирование\n- Вердикт: нарушение\n- Почему мешает: одно правило записано в двух местах, и при правке одного из них они расходятся (см. Н-21).\n- Тест: не мешает\n- Важность: низко\n- Как исправить: «Срок действия кода задать только в FR-03; NFR-02 удалить»\n\n#### Н-14. NFR-03 объединяет доступность и удобство интерфейса\n- Блоки: B015.2\n- Цитата: «The service shall be highly available and shall have a user-friendly interface.»\n- Свойство: Singular (единичность), ISO/IEC/IEEE 29148:2018, п. 5.2.5\n- Тип дефекта: составное требование\n- Вердикт: нарушение\n- Почему мешает: два независимых обязательства нельзя принять по отдельности.\n- Тест: не мешает\n- Важность: низко\n- Как исправить: «NFR-03a: доступность; NFR-03b: удобство использования — отдельными пунктами»\n\n#### Н-15. «highly available» без числа\n- Блоки: B015.2\n- Цитата: «The service shall be highly available and shall have a user-friendly interface.»\n- Свойство: Verifiable (проверяемость), ISO/IEC/IEEE 29148:2018, п. 5.2.5, 5.2.7; IEEE 830-1998, п. 4.3.6\n- Тип дефекта: непроверяемость\n- Вердикт: нарушение\n- Почему мешает: доступность нельзя измерить и принять.\n- Тест: мешает, нет процента доступности и периода измерения\n- Важность: средне\n- Как исправить: «The service shall be available [уточнить: %] of the time per calendar month, excluding planned maintenance of [уточнить: часы]»\n\n#### Н-16. «user-friendly interface» — субъективная оценка\n- Блоки: B015.2\n- Цитата: «The service shall be highly available and shall have a user-friendly interface.»\n- Свойство: Verifiable (проверяемость), ISO/IEC/IEEE 29148:2018, п. 5.2.5, 5.2.7; IEEE 830-1998, п. 4.3.6\n- Тип дефекта: непроверяемость\n- Вердикт: нарушение\n- Почему мешает: оценка у каждого проверяющего будет своя.\n- Тест: мешает, нет измеримого критерия удобства\n- Важность: средне\n- Как исправить: «[уточнить: доля] of new customers shall open a compartment with the code without assistance within [уточнить: N] minutes in a usability test»\n\n#### Н-17. Неполная ссылка на руководство контроллера\n- Блоки: B016.2\n- Цитата: «All data exchange with the locker controller shall use the proprietary protocol defined in the controller manual.»\n- Свойство: Complete (полнота требования), Traceable (прослеживаемость), ISO/IEC/IEEE 29148:2018, п. 5.2.5, 5.2.7; IEEE 830-1998, п. 4.3.8\n- Тип дефекта: неполнота\n- Вердикт: нарушение\n- Почему мешает: интеграцию нельзя реализовать, пока не известны название, версия и раздел руководства; ошибки и отказы контроллера тоже не описаны.\n- Тест: мешает, нет версии протокола и ожидаемой реакции на отказ контроллера\n- Важность: средне\n- Как исправить: «All data exchange with the locker controller shall use the protocol defined in [уточнить: название, версия, раздел руководства]; if the controller does not respond within [уточнить: время], the system shall [уточнить: действие]»\n\n#### Н-18. В AC-01 упомянут список посылок клиента, которого нет в требованиях\n- Блоки: B018.2\n- Цитата: «A parcel placed by the courier appears in the customer's list of parcels.»\n- Свойство: Complete (полнота набора), ISO/IEC/IEEE 29148:2018, п. 5.2.6; IEEE 830-1998, п. 4.3.3\n- Тип дефекта: неполнота\n- Вердикт: нарушение\n- Почему мешает: проверяется функция, которой нет ни в одном FR: не заданы её состав, поля и срок появления посылки в списке.\n- Тест: мешает, нет состава списка и срока появления записи\n- Важность: средне\n- Как исправить: «FR-07: The system shall show the customer a list of their parcels with [уточнить: поля]; a placed parcel shall appear in the list within [уточнить: время]»\n\n### Набор требований\n\n#### Н-19. В документе нет модели состояний ячейки\n- Блоки: B006, B009, B010, B013.2\n- Цитата: «The courier shall be able to reserve a free locker compartment for a parcel before delivery.»\n- Свойство: Complete (полнота набора), Comprehensible (понятность), ISO/IEC/IEEE 29148:2018, п. 5.2.6; IEEE 830-1998, п. 4.3.3\n- Тип дефекта: неполнота\n- Вердикт: нарушение\n- Почему мешает: состояния free, reserved, occupied, released и blocked не определены, переходы между ними не заданы, и попадание ячейки в список свободных нельзя проверить.\n- Тест: мешает, нет перечня состояний и допустимых переходов\n- Важность: критично\n- Как исправить: «Compartment states: [уточнить: перечень]; allowed transitions: [уточнить: таблица событие → новое состояние]; only compartments in state free are listed on the free-compartments page»\n\n#### Н-20. Нет авторизации ролей и требований к персональным данным\n- Блоки: B004.2, B007\n- Цитата: «Actors: courier, customer, building manager.»\n- Свойство: Complete (полнота набора), ISO/IEC/IEEE 29148:2018, п. 5.2.6; IEEE 830-1998, п. 4.3.3\n- Тип дефекта: неполнота\n- Вердикт: нарушение\n- Почему мешает: не определено, кто может резервировать и блокировать ячейки и видеть чужие посылки; контакты клиента для уведомлений хранятся без указания состава, срока хранения и защиты.\n- Тест: мешает, нет матрицы прав и ожидаемого отказа при нехватке прав\n- Важность: критично\n- Как исправить: «Each actor shall authenticate via [уточнить: способ]; permissions: [уточнить: матрица роль → операции]; customer contact data shall be stored for [уточнить: срок] and protected by [уточнить: меры]»\n\n#### Н-21. Срок действия кода 48 ч в FR-03 и 72 ч в NFR-02\n- Блоки: B008, B014.2\n- Цитата: «The customer shall open the compartment with a one-time code valid for 48 hours.»\n- Цитата: «A one-time code shall remain valid for 72 hours after the parcel is placed.»\n- Свойство: Consistent (согласованность), ISO/IEC/IEEE 29148:2018, п. 5.2.6; IEEE 830-1998, п. 4.3.4.1\n- Тип дефекта: противоречие\n- Вердикт: нарушение\n- Сценарий: клиент вводит код через 60 ч после закладки → по FR-03 код истёк, ячейка освобождена (FR-04) → по NFR-02 код действует, ячейка открывается.\n- Почему мешает: от срока зависят открытие ячейки, момент освобождения и уведомления; у теста два ожидаемых результата.\n- Тест: мешает, неизвестно, верный срок 48 или 72 ч\n- Важность: критично\n- Как исправить: «The one-time code shall be valid for [уточнить: 48 или 72] hours counted from the moment the parcel is placed»\n\n#### Н-22. Освобождение ячейки по FR-04 может не сочетаться с платой за хранение по FR-06\n- Блоки: B009, B011\n- Цитата: «The system shall release the compartment automatically when the code expires»\n- Цитата: «The storage fee for an uncollected parcel is TBD.»\n- Свойство: Consistent (согласованность), ISO/IEC/IEEE 29148:2018, п. 5.2.6; IEEE 830-1998, п. 4.3.4.1\n- Тип дефекта: противоречие\n- Вердикт: неясно\n- Сценарий: код истёк, посылка не забрана → по FR-04 ячейка освобождена, хранение в ней закончилось → по FR-06 за невостребованную посылку начисляется плата, то есть она продолжает храниться.\n- Почему мешает: нужно узнать у автора, где хранится посылка после истечения кода и за какой период начисляется плата.\n- Тест: мешает, нет периода начисления относительно момента освобождения\n- Важность: средне\n- Как исправить: «After code expiry the parcel shall be stored [уточнить: где]; the storage fee is charged for the period from [уточнить: момент] to [уточнить: момент]»\n\n#### Н-23. Нет требования к журналу операций, хотя цель — заменить бумажный журнал\n- Блоки: B004.1\n- Цитата: «The service replaces the paper log kept by building managers.»\n- Свойство: Able to be validated (валидируемость), Complete (полнота набора), ISO/IEC/IEEE 29148:2018, п. 5.2.6\n- Тип дефекта: неполнота\n- Вердикт: нарушение\n- Почему мешает: нельзя показать, что система заменяет журнал: не заданы записываемые события, их поля, доступ управляющего и срок хранения; у цели нет измеримого показателя.\n- Тест: мешает, нет состава журнала и критерия достижения цели\n- Важность: средне\n- Как исправить: «The system shall record each reservation, placement, collection, expiry and blocking with [уточнить: поля], keep the records for [уточнить: срок] and show them to the building manager»\n\n#### Н-24. Критерии приёмки не покрывают FR-01, FR-03–FR-06, негативные случаи и NFR\n- Блоки: B018, B019\n- Цитата: «## 4. Acceptance criteria»\n- Свойство: Complete (полнота набора), ISO/IEC/IEEE 29148:2018, п. 5.2.6\n- Тип дефекта: неполнота\n- Вердикт: нарушение\n- Почему мешает: резерв, открытие кодом, истечение кода, блокировка, неверный код и нагрузка остаются без критериев приёмки.\n- Тест: мешает, нет критериев для перечисленных требований\n- Важность: средне\n- Как исправить: «Добавить AC для FR-01, FR-03, FR-04, FR-05, FR-06, NFR-01, NFR-03, включая неверный и просроченный код, отсутствие свободных ячеек и блокировку занятой ячейки»\n\n#### Н-25. У NFR и AC нет приоритетов и трассировки к FR, модальность неединообразна\n- Блоки: B013–B016, B018, B019, B006, B008, B011\n- Цитата: «The storage fee for an uncollected parcel is TBD.»\n- Свойство: Ranked for importance (ранжирование), IEEE 830-1998, п. 4.3.5; Traceable (прослеживаемость), IEEE 830-1998, п. 4.3.8; Conforming (соответствие шаблону), ISO/IEC/IEEE 29148:2018, п. 5.2.5\n- Тип дефекта: прослеживаемость и оформление\n- Вердикт: нарушение\n- Почему мешает: не определена очерёдность работ по NFR и AC и не видно, какой AC проверяет какой FR; FR-06 и AC-01, AC-02 сформулированы без «shall», в FR-01, FR-03 и FR-05 обязательство возложено на участника, а не на систему.\n- Тест: не мешает\n- Важность: низко\n- Как исправить: «Указать Priority для NFR-01…NFR-04 и AC-01, AC-02; в каждом AC указать проверяемый FR; переписать все пункты в форме \"The system shall …\"»",
+  "ttft_ms": 16127,
+  "type": "result",
+  "duration_ms": 88764,
+  "uuid": "8d8d4ffc-7b6c-49db-b44c-098f2427e592",
+  "ttft_stream_ms": 802,
+  "time_to_request_ms": 63,
+  "time_to_request_phases_ms": {
+   "other": 7,
+   "system_prompt": 2,
+   "resume_other": 0,
+   "process_user_input": 2,
+   "input_attachments": 7,
+   "input_hooks": 1,
+   "conversation_append": 1,
+   "tool_pool_refresh": 1,
+   "init_message": 4,
+   "init_frame_send": 3,
+   "engine_pickup": 1,
+   "loop_entry": 3,
+   "message_prep": 2,
+   "model_config_wait": 7,
+   "autocompact": 2,
+   "request_announcements": 5,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 3,
+   "message_normalization": 2,
+   "client_creation": 3,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 12,
+  "time_to_request_cpu_ms": 69,
+  "time_to_request_major_faults": 0,
+  "process_rss_mib_turn_start": 201,
+  "process_anon_mib_turn_start": 124,
+  "process_rss_mib_result": 205,
+  "process_anon_mib_result": 119,
+  "process_peak_rss_mib": 220,
+  "process_cpu_ms_turn": 1422,
+  "process_wall_ms_turn": 88763,
+  "tool_pool_build_count": 4,
+  "tool_pool_build_lapsed_count": 1,
+  "tool_pool_moved_at_lapse_count": 0,
+  "tool_pool_limit_ms": 30000,
+  "process_cpu_ms_streaming": 1200,
+  "process_wall_ms_streaming": 84261,
+  "main_stream_count": 1,
+  "main_stream_event_count": 1398,
+  "main_stream_chunk_count": 1392,
+  "process_turn_states": {
+   "main_stream": {
+    "cpu_ms": 1200,
+    "wall_ms": 84261,
+    "entries": 1
+   },
+   "first_event_wait": {
+    "cpu_ms": 108,
+    "wall_ms": 738,
+    "entries": 1
+   },
+   "before_first_request": {
+    "cpu_ms": 69,
+    "wall_ms": 62,
+    "entries": 1
+   },
+   "after_last_request": {
+    "cpu_ms": 45,
+    "wall_ms": 3702,
+    "entries": 1
+   }
+  },
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 1,
+   "cpu_ms": 7,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 1,
+   "render_ms": 0,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 2,
+   "placement_ms": 1,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 2,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 2,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 2,
+   "record_attempt_ms": 0,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 1,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 802,
+  "time_to_request_from_spawn_ms": 742433,
+  "warm_spare_claimed": false,
+  "flag_fetch_kick": "not_asked_warm",
+  "time_origin_ms": 1795648711452.6023,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "process_start_tuning": 0
+ }
+}

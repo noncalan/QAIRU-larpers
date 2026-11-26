@@ -23,6 +23,7 @@ from validator.ingest import parse
 from validator.llm.claude_cli import SYSTEM_PROMPT_FILE, build_args, clean_env, find_claude
 from validator.models import Backend, DocKind, LLMRequest
 from validator.pipeline import run
+from validator.refs import RefNamer
 
 ROOT = Path(__file__).resolve().parents[2]
 DOC = ROOT / "data" / "input" / "requirements.md"
@@ -37,7 +38,7 @@ def _request() -> LLMRequest:
     if report is None or report.verification is None:
         raise SystemExit("Фейковый прогон не дал отчёта с находками")
     doc = parse(DOC, DocKind.MD)
-    matched = _match_all(load_answers(ANSWERS), report.questions, doc)
+    matched = _match_all(load_answers(ANSWERS), report.questions, doc, RefNamer(doc, report.segmentation))
     answered = [c.answer for c in matched.contexts.values()]
     return build_request(report.verification.findings, answered, doc, cfg)
 

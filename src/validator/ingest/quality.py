@@ -26,6 +26,7 @@ from validator.errors import (
     IN_NOT_REQUIREMENTS,
     IN_PAGES_WITHOUT_TEXT,
 )
+from validator.ingest.injection import review as injection_review
 from validator.models import BlockKind, DiagLevel, Diagnostic, ParsedDocument, TextSignals
 
 GARBLED_FATAL_SHARE = 0.3
@@ -199,4 +200,5 @@ def review(doc: ParsedDocument) -> ParsedDocument:
     diagnostics = _name_pages(doc, list(doc.diagnostics)) + _garbled(doc)
     if not any(d.level is DiagLevel.ERROR for d in diagnostics):
         diagnostics += _not_requirements(doc, {d.code for d in diagnostics})
+    diagnostics += injection_review(doc)
     return doc.model_copy(update={"diagnostics": diagnostics})
