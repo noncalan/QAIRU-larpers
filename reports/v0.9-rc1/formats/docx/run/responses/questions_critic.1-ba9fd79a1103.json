@@ -1,0 +1,231 @@
+{
+ "envelope_version": 1,
+ "key": "ba9fd79a1103cfc08a733099015b018b9b2d2a5489676dc57987112d0ddfb103",
+ "call_id": "questions_critic.1",
+ "step": "questions_critic",
+ "call_index": 1,
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T09:39:04.974484+00:00",
+ "payload": {
+  "duration_api_ms": 60207,
+  "stop_reason": "end_turn",
+  "session_id": "313a665c-141c-4c76-a706-0adac427381b",
+  "total_cost_usd": 0.24891459999999999,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 14263,
+   "cache_read_input_tokens": 1813,
+   "output_tokens": 6722,
+   "output_tokens_details": {
+    "thinking_tokens": 4183
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 14263,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 6722,
+     "cache_read_input_tokens": 1813,
+     "cache_creation_input_tokens": 14263,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 14263
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-opus-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 6722,
+    "cacheReadInputTokens": 1813,
+    "cacheCreationInputTokens": 14263,
+    "webSearchRequests": 0,
+    "costUSD": 0.24891459999999999,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 4183,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 14263,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n- **Q-01.** B023 относит покупку к месяцу по дате совершения в Алматы, а это 31 января. B039 при этом ждёт рост февральского счётчика. Противоречие настоящее, документ его не разрешает. Формулировка корректна. Время покупки и проведения в самом вопросе не указано, поэтому сценария нет.\n- **Q-02.** B024 разрешает не больше одного push за месяц. B025 требует push после смены порога «независимо от истории». Документ не говорит, какое правило главнее. Ошибок нет.\n- **Q-03.** Ответ есть в логике метода. B078 «Заменить настройку…», B082 и URL saveLimit однозначно показывают, что метод сохраняет. «Чтение порога» в B062 — опечатка, и исправить её можно только одним способом. Вопрос громоздкий, в нём несколько частей через двоеточия и точку с запятой (ошибка 3). Сценарий есть: amount=50000.\n- **Q-04.** B097 и B104 требуют 400 при неверных параметрах, а B079 и B108 возвращают ERROR под заголовком 200. Ответа нет. Варианты не учитывают очевидную альтернативу: 400 при неверном формате, 200+ERROR при сумме вне диапазона (ошибка 7).\n- **Q-05.** Цель в B013 сформулирована по-бизнесовому. Конкретное правило задают Ф-2, BPMN B020 и B027: считаются проведённые покупки, push отправляется после проведения. Ответ в документе есть.\n- **Q-06.** Документ не называет поле события и не решает, слать ли push за прошедший месяц. В одном вопросе собрано несколько решений: поле даты, месяц для правила «один push», push за прошлый месяц (ошибка 2).\n- **Q-07.** Для GET без тела строка Content-Type лишняя, и её достаточно удалить (одна очевидная правка). Вопрос о заголовке HTTP адресован бизнесу (ошибка 4).\n- **Q-08.** B117 прямо даёт 404 для чужой карты, но это и есть одно из спорных мест. Когда возвращать 403, документ не говорит. В «Почему важно» смешаны несколько проблем: 404 нет в перечне, пример лежит не в том разделе, 401/403/500 стоят под заголовком 200 (ошибка 2). Варианты не учитывают альтернативу «оба верны, 403 для иных случаев» (ошибка 7).\n- **Q-09.** Документ не говорит, учитываются ли расходы при выключенном уведомлении и нужен ли push при включении, если порог уже превышен. Это два решения в одном вопросе (ошибка 2).\n- **Q-10.** Ф-2 перечисляет только покупки, возвраты, переводы и снятие наличных. Остальные типы операций не определены, ответа нет. Ошибок нет.\n- **Q-11.** Документ ничего не говорит о сроке хранения и защите данных. Это два решения (ошибка 2).\n- **Q-12.** Метода чтения в части B нет, хотя B033 и B017.2 его подразумевают. Вопрос длинный (3), в нём много решений (2), и он просит готовое техническое решение: тип, URL, параметры (5).\n- **Q-13.** Обязательность поля result документ не задаёт: в примерах 400/401/500 его нет. Цитаты сами по себе правил не задают, поэтому неясно, что исправлять (8). Варианты не учитывают альтернативу «result только в ответе 200» (7).\n- **Q-14.** «По дате в Алматы» — это местное время Алматы. UTC+5 и Asia/Almaty сейчас дают одно и то же время, то есть варианты не различаются по последствиям (7). Но приводить как ответ пришлось бы само спорное место, поэтому отмечаю как здравый смысл, а не как ответ.\n- **Q-15.** Ф-4 говорит только об «изменении порога». Повторное сохранение того же значения и переключение enabled не описаны. Это два решения (ошибка 2).\n\n## Ответ\n\n```json\n{\n  \"reviews\": [\n    {\"id\": \"Q-01\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": false, \"errors\": []},\n    {\"id\": \"Q-02\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": false, \"errors\": []},\n    {\"id\": \"Q-03\", \"answered\": true, \"answer\": \"Метод сохраняет порог: заменяет настройку и возвращает результат сохранения\", \"answer_quote\": \"Заменить настройку и вернуть результат сохранения.\", \"common_sense\": false, \"obvious_fix\": true, \"scenario\": true, \"errors\": [3]},\n    {\"id\": \"Q-04\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": false, \"errors\": [7]},\n    {\"id\": \"Q-05\", \"answered\": true, \"answer\": \"Расходы и push считаются по проведённым покупкам, то есть после проведения\", \"answer_quote\": \"В расходы входят проведённые покупки.\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": false, \"errors\": []},\n    {\"id\": \"Q-06\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": false, \"errors\": [2]},\n    {\"id\": \"Q-07\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": true, \"scenario\": false, \"errors\": [4]},\n    {\"id\": \"Q-08\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": false, \"errors\": [2, 7]},\n    {\"id\": \"Q-09\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": false, \"errors\": [2]},\n    {\"id\": \"Q-10\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": false, \"errors\": []},\n    {\"id\": \"Q-11\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": false, \"errors\": [2]},\n    {\"id\": \"Q-12\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": false, \"errors\": [2, 3, 5]},\n    {\"id\": \"Q-13\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": false, \"errors\": [7, 8]},\n    {\"id\": \"Q-14\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": true, \"obvious_fix\": false, \"scenario\": false, \"errors\": [7]},\n    {\"id\": \"Q-15\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": false, \"errors\": [2]}\n  ]\n}\n```",
+  "ttft_ms": 40331,
+  "type": "result",
+  "duration_ms": 64584,
+  "uuid": "4009171c-199f-4e1e-aa21-32ca0fee584e",
+  "ttft_stream_ms": 355,
+  "time_to_request_ms": 47,
+  "time_to_request_phases_ms": {
+   "other": 4,
+   "system_prompt": 1,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 5,
+   "input_hooks": 1,
+   "conversation_append": 1,
+   "tool_pool_refresh": 1,
+   "init_message": 3,
+   "init_frame_send": 3,
+   "engine_pickup": 0,
+   "loop_entry": 3,
+   "message_prep": 1,
+   "model_config_wait": 5,
+   "autocompact": 1,
+   "request_announcements": 4,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 1,
+   "message_normalization": 1,
+   "client_creation": 3,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 0,
+  "time_to_request_cpu_ms": 53,
+  "time_to_request_major_faults": 0,
+  "process_rss_mib_turn_start": 201,
+  "process_anon_mib_turn_start": 124,
+  "process_rss_mib_result": 207,
+  "process_anon_mib_result": 121,
+  "process_peak_rss_mib": 222,
+  "process_cpu_ms_turn": 914,
+  "process_wall_ms_turn": 64584,
+  "tool_pool_build_count": 4,
+  "tool_pool_build_lapsed_count": 1,
+  "tool_pool_moved_at_lapse_count": 0,
+  "tool_pool_limit_ms": 30000,
+  "process_cpu_ms_streaming": 792,
+  "process_wall_ms_streaming": 59892,
+  "main_stream_count": 1,
+  "main_stream_event_count": 439,
+  "main_stream_chunk_count": 433,
+  "process_turn_states": {
+   "main_stream": {
+    "cpu_ms": 792,
+    "wall_ms": 59892,
+    "entries": 1
+   },
+   "first_event_wait": {
+    "cpu_ms": 17,
+    "wall_ms": 307,
+    "entries": 1
+   },
+   "before_first_request": {
+    "cpu_ms": 54,
+    "wall_ms": 47,
+    "entries": 1
+   },
+   "after_last_request": {
+    "cpu_ms": 51,
+    "wall_ms": 4338,
+    "entries": 1
+   }
+  },
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 1,
+   "cpu_ms": 7,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 1,
+   "render_ms": 0,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 1,
+   "cache_break_record_ms": 0,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 0,
+   "other_ms": 1,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 1
+  },
+  "first_content_frame_ms": 355,
+  "time_to_request_from_spawn_ms": 862796,
+  "warm_spare_claimed": false,
+  "flag_fetch_kick": "not_asked_warm",
+  "time_origin_ms": 1795685879720.086,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "process_start_tuning": 0
+ }
+}

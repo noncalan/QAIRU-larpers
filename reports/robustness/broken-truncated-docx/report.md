@@ -1,6 +1,6 @@
 # Отчёт о проверке требований: truncated.docx
 
-Проверка по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3). Отчёт сформировал агент QAIRU validator 4ebb9e2, 2026-11-26 07:43:15 UTC.
+Проверка по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3). Отчёт сформировал агент QAIRU validator v0.9-rc1, 2026-11-26 09:41:46 UTC.
 
 ## Итог на первой странице
 
@@ -12,10 +12,10 @@
 |---|---|
 | Документ | truncated.docx (unknown, 8036 байт) |
 | SHA-256 документа | 9fe69c268ff1400770f784a4ceeec3130e1ff76af929b183007540b55216cbc9 |
-| Дата прогона | 2026-11-26 07:43:15 UTC |
+| Дата прогона | 2026-11-26 09:41:46 UTC |
 | Длительность | 0.0 с |
-| Версия агента | 4ebb9e2 (источник: git) |
-| Хеш промптов | 1fc8be63f489 |
+| Версия агента | v0.9-rc1 (источник: git) |
+| Хеш промптов | 7dd96b1cffa4 |
 | Способ вызова модели | модель не вызывалась (запрошено: фикстуры тестов (без модели)) |
 | Модели по шагам | segment: claude-sonnet-5-5 · medium; search: claude-opus-5-5 · medium; search_transfer: claude-haiku-5-5 · medium; evidence: claude-opus-5-5 · high; critic: claude-opus-5-5 · high; test_draft: claude-sonnet-5-5 · high; questions: claude-opus-5-5 · high; questions_critic: claude-opus-5-5 · high; set_check: claude-opus-5-5 · medium |
 | Фактические модели | — |

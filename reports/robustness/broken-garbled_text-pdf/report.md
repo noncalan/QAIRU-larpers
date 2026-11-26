@@ -1,6 +1,6 @@
 # Отчёт о проверке требований: garbled_text.pdf
 
-Проверка по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3). Отчёт сформировал агент QAIRU validator 4ebb9e2, 2026-11-26 07:43:15 UTC.
+Проверка по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3). Отчёт сформировал агент QAIRU validator v0.9-rc1, 2026-11-26 09:41:45 UTC.
 
 ## Итог на первой странице
 
@@ -11,11 +11,11 @@
 | Параметр | Значение |
 |---|---|
 | Документ | garbled_text.pdf (pdf, 205288 байт) |
-| SHA-256 документа | d1a373567943a39d74b2452d39342b1707f1b5f3f582385cd374217f6be7a282 |
-| Дата прогона | 2026-11-26 07:43:15 UTC |
-| Длительность | 0.04 с |
-| Версия агента | 4ebb9e2 (источник: git) |
-| Хеш промптов | 1fc8be63f489 |
+| SHA-256 документа | 0b5b0dc6104a26ce390cff05cce5ac724e15da3b6d692c9ae6ea82534abddae7 |
+| Дата прогона | 2026-11-26 09:41:45 UTC |
+| Длительность | 0.03 с |
+| Версия агента | v0.9-rc1 (источник: git) |
+| Хеш промптов | 7dd96b1cffa4 |
 | Способ вызова модели | модель не вызывалась (запрошено: фикстуры тестов (без модели)) |
 | Модели по шагам | segment: claude-sonnet-5-5 · medium; search: claude-opus-5-5 · medium; search_transfer: claude-haiku-5-5 · medium; evidence: claude-opus-5-5 · high; critic: claude-opus-5-5 · high; test_draft: claude-sonnet-5-5 · high; questions: claude-opus-5-5 · high; questions_critic: claude-opus-5-5 · high; set_check: claude-opus-5-5 · medium |
 | Фактические модели | — |
@@ -33,7 +33,7 @@
 
 | Параметр | Значение |
 |---|---|
-| Файл | garbled_text.pdf (205288 байт, SHA-256: d1a373567943a39d74b2452d39342b1707f1b5f3f582385cd374217f6be7a282) |
+| Файл | garbled_text.pdf (205288 байт, SHA-256: 0b5b0dc6104a26ce390cff05cce5ac724e15da3b6d692c9ae6ea82534abddae7) |
 | Тип по содержимому | pdf |
 | Символов извлечено, блоков | 0, 0 |
 | Статус входа | НЕ ПРОЧИТАН: проверка невозможна |
