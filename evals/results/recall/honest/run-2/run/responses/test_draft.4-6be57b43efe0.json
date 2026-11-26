@@ -1,0 +1,231 @@
+{
+ "envelope_version": 1,
+ "key": "6be57b43efe0b965fe42e1aea59210a5817a77b608ccc837ca1b91a1581e0f69",
+ "call_id": "test_draft.4",
+ "step": "test_draft",
+ "call_index": 4,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T12:32:47.615750+00:00",
+ "payload": {
+  "duration_api_ms": 70581,
+  "stop_reason": "end_turn",
+  "session_id": "e4b1ba2c-2787-40fe-a7e0-1e1e102a01dc",
+  "total_cost_usd": 0.1457516,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 10517,
+   "cache_read_input_tokens": 2296,
+   "output_tokens": 10345,
+   "output_tokens_details": {
+    "thinking_tokens": 7598
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 10517,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 10345,
+     "cache_read_input_tokens": 2296,
+     "cache_creation_input_tokens": 10517,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 10517
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 10345,
+    "cacheReadInputTokens": 2296,
+    "cacheCreationInputTokens": 10517,
+    "webSearchRequests": 0,
+    "costUSD": 0.1457516,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 7598,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 10517,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n**M-050.** Для результата нужно знать, как классифицируются коды вне «200 или 201» и вне «400, 401 и далее» (204, 302). Документ называет успешными только 200 и 201, а неуспешными 400, 401 «и далее». Для 204 и 302 значения нет, ставлю пропуски.\n\n**M-051.** Для ответа 400 нужны код, состав тела и обязательность полей `result` и `enabled`. Код 400 и пример тела с одним `message` в документе есть. Таблица полей не задаёт условие присутствия для `result` и `enabled`, а пример `result` не содержит. Ставлю два пропуска.\n\n**M-052.** При `amount=999` нужны код ответа и тело. Один раздел описывает 200 с `result=ERROR` и «Проверьте сумму», другой даёт 400 при неверных параметрах. Единого результата нет, пропуск на код и на тело. Есть только правило «вернуть прежнее состояние».\n\n**M-053.** Для внутренней ошибки нужны код и тело. Код 500 и тело «Ошибка сервиса» заданы однозначно: в списке статусов и в отдельном разделе. Разнесённый перечень не мешает этому тесту.\n\n**M-054.** Для чужой карты нужны код и тело. Документ прямо говорит: для чужой карты возвращается 404, тело «Карта не найдена». Условие возврата 403 остаётся неопределённым, но этот тест его не требует.\n\n## Ответ\n\n```json\n{\n  \"drafts\": [\n    {\n      \"finding\": \"M-050\",\n      \"can_write\": false,\n      \"precondition\": \"Тестовый стенд с подменой ответа сервиса, чтобы метод сохранения порога возвращал нужный код. Для сравнения известно, что ответ 200 или 201 считается успешным.\",\n      \"steps\": [\n        \"Подменить ответ метода сохранения порога на код 204 и отправить запрос из приложения.\",\n        \"Подменить ответ на код 302 и повторить запрос.\"\n      ],\n      \"expected\": \"Ответ 204 считается [?1]. Ответ 302 считается [?2].\",\n      \"values\": [\n        {\"value\": \"200 или 201\", \"quote\": \"Если результат 200 или 201 — успешный.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"успешен или неуспешен ответ 204: документ называет успешными только 200 и 201, неуспешными 400, 401 «и далее», перечень не закрыт\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"успешен или неуспешен ответ 302: он не входит ни в «200 или 201», ни явно в «400, 401 и далее»\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-051\",\n      \"can_write\": false,\n      \"precondition\": \"Клиент вошёл в сессию, у него есть своя карта (cardId известен).\",\n      \"steps\": [\n        \"Отправить запрос сохранения порога со своим cardId, amount=50000 и enabled=2 (значение вне допустимых).\",\n        \"Сравнить код и тело ответа с описанием полей ответа.\"\n      ],\n      \"expected\": \"Код ответа 400. В теле есть message «Некорректный запрос». Поле result: [?1]. Поле enabled: [?2].\",\n      \"values\": [\n        {\"value\": \"400\", \"quote\": \"400. Unsuccessful — Bad request\"},\n        {\"value\": \"Некорректный запрос\", \"quote\": \"{\\\"message\\\":\\\"Некорректный запрос\\\"}\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"присутствует ли result в ответе 400: таблица полей не задаёт условие присутствия (подразумевается всегда), а пример ответа 400 содержит только message\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"присутствуют ли enabled (и amount) в ответах с ошибкой: у enabled нет условия присутствия, а в примерах ошибок этого поля нет\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-052\",\n      \"can_write\": false,\n      \"precondition\": \"Клиент вошёл в сессию. У его карты сохранён порог 50000 с включённым уведомлением.\",\n      \"steps\": [\n        \"Отправить запрос сохранения порога со своим cardId, amount=999 (ниже границы: допустимо от 1 000 до 1 000 000 ₸ включительно) и enabled=1.\",\n        \"Зафиксировать код и тело ответа.\",\n        \"Запросить настройку карты и сравнить с исходной.\"\n      ],\n      \"expected\": \"Код ответа [?1]. Тело ответа [?2]. Настройка карты не изменилась: возвращается прежнее состояние.\",\n      \"values\": [\n        {\"value\": \"от 1 000 до 1 000 000 ₸ включительно\", \"quote\": \"Держатель активной карты KZT задаёт целый порог от 1 000 до 1 000 000 ₸ включительно.\"},\n        {\"value\": \"прежнее состояние\", \"quote\": \"При отклонении суммы вернуть прежнее состояние и результат ERROR.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"HTTP-код при недопустимой сумме: в одном месте 200 с result=ERROR, в другом 400 для неверно заполненных параметров; единого правила нет\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"тело ответа при недопустимой сумме: {result:ERROR, message:«Проверьте сумму»} (пример под 200) или {message:«Некорректный запрос»} (пример 400), и есть ли в нём result\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-053\",\n      \"can_write\": true,\n      \"precondition\": \"Клиент вошёл в сессию, у него есть своя карта. Тестовый стенд позволяет вызвать внутреннюю ошибку сервиса, например недоступно хранилище настроек.\",\n      \"steps\": [\n        \"Вызвать внутреннюю ошибку на стенде.\",\n        \"Отправить запрос сохранения порога со своим cardId, amount=50000 и enabled=1.\"\n      ],\n      \"expected\": \"Код ответа 500. Тело содержит message «Ошибка сервиса».\",\n      \"values\": [\n        {\"value\": \"500\", \"quote\": \"500. Unsuccessful — Internal server error\"},\n        {\"value\": \"Ошибка сервиса\", \"quote\": \"{\\\"message\\\":\\\"Ошибка сервиса\\\"}\"}\n      ],\n      \"gaps\": [],\n      \"note\": \"Перечень статусов разнесён по разделам, но для внутренней ошибки код 500 и тело ответа заданы однозначно и не противоречат друг другу. Способ вызвать ошибку на стенде тестировщик выбирает сам.\"\n    },\n    {\n      \"finding\": \"M-054\",\n      \"can_write\": true,\n      \"precondition\": \"Клиент A вошёл в сессию. Существует карта клиента B, её cardId известен клиенту A.\",\n      \"steps\": [\n        \"От имени клиента A отправить запрос сохранения порога с cardId карты клиента B, amount=50000 и enabled=1.\"\n      ],\n      \"expected\": \"Код ответа 404, как и для несуществующей карты. Тело содержит message «Карта не найдена».\",\n      \"values\": [\n        {\"value\": \"404\", \"quote\": \"Для чужой карты возвращается 404, как и для отсутствующей карты.\"},\n        {\"value\": \"Карта не найдена\", \"quote\": \"{\\\"message\\\":\\\"Карта не найдена\\\"}\"}\n      ],\n      \"gaps\": [],\n      \"note\": \"Документ прямо задаёт код и тело для чужой карты, поэтому этот тест написать можно. Условие возврата 403 в документе не определено, и тест на 403 написать нельзя. Раздел «403» описывает 404, а 404 нет в перечне статусов, это дефект оформления.\"\n    }\n  ]\n}\n```",
+  "ttft_ms": 55365,
+  "type": "result",
+  "duration_ms": 71378,
+  "uuid": "266b2c4a-91d3-4c51-9dfa-f051aae4b8fe",
+  "ttft_stream_ms": 952,
+  "time_to_request_ms": 77,
+  "time_to_request_phases_ms": {
+   "other": 8,
+   "system_prompt": 4,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 9,
+   "input_hooks": 3,
+   "conversation_append": 0,
+   "tool_pool_refresh": 1,
+   "init_message": 6,
+   "init_frame_send": 4,
+   "engine_pickup": 3,
+   "loop_entry": 4,
+   "message_prep": 1,
+   "model_config_wait": 3,
+   "autocompact": 1,
+   "request_announcements": 6,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 3,
+   "client_creation": 6,
+   "request_build": 8
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 26,
+  "time_to_request_cpu_ms": 71,
+  "time_to_request_major_faults": 0,
+  "process_rss_mib_turn_start": 201,
+  "process_anon_mib_turn_start": 123,
+  "process_rss_mib_result": 205,
+  "process_anon_mib_result": 119,
+  "process_peak_rss_mib": 220,
+  "process_cpu_ms_turn": 1044,
+  "process_wall_ms_turn": 71378,
+  "tool_pool_build_count": 4,
+  "tool_pool_build_lapsed_count": 1,
+  "tool_pool_moved_at_lapse_count": 0,
+  "tool_pool_limit_ms": 30000,
+  "process_cpu_ms_streaming": 812,
+  "process_wall_ms_streaming": 69694,
+  "main_stream_count": 1,
+  "main_stream_event_count": 513,
+  "main_stream_chunk_count": 507,
+  "process_turn_states": {
+   "main_stream": {
+    "cpu_ms": 812,
+    "wall_ms": 69694,
+    "entries": 1
+   },
+   "first_event_wait": {
+    "cpu_ms": 126,
+    "wall_ms": 873,
+    "entries": 1
+   },
+   "before_first_request": {
+    "cpu_ms": 71,
+    "wall_ms": 77,
+    "entries": 1
+   },
+   "after_last_request": {
+    "cpu_ms": 35,
+    "wall_ms": 734,
+    "entries": 1
+   }
+  },
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 1,
+   "cpu_ms": 9,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 4,
+   "ambient_wait_ms": 1,
+   "render_ms": 1,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 1,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 2,
+   "images_ms": 0,
+   "post_process_ms": 1,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 2,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 2,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 2,
+   "record_attempt_ms": 1,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 1,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 952,
+  "time_to_request_from_spawn_ms": 697381,
+  "warm_spare_claimed": false,
+  "flag_fetch_kick": "not_asked_warm",
+  "time_origin_ms": 1795696295159.6519,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "process_start_tuning": 0
+ }
+}

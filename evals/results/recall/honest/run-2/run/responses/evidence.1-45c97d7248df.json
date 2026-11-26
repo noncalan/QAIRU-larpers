@@ -1,0 +1,231 @@
+{
+ "envelope_version": 1,
+ "key": "45c97d7248df6cb7c8e715c74e1d1a9ac235465a97a5f327e10a4f463a612ef5",
+ "call_id": "evidence.1",
+ "step": "evidence",
+ "call_index": 1,
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T12:31:35.133843+00:00",
+ "payload": {
+  "duration_api_ms": 101200,
+  "stop_reason": "end_turn",
+  "session_id": "623e8393-df87-45f0-8d0d-d3913a081659",
+  "total_cost_usd": 0.353972,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 15103,
+   "cache_read_input_tokens": 0,
+   "output_tokens": 11657,
+   "output_tokens_details": {
+    "thinking_tokens": 6763
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 15103,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 11657,
+     "cache_read_input_tokens": 0,
+     "cache_creation_input_tokens": 15103,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 15103
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-opus-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 11657,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 15103,
+    "webSearchRequests": 0,
+    "costUSD": 0.353972,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 6763,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 15103,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n- **M-003.** Сопоставил цель [B013] («в момент покупки») и [B029] (push в течение минуты после события). Событием по [B027.1] служит проведение покупки. Разводит сценарий, где покупка совершена 10-го, а проведена 12-го: по цели push 10-го, по B029 только 12-го.\n- **M-015.** Сопоставил Ф-2 [B023] и критерий 2 [B039]. Если 23:58 — время Алматы, то по Ф-2 растёт январь, а по критерию февраль.\n- **M-021.** Сопоставил Ф-3 [B024.2] и Ф-4 [B025.2]. Push в марте уже был, порог подняли, затем новый порог достигнут в том же марте. По Ф-4 push уходит, по Ф-3 нет.\n- **M-039.** Сопоставил две части одной ячейки [B062]. При вызове с новым amount по «Сохранению» порог меняется, по «чтению» остаётся прежним.\n- **M-047.** [B094] не говорит, что запрос без заголовка отклоняется. Отказ в сценарии пришлось бы выдумать, поэтому свидетеля нет.\n- **M-048.** [B097.1] только относит 201 к успешным кодам, но нигде не требует возвращать 201. По [B103.1] успех — это 200. Результат один, свидетеля нет.\n- **M-051.** Сопоставил таблицу ответа [B098] (у `result` нет условия присутствия) и пример 400 [B110]. Запрос без cardId даёт 400, и тело либо содержит result, либо нет.\n- **M-052.** Сопоставил [B103.2] и пример ERROR в разделе 200 [B107]. На запрос с amount=999 предписаны разные HTTP-коды: 400 или 200.\n- **M-053.** [B103] не объявлен исчерпывающим и не запрещает 500. Это неполнота, а не расхождение.\n- **M-054.** [B114.1] прямо уточняет случай чужой карты, а [B108.2] карту не называет. Одно место уточняет другое. Неясное условие для 403 — неполнота.\n- **M-014.** «В Алматы» можно понять как действующий пояс города (UTC+5 с 2024 года) или как «алматинское время» ALMT (UTC+6). Покупка в 18:30 UTC 31 января попадает в разные месяцы.\n- **M-016.** «Проведённая» можно понять как авторизацию или как клиринг. Авторизация 10-го и клиринг 12-го дают разный счётчик 11-го.\n- **M-020.** Месяц для лимита push можно считать по покупке или по отправке. Январская покупка с push 1 февраля и достижение февральского порога 10 февраля дают разные исходы.\n- **M-027.** «Сумма» в push может быть суммой покупки, итогом расходов или порогом. В одном сценарии это три разных числа.\n- **M-045.** «Вернуть прежнее состояние» можно понять как восстановить настройку или как вернуть прежние значения в ответе. Тело ответа получается разным.\n- **M-050.** Коды 204 и 302 не покрыты ни при каком прочтении «и далее». Нет кода, который одно прочтение считает успешным, а другое неуспешным. Это неполнота.\n\n## Ответ\n\n```json\n{\n  \"witnesses\": [\n    {\n      \"id\": \"M-003\",\n      \"scenario\": \"Порог 50 000 ₸, расходы марта 49 000 ₸, уведомление включено. Покупка на 2 000 ₸ совершена 10 марта в 14:00 по Алматы, процессинг присылает событие о проведении 12 марта в 09:00\",\n      \"readings\": [\n        {\n          \"quote\": \"Дать клиенту возможность узнать о достижении личного бюджета в момент покупки\",\n          \"reading\": \"\",\n          \"expectation\": \"клиент получает push 10 марта около 14:00, в момент покупки\"\n        },\n        {\n          \"quote\": \"Сервис передаёт push на отправку в течение минуты после получения события\",\n          \"reading\": \"\",\n          \"expectation\": \"push передаётся на отправку 12 марта между 09:00 и 09:01, через двое суток после покупки\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-015\",\n      \"scenario\": \"Покупка на 4 000 ₸ совершена 31 января в 23:58 по Алматы, проведена 1 февраля в 00:03 по Алматы\",\n      \"readings\": [\n        {\n          \"quote\": \"Месяц определяется по дате совершения покупки в Алматы\",\n          \"reading\": \"\",\n          \"expectation\": \"4 000 ₸ добавлены к январскому счётчику, февральский не изменился\"\n        },\n        {\n          \"quote\": \"Февральский счётчик вырос на 4 000 ₸\",\n          \"reading\": \"\",\n          \"expectation\": \"4 000 ₸ добавлены к февральскому счётчику\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-021\",\n      \"scenario\": \"Порог 50 000 ₸, уведомление включено. 10 марта расходы стали 50 000 ₸, push отправлен. 15 марта клиент ставит порог 60 000 ₸, накопленные 50 000 ₸ сохраняются. 20 марта покупка на 10 000 ₸ доводит расходы до 60 000 ₸\",\n      \"readings\": [\n        {\n          \"quote\": \"На карту приходится максимум один такой push за календарный месяц\",\n          \"reading\": \"\",\n          \"expectation\": \"20 марта push не отправляется: мартовский push уже был\"\n        },\n        {\n          \"quote\": \"Если она ниже нового порога, следующее достижение вызывает push независимо от истории предыдущей настройки\",\n          \"reading\": \"\",\n          \"expectation\": \"20 марта отправляется второй за март push\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-039\",\n      \"scenario\": \"У карты demo-42 сохранён порог 50 000 ₸, уведомление включено. Владелец вызывает метод с cardId=demo-42&amount=60000&enabled=1\",\n      \"readings\": [\n        {\n          \"quote\": \"Сохранение порога\",\n          \"reading\": \"\",\n          \"expectation\": \"порог карты становится 60 000 ₸\"\n        },\n        {\n          \"quote\": \"Функциональные требования: чтение порога\",\n          \"reading\": \"\",\n          \"expectation\": \"порог остаётся 50 000 ₸, метод только возвращает текущее значение 50 000\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-047\",\n      \"scenario\": null,\n      \"readings\": [],\n      \"reason\": \"B094 не требует отклонять запрос без заголовка Content-Type. Отказ в сценарии пришлось бы выдумать, без него запрос без тела корректен по обоим местам\"\n    },\n    {\n      \"id\": \"M-048\",\n      \"scenario\": null,\n      \"readings\": [],\n      \"reason\": \"B097.1 лишь относит 201 к успешным кодам, но нигде не предписывает возвращать 201. При первом сохранении все места дают 200, заголовок «Created» результат не меняет\"\n    },\n    {\n      \"id\": \"M-051\",\n      \"scenario\": \"Владелец карты с действующей сессией вызывает метод с amount=50000&enabled=1 без параметра cardId, сервер отвечает 400\",\n      \"readings\": [\n        {\n          \"quote\": \"OK / ERROR\",\n          \"reading\": \"\",\n          \"expectation\": \"в теле ответа есть поле result со значением ERROR\"\n        },\n        {\n          \"quote\": \"{\\\"message\\\":\\\"Некорректный запрос\\\"}\",\n          \"reading\": \"\",\n          \"expectation\": \"тело ответа содержит только message, поля result нет\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-052\",\n      \"scenario\": \"Владелец карты demo-42 вызывает метод с cardId=demo-42&amount=999&enabled=1\",\n      \"readings\": [\n        {\n          \"quote\": \"Ответ в случае, если параметры запроса заполнены неверно\",\n          \"reading\": \"\",\n          \"expectation\": \"HTTP-статус 400\"\n        },\n        {\n          \"quote\": \"{\\\"result\\\":\\\"ERROR\\\",\\\"message\\\":\\\"Проверьте сумму\\\"}\",\n          \"reading\": \"\",\n          \"expectation\": \"HTTP-статус 200, в теле result=ERROR и message «Проверьте сумму»\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-053\",\n      \"scenario\": null,\n      \"readings\": [],\n      \"reason\": \"B103 не объявлен исчерпывающим и не запрещает код 500. При внутренней ошибке только B108 задаёт результат 500, второго предписания нет\"\n    },\n    {\n      \"id\": \"M-054\",\n      \"scenario\": null,\n      \"readings\": [],\n      \"reason\": \"B114.1 прямо уточняет случай чужой карты, а B108.2 общая и карту не называет. Для чужой карты документ даёт один ответ — 404, неясное условие для 403 — это неполнота\"\n    },\n    {\n      \"id\": \"M-014\",\n      \"scenario\": \"Порог 50 000 ₸. Покупка на 3 000 ₸ совершена 31 января 2026 года в 18:30 UTC, до неё расходы января 48 000 ₸, февраля 0 ₸\",\n      \"readings\": [\n        {\n          \"quote\": \"Месяц определяется по дате совершения покупки в Алматы\",\n          \"reading\": \"действующее поясное время города Алматы, UTC+5\",\n          \"expectation\": \"покупка в 23:30 31 января, январские расходы 51 000 ₸, порог достигнут, push отправлен\"\n        },\n        {\n          \"quote\": \"Месяц определяется по дате совершения покупки в Алматы\",\n          \"reading\": \"«алматинское время» ALMT, UTC+6\",\n          \"expectation\": \"покупка в 00:30 1 февраля, февральские расходы 3 000 ₸, январь остаётся 48 000 ₸, push нет\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-016\",\n      \"scenario\": \"Порог 50 000 ₸, расходы марта 49 000 ₸. Покупка на 2 000 ₸ авторизована 10 марта, клиринг по ней 12 марта. Клиент смотрит сумму за месяц 11 марта\",\n      \"readings\": [\n        {\n          \"quote\": \"В расходы входят проведённые покупки\",\n          \"reading\": \"проведённая — авторизованная\",\n          \"expectation\": \"11 марта сумма за месяц 51 000 ₸, push отправлен 10 марта\"\n        },\n        {\n          \"quote\": \"В расходы входят проведённые покупки\",\n          \"reading\": \"проведённая — прошедшая клиринг\",\n          \"expectation\": \"11 марта сумма за месяц 49 000 ₸, push ещё не отправлен\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-020\",\n      \"scenario\": \"Порог 50 000 ₸. Покупка 31 января в 23:58 по Алматы доводит январские расходы до 50 000 ₸, проведена 1 февраля в 00:03, push отправлен 1 февраля. 10 февраля февральские расходы достигают 50 000 ₸\",\n      \"readings\": [\n        {\n          \"quote\": \"На карту приходится максимум один такой push за календарный месяц\",\n          \"reading\": \"месяц определяется по дате покупки\",\n          \"expectation\": \"10 февраля push отправляется: первый push засчитан январю\"\n        },\n        {\n          \"quote\": \"На карту приходится максимум один такой push за календарный месяц\",\n          \"reading\": \"месяц определяется по дате отправки push\",\n          \"expectation\": \"10 февраля push не отправляется: в феврале push уже был\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-027\",\n      \"scenario\": \"Карта …4242, порог 50 000 ₸, расходы 48 500 ₸, проведена покупка на 2 000 ₸, расходы стали 50 500 ₸\",\n      \"readings\": [\n        {\n          \"quote\": \"Сервис расходов → push: передать последние четыре цифры карты и сумму при достижении порога\",\n          \"reading\": \"сумма — сумма покупки\",\n          \"expectation\": \"в push передано 4242 и 2 000\"\n        },\n        {\n          \"quote\": \"Сервис расходов → push: передать последние четыре цифры карты и сумму при достижении порога\",\n          \"reading\": \"сумма — накопленные расходы месяца\",\n          \"expectation\": \"в push передано 4242 и 50 500\"\n        },\n        {\n          \"quote\": \"Сервис расходов → push: передать последние четыре цифры карты и сумму при достижении порога\",\n          \"reading\": \"сумма — достигнутый порог\",\n          \"expectation\": \"в push передано 4242 и 50 000\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-045\",\n      \"scenario\": \"У карты demo-42 порог 30 000 ₸, уведомление включено. Владелец вызывает метод с cardId=demo-42&amount=500&enabled=1\",\n      \"readings\": [\n        {\n          \"quote\": \"При отклонении суммы вернуть прежнее состояние и результат ERROR\",\n          \"reading\": \"оставить сохранённую настройку без изменений и вернуть только результат ERROR\",\n          \"expectation\": \"в ответе result=ERROR без поля amount\"\n        },\n        {\n          \"quote\": \"При отклонении суммы вернуть прежнее состояние и результат ERROR\",\n          \"reading\": \"вернуть в ответе прежние значения настройки вместе с ERROR\",\n          \"expectation\": \"в ответе result=ERROR, amount=\\\"30000\\\", enabled=\\\"1\\\"\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-050\",\n      \"scenario\": null,\n      \"readings\": [],\n      \"reason\": \"При любом правдоподобном прочтении «и далее» коды от 400 неуспешны, а 204 или 302 не покрыты ни одним прочтением. Нет кода, который по одному прочтению успешен, а по другому нет: это неполнота\"\n    }\n  ]\n}\n```",
+  "ttft_ms": 64475,
+  "type": "result",
+  "duration_ms": 104455,
+  "uuid": "17039f0b-63c0-432f-bcbe-b747687c63ce",
+  "ttft_stream_ms": 917,
+  "time_to_request_ms": 57,
+  "time_to_request_phases_ms": {
+   "other": 6,
+   "system_prompt": 2,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 6,
+   "input_hooks": 2,
+   "conversation_append": 0,
+   "tool_pool_refresh": 1,
+   "init_message": 4,
+   "init_frame_send": 3,
+   "engine_pickup": 1,
+   "loop_entry": 3,
+   "message_prep": 1,
+   "model_config_wait": 6,
+   "autocompact": 1,
+   "request_announcements": 5,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 1,
+   "message_normalization": 2,
+   "client_creation": 4,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 7,
+  "time_to_request_cpu_ms": 66,
+  "time_to_request_major_faults": 0,
+  "process_rss_mib_turn_start": 200,
+  "process_anon_mib_turn_start": 123,
+  "process_rss_mib_result": 206,
+  "process_anon_mib_result": 120,
+  "process_peak_rss_mib": 219,
+  "process_cpu_ms_turn": 1288,
+  "process_wall_ms_turn": 104455,
+  "tool_pool_build_count": 5,
+  "tool_pool_build_lapsed_count": 2,
+  "tool_pool_moved_at_lapse_count": 0,
+  "tool_pool_limit_ms": 30000,
+  "process_cpu_ms_streaming": 1071,
+  "process_wall_ms_streaming": 100331,
+  "main_stream_count": 1,
+  "main_stream_event_count": 795,
+  "main_stream_chunk_count": 789,
+  "process_turn_states": {
+   "main_stream": {
+    "cpu_ms": 1071,
+    "wall_ms": 100331,
+    "entries": 1
+   },
+   "first_event_wait": {
+    "cpu_ms": 109,
+    "wall_ms": 858,
+    "entries": 1
+   },
+   "before_first_request": {
+    "cpu_ms": 66,
+    "wall_ms": 57,
+    "entries": 1
+   },
+   "after_last_request": {
+    "cpu_ms": 42,
+    "wall_ms": 3209,
+    "entries": 1
+   }
+  },
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 1,
+   "cpu_ms": 8,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 1,
+   "render_ms": 1,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 2,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 1,
+   "cache_break_record_ms": 1,
+   "plans_ms": 0,
+   "retry_setup_ms": 1,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 0,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 917,
+  "time_to_request_from_spawn_ms": 591958,
+  "warm_spare_claimed": false,
+  "flag_fetch_kick": "not_asked_warm",
+  "time_origin_ms": 1795696189830.2463,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "process_start_tuning": 0
+ }
+}
