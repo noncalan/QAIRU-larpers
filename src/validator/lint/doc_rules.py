@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from itertools import pairwise
 
+from validator.ingest.blocks import row_label
 from validator.lint.hits import Hit
 from validator.lint.lexicon import fold
 from validator.lint.rules import RULE_BY_ID
@@ -32,7 +33,6 @@ MIN_NUMBERED_HEADINGS = 2
 MIN_HEADINGS_FOR_NAMES = 3
 MAX_QUOTES_PER_HIT = 4
 
-_CELL_ID = re.compile(r"^(?P<id>(?:[A-ZА-ЯЁ][A-Za-zА-Яа-яЁё]{0,5}[-\u2011.\u2010_]|[A-ZА-ЯЁ]{1,6})\d+)$")
 _ID_PARTS = re.compile(r"^(?P<prefix>[^\d.]+)(?P<digits>\d+)$")
 _HEADING_NUMBER = re.compile(r"^\s*#*\s*(?P<num>\d+(?:\.\d+)*)[.)]?\s+\S")
 _HEADING_TITLE = re.compile(r"^\s*#*\s*(?:\d+(?:\.\d+)*[.)]?\s+)?(?P<title>.*?)\s*#*\s*$")
@@ -47,14 +47,6 @@ _OTHER_DOCUMENT = re.compile(
 )
 _THIS_DOCUMENT = re.compile(r"(?:этого|настоящего|данного|текущего)\s+документа|this\s+document")
 _MARKUP = re.compile(r"[*_`|#>]")
-
-
-def _row_id(block: Block) -> str | None:
-    """Метка в первой ячейке строки таблицы («ID | Требование»): разбор документа её не отмечает."""
-    if block.kind is not BlockKind.TABLE_ROW or not block.cells:
-        return None
-    match = _CELL_ID.match(block.cells[0].text.replace("**", "").replace("__", "").strip())
-    return match["id"].replace("\u2011", "-") if match else None
 
 
 @dataclass(frozen=True)
@@ -73,7 +65,7 @@ class DocContext:
         """Все метки требований документа по порядку (не только внутри нарезки): чтобы знать, что есть."""
         found: list[tuple[Block, str]] = []
         for block in self.doc.blocks:
-            ident = block.source_id or _row_id(block)
+            ident = block.source_id or row_label(block)
             if ident and block.kind is not BlockKind.HEADING:
                 found.append((block, ident))
         return found

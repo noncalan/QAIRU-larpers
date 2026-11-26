@@ -21,7 +21,9 @@ from collections.abc import Callable, Iterable, Sequence
 from validator.errors import INT_SELFCHECK_FAILED, INT_SELFCHECK_WARNING
 from validator.models import (
     Block,
+    CellState,
     ClarifyEffect,
+    CoverageMatrix,
     DiagLevel,
     Diagnostic,
     Finding,
@@ -33,10 +35,17 @@ from validator.models import (
     Severity,
     SourceKind,
     Verdict,
+    Verification,
 )
-from validator.report.coverage import grid_finding_ids
+from validator.report.coverage import (
+    SYMBOLS,
+    grid_finding_ids,
+    is_requirement_level,
+    row_cells,
+    row_finding_ids,
+)
 from validator.report.fmt import pct
-from validator.report.render_md import render_md
+from validator.report.render_md import NO_VIOLATIONS, NOT_SEARCHED, render_md
 
 TZ_SECTIONS: tuple[str, ...] = (
     "Паспорт прогона",
@@ -54,6 +63,10 @@ MAX_FAILURES = 10
 _HEADING = re.compile(r"^##\s+(?:\d+\.\s*)?(?P<title>.+?)\s*$")
 _REQ_ROW = re.compile(r"^\|\s*(?P<id>R-\d+(?:\.\d+)?)\s*\|")
 _FINDING_CARD = re.compile(r"^###\s+(?P<id>F-\d+)\b")
+_FINDING_ID = re.compile(r"\bF-\d+\b")
+_CELL_SPLIT = re.compile(r"(?<!\\)\|")
+MATRIX_SECTION = "Матрица покрытия критериев"
+REQUIREMENTS_SECTION = "Проверка каждого требования"
 
 
 def _sections(markdown: str) -> dict[str, list[str]]:
@@ -71,6 +84,17 @@ def _sections(markdown: str) -> dict[str, list[str]]:
 
 def _ids(pattern: re.Pattern[str], lines: Iterable[str]) -> list[str]:
     return [m.group("id") for line in lines if (m := pattern.match(line))]
+
+
+def _req_rows(lines: Iterable[str]) -> dict[str, list[str]]:
+    """Строки таблиц Markdown, которые начинаются с ``R-NN``: ID → ячейки строки после ID."""
+    rows: dict[str, list[str]] = {}
+    for line in lines:
+        match = _REQ_ROW.match(line)
+        if match:
+            cells = [c.strip() for c in _CELL_SPLIT.split(line.strip().strip("|"))]
+            rows.setdefault(match.group("id"), cells[1:])
+    return rows
 
 
 def _item(
@@ -376,8 +400,84 @@ def _check_metrics(report: Report) -> SelfCheckItem:
     )
 
 
-def _check_matrix(report: Report) -> SelfCheckItem:
-    """Матрица покрытия совпадает с находками: каждая находка видна в ней, у ячеек верное свойство."""
+def _cell_failures(matrix: CoverageMatrix, ver: Verification) -> list[str]:
+    """Каждая ячейка строки требования: находки своего свойства и уровня, состояние по находкам, и строка
+    показывает все находки требования из раздела 4 (находки уровня набора в колонке «Набор», #118)."""
+    by_id = {f.id: f for f in ver.findings}
+    failures: list[str] = []
+    for row in matrix.rows:
+        rid = row.requirement_id
+        status = ver.requirement_status.get(rid, [])
+        cells = [(prop.value, cell, prop) for prop, cell in row.cells.items()]
+        for where, cell, prop in [*cells, ("набор", row.set_cell, None)]:
+            for fid in cell.finding_ids:
+                f = by_id.get(fid)
+                if f is None:
+                    continue
+                level = is_requirement_level(f)
+                own = (f.property is prop and level) if prop is not None else not level
+                if not own or fid not in status:
+                    failures.append(f"{rid} × {where}: {fid} не относится к этой ячейке")
+            if bool(cell.finding_ids) != (cell.state in (CellState.VIOLATION, CellState.UNCLEAR)):
+                failures.append(f"{rid} × {where}: состояние «{cell.state.value}» не по находкам")
+        lost = [fid for fid in status if fid not in row_finding_ids(row)]
+        if lost:
+            failures.append(f"{rid}: {', '.join(lost)} есть у требования в разделе 4, а в строке матрицы нет")
+    return failures
+
+
+def _coverage_failures(report: Report, matrix: CoverageMatrix) -> list[str]:
+    """«Нарушений нет» только там, где поиск отработал: по метрикам прогона и частям документа в паспорте."""
+    clean_rows = [r for r in matrix.rows if any(c.state is CellState.CLEAN for c in row_cells(r))]
+    clean_set = [sr.property.label for sr in matrix.set_rows if sr.state is CellState.CLEAN]
+    if not matrix.rows:
+        return [f"{label}: «нарушений нет», а требований в документе нет" for label in clean_set]
+    if report.metrics.passes_ok == 0:
+        why = "а ни один проход поиска не отработал"
+        return [f"{r.requirement_id}: «нарушений нет», {why}" for r in clean_rows] + [
+            f"{label}: «нарушений нет», {why}" for label in clean_set
+        ]
+    parts = report.document.parts if report.document else []
+    missed = {rid: p.index for p in parts if not p.passes_ok for rid in p.requirement_ids}
+    failures = [
+        f"{r.requirement_id}: «нарушений нет», а часть {missed[r.requirement_id]} поиском не проверена"
+        for r in clean_rows
+        if r.requirement_id in missed
+    ]
+    unsearched = [p.index for p in parts if not p.passes_ok]
+    if unsearched:
+        why = "а часть документа поиском не проверена"
+        failures += [f"{label}: «нарушений нет», {why}" for label in clean_set]
+    _equal(failures, "непроверенные части в матрице", matrix.unchecked_parts, unsearched, "в паспорте")
+    return failures
+
+
+def _markdown_failures(sections: dict[str, list[str]]) -> list[str]:
+    """Что видит читатель: у каждого R-NN раздел 4 и строка матрицы называют одни и те же F-NN, а
+    «нарушений нет» и «не проверено моделью» в разделе 4 совпадают со знаками «√» и «–» в матрице."""
+    status_rows = _req_rows(sections.get(REQUIREMENTS_SECTION, ()))
+    matrix_rows = _req_rows(sections.get(MATRIX_SECTION, ()))
+    failures: list[str] = []
+    for rid, cells in status_rows.items():
+        shown = matrix_rows.get(rid)
+        if shown is None or not cells:
+            continue
+        status = cells[-1]
+        in_status, in_matrix = set(_FINDING_ID.findall(status)), set(_FINDING_ID.findall(" ".join(shown)))
+        if in_status != in_matrix:
+            failures.append(
+                f"{rid}: в разделе 4 {', '.join(sorted(in_status)) or 'находок нет'}, "
+                f"в матрице {', '.join(sorted(in_matrix)) or 'находок нет'}"
+            )
+        elif status == NO_VIOLATIONS and any(c != SYMBOLS[CellState.CLEAN] for c in shown):
+            failures.append(f"{rid}: в разделе 4 «{NO_VIOLATIONS}», а в матрице не везде «√»")
+        elif status.startswith(NOT_SEARCHED) and SYMBOLS[CellState.CLEAN] in shown:
+            failures.append(f"{rid}: в разделе 4 «{NOT_SEARCHED}», а в матрице есть «√»")
+    return failures
+
+
+def _check_matrix(report: Report, sections: dict[str, list[str]] | None) -> SelfCheckItem:
+    """Матрица покрытия совпадает с находками и с разделом 4; «нарушений нет» только там, где искали."""
     matrix, ver, seg = report.coverage, report.verification, report.segmentation
     title = "Матрица покрытия совпадает с находками"
     if matrix is None or ver is None or seg is None:
@@ -387,6 +487,9 @@ def _check_matrix(report: Report) -> SelfCheckItem:
     shown = grid_finding_ids(matrix)
     failures += [f"{fid}: находки нет в матрице" for fid in by_id if fid not in shown]
     failures += [f"{fid}: в матрице есть, а в отчёте такой находки нет" for fid in shown if fid not in by_id]
+    failures += [f"{fid}: нет ячейки ни в одной матрице" for fid in matrix.extra_finding_ids]
+    if seg.requirements:
+        failures += [f"{fid}: без требования и не в матрице набора" for fid in matrix.unlinked_finding_ids]
     _equal(
         failures,
         "строк матрицы",
@@ -394,30 +497,23 @@ def _check_matrix(report: Report) -> SelfCheckItem:
         [r.id for r in seg.requirements],
         "в нарезке",
     )
-    for row in matrix.rows:
-        for prop, cell in row.cells.items():
-            for fid in cell.finding_ids:
-                f = by_id.get(fid)
-                if f is not None and (
-                    f.property is not prop or fid not in ver.requirement_status.get(row.requirement_id, ())
-                ):
-                    failures.append(f"{row.requirement_id} × {prop.value}: {fid} не относится к этой ячейке")
-            if bool(cell.finding_ids) != (cell.state.value in ("violation", "unclear")):
-                failures.append(
-                    f"{row.requirement_id} × {prop.value}: состояние «{cell.state.value}» не по находкам"
-                )
+    failures += _cell_failures(matrix, ver)
     for set_row in matrix.set_rows:
         for fid in set_row.finding_ids:
             f = by_id.get(fid)
-            if f is not None and (f.property is not set_row.property or f.scope is not Scope.SET):
+            if f is not None and (is_requirement_level(f) or f.property.set_level is not set_row.property):
                 failures.append(f"{set_row.property.value}: {fid} не относится к этой строке")
-    cells = sum(len(r.cells) for r in matrix.rows)
+    failures += _coverage_failures(report, matrix)
+    if sections is not None:
+        failures += _markdown_failures(sections)
+    cells = sum(len(row_cells(r)) for r in matrix.rows)
     return _item(
         "matrix",
         title,
         failures,
-        f"{len(matrix.rows)} требований × {len(matrix.requirement_properties)} свойств ({cells} ячеек), "
-        f"{len(matrix.set_rows)} свойств набора",
+        f"{len(matrix.rows)} требований × {len(matrix.requirement_properties)} свойств и колонка «Набор», "
+        f"ячеек: {cells}; свойств набора: {len(matrix.set_rows)}; у каждого требования те же находки, "
+        "что в разделе 4",
     )
 
 
@@ -474,7 +570,7 @@ def check_report(
         lambda: _check_cards(report, sections),
         lambda: _check_counters(report, sections),
         lambda: _check_metrics(report),
-        lambda: _check_matrix(report),
+        lambda: _check_matrix(report, sections),
     ]
     quotes = [q for f in findings for q in f.quotes]
     sc = SelfCheck(

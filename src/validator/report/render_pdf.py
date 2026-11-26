@@ -37,9 +37,22 @@ from validator.models import (
     SelfCheck,
 )
 from validator.report.clarify_view import CLARIFY_TITLE, CLOSED_NOTE, ClarifyView, clarify_view
-from validator.report.coverage import LEGEND, NOT_CHECKED_NOTE, SHORT_LABELS, STATE_LABELS, cell_text
-from validator.report.fmt import found_text, money, pct, plain, quote_plain, status_label, when, where
-from validator.report.render_md import PARTS_NOTE, report_context
+from validator.report.coverage import (
+    LEGEND,
+    NO_REQUIREMENTS_NOTE,
+    NOT_CHECKED_NOTE,
+    SET_COLUMN,
+    SET_COLUMN_LABEL,
+    SET_COLUMN_REFS,
+    SHORT_LABELS,
+    STATE_LABELS,
+    cell_text,
+    part_search_text,
+)
+from validator.report.first_page import FixItem
+from validator.report.fmt import money, pct, plain, quote_plain, status_label, when, where
+from validator.report.passport_view import tokens_in, tokens_text
+from validator.report.render_md import PARTS_NOTE, SEGMENTATION_NOTE, report_context
 from validator.report.run_metrics import step_label
 from validator.report.testdraft_view import LABEL, DraftView
 
@@ -67,6 +80,9 @@ SECTION_TITLES = {
 """Заголовки разделов те же, что в Markdown (тест сверяет их с ``## `` из ``render_md``)."""
 
 Json = dict[str, Any]
+
+CRITICAL_LINE = 3
+"""Номер строки «Критичных: N» в списке сводки: под ней вложенный список критичных нарушений."""
 
 
 class PdfRenderError(ValidatorError):
@@ -104,16 +120,17 @@ def _para(text: str) -> Json:
     return {"t": "para", "text": text}
 
 
-def _bullets(items: Iterable[str]) -> Json:
-    return {"t": "bullets", "items": list(items)}
+def _bullets(items: Iterable[str], indent: int = 0) -> Json:
+    return {"t": "bullets", "items": list(items), "indent": indent}
 
 
 def _note(text: str) -> Json:
     return {"t": "note", "text": text}
 
 
-def _card(tone: str, head: str, rows: Iterable[tuple[str, Any]]) -> Json:
-    return {"t": "card", "tone": tone, "head": head, "rows": [[k, v] for k, v in rows]}
+def _card(tone: str, head: str, rows: Iterable[tuple[str, Any]], anchor: str = "") -> Json:
+    """Карточка находки или вопроса; ``anchor`` (F-NN, Q-NN) делает её целью ссылок из всего отчёта."""
+    return {"t": "card", "tone": tone, "head": head, "rows": [[k, v] for k, v in rows], "anchor": anchor}
 
 
 def _diag_table(items: Sequence[Diagnostic]) -> Json:
@@ -179,12 +196,12 @@ def _finding_card(f: Finding, ctx: dict[str, Any]) -> Json:
     if ctx["questions_by_finding"].get(f.id):
         rows.append(("Вопрос автору", ", ".join(ctx["questions_by_finding"][f.id])))
     rows += _draft_rows(ctx["test_drafts"].get(f.id))
-    rows.append(("Найдено", found_text(f)))
-    if f.anchor_corrected:
-        rows.append(("Примечание", "место цитаты уточнил код (модель указала другой блок)"))
+    how = ctx["found"](f)
+    if how:
+        rows.append(("Найдено", how))
     rows += [("Примечание", plain(n)) for n in f.notes]
     head = f"{f.id} · {f.severity.label} · {f.verdict.label} · {f.property.label}"
-    return _card(f.severity.value, head, rows)
+    return _card(f.severity.value, head, rows, f.id)
 
 
 def _draft_rows(td: DraftView | None) -> list[tuple[str, Any]]:
@@ -224,7 +241,7 @@ def _question_card(q: Question, ctx: dict[str, Any]) -> Json:
         rows.append(("Варианты", {"table": _option_table(q.options)}))
     if q.if_unanswered:
         rows.append(("Если не ответить", plain(q.if_unanswered)))
-    return _card(q.priority.value, head, rows)
+    return _card(q.priority.value, head, rows, q.id)
 
 
 # ---------------------------------------------------------------- первая страница
@@ -245,48 +262,48 @@ def _first_page(report: Report, ctx: dict[str, Any]) -> Json:
             ["«Неясно»", str(s.unclear)],
             ["Вопросов автору", str(len(report.questions))],
         ]
-        findings = ctx["findings_by_id"]
-        for fid in c.fix_first:
-            f = findings[fid]
-            first = next((q for q in f.quotes if q.verified), None)
-            fix.append(
-                {
-                    "id": f.id,
-                    "tone": f.severity.value,
-                    "head": f"{f.severity.label} · {f.property.label}",
-                    "text": plain(f.title or f.explanation, 220),
-                    "quote": quote_plain(first, 160) if first else "",
-                    "place": where(first.anchor, ctx["section_of"](first, ctx["finding_sections"][f.id]))
-                    if first
-                    else "",
-                    "suggestion": plain(f.suggestion, 220) if f.suggestion else "",
-                    "questions": ", ".join(ctx["questions_by_finding"].get(f.id, [])),
-                }
-            )
+        fix = [_fix_item(item) for item in ctx["fix_items"]]
         for qid in c.ask_first:
             q = ctx["questions_by_id"][qid]
+            head = f"{q.priority.value} ({q.priority.label})"
+            head += f" · кому: {', '.join(a.label for a in q.addressee)}" if q.addressee else ""
+            head += f" · к {', '.join(q.related_findings)}" if q.related_findings else ""
             ask.append(
                 {
                     "id": q.id,
                     "tone": q.priority.value,
-                    "head": f"{q.priority.value} ({q.priority.label})"
-                    + (f" · кому: {', '.join(a.label for a in q.addressee)}" if q.addressee else ""),
+                    "head": head,
                     "text": plain(q.question, 260),
                     "options": [f"{o.label}. {plain(o.text, 200)}" for o in q.options],
                 }
             )
+    blocking = len(ctx["blocks_development"])
     return {
         "light": c.traffic_light.value,
         "light_label": c.traffic_light.label,
         "headline": c.headline,
         "performed": c.performed,
         "stats": stats,
+        "blocking": f"Вопросов автору, которые блокируют разработку: {blocking}." if blocking else "",
         "fix": fix,
+        "fix_intro": ctx["fix_intro"],
         "fix_empty": "Нарушений, которые нужно исправить до начала работ, не найдено.",
         "ask": ask,
         "ask_empty": "Вопросов, блокирующих разработку или тестирование, нет.",
         "clarify": _first_page_clarify(ctx["clarify"]),
         "review": ctx["review_line"] or "",
+    }
+
+
+def _fix_item(item: FixItem) -> Json:
+    return {
+        "id": item.id,
+        "tone": item.tone,
+        "head": f"{item.severity} · {item.kind}",
+        "text": item.title,
+        "quote": quote_plain(item.quote, 160) if item.quote else "",
+        "place": item.place + (f"; требования: {item.requirements}" if item.requirements else ""),
+        "questions": item.questions,
     }
 
 
@@ -307,38 +324,24 @@ def _search_input(p: Passport) -> str:
 
 def _passport_section(report: Report, ctx: dict[str, Any]) -> Json:
     p = report.passport
-    doc = f"{p.document_name} ({p.document_kind.value}"
-    if p.document_size_bytes:
-        doc += f", {p.document_size_bytes} байт"
-    if p.document_pages:
-        doc += f", {p.document_pages} стр."
-    doc += ")"
-    version = f"{p.agent_version} (источник: {p.agent_version_source})"
-    if p.agent_dirty:
-        version += ", есть незакоммиченные правки"
     if p.calls_total == 0:
         backend = f"модель не вызывалась (запрошено: {p.backend_requested.label})"
     else:
         backend = (p.backend_used or p.backend_requested).label
-    t = p.tokens
     rows = [
-        ("Документ", doc),
+        ("Документ", ctx["passport_document"]),
         ("SHA-256 документа", p.document_sha256 or "—"),
         ("Дата прогона", when(p.started_at)),
         ("Длительность", f"{p.duration_s if p.duration_s is not None else '—'} с"),
-        ("Версия агента", version),
+        ("Версия агента", ctx["passport_version"]),
         ("Хеш промптов", p.prompts_sha256[:12]),
         ("Способ вызова модели", backend),
-        ("Модели по шагам", "; ".join(f"{k}: {v}" for k, v in p.models.items()) or "—"),
+        ("Модели по шагам", ctx["passport_models"]),
         ("Фактические модели", ", ".join(p.models_actual) or "—"),
         ("Профиль", f"{p.profile.value}, проходов поиска: {p.passes}{_search_input(p)}"),
         ("Доменные чек-листы", plain(ctx["checklists_passport"])),
         ("Вызовов модели", f"{p.calls_total} (с ошибкой: {p.calls_failed})"),
-        (
-            "Токены",
-            f"вход {t.input_tokens}, выход {t.output_tokens}, запись в кеш {t.cache_creation_input_tokens}, "
-            f"чтение из кеша {t.cache_read_input_tokens}",
-        ),
+        ("Токены", tokens_text(p.tokens)),
         ("Цена по тарифу API", money(p.cost_usd)),
         ("Окружение", f"{p.os}, Python {p.python}"),
         ("Код завершения", f"{p.exit_code.value}: {p.exit_code.meaning}"),
@@ -392,7 +395,7 @@ def _segmentation_section(report: Report) -> Json:
         how = "Нарезка упрощённая, без модели: каждый содержательный блок документа стал требованием. "
         how += "Цитату в таблицу подставил код."
     else:
-        how = "Нарезку сделала модель по ID блоков, цитату в таблицу подставил код из текста документа."
+        how = SEGMENTATION_NOTE
 
     def source(req: Requirement) -> str:
         return req.source_id or f"нет номера ({plain(req.source_locator)})"
@@ -440,16 +443,24 @@ def _parts(report: Report) -> list[Json]:
         extra = f", плюс {part.context_blocks} из раздела терминов для справки" if part.context_blocks else ""
         return f"{part.first_block}–{part.last_block} ({part.blocks}{extra})"
 
+    total = report.metrics.passes_total
     rows = [
-        [str(p.index), plain("; ".join(p.sections), 300), blocks(p), p.pages or "—", str(p.tokens)]
+        [
+            str(p.index),
+            plain("; ".join(p.sections), 300),
+            blocks(p),
+            p.pages or "—",
+            str(p.tokens),
+            part_search_text(p, total),
+        ]
         for p in parts
     ]
     table = _table(
-        ["Часть", "Разделы", "Блоки", "Страницы", "Токенов, оценка"],
+        ["Часть", "Разделы", "Блоки", "Страницы", "Токенов, оценка", "Проходов поиска"],
         rows,
-        [0.08, 0.42, 0.24, 0.12, 0.14],
+        [0.07, 0.33, 0.22, 0.11, 0.12, 0.15],
         mono=[0],
-        hyph=[1, 2],
+        hyph=[1, 2, 5],
     )
     return [_para(PARTS_NOTE), table]
 
@@ -462,11 +473,7 @@ def _requirements_section(report: Report, ctx: dict[str, Any]) -> Json:
             "blocks": [_para("Проверка требований не выполнена, смотрите диагностику прогона.")],
         }
     rows = ctx["requirement_rows"]
-    clean = sum(1 for r in rows if not r.finding_ids)
-    intro = (
-        "Статус есть у каждого требования из таблицы нарезки. Подробности по каждой находке ниже. "
-        f"Требований без нарушений: {clean} из {len(rows)}."
-    )
+    intro = ctx["requirements_intro"]
     table = _table(
         ["Требование", "ID в документе", "Статус"],
         ([r.requirement.id, r.requirement.source_id or "нет номера", r.status] for r in rows),
@@ -650,19 +657,19 @@ def _summary_section(report: Report, ctx: dict[str, Any]) -> Json:
         return {"title": title, "blocks": [_para("Сводка недоступна: проверка выполнена не полностью.")]}
     s = v.summary
     by_sev = ", ".join(f"{k.label} {n}" for k, n in s.by_severity.items()) or "нет находок"
-    critical = f"{s.critical}" + (f" ({', '.join(s.critical_ids)})" if s.critical_ids else "")
-    classes = ", ".join(f"{f.id} {f.defect_type.label}" for f in ctx["critical_classes"]) or "не найдены"
+    classes = ", ".join(f"{f.id} {f.defect_type.label}" for f in ctx["tz_classes"])
+    classes = f"{len(ctx['tz_classes'])}" + (f" ({classes})" if classes else "")
     discarded = str(s.discarded_total)
     if s.discarded_by_reason:
         discarded += " (" + "; ".join(f"{k.label}: {n}" for k, n in s.discarded_by_reason.items()) + ")"
-    items = [
+    items = [  # строка «Критичных» стоит под номером CRITICAL_LINE: под ней вложенный список
         f"Требований: {s.requirements_total}, из них с нарушениями или неясностями: "
         f"{s.requirements_with_findings}.",
         f"Находок: {s.findings_total} (нарушений {s.violations}, «неясно» {s.unclear}, "
         f"уровня набора {s.set_level}).",
         f"По важности: {by_sev}.",
-        f"Критичных: {critical}.",
-        f"Критичные классы по ТЗ (непроверяемые, противоречивые, неполные): {classes}.",
+        f"Критичных: {s.critical}" + (":" if ctx["critical_items"] else "."),
+        f"{ctx['tz_classes_title']}: {classes}.",
         f"Вопросов автору: {len(report.questions)}.",
         *([ctx["test_draft_line"]] if ctx["test_draft_line"] else []),
         *([f"Уточнения автора: {ctx['clarify'].summary_line}"] if ctx["clarify"] else []),
@@ -670,7 +677,12 @@ def _summary_section(report: Report, ctx: dict[str, Any]) -> Json:
         f"Цитаты: сверено {s.quotes_exact + s.quotes_fuzzy} из {s.quotes_total} "
         f"(точно {s.quotes_exact}, нечётко {s.quotes_fuzzy}).",
     ]
-    blocks: list[Json] = [_bullets(items)]
+    critical = [
+        f"{i.id} · {i.kind} · {i.title}" + (f" · {i.place}" if i.place else "") for i in ctx["critical_items"]
+    ]
+    # Список критичных вложен под строкой «Критичных: N», как в Markdown.
+    head, tail = items[: CRITICAL_LINE + 1], items[CRITICAL_LINE + 1 :]
+    blocks: list[Json] = [_bullets(head), _bullets(critical, indent=1), _bullets(tail)]
     if ctx["critic_dropped"]:
         blocks += [
             {"t": "h2", "text": "Находки, снятые критиком"},
@@ -690,13 +702,11 @@ def _conclusion_section(report: Report, ctx: dict[str, Any]) -> Json:
         )
     if ctx["blocks_testing"]:
         items.append(f"Открытые вопросы, блокирующие тестирование (P1): {', '.join(ctx['blocks_testing'])}.")
-    for i, fid in enumerate(c.fix_first, 1):
-        f = ctx["findings_by_id"][fid]
-        first = next((q for q in f.quotes if q.verified), None)
-        place = ""
-        if first is not None:
-            place = f" ({where(first.anchor, ctx['section_of'](first, ctx['finding_sections'][f.id]))})"
-        items.append(f"Исправить {i}-м: {f.id} · {f.severity.label} · {f.property.label}{place}")
+    if c.fix_first:
+        items.append(
+            f"Что исправить первым, по порядку: {', '.join(c.fix_first)}. Суть, цитата и место каждого "
+            "нарушения на первой странице, подробности в карточках разделов 4 и 5."
+        )
     if c.ask_first:
         items.append(f"Спросить автора в первую очередь: {', '.join(c.ask_first)}.")
     rule = (
@@ -719,7 +729,6 @@ def _questions_count(qm: QuestionMetrics) -> str:
 
 def _metrics_section(report: Report, ctx: dict[str, Any]) -> Json:
     m = report.metrics
-    t = m.tokens
     rows = [
         ("Доля сверенных цитат", f"{pct(m.verified_quote_share)} ({m.quotes_verified} из {m.quotes_total})"),
         ("Кандидатов от проходов и линтера", str(m.candidates_total)),
@@ -730,11 +739,7 @@ def _metrics_section(report: Report, ctx: dict[str, Any]) -> Json:
             "Вызовов модели",
             f"{m.calls_total} (с ошибкой {m.calls_failed}, из кеша {m.calls_cached})",
         ),
-        (
-            "Токены",
-            f"вход {t.input_tokens}, выход {t.output_tokens}, запись в кеш {t.cache_creation_input_tokens}, "
-            f"чтение из кеша {t.cache_read_input_tokens}",
-        ),
+        ("Токены", tokens_text(m.tokens)),
         ("Время прогона", f"{m.duration_s if m.duration_s is not None else '—'} с"),
         ("Цена по тарифу API", money(m.cost_usd)),
         *ctx["evidence_rows"],
@@ -769,7 +774,7 @@ def _step_blocks(report: Report) -> list[Json]:
             str(st.failed),
             str(st.cached + st.replayed),
             str(st.duration_s),
-            f"{st.tokens.input_tokens} / {st.tokens.output_tokens}",
+            f"{tokens_in(st.tokens)} / {st.tokens.output_tokens}",
             money(st.cost_usd),
         ]
         for st in m.steps
@@ -820,7 +825,7 @@ def _funnel_blocks(report: Report) -> list[Json]:
         {"t": "h2", "text": "Воронка находок"},
         _table(["Этап", "Находок"], rows, [0.6, 0.4]),
     ]
-    if m.found_in:
+    if any(b.of > 1 for b in m.found_in):
         buckets = [[f"в {b.found_in} из {b.of}", str(b.count)] for b in m.found_in]
         blocks += [
             {"t": "h2", "text": "«Найдено в N из K проходов»"},
@@ -850,13 +855,20 @@ def _coverage_section(report: Report, ctx: dict[str, Any]) -> Json:
     blocks: list[Json] = [_para(intro)]
     if not cov.checked:
         blocks.append(_para(NOT_CHECKED_NOTE))
+    if ctx["coverage_parts_note"]:
+        blocks.append(_para(ctx["coverage_parts_note"]))
+    if cov.checked and not cov.rows:
+        blocks.append(_para(NO_REQUIREMENTS_NOTE))
     blocks.append(_para(f"Обозначения: {LEGEND}"))
     props = cov.requirement_properties
-    count = len(props)
-    first, rest = 0.12, 0.88 / max(count, 1)
+    count = len(props) + 1  # колонки свойств и «Набор»
+    first, rest = 0.11, 0.89 / count
     matrix = _table(
-        ["Требование", *(SHORT_LABELS[p] for p in props)],
-        ([row.requirement_id, *(cell_text(row.cells[p]) for p in props)] for row in cov.rows),
+        ["Требование", *(SHORT_LABELS[p] for p in props), SET_COLUMN],
+        (
+            [row.requirement_id, *(cell_text(row.cells[p]) for p in props), cell_text(row.set_cell)]
+            for row in cov.rows
+        ),
         [first, *([rest] * count)],
         mono=[0],
         hyph=list(range(1, count + 1)),
@@ -869,7 +881,10 @@ def _coverage_section(report: Report, ctx: dict[str, Any]) -> Json:
     )
     legend = _table(
         ["Колонка", "Свойство", "Пункты стандартов"],
-        ([SHORT_LABELS[p], p.label, "; ".join(p.refs)] for p in props),
+        [
+            *([SHORT_LABELS[p], p.label, "; ".join(p.refs)] for p in props),
+            [SET_COLUMN, SET_COLUMN_LABEL, "; ".join(SET_COLUMN_REFS)],
+        ],
         [0.14, 0.26, 0.6],
     )
     blocks += [
@@ -986,7 +1001,16 @@ def build_view(report: Report) -> Json:
         "first_title": FIRST_PAGE_TITLE,
         "first": _first_page(report, ctx),
         "sections": sections,
+        "anchors": _anchors(sections),
     }
+
+
+def _anchors(sections: Sequence[Json]) -> list[str]:
+    """F-NN и Q-NN, у которых в PDF есть карточка: только на них ``report.typ`` ставит ссылки.
+
+    Список собирается из готовых карточек, а не из отчёта: ссылка на метку, которой нет, ломает сборку PDF.
+    """
+    return [b["anchor"] for s in sections for b in s["blocks"] if b.get("t") == "card" and b.get("anchor")]
 
 
 # ---------------------------------------------------------------- сборка PDF

@@ -7,12 +7,13 @@
     "document_sha256": "827b313b968e08fe35310bff9dc37687099888e4c9d5bc364e3403f4b2cc66db",
     "document_size_bytes": 205814,
     "document_pages": 8,
-    "started_at": "2026-11-26T12:53:03.255033Z",
-    "finished_at": "2026-11-26T12:53:03.727816Z",
-    "duration_s": 0.47,
-    "agent_version": "v0.9-rc1-7-g0c48c5b-dirty",
+    "started_at": "2026-11-26T13:04:14.483776Z",
+    "finished_at": "2026-11-26T13:04:15.030179Z",
+    "duration_s": 0.55,
+    "agent_version": "81ac60c-dirty",
     "agent_version_source": "git",
     "agent_dirty": true,
+    "agent_commit": "81ac60c",
     "prompts_sha256": "7dd96b1cffa406769efc8daf0df90f974ab4ef58757a546a07948210acc7492d",
     "os": "Linux 6.18.44-fc-v880 (x86_64)",
     "python": "3.13.18",
@@ -61,10 +62,11 @@
     "name": "requirements.pdf",
     "path": "data/input/requirements.pdf",
     "kind": "pdf",
+    "title": "Уведомление о расходах по карте",
     "sha256": "827b313b968e08fe35310bff9dc37687099888e4c9d5bc364e3403f4b2cc66db",
     "size_bytes": 205814,
     "pages": 8,
-    "chars": 7714,
+    "chars": 7698,
     "blocks": 120,
     "extraction": "PyMuPDF 2.1, символы с координатами в порядке чтения, таблицы по ячейкам (7)",
     "parts": []
@@ -119,7 +121,7 @@
     {
       "code": "LLM-016",
       "level": "warning",
-      "message": "Записанные ответы не совпали с запросами по ключу у 5 вызовов (evidence.1, test_draft.2, test_draft.3, questions.1, questions_critic.1): поменялся документ, промпт или модель",
+      "message": "Записанные ответы не совпали с запросами по ключу у 8 вызовов (segment.1, search.1, evidence.1, test_draft.1, test_draft.2, test_draft.3, questions.1, questions_critic.1): поменялся документ, промпт или модель",
       "action": "Ответы взяты по шагу и номеру вызова; цитаты всё равно сверены с документом",
       "hint": "Для точного воспроизведения возьмите ту же версию агента и тот же документ",
       "location": null,
@@ -1490,8 +1492,8 @@
         "quote": "Description | Сохранение порога. Функциональные требования: чтение порога",
         "summary": "Метод сохранения порога",
         "anchor": {
-          "char_start": 5095,
-          "char_end": 5168,
+          "char_start": 5086,
+          "char_end": 5159,
           "block_ids": [
             "B062"
           ],
@@ -1534,8 +1536,8 @@
         "quote": "REST type | GET",
         "summary": "HTTP-метод GET",
         "anchor": {
-          "char_start": 5169,
-          "char_end": 5184,
+          "char_start": 5160,
+          "char_end": 5175,
           "block_ids": [
             "B063"
           ],
@@ -1582,8 +1584,8 @@
         "quote": "Authorization | Bearer, сессия владельца карты",
         "summary": "Авторизация Bearer, сессия владельца карты",
         "anchor": {
-          "char_start": 5185,
-          "char_end": 5231,
+          "char_start": 5176,
+          "char_end": 5222,
           "block_ids": [
             "B064"
           ],
@@ -1630,8 +1632,8 @@
         "quote": "Request URL | Dev: /alerts/saveLimit. Prod: —",
         "summary": "Адрес Dev: /alerts/saveLimit",
         "anchor": {
-          "char_start": 5284,
-          "char_end": 5329,
+          "char_start": 5275,
+          "char_end": 5320,
           "block_ids": [
             "B067"
           ],
@@ -1680,8 +1682,8 @@
         "quote": "Проверить пользовательскую сессию.",
         "summary": "Проверить пользовательскую сессию",
         "anchor": {
-          "char_start": 5608,
-          "char_end": 5642,
+          "char_start": 5598,
+          "char_end": 5632,
           "block_ids": [
             "B075"
           ],
@@ -1726,8 +1728,8 @@
         "quote": "Проверить принадлежность карты клиенту.",
         "summary": "Проверить принадлежность карты клиенту",
         "anchor": {
-          "char_start": 5647,
-          "char_end": 5686,
+          "char_start": 5637,
+          "char_end": 5676,
           "block_ids": [
             "B076"
           ],
@@ -1772,8 +1774,8 @@
         "quote": "Проверить сумму и переключатель.",
         "summary": "Проверить сумму и переключатель",
         "anchor": {
-          "char_start": 5691,
-          "char_end": 5723,
+          "char_start": 5681,
+          "char_end": 5713,
           "block_ids": [
             "B077"
           ],
@@ -1818,8 +1820,8 @@
         "quote": "Заменить настройку и вернуть результат сохранения.",
         "summary": "Заменить настройку и вернуть результат сохранения",
         "anchor": {
-          "char_start": 5728,
-          "char_end": 5778,
+          "char_start": 5718,
+          "char_end": 5768,
           "block_ids": [
             "B078"
           ],
@@ -1864,8 +1866,8 @@
         "quote": "При отклонении суммы вернуть прежнее состояние и результат\nERROR.",
         "summary": "При отклонении суммы вернуть прежнее состояние и ERROR",
         "anchor": {
-          "char_start": 5783,
-          "char_end": 5848,
+          "char_start": 5773,
+          "char_end": 5838,
           "block_ids": [
             "B079"
           ],
@@ -1914,8 +1916,8 @@
         "quote": "Целое число тенге, обе границы включены.",
         "summary": "Целое число тенге, обе границы включены",
         "anchor": {
-          "char_start": 5869,
-          "char_end": 5909,
+          "char_start": 5859,
+          "char_end": 5899,
           "block_ids": [
             "B081"
           ],
@@ -1960,8 +1962,8 @@
         "quote": "Повторное сохранение заменяет действующую настройку.",
         "summary": "Повторное сохранение заменяет действующую настройку",
         "anchor": {
-          "char_start": 5914,
-          "char_end": 5966,
+          "char_start": 5904,
+          "char_end": 5956,
           "block_ids": [
             "B082"
           ],
@@ -2006,8 +2008,8 @@
         "quote": "Изменение порога сохраняет накопленные расходы.",
         "summary": "Изменение порога сохраняет накопленные расходы",
         "anchor": {
-          "char_start": 5971,
-          "char_end": 6018,
+          "char_start": 5961,
+          "char_end": 6008,
           "block_ids": [
             "B083"
           ],
@@ -2052,8 +2054,8 @@
         "quote": "Приложение → AlertsController → хранилище настроек → AlertsController\n→ приложение.",
         "summary": "Приложение → AlertsController → хранилище настроек → обратно в приложение",
         "anchor": {
-          "char_start": 6027,
-          "char_end": 6110,
+          "char_start": 6017,
+          "char_end": 6100,
           "block_ids": [
             "B085"
           ],
@@ -2103,8 +2105,8 @@
         "quote": "Не используются.",
         "summary": "Path-параметры не используются",
         "anchor": {
-          "char_start": 6147,
-          "char_end": 6163,
+          "char_start": 6137,
+          "char_end": 6153,
           "block_ids": [
             "B088"
           ],
@@ -2148,11 +2150,11 @@
         ],
         "type": "api",
         "subtype": "param",
-        "quote": "cardId | string | 1–64 | Да | Карта клиента | Иденти фикатор карты | card_id",
+        "quote": "cardId | string | 1–64 | Да | Карта клиента | Идентификатор карты | card_id",
         "summary": "Обязательный query-параметр cardId, строка 1–64",
         "anchor": {
-          "char_start": 6254,
-          "char_end": 6330,
+          "char_start": 6243,
+          "char_end": 6318,
           "block_ids": [
             "B090"
           ],
@@ -2183,7 +2185,7 @@
         "links": [],
         "depends_on": null,
         "decided_by": "model",
-        "stable_key": "b79a9866bfb3"
+        "stable_key": "e9b90b8a5156"
       },
       {
         "id": "R-31",
@@ -2198,11 +2200,11 @@
         ],
         "type": "api",
         "subtype": "param",
-        "quote": "amount | integer | 32 bit | Да | 1 000–1 000 000 | Порог в тенге | limit_kz t",
+        "quote": "amount | integer | 32 bit | Да | 1 000–1 000 000 | Порог в тенге | limit_kzt",
         "summary": "Обязательный query-параметр amount, целое, 1 000–1 000 000",
         "anchor": {
-          "char_start": 6331,
-          "char_end": 6408,
+          "char_start": 6319,
+          "char_end": 6395,
           "block_ids": [
             "B091"
           ],
@@ -2233,7 +2235,7 @@
         "links": [],
         "depends_on": null,
         "decided_by": "model",
-        "stable_key": "058cce8039cc"
+        "stable_key": "85cc6388a247"
       },
       {
         "id": "R-32",
@@ -2248,11 +2250,11 @@
         ],
         "type": "api",
         "subtype": "param",
-        "quote": "enabled | integer | 1 знак | Да | 0 или 1 | Признак включен ия | enabled",
+        "quote": "enabled | integer | 1 знак | Да | 0 или 1 | Признак включения | enabled",
         "summary": "Обязательный query-параметр enabled, 0 или 1",
         "anchor": {
-          "char_start": 6409,
-          "char_end": 6481,
+          "char_start": 6396,
+          "char_end": 6467,
           "block_ids": [
             "B092"
           ],
@@ -2283,7 +2285,7 @@
         "links": [],
         "depends_on": null,
         "decided_by": "model",
-        "stable_key": "60eb7f6a86c7"
+        "stable_key": "8fa667e3a939"
       },
       {
         "id": "R-33",
@@ -2301,8 +2303,8 @@
         "quote": "Content-Type: application/json.",
         "summary": "Content-Type application/json",
         "anchor": {
-          "char_start": 6499,
-          "char_end": 6530,
+          "char_start": 6485,
+          "char_end": 6516,
           "block_ids": [
             "B094"
           ],
@@ -2349,8 +2351,8 @@
         "quote": "Тело не используется.",
         "summary": "Тело запроса не используется",
         "anchor": {
-          "char_start": 6534,
-          "char_end": 6555,
+          "char_start": 6520,
+          "char_end": 6541,
           "block_ids": [
             "B095"
           ],
@@ -2396,8 +2398,8 @@
         "quote": "Если результат 200 или 201 — успешный.",
         "summary": "Результат 200 или 201 считается успешным",
         "anchor": {
-          "char_start": 6564,
-          "char_end": 6602,
+          "char_start": 6550,
+          "char_end": 6588,
           "block_ids": [
             "B097"
           ],
@@ -2447,8 +2449,8 @@
         "quote": "Если результат 400, 401 и далее —\nнеуспешный.",
         "summary": "Результат 400, 401 и далее неуспешный",
         "anchor": {
-          "char_start": 6603,
-          "char_end": 6648,
+          "char_start": 6589,
+          "char_end": 6634,
           "block_ids": [
             "B097"
           ],
@@ -2495,11 +2497,11 @@
         ],
         "type": "api",
         "subtype": "response",
-        "quote": "result | string | OK / ERROR | Исход сохранени я | —",
+        "quote": "result | string | OK / ERROR | Исход сохранения | —",
         "summary": "Поле ответа result: OK / ERROR",
         "anchor": {
-          "char_start": 6702,
-          "char_end": 6754,
+          "char_start": 6688,
+          "char_end": 6739,
           "block_ids": [
             "B098"
           ],
@@ -2529,7 +2531,7 @@
         "links": [],
         "depends_on": null,
         "decided_by": "model",
-        "stable_key": "7b640b1641fa"
+        "stable_key": "24254c0c7eea"
       },
       {
         "id": "R-37",
@@ -2546,8 +2548,8 @@
         "quote": "amount | string | При успехе | Порог в тенге | limit_kzt",
         "summary": "Поле ответа amount: порог при успехе",
         "anchor": {
-          "char_start": 6755,
-          "char_end": 6811,
+          "char_start": 6740,
+          "char_end": 6796,
           "block_ids": [
             "B099"
           ],
@@ -2591,11 +2593,11 @@
         ],
         "type": "api",
         "subtype": "response",
-        "quote": "enabled | string | «0» или «1» | Признак включени я | enabled",
+        "quote": "enabled | string | «0» или «1» | Признак включения | enabled",
         "summary": "Поле ответа enabled: «0» или «1»",
         "anchor": {
-          "char_start": 6812,
-          "char_end": 6873,
+          "char_start": 6797,
+          "char_end": 6857,
           "block_ids": [
             "B100"
           ],
@@ -2625,7 +2627,7 @@
         "links": [],
         "depends_on": null,
         "decided_by": "model",
-        "stable_key": "00688aab0644"
+        "stable_key": "eddbb891b4a1"
       },
       {
         "id": "R-39",
@@ -2642,8 +2644,8 @@
         "quote": "message | string | При ошибке | Описание ошибки | —",
         "summary": "Поле ответа message: описание ошибки",
         "anchor": {
-          "char_start": 6874,
-          "char_end": 6925,
+          "char_start": 6858,
+          "char_end": 6909,
           "block_ids": [
             "B101"
           ],
@@ -2690,8 +2692,8 @@
         "quote": "Ответ в случае успешного выполнения метода.",
         "summary": "200 — успешное выполнение метода",
         "anchor": {
-          "char_start": 6941,
-          "char_end": 6984,
+          "char_start": 6925,
+          "char_end": 6968,
           "block_ids": [
             "B103"
           ],
@@ -2743,8 +2745,8 @@
         "quote": "Ответ в случае, если параметры запроса заполнены неверно.",
         "summary": "400 — параметры запроса заполнены неверно",
         "anchor": {
-          "char_start": 6991,
-          "char_end": 7048,
+          "char_start": 6975,
+          "char_end": 7032,
           "block_ids": [
             "B104"
           ],
@@ -2796,8 +2798,8 @@
         "quote": "Ответ в случае, если запрос выполнен без необходимой авторизации.",
         "summary": "401 — запрос без необходимой авторизации",
         "anchor": {
-          "char_start": 7183,
-          "char_end": 7248,
+          "char_start": 7167,
+          "char_end": 7232,
           "block_ids": [
             "B109"
           ],
@@ -2850,8 +2852,8 @@
         "quote": "Ответ в случае, если на указанный ресурс доступ запрещен.",
         "summary": "403 — доступ к ресурсу запрещён",
         "anchor": {
-          "char_start": 7255,
-          "char_end": 7312,
+          "char_start": 7239,
+          "char_end": 7296,
           "block_ids": [
             "B110"
           ],
@@ -2902,8 +2904,8 @@
         "quote": "Ответ в случае, если произошла внутренняя ошибка сервера.",
         "summary": "500 — внутренняя ошибка сервера",
         "anchor": {
-          "char_start": 7319,
-          "char_end": 7376,
+          "char_start": 7303,
+          "char_end": 7360,
           "block_ids": [
             "B111"
           ],
@@ -2956,8 +2958,8 @@
         "quote": "Для чужой карты возвращается 404, как и для отсутствующей карты.\n404",
         "summary": "Для чужой или отсутствующей карты возвращается 404",
         "anchor": {
-          "char_start": 7541,
-          "char_end": 7609,
+          "char_start": 7525,
+          "char_end": 7593,
           "block_ids": [
             "B117"
           ],
@@ -4390,8 +4392,8 @@
             "score": 100.0,
             "located": "GET",
             "anchor": {
-              "char_start": 5181,
-              "char_end": 5184,
+              "char_start": 5172,
+              "char_end": 5175,
               "block_ids": [
                 "B063"
               ],
@@ -4460,8 +4462,8 @@
               "quote": "При отклонении суммы вернуть прежнее состояние и результат ERROR.",
               "verified": true,
               "anchor": {
-                "char_start": 5783,
-                "char_end": 5848,
+                "char_start": 5773,
+                "char_end": 5838,
                 "block_ids": [
                   "B079"
                 ],
@@ -4538,8 +4540,8 @@
             "score": 100.0,
             "located": "Ответ в случае, если параметры запроса заполнены неверно.",
             "anchor": {
-              "char_start": 6991,
-              "char_end": 7048,
+              "char_start": 6975,
+              "char_end": 7032,
               "block_ids": [
                 "B104"
               ],
@@ -4569,8 +4571,8 @@
             "score": 100.0,
             "located": "{\"result\":\"ERROR\",\"message\":\"Проверьте сумму\"}",
             "anchor": {
-              "char_start": 7130,
-              "char_end": 7176,
+              "char_start": 7114,
+              "char_end": 7160,
               "block_ids": [
                 "B108"
               ],
@@ -7552,8 +7554,8 @@
               "quote": "Если результат 200 или 201 — успешный.",
               "verified": true,
               "anchor": {
-                "char_start": 6564,
-                "char_end": 6602,
+                "char_start": 6550,
+                "char_end": 6588,
                 "block_ids": [
                   "B097"
                 ],
@@ -7582,8 +7584,8 @@
               "quote": "{\"result\":\"OK\",\"amount\":\"50000\",\"enabled\":\"1\"}",
               "verified": true,
               "anchor": {
-                "char_start": 7077,
-                "char_end": 7123,
+                "char_start": 7061,
+                "char_end": 7107,
                 "block_ids": [
                   "B106"
                 ],
@@ -7719,8 +7721,8 @@
               "quote": "{\"result\":\"OK\",\"amount\":\"50000\",\"enabled\":\"1\"}",
               "verified": true,
               "anchor": {
-                "char_start": 7077,
-                "char_end": 7123,
+                "char_start": 7061,
+                "char_end": 7107,
                 "block_ids": [
                   "B106"
                 ],
@@ -7782,8 +7784,8 @@
             "score": 100.0,
             "located": "Сохранение порога",
             "anchor": {
-              "char_start": 5109,
-              "char_end": 5126,
+              "char_start": 5100,
+              "char_end": 5117,
               "block_ids": [
                 "B062"
               ],
@@ -7811,8 +7813,8 @@
             "score": 100.0,
             "located": "чтение порога",
             "anchor": {
-              "char_start": 5155,
-              "char_end": 5168,
+              "char_start": 5146,
+              "char_end": 5159,
               "block_ids": [
                 "B062"
               ],
@@ -7905,7 +7907,7 @@
         "property": "IND-COMPL",
         "defect_type": "incomplete",
         "verdict": "unclear",
-        "scope": "requirement",
+        "scope": "set",
         "severity": "major",
         "severity_hint": "major",
         "severity_basis": "тип «неполнота», мешает написать тест-кейс: «критично»; подсказка модели «важно»: не выше «важно»",
@@ -7916,10 +7918,10 @@
             "text": "--data 'cardId=demo- 42&amount=50000&enabled=1'",
             "match": "exact",
             "score": 100.0,
-            "located": "--data 'cardId=demo- 42&amount=50000&enabled=1'",
+            "located": "--data 'cardId=demo-42&amount=50000&enabled=1'",
             "anchor": {
-              "char_start": 5404,
-              "char_end": 5451,
+              "char_start": 5395,
+              "char_end": 5441,
               "block_ids": [
                 "B068"
               ],
@@ -7984,8 +7986,8 @@
               "quote": "{\"result\":\"OK\",\"amount\":\"50000\",\"enabled\":\"1\"}",
               "verified": true,
               "anchor": {
-                "char_start": 7077,
-                "char_end": 7123,
+                "char_start": 7061,
+                "char_end": 7107,
                 "block_ids": [
                   "B106"
                 ],
@@ -8066,7 +8068,7 @@
         "critic": null,
         "anchor_corrected": false,
         "notes": [
-          "Цитата не входит ни в одно требование из таблицы нарезки: находка отнесена к разделу «Часть B. REST API › Общие параметры»."
+          "Цитата не входит ни в одно требование из таблицы нарезки: находка отнесена к разделу «Часть B. REST API › Общие параметры» и проверке всего набора."
         ]
       },
       {
@@ -8088,8 +8090,8 @@
             "score": 100.0,
             "located": "При отклонении суммы вернуть прежнее состояние и результат\nERROR.",
             "anchor": {
-              "char_start": 5783,
-              "char_end": 5848,
+              "char_start": 5773,
+              "char_end": 5838,
               "block_ids": [
                 "B079"
               ],
@@ -8161,8 +8163,8 @@
               "quote": "500. Unsuccessful — Internal server error",
               "verified": true,
               "anchor": {
-                "char_start": 7643,
-                "char_end": 7684,
+                "char_start": 7627,
+                "char_end": 7668,
                 "block_ids": [
                   "B119"
                 ],
@@ -8190,8 +8192,8 @@
               "quote": "{\"message\":\"Ошибка сервиса\"}",
               "verified": true,
               "anchor": {
-                "char_start": 7686,
-                "char_end": 7714,
+                "char_start": 7670,
+                "char_end": 7698,
                 "block_ids": [
                   "B120"
                 ],
@@ -8277,8 +8279,8 @@
             "score": 100.0,
             "located": "Если результат 200 или 201 — успешный.",
             "anchor": {
-              "char_start": 6564,
-              "char_end": 6602,
+              "char_start": 6550,
+              "char_end": 6588,
               "block_ids": [
                 "B097"
               ],
@@ -8308,8 +8310,8 @@
             "score": 100.0,
             "located": "200. Successful — Created",
             "anchor": {
-              "char_start": 7050,
-              "char_end": 7075,
+              "char_start": 7034,
+              "char_end": 7059,
               "block_ids": [
                 "B105"
               ],
@@ -8370,8 +8372,8 @@
                 "score": 100.0,
                 "located": "Ответ в случае, если параметры запроса заполнены неверно.",
                 "anchor": {
-                  "char_start": 6991,
-                  "char_end": 7048,
+                  "char_start": 6975,
+                  "char_end": 7032,
                   "block_ids": [
                     "B104"
                   ],
@@ -8406,8 +8408,8 @@
                 "score": 100.0,
                 "located": "{\"result\":\"ERROR\",\"message\":\"Проверьте сумму\"}",
                 "anchor": {
-                  "char_start": 7130,
-                  "char_end": 7176,
+                  "char_start": 7114,
+                  "char_end": 7160,
                   "block_ids": [
                     "B108"
                   ],
@@ -8485,8 +8487,8 @@
             "score": 100.0,
             "located": "Если результат 400, 401 и далее —\nнеуспешный.",
             "anchor": {
-              "char_start": 6603,
-              "char_end": 6648,
+              "char_start": 6589,
+              "char_end": 6634,
               "block_ids": [
                 "B097"
               ],
@@ -8559,8 +8561,8 @@
               "quote": "{\"result\":\"OK\",\"amount\":\"50000\",\"enabled\":\"1\"}",
               "verified": true,
               "anchor": {
-                "char_start": 7077,
-                "char_end": 7123,
+                "char_start": 7061,
+                "char_end": 7107,
                 "block_ids": [
                   "B106"
                 ],
@@ -8613,8 +8615,8 @@
             "score": 100.0,
             "located": "Ответ в случае, если на указанный ресурс доступ запрещен.",
             "anchor": {
-              "char_start": 7255,
-              "char_end": 7312,
+              "char_start": 7239,
+              "char_end": 7296,
               "block_ids": [
                 "B110"
               ],
@@ -8645,8 +8647,8 @@
             "score": 100.0,
             "located": "Для чужой карты возвращается 404, как и для отсутствующей карты.",
             "anchor": {
-              "char_start": 7541,
-              "char_end": 7605,
+              "char_start": 7525,
+              "char_end": 7589,
               "block_ids": [
                 "B117"
               ],
@@ -8752,8 +8754,8 @@
             "score": 100.0,
             "located": "Bearer, сессия владельца карты",
             "anchor": {
-              "char_start": 5201,
-              "char_end": 5231,
+              "char_start": 5192,
+              "char_end": 5222,
               "block_ids": [
                 "B064"
               ],
@@ -8950,7 +8952,7 @@
         "property": "IND-TRACE",
         "defect_type": "traceability",
         "verdict": "violation",
-        "scope": "requirement",
+        "scope": "set",
         "severity": "minor",
         "severity_hint": "minor",
         "severity_basis": "тип «прослеживаемость и оформление», не мешает написать тест-кейс: «незначительно»",
@@ -9045,7 +9047,7 @@
         "critic": null,
         "anchor_corrected": false,
         "notes": [
-          "Цитата не входит ни в одно требование из таблицы нарезки: находка отнесена к разделу «Часть A. Новый функционал › Общие сведения»."
+          "Цитата не входит ни в одно требование из таблицы нарезки: находка отнесена к разделу «Часть A. Новый функционал › Общие сведения» и проверке всего набора."
         ]
       },
       {
@@ -9098,8 +9100,8 @@
             "score": 100.0,
             "located": "Dev: /alerts/saveLimit. Prod: —",
             "anchor": {
-              "char_start": 5298,
-              "char_end": 5329,
+              "char_start": 5289,
+              "char_end": 5320,
               "block_ids": [
                 "B067"
               ],
@@ -9278,8 +9280,8 @@
             "score": 100.0,
             "located": "Приложение → AlertsController → хранилище настроек → AlertsController\n→ приложение.",
             "anchor": {
-              "char_start": 6027,
-              "char_end": 6110,
+              "char_start": 6017,
+              "char_end": 6100,
               "block_ids": [
                 "B085"
               ],
@@ -9603,8 +9605,8 @@
             "score": 100.0,
             "located": "Изменение порога сохраняет накопленные расходы.",
             "anchor": {
-              "char_start": 5971,
-              "char_end": 6018,
+              "char_start": 5961,
+              "char_end": 6008,
               "block_ids": [
                 "B083"
               ],
@@ -10085,8 +10087,8 @@
             "score": 100.0,
             "located": "Блок согласующих",
             "anchor": {
-              "char_start": 4898,
-              "char_end": 4914,
+              "char_start": 4889,
+              "char_end": 4905,
               "block_ids": [
                 "B057"
               ],
@@ -10156,8 +10158,8 @@
             "score": 100.0,
             "located": "Dev: /alerts/saveLimit. Prod: —",
             "anchor": {
-              "char_start": 5298,
-              "char_end": 5329,
+              "char_start": 5289,
+              "char_end": 5320,
               "block_ids": [
                 "B067"
               ],
@@ -10243,7 +10245,7 @@
         "scope": "set",
         "severity": "minor",
         "severity_hint": "minor",
-        "severity_basis": "тип «противоречие», мешает написать тест-кейс: «критично»; подсказка модели «низко», кодом не подтверждено: не выше «незначительно»",
+        "severity_basis": "тип «противоречие», мешает написать тест-кейс: «критично»; подсказка модели «низко», кодом не подтверждено: не выше «незначительно»; модель оценила «незначительно»: оценки расходятся больше чем на уровень",
         "severity_disputed": true,
         "blocks_testing": true,
         "quotes": [
@@ -10253,8 +10255,8 @@
             "score": 100.0,
             "located": "Content-Type: application/json.",
             "anchor": {
-              "char_start": 6499,
-              "char_end": 6530,
+              "char_start": 6485,
+              "char_end": 6516,
               "block_ids": [
                 "B094"
               ],
@@ -10285,8 +10287,8 @@
             "score": 100.0,
             "located": "Тело не используется.",
             "anchor": {
-              "char_start": 6534,
-              "char_end": 6555,
+              "char_start": 6520,
+              "char_end": 6541,
               "block_ids": [
                 "B095"
               ],
@@ -10357,8 +10359,8 @@
               "quote": "amount | string | При успехе",
               "verified": true,
               "anchor": {
-                "char_start": 6755,
-                "char_end": 6783,
+                "char_start": 6740,
+                "char_end": 6768,
                 "block_ids": [
                   "B099"
                 ],
@@ -10385,8 +10387,8 @@
               "quote": "message | string | При ошибке",
               "verified": true,
               "anchor": {
-                "char_start": 6874,
-                "char_end": 6903,
+                "char_start": 6858,
+                "char_end": 6887,
                 "block_ids": [
                   "B101"
                 ],
@@ -10424,9 +10426,7 @@
         },
         "critic": null,
         "anchor_corrected": false,
-        "notes": [
-          "Модель оценила важность как «незначительно», а таблица кода по типу дефекта и влиянию на тест дала «критично», итог после правил кода «незначительно»: оценки расходятся больше чем на уровень."
-        ]
+        "notes": []
       },
       {
         "id": "F-49",
@@ -10437,7 +10437,7 @@
         "scope": "requirement",
         "severity": "minor",
         "severity_hint": "minor",
-        "severity_basis": "тип «неполнота», мешает написать тест-кейс: «критично»; подсказка модели «низко», кодом не подтверждено: не выше «незначительно»",
+        "severity_basis": "тип «неполнота», мешает написать тест-кейс: «критично»; подсказка модели «низко», кодом не подтверждено: не выше «незначительно»; модель оценила «незначительно»: оценки расходятся больше чем на уровень",
         "severity_disputed": true,
         "blocks_testing": true,
         "quotes": [
@@ -10447,8 +10447,8 @@
             "score": 100.0,
             "located": "При успехе",
             "anchor": {
-              "char_start": 6773,
-              "char_end": 6783,
+              "char_start": 6758,
+              "char_end": 6768,
               "block_ids": [
                 "B099"
               ],
@@ -10523,9 +10523,7 @@
         },
         "critic": null,
         "anchor_corrected": false,
-        "notes": [
-          "Модель оценила важность как «незначительно», а таблица кода по типу дефекта и влиянию на тест дала «критично», итог после правил кода «незначительно»: оценки расходятся больше чем на уровень."
-        ]
+        "notes": []
       },
       {
         "id": "F-50",
@@ -10546,8 +10544,8 @@
             "score": 100.0,
             "located": "{\"result\":\"OK\",\"amount\":\"50000\",\"enabled\":\"1\"}",
             "anchor": {
-              "char_start": 7077,
-              "char_end": 7123,
+              "char_start": 7061,
+              "char_end": 7107,
               "block_ids": [
                 "B106"
               ],
@@ -10651,7 +10649,7 @@
         "placeholder": 3,
         "traceability": 2
       },
-      "set_level": 27,
+      "set_level": 29,
       "discarded_total": 0,
       "discarded_by_reason": {},
       "quotes_total": 67,
@@ -10662,7 +10660,7 @@
     },
     "traffic_light": "red",
     "traffic_reason": "7 критичных нарушений мешают написать тест-кейсы (F-01, F-02, F-03, F-04, F-05 и ещё 2)",
-    "traffic_rule": "красный, если есть критичное нарушение, которое мешает написать тест-кейс; жёлтый, если критичных нет, но есть важные нарушения, находки «неясно» или вопросы автору, которые блокируют разработку или тестирование; зелёный, если остались только незначительные нарушения или их нет. Цвет считает код по находкам со сверенными цитатами и по вопросам автору, модель его не выбирает.",
+    "traffic_rule": "красный, если есть критичное нарушение, которое мешает написать тест-кейс; жёлтый, если критичных нет, но есть важные нарушения, находки «неясно» или вопросы автору, которые блокируют разработку или тестирование; зелёный, если остались только незначительные нарушения или их нет. Документ без единого требования не зелёный, а красный: разрабатывать и тестировать нечего. Цвет считает код по находкам со сверенными цитатами и по вопросам автору, модель его не выбирает.",
     "requirement_status": {
       "R-01": [
         "F-08",
@@ -11077,8 +11075,8 @@
           "score": 100.0,
           "located": "Ответ в случае, если параметры запроса заполнены неверно.",
           "anchor": {
-            "char_start": 6991,
-            "char_end": 7048,
+            "char_start": 6975,
+            "char_end": 7032,
             "block_ids": [
               "B104"
             ],
@@ -11108,8 +11106,8 @@
           "score": 100.0,
           "located": "{\"result\":\"ERROR\",\"message\":\"Проверьте сумму\"}",
           "anchor": {
-            "char_start": 7130,
-            "char_end": 7176,
+            "char_start": 7114,
+            "char_end": 7160,
             "block_ids": [
               "B108"
             ],
@@ -11140,8 +11138,8 @@
           "score": 100.0,
           "located": "При отклонении суммы вернуть прежнее состояние и результат\nERROR.",
           "anchor": {
-            "char_start": 5783,
-            "char_end": 5848,
+            "char_start": 5773,
+            "char_end": 5838,
             "block_ids": [
               "B079"
             ],
@@ -11228,8 +11226,8 @@
           "score": 100.0,
           "located": "GET",
           "anchor": {
-            "char_start": 5181,
-            "char_end": 5184,
+            "char_start": 5172,
+            "char_end": 5175,
             "block_ids": [
               "B063"
             ],
@@ -11257,8 +11255,8 @@
           "score": 100.0,
           "located": "Заменить настройку и вернуть результат сохранения.",
           "anchor": {
-            "char_start": 5728,
-            "char_end": 5778,
+            "char_start": 5718,
+            "char_end": 5768,
             "block_ids": [
               "B078"
             ],
@@ -11288,8 +11286,8 @@
           "score": 100.0,
           "located": "Content-Type: application/json.",
           "anchor": {
-            "char_start": 6499,
-            "char_end": 6530,
+            "char_start": 6485,
+            "char_end": 6516,
             "block_ids": [
               "B094"
             ],
@@ -11545,8 +11543,8 @@
           "score": 100.0,
           "located": "чтение порога",
           "anchor": {
-            "char_start": 5155,
-            "char_end": 5168,
+            "char_start": 5146,
+            "char_end": 5159,
             "block_ids": [
               "B062"
             ],
@@ -11654,8 +11652,8 @@
           "score": 100.0,
           "located": "Проверить принадлежность карты клиенту.",
           "anchor": {
-            "char_start": 5647,
-            "char_end": 5686,
+            "char_start": 5637,
+            "char_end": 5676,
             "block_ids": [
               "B076"
             ],
@@ -11685,8 +11683,8 @@
           "score": 100.0,
           "located": "Если результат 400, 401 и далее —\nнеуспешный.",
           "anchor": {
-            "char_start": 6603,
-            "char_end": 6648,
+            "char_start": 6589,
+            "char_end": 6634,
             "block_ids": [
               "B097"
             ],
@@ -11772,8 +11770,8 @@
           "score": 100.0,
           "located": "Ответ в случае, если на указанный ресурс доступ запрещен.",
           "anchor": {
-            "char_start": 7255,
-            "char_end": 7312,
+            "char_start": 7239,
+            "char_end": 7296,
             "block_ids": [
               "B110"
             ],
@@ -11804,8 +11802,8 @@
           "score": 100.0,
           "located": "Для чужой карты возвращается 404, как и для отсутствующей карты.",
           "anchor": {
-            "char_start": 7541,
-            "char_end": 7605,
+            "char_start": 7525,
+            "char_end": 7589,
             "block_ids": [
               "B117"
             ],
@@ -11865,8 +11863,8 @@
           "score": 100.0,
           "located": "Для чужой карты возвращается 404, как и для отсутствующей карты.",
           "anchor": {
-            "char_start": 7541,
-            "char_end": 7605,
+            "char_start": 7525,
+            "char_end": 7589,
             "block_ids": [
               "B117"
             ],
@@ -11914,8 +11912,8 @@
           "score": 100.0,
           "located": "Если результат 200 или 201 — успешный.",
           "anchor": {
-            "char_start": 6564,
-            "char_end": 6602,
+            "char_start": 6550,
+            "char_end": 6588,
             "block_ids": [
               "B097"
             ],
@@ -11945,8 +11943,8 @@
           "score": 100.0,
           "located": "200. Successful — Created",
           "anchor": {
-            "char_start": 7050,
-            "char_end": 7075,
+            "char_start": 7034,
+            "char_end": 7059,
             "block_ids": [
               "B105"
             ],
@@ -11975,8 +11973,8 @@
           "score": 100.0,
           "located": "Ответ в случае успешного выполнения метода.",
           "anchor": {
-            "char_start": 6941,
-            "char_end": 6984,
+            "char_start": 6925,
+            "char_end": 6968,
             "block_ids": [
               "B103"
             ],
@@ -12293,10 +12291,10 @@
           "text": "--data 'cardId=demo- 42&amount=50000&enabled=1'",
           "match": "exact",
           "score": 100.0,
-          "located": "--data 'cardId=demo- 42&amount=50000&enabled=1'",
+          "located": "--data 'cardId=demo-42&amount=50000&enabled=1'",
           "anchor": {
-            "char_start": 5404,
-            "char_end": 5451,
+            "char_start": 5395,
+            "char_end": 5441,
             "block_ids": [
               "B068"
             ],
@@ -12324,8 +12322,8 @@
           "score": 100.0,
           "located": "Bearer, сессия владельца карты",
           "anchor": {
-            "char_start": 5201,
-            "char_end": 5231,
+            "char_start": 5192,
+            "char_end": 5222,
             "block_ids": [
               "B064"
             ],
@@ -12500,8 +12498,8 @@
             "score": 100.0,
             "located": "Тело не используется.",
             "anchor": {
-              "char_start": 6534,
-              "char_end": 6555,
+              "char_start": 6520,
+              "char_end": 6541,
               "block_ids": [
                 "B095"
               ],
@@ -12539,8 +12537,8 @@
         "score": 100.0,
         "located": "Тело не используется.",
         "anchor": {
-          "char_start": 6534,
-          "char_end": 6555,
+          "char_start": 6520,
+          "char_end": 6541,
           "block_ids": [
             "B095"
           ],
@@ -12755,21 +12753,23 @@
     "performed": true,
     "fix_first": [
       "F-01",
-      "F-02",
       "F-03",
+      "F-06",
       "F-04",
-      "F-05"
+      "F-02",
+      "F-05",
+      "F-07"
     ],
     "ask_first": [
+      "Q-06",
+      "Q-04",
       "Q-01",
       "Q-02",
-      "Q-03",
-      "Q-04",
-      "Q-06"
+      "Q-07"
     ]
   },
   "metrics": {
-    "duration_s": 0.47,
+    "duration_s": 0.55,
     "calls_total": 8,
     "calls_failed": 0,
     "calls_cached": 0,
@@ -12995,7 +12995,15 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-36",
+            "F-37"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-02.1",
@@ -13044,7 +13052,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-38"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-02.2",
@@ -13093,7 +13108,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-34"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-03.1",
@@ -13142,7 +13164,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-03.2",
@@ -13191,7 +13218,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-03.3",
@@ -13242,7 +13274,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-04",
@@ -13291,7 +13328,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-10"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-05.1",
@@ -13342,7 +13386,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-05.2",
@@ -13393,7 +13442,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-06.1",
@@ -13444,7 +13498,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-01"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-06.2",
@@ -13497,7 +13558,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-06.3",
@@ -13548,7 +13614,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-06.4",
@@ -13599,7 +13670,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-07.1",
@@ -13650,7 +13726,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-07.2",
@@ -13701,7 +13782,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-03"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-08.1",
@@ -13750,7 +13838,16 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-16",
+            "F-40",
+            "F-41"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-08.2",
@@ -13801,7 +13898,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-03"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-09.1",
@@ -13850,7 +13954,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-17"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-09.2",
@@ -13899,7 +14010,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-18"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-09.3",
@@ -13950,7 +14068,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-10",
@@ -14003,7 +14126,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-43"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-11",
@@ -14056,7 +14186,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-44"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-12.1",
@@ -14105,7 +14242,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-05"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-12.2",
@@ -14156,7 +14300,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-13",
@@ -14207,7 +14356,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-26"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-14",
@@ -14256,7 +14412,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-01"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-15",
@@ -14305,7 +14468,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-40"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-16",
@@ -14354,7 +14524,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-27"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-17",
@@ -14405,7 +14582,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-18",
@@ -14454,7 +14636,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-33"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-19",
@@ -14503,7 +14692,15 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-36",
+            "F-47"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-20",
@@ -14552,7 +14749,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-21",
@@ -14601,7 +14803,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-22",
@@ -14650,7 +14857,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-23",
@@ -14699,7 +14911,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-24",
@@ -14750,7 +14967,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-25",
@@ -14799,7 +15021,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-26",
@@ -14848,7 +15075,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-27",
@@ -14897,7 +15129,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-41"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-28",
@@ -14946,7 +15185,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-38"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-29",
@@ -14995,7 +15241,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-30",
@@ -15044,7 +15295,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-31",
@@ -15093,7 +15349,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-32",
@@ -15142,7 +15403,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-33",
@@ -15191,7 +15457,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-48"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-34",
@@ -15240,7 +15513,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-48"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-35.1",
@@ -15289,7 +15569,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-30"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-35.2",
@@ -15338,7 +15625,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-31"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-36",
@@ -15387,7 +15681,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-37",
@@ -15438,7 +15737,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-38",
@@ -15487,7 +15791,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-39",
@@ -15536,7 +15845,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-40",
@@ -15585,7 +15899,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-41",
@@ -15634,7 +15953,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-07"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-42",
@@ -15683,7 +16009,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-43",
@@ -15732,7 +16063,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-32"
+          ]
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-44",
@@ -15781,7 +16119,12 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "clean",
+          "finding_ids": []
+        },
+        "searched": true
       },
       {
         "requirement_id": "R-45",
@@ -15830,7 +16173,14 @@
             "state": "clean",
             "finding_ids": []
           }
-        }
+        },
+        "set_cell": {
+          "state": "violation",
+          "finding_ids": [
+            "F-32"
+          ]
+        },
+        "searched": true
       }
     ],
     "set_rows": [
@@ -15846,7 +16196,8 @@
           "F-31",
           "F-45",
           "F-46",
-          "F-47"
+          "F-47",
+          "F-28"
         ],
         "refs": [
           "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Complete)",
@@ -15918,8 +16269,10 @@
       },
       {
         "property": "SET-TRACE",
-        "state": "clean",
-        "finding_ids": [],
+        "state": "violation",
+        "finding_ids": [
+          "F-35"
+        ],
         "refs": [
           "IEEE 830-1998, п. 4.3.8"
         ]
@@ -15934,11 +16287,9 @@
       }
     ],
     "extra_finding_ids": [],
-    "unlinked_finding_ids": [
-      "F-28",
-      "F-35"
-    ],
-    "checked": true
+    "unlinked_finding_ids": [],
+    "checked": true,
+    "unchecked_parts": []
   },
   "selfcheck": {
     "applicable": true,
@@ -16011,7 +16362,7 @@
         "title": "Матрица покрытия совпадает с находками",
         "passed": true,
         "integrity": true,
-        "detail": "58 требований × 11 свойств (638 ячеек), 8 свойств набора",
+        "detail": "58 требований × 11 свойств и колонка «Набор», ячеек: 696; свойств набора: 8; у каждого требования те же находки, что в разделе 4",
         "failures": []
       }
     ],
@@ -16113,7 +16464,7 @@
         "интеграции",
         "rest",
         "api",
-        "интеграционны",
+        "интеграционный",
         "интеграционног"
       ],
       "triggered": true,

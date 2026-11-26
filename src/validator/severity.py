@@ -266,12 +266,8 @@ def severity_for(m: MergedFinding, verified: Sequence[Quote]) -> SeverityResult:
     # Расхождение считаем до решения критика: критик понижает уже после того, как выбрал находку по пометке.
     disputed = severity_disputed(m.severity_hint, table) or severity_disputed(m.severity_hint, by_code)
     if disputed and m.severity_hint is not None:
-        final = "" if severity is table else f", итог после правил кода «{severity.label}»"
-        notes.insert(
-            0,
-            f"Модель оценила важность как «{m.severity_hint.label}», а таблица кода по типу дефекта и "
-            f"влиянию на тест дала «{table.label}»{final}: оценки расходятся больше чем на уровень.",
-        )
+        # Расхождение оценок служебное: оно в report.json (основание важности и флаг), не в карточке (#125).
+        basis.append(f"модель оценила «{m.severity_hint.label}»: оценки расходятся больше чем на уровень")
     return SeverityResult(severity, "; ".join(basis), notes, disputed)
 
 

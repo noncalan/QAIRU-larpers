@@ -24,11 +24,13 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass, field, replace
 from itertools import pairwise
 
 from validator.ingest.pdf_backends import Glyph, RawPage, Rule
-from validator.ingest.pdf_layout import BAND_SHARE, cluster_rows, is_page_number, join_hyphenation, row_text
+from validator.ingest.pdf_cell_text import CellLine, join_lines, join_tail
+from validator.ingest.pdf_layout import BAND_SHARE, cluster_rows, is_page_number, row_text
 
 CELL_SEPARATOR = " | "
 """Ячейки строки в тексте документа (как в DOCX): «Расходы 48 500 ₸ | Провести покупку | Итог»."""
@@ -67,6 +69,8 @@ class TableRow:
     page: int
     top: float
     bottom: float
+    lines: tuple[tuple[CellLine, ...], ...] = ()
+    """Строки каждой ячейки с геометрией: из них ``rejoin`` заново собирает ``cells`` по словам документа."""
 
 
 @dataclass(frozen=True)
@@ -81,6 +85,7 @@ class PageTable:
     header: list[str]
     rows: list[TableRow] = field(default_factory=list)
     starts: tuple[float, ...] = ()
+    header_lines: tuple[tuple[CellLine, ...], ...] = ()
 
     @property
     def columns(self) -> int:
@@ -214,18 +219,32 @@ def _find_header(page: RawPage, rule: Rule) -> _Header | None:
 # ---------------------------------------------------------------- тело
 
 
-def _join_cell(parts: list[str]) -> str:
-    """Строки ячейки в текст через пробел; перенос слова со знаком склеиваем, как в абзацах.
+EDGE_EM = 0.75
+"""Строка ячейки доходит до правого края колонки, если кончается не левее самой длинной строки колонки
+минус столько кеглей (#121): так выглядит слово, разорванное без знака переноса."""
 
-    Слово, разорванное у края узкой колонки без знака переноса («Функциональна» и «я»), остаётся с пробелом:
-    отличить его от обычного переноса по пробелу можно только словарём.
-    """
-    text = parts[0]
-    for nxt in parts[1:]:
-        head, _, rest = nxt.partition(" ")
-        glued = join_hyphenation(text, head) if head else None
-        text = f"{glued} {rest}".strip() if glued is not None and rest else (glued or f"{text} {nxt}")
-    return text
+
+def _edges(rows: Iterable[_Row], starts: list[float], size: float) -> list[float]:
+    """Правый край текста каждой колонки: конец самой длинной строки в ней."""
+    edges = [0.0] * len(starts)
+    for row in rows:
+        for run in row.runs:
+            k = _column_of(run, starts, size)
+            edges[k] = max(edges[k], run.x1)
+    return edges
+
+
+def _cell_lines(
+    rows: Iterable[_Row], starts: list[float], size: float, gap_em: float, edges: list[float]
+) -> tuple[tuple[CellLine, ...], ...]:
+    pieces: list[list[CellLine]] = [[] for _ in starts]
+    for line in rows:
+        for run in line.runs:
+            k = _column_of(run, starts, size)
+            text = _cell_text(run, gap_em)
+            at_edge = run.x1 >= edges[k] - EDGE_EM * run.size
+            pieces[k].append(CellLine(text, single=" " not in text.strip(), at_edge=at_edge))
+    return tuple(tuple(p) for p in pieces)
 
 
 def _row_threshold(gaps: list[float], size: float) -> float | None:
@@ -283,27 +302,29 @@ def _cell_text(run: _Run, gap_em: float) -> str:
 
 
 def _build_rows(
-    groups: list[list[_Row]], starts: list[float], size: float, page: int, gap_em: float
+    groups: list[list[_Row]], starts: list[float], size: float, page: int, gap_em: float, edges: list[float]
 ) -> list[TableRow]:
     rows: list[TableRow] = []
     for group in groups:
-        pieces: list[list[str]] = [[] for _ in starts]
-        for line in group:
-            for run in line.runs:
-                pieces[_column_of(run, starts, size)].append(_cell_text(run, gap_em))
-        cells = [_join_cell(p) if p else "" for p in pieces]
-        rows.append(TableRow(cells, page, group[0].top, group[-1].bottom))
+        lines = _cell_lines(group, starts, size, gap_em, edges)
+        cells = [join_lines(p) for p in lines]
+        rows.append(TableRow(cells, page, group[0].top, group[-1].bottom, lines))
     return rows
 
 
-def _header_cells(header: _Header, gap_em: float) -> list[str]:
-    starts = header.starts
-    size = header.rows[-1].size
-    pieces: list[list[str]] = [[] for _ in starts]
-    for line in header.rows:
-        for run in line.runs:
-            pieces[_column_of(run, starts, size)].append(_cell_text(run, gap_em))
-    return [_join_cell(p) if p else "" for p in pieces]
+def rejoin(tables: Iterable[PageTable], vocab: frozenset[str]) -> list[PageTable]:
+    """Ячейки заново из строк, со словами документа: склеивает слова, разорванные у края колонки (#121)."""
+    out: list[PageTable] = []
+    for t in tables:
+        header = [join_lines(p, vocab) for p in t.header_lines] if t.header_lines else list(t.header)
+        rows = [replace(r, cells=[join_lines(p, vocab) for p in r.lines]) if r.lines else r for r in t.rows]
+        out.append(replace(t, header=header, rows=rows))
+    return out
+
+
+def cell_lines(tables: Iterable[PageTable]) -> list[tuple[CellLine, ...]]:
+    """Строки всех ячеек (с заголовками) для словаря документа."""
+    return [cell for t in tables for cell in (*t.header_lines, *(c for r in t.rows for c in r.lines))]
 
 
 # ---------------------------------------------------------------- страница
@@ -342,7 +363,9 @@ def find_tables(page: RawPage, gap_em: float) -> list[PageTable]:
         limit = headers[k + 1][1].rows[0].top if k + 1 < len(headers) else page.height
         body = _body_lines(page, rule, header, limit)
         size = header.rows[-1].size
-        rows = _build_rows(_split_rows(body, size), header.starts, size, page.number, gap_em)
+        edges = _edges([*header.rows, *body], header.starts, size)
+        rows = _build_rows(_split_rows(body, size), header.starts, size, page.number, gap_em, edges)
+        header_lines = _cell_lines(header.rows, header.starts, size, gap_em, edges)
         last = body[-1].bottom if body else rule.y
         tables.append(
             PageTable(
@@ -351,9 +374,10 @@ def find_tables(page: RawPage, gap_em: float) -> list[PageTable]:
                 x1=rule.x1,
                 top=header.rows[0].top,
                 bottom=last,
-                header=_header_cells(header, gap_em),
+                header=[join_lines(p) for p in header_lines],
                 rows=rows,
                 starts=tuple(header.starts),
+                header_lines=header_lines,
             )
         )
     return tables
@@ -382,15 +406,18 @@ def _is_tail(row: TableRow) -> bool:
     return not first or first[0].islower()
 
 
-def _merge_tail(last: TableRow, tail: TableRow) -> TableRow:
-    cells = [f"{a} {b}".strip() if a and b else a or b for a, b in zip(last.cells, tail.cells, strict=True)]
+def _merge_tail(last: TableRow, tail: TableRow, vocab: frozenset[str] | None) -> TableRow:
+    cells = [join_tail(a, b, vocab) for a, b in zip(last.cells, tail.cells, strict=True)]
     return replace(last, cells=cells)
 
 
-def link_tables(tables: list[PageTable], heights: dict[int, float]) -> list[LogicalTable]:
+def link_tables(
+    tables: list[PageTable], heights: dict[int, float], vocab: frozenset[str] | None = None
+) -> list[LogicalTable]:
     """Склеивает таблицы с повторённым заголовком на соседних страницах и нумерует таблицы документа.
 
     ``heights``: высоты страниц по номерам; продолжение ищем внизу одной страницы и вверху следующей.
+    ``vocab``: слова документа для склейки слова, разорванного на стыке страниц (``pdf_cell_text``).
     """
     out: list[LogicalTable] = []
     previous: PageTable | None = None
@@ -399,7 +426,7 @@ def link_tables(tables: list[PageTable], heights: dict[int, float]) -> list[Logi
         if previous is not None and out and _continues(previous, table, heights):
             current = out[-1]
             if rows and _is_tail(rows[0]) and current.rows:
-                current.rows[-1] = _merge_tail(current.rows[-1], rows.pop(0))
+                current.rows[-1] = _merge_tail(current.rows[-1], rows.pop(0), vocab)
             current.rows.extend(rows)
             current.parts.append(table)
         else:

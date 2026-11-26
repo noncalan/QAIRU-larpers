@@ -48,7 +48,13 @@ from validator.questions import QuestionsOutcome
 from validator.report.fmt import quote_text
 from validator.segment import fallback_segmentation
 from validator.severity import SEVERITY_TABLE, severity_disputed, table_severity
-from validator.verify import TRAFFIC_RULE, light_with_questions, traffic_light, verify
+from validator.verify import (
+    NO_REQUIREMENTS_REASON,
+    TRAFFIC_RULE,
+    light_with_questions,
+    traffic_light,
+    verify,
+)
 
 LIBRARY = """# Библиотека
 
@@ -323,12 +329,18 @@ def test_set_level_gap_quoting_a_heading_is_bound_to_section(doc: ParsedDocument
     assert not any(ver.requirement_status.values())
 
 
-def test_requirement_finding_outside_requirements_gets_note(doc: ParsedDocument, seg: Segmentation) -> None:
+def test_requirement_finding_outside_requirements_goes_to_set_level(
+    doc: ParsedDocument, seg: Segmentation
+) -> None:
+    """#118: находка без требования о документе в целом, отчёт показывает её в проверке набора."""
     ver = verify([merged("Выдача книг", block_ids=("B002",))], doc, seg)
 
     finding = only(ver.findings)
     assert finding.requirement_ids == []
-    assert any("не входит ни в одно требование" in note for note in finding.notes)
+    assert finding.scope is Scope.SET
+    assert finding.property is Property.UNAMBIGUOUS  # свойство модели не меняется, строка набора по set_level
+    assert ver.summary.set_level == 1
+    assert any("не входит ни в одно требование" in note and "набора" in note for note in finding.notes)
 
 
 def test_empty_segmentation_does_not_add_a_note_to_every_finding(doc: ParsedDocument) -> None:
@@ -337,6 +349,7 @@ def test_empty_segmentation_does_not_add_a_note_to_every_finding(doc: ParsedDocu
     finding = only(ver.findings)
     assert finding.requirement_ids == []
     assert finding.notes == []
+    assert finding.scope is Scope.REQUIREMENT  # без нарезки отнести к набору не к чему
     assert ver.requirement_status == {}
 
 
@@ -378,18 +391,24 @@ def test_model_hint_is_kept_but_does_not_decide(doc: ParsedDocument, seg: Segmen
 
     assert (result.severity, result.severity_hint) == (Severity.MINOR, Severity.CRITICAL)
     assert result.severity_disputed
-    assert any("расходятся больше чем на уровень" in note for note in result.notes)
+    assert "модель оценила «критично»: оценки расходятся больше чем на уровень" in result.severity_basis
+    assert not any("расходятся" in note for note in result.notes)  # служебное, не в карточку (#125)
     assert "прослеживаемость" in result.severity_basis
 
 
-def test_dispute_note_names_table_value_and_final_severity(doc: ParsedDocument, seg: Segmentation) -> None:
+def test_dispute_is_in_severity_basis_with_table_value_and_final_severity(
+    doc: ParsedDocument, seg: Segmentation
+) -> None:
     unclear = merged(LIMIT_FIVE, verdict=Verdict.UNCLEAR, blocks_testing=True, hint=Severity.MINOR)
 
     result = only(verify([unclear], doc, seg).findings)
 
     assert result.severity is Severity.MINOR
     assert result.severity_disputed
-    assert "дала «критично», итог после правил кода «незначительно»" in result.notes[0]
+    basis = result.severity_basis
+    assert "мешает написать тест-кейс: «критично»" in basis
+    assert "не выше «незначительно»" in basis
+    assert basis.endswith("модель оценила «незначительно»: оценки расходятся больше чем на уровень")
 
 
 @pytest.mark.parametrize(
@@ -528,7 +547,7 @@ def test_form_defect_that_model_called_critical_is_marked_as_disputed(
 
     assert result.severity is Severity.MINOR
     assert result.severity_disputed
-    assert "итог после правил кода «незначительно»" in result.notes[0]
+    assert "модель оценила «критично»" in result.severity_basis
 
 
 def test_model_hint_never_raises_severity(doc: ParsedDocument, seg: Segmentation) -> None:
@@ -690,6 +709,15 @@ def test_critical_without_blocking_testing_is_yellow_and_named() -> None:
         "нарушений, которые мешают написать тест-кейсы, нет, но есть 1 критичное нарушение без влияния "
         "на тест-кейсы (F-01) и 1 важное нарушение (F-02)"
     )
+
+
+def test_document_without_requirements_is_red_not_green() -> None:
+    """#126: нет требований, нет и нарушений, но разрабатывать и тестировать нечего."""
+    light, reason = traffic_light([], requirements=0)
+
+    assert light is TrafficLight.RED
+    assert reason == NO_REQUIREMENTS_REASON
+    assert traffic_light([], requirements=3)[0] is TrafficLight.GREEN
 
 
 @pytest.mark.parametrize(

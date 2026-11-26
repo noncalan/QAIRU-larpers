@@ -44,6 +44,7 @@ VOLATILE = {
         "agent_version",
         "agent_version_source",
         "agent_dirty",
+        "agent_commit",
         "os",
         "python",
     ),
@@ -63,9 +64,15 @@ _STALE_MERGE = (
     "поэтому список находок и M-номера другие: evidence.1, test_draft.N и clarify идут по позиции; "
     "#120: значения из ячеек таблиц больше не пропуски, вход questions.1 другой"
 )
-STALE_RECORDINGS: dict[DocKind, str] = dict.fromkeys(
-    (DocKind.MD, DocKind.PDF, DocKind.DOCX), f"{_STALE_QUESTIONS}; {_STALE_MERGE}"
+_STALE_PDF_TEXT = (
+    "#121: слова, разорванные у края узкой колонки PDF, теперь склеены («Идентификатор», «limit_kzt»), "
+    "текст документа и ключи всех запросов PDF поменялись; ответы находятся по номеру вызова"
 )
+STALE_RECORDINGS: dict[DocKind, str] = {
+    DocKind.MD: f"{_STALE_QUESTIONS}; {_STALE_MERGE}",
+    DocKind.PDF: f"{_STALE_PDF_TEXT}; {_STALE_QUESTIONS}; {_STALE_MERGE}",
+    DocKind.DOCX: f"{_STALE_QUESTIONS}; {_STALE_MERGE}",
+}
 """Записи, которые отстали от кода и ждут живой перезаписи. Пока запись в этом списке, проверка «каждый
 ответ по ключу» для формата помечена как ожидаемо падающая (``strict``): после перезаписи она пройдёт,
 и pytest напомнит убрать формат отсюда. Снапшот отчёта сравнивается для всех форматов."""

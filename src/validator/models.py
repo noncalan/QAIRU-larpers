@@ -77,7 +77,7 @@ _EXIT_MEANING = {
     ExitCode.OK: "вход прочитан, проверка выполнена",
     ExitCode.INTERNAL: "внутренняя ошибка агента",
     ExitCode.USAGE: "ошибка аргументов или пути отчёта",
-    ExitCode.PARTIAL_INPUT: "вход прочитан частично, проверка выполнена с оговорками",
+    ExitCode.PARTIAL_INPUT: "вход прочитан с оговорками, проверка выполнена с оговорками",
     ExitCode.INPUT: "вход невозможно обработать",
     ExitCode.MODEL: "сбой модели или конфигурации",
 }
@@ -271,6 +271,12 @@ class Property(StrEnum):
     def refs(self) -> tuple[str, ...]:
         return self.info.refs
 
+    @property
+    def set_level(self) -> Property:
+        """Строка матрицы набора для находки уровня набора: само свойство набора или ближайшее к свойству
+        требования (находка без требования относится ко всему документу, #118)."""
+        return self if self.scope is Scope.SET else _SET_COUNTERPART[self]
+
 
 def _p(label: str, english: str, scope: Scope, *refs: str) -> PropertyInfo:
     return PropertyInfo(label, english, scope, refs)
@@ -310,6 +316,20 @@ _PROPERTY_INFO: dict[Property, PropertyInfo] = {
     Property.SET_TRACEABLE: _p("Прослеживаемость набора", "Traceable", _S, f"{_IEEE}, п. 4.3.8"),
     Property.SET_RANKED: _p("Ранжирование набора", "Ranked", _S, f"{_IEEE}, п. 4.3.5"),
 }
+_SET_COUNTERPART: dict[Property, Property] = {
+    Property.COMPLETE: Property.SET_COMPLETE,  # тот же пункт стандарта (полнота)
+    Property.TRACEABLE: Property.SET_TRACEABLE,  # тот же пункт (прослеживаемость)
+    Property.RANKED: Property.SET_RANKED,  # тот же пункт (ранжирование)
+    Property.FEASIBLE: Property.SET_FEASIBLE,  # выполнимость требования и набора
+    Property.UNAMBIGUOUS: Property.SET_COMPREHENSIBLE,  # понятно, что ожидается
+    Property.APPROPRIATE: Property.SET_COMPREHENSIBLE,
+    Property.SINGULAR: Property.SET_MODIFIABLE,  # модифицируемость: каждое требование отдельно
+    Property.CONFORMING: Property.SET_MODIFIABLE,  # модифицируемость: связная организация документа
+    Property.NECESSARY: Property.SET_VALIDATABLE,  # валидируемость: набор ведёт к потребностям
+    Property.VERIFIABLE: Property.SET_VALIDATABLE,
+    Property.CORRECT: Property.SET_VALIDATABLE,  # верность требования показывает валидация
+}
+"""Свойство набора, в строку которого матрица кладёт находку уровня набора со свойством требования."""
 
 
 class DefectType(StrEnum):
@@ -921,6 +941,17 @@ class PassResult(Contract):
     call_ids: list[str] = Field(default_factory=list)
     error: str | None = None
     diagnostics: list[Diagnostic] = Field(default_factory=list)
+    parts_failed: list[int] = Field(
+        default_factory=list,
+        description="Части длинного документа, на которых этот проход не удался (#38); пусто, если части нет",
+    )
+
+    def covers(self, part: int | None) -> bool:
+        """Проход отработал по части ``part``. ``None``: документ целиком или часть места неизвестна,
+        тогда нужен проход, который отработал на всех частях."""
+        if not self.ok:
+            return False
+        return not self.parts_failed if part is None else part not in self.parts_failed
 
 
 class WitnessReading(Contract):
@@ -1488,6 +1519,7 @@ class Passport(Contract):
     agent_version: str
     agent_version_source: str = Field(description="git, AGENT_VERSION или unknown")
     agent_dirty: bool = False
+    agent_commit: str | None = Field(default=None, description="Короткий хеш коммита агента (git)")
     prompts_sha256: str
     os: str
     python: str
@@ -1637,12 +1669,17 @@ class DocumentPart(Contract):
     pages: str = Field(default="", description="Страницы PDF части: «12–25»; пусто для MD и DOCX")
     tokens: int = Field(default=0, description="Оценка токенов части по символам")
     context_blocks: int = Field(default=0, description="Блоков раздела терминов, добавленных для справки")
+    passes_ok: int = Field(
+        default=0, ge=0, description="Проходов поиска, отработавших по этой части; 0: часть не проверена"
+    )
+    requirement_ids: list[str] = Field(default_factory=list, description="R-NN, место которых в этой части")
 
 
 class DocumentInfo(Contract):
     name: str
     path: str
     kind: DocKind
+    title: str | None = Field(default=None, description="Название документа: первый заголовок текста")
     sha256: str | None = None
     size_bytes: int | None = None
     pages: int | None = None
@@ -1663,7 +1700,8 @@ class CellState(StrEnum):
     CLEAN = "clean"  # свойство проверяли, нарушений не нашли
     VIOLATION = "violation"
     UNCLEAR = "unclear"
-    NOT_CHECKED = "not_checked"  # ни один проход поиска не отработал: «нет нарушений» было бы неправдой
+    NOT_CHECKED = "not_checked"  # поиск по этому месту не отработал: «нет нарушений» было бы неправдой
+    PARTIAL = "partial"  # строка набора: часть документа поиском не проверена, нарушений в остальном нет
 
 
 class CoverageCell(Contract):
@@ -1676,6 +1714,11 @@ class CoverageRow(Contract):
 
     requirement_id: str
     cells: dict[Property, CoverageCell] = Field(default_factory=dict)
+    set_cell: CoverageCell = Field(
+        default_factory=lambda: CoverageCell(state=CellState.NOT_CHECKED),
+        description="Находки уровня набора с участием требования (#118): противоречия, повторы, пропуски",
+    )
+    searched: bool = Field(default=True, description="Хотя бы один проход поиска отработал по этому месту")
 
 
 class SetCoverageRow(Contract):
@@ -1701,6 +1744,9 @@ class CoverageMatrix(Contract):
         description="Находки уровня требования, не привязанные ни к одному требованию нарезки",
     )
     checked: bool = Field(default=True, description="Хотя бы один проход поиска отработал")
+    unchecked_parts: list[int] = Field(
+        default_factory=list, description="Части длинного документа, по которым не отработал ни один проход"
+    )
 
 
 class SelfCheckItem(Contract):

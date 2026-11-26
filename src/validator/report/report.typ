@@ -59,6 +59,13 @@
   #text(size: 10.5pt, weight: "bold")[#it.body]
 ]
 
+// Номера F-NN и Q-NN в любом тексте отчёта ведут к карточке находки или вопроса, если она есть.
+#let anchors = d.at("anchors", default: ())
+#let link-ink = rgb("#1d4f91")
+#show regex("\b[FQ]-\d{2,}\b"): it => {
+  if it.text in anchors { link(label(lower(it.text)), text(fill: link-ink, it)) } else { it }
+}
+
 #let mono(c) = text(font: ("Liberation Mono", "DejaVu Sans"), size: 7.5pt)[#c]
 
 // ---------------------------------------------------------------- таблицы
@@ -104,6 +111,8 @@
 
 #let card(b) = {
   let tone = tones.at(b.tone)
+  let key = b.at("anchor", default: "")
+  if key != "" [#metadata(key)#label(lower(key))]
   block(width: 100%, stroke: 0.6pt + rule, radius: 3pt, above: 9pt, below: 6pt)[
     #block(
       width: 100%,
@@ -154,7 +163,9 @@
   } else if b.t == "note" {
     par(text(size: 8pt, fill: muted)[#b.text])
   } else if b.t == "bullets" {
-    list(..b.items.map(i => [#i]))
+    if b.items.len() > 0 {
+      pad(left: b.at("indent", default: 0) * 12pt, list(..b.items.map(i => [#i])))
+    }
   } else if b.t == "table" {
     data-table(b)
   } else if b.t == "kv" {
@@ -180,9 +191,9 @@
         #text(size: 7.5pt, fill: muted)[#s.at(0)]
       ]),
     )
-    if f.at("review", default: "") != "" {
+    if f.at("blocking", default: "") != "" {
       v(6pt)
-      par[#text(size: 9pt)[#f.review]]
+      par[#text(size: 9pt)[#f.blocking]]
     }
     if f.at("clarify", default: "") != "" {
       v(6pt)
@@ -191,6 +202,8 @@
     heading(level: 2)[Что исправить первым]
     if f.fix.len() == 0 {
       par[#f.fix_empty]
+    } else if f.at("fix_intro", default: "") != "" {
+      par[#text(size: 8.5pt, fill: muted)[#f.fix_intro]]
     }
     for (i, x) in f.fix.enumerate() {
       block(
@@ -206,11 +219,8 @@
         #if x.quote != "" [
           \ #text(fill: muted)[Цитата:] #text(style: "italic")[«#x.quote»] #text(fill: muted)[(#x.place)]
         ]
-        #if x.suggestion != "" [
-          \ #text(fill: muted)[Предложенная формулировка:] #x.suggestion
-        ]
         #if x.questions != "" [
-          \ #text(fill: muted)[Вопрос автору:] #x.questions
+          \ #text(fill: muted)[Решить с автором:] #x.questions
         ]
       ]
     }
@@ -235,6 +245,10 @@
           ]
         ]
       ]
+    }
+    if f.at("review", default: "") != "" {
+      v(6pt)
+      par[#text(size: 8.5pt, fill: muted)[#f.review]]
     }
   }
 }

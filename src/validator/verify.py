@@ -61,8 +61,9 @@ from validator.text import locate_quote, normalize
 TRAFFIC_RULE: Final = (
     "красный, если есть критичное нарушение, которое мешает написать тест-кейс; жёлтый, если критичных "
     "нет, но есть важные нарушения, находки «неясно» или вопросы автору, которые блокируют разработку или "
-    "тестирование; зелёный, если остались только незначительные нарушения или их нет. Цвет считает код "
-    "по находкам со сверенными цитатами и по вопросам автору, модель его не выбирает."
+    "тестирование; зелёный, если остались только незначительные нарушения или их нет. Документ без единого "
+    "требования не зелёный, а красный: разрабатывать и тестировать нечего. Цвет считает код по находкам со "
+    "сверенными цитатами и по вопросам автору, модель его не выбирает."
 )
 """Правило светофора (``traffic_light``) словами: отчёт показывает его рядом с итогом."""
 
@@ -185,10 +186,22 @@ def _quote_notes(
             "находка держится на сверенных цитатах."
         )
     # Если нарезка пуста (шаг 2 упал), об этом говорит его диагностика, а не каждая находка.
-    if m.scope is Scope.REQUIREMENT and not linked and seg.requirements:
+    if _outside_requirements(m, linked, seg):
         where = f"разделу «{' › '.join(section[-2:])}»" if section else "документу в целом"
-        notes.append(f"Цитата не входит ни в одно требование из таблицы нарезки: находка отнесена к {where}.")
+        notes.append(
+            f"Цитата не входит ни в одно требование из таблицы нарезки: находка отнесена к {where} "
+            "и проверке всего набора."
+        )
     return notes
+
+
+def _outside_requirements(m: MergedFinding, linked: Sequence[str], seg: Segmentation) -> bool:
+    """Находка уровня требования, цитата которой не входит ни в одно требование нарезки (#118).
+
+    Такая находка о документе в целом (пустой блок согласующих, нет версии документа), поэтому отчёт
+    показывает её в проверке набора и в матрице набора, а не среди находок отдельных требований.
+    """
+    return m.scope is Scope.REQUIREMENT and not linked and bool(seg.requirements)
 
 
 def check(
@@ -216,7 +229,7 @@ def check(
         property=m.property,
         defect_type=m.defect_type,
         verdict=m.verdict,
-        scope=m.scope,
+        scope=Scope.SET if _outside_requirements(m, linked, seg) else m.scope,
         severity=severity.severity,
         severity_hint=m.severity_hint,
         severity_basis=severity.basis,
@@ -355,15 +368,26 @@ def _join(parts: Sequence[str]) -> str:
     return parts[0] if len(parts) == 1 else f"{', '.join(parts[:-1])} и {parts[-1]}"
 
 
-def traffic_light(findings: Sequence[Finding]) -> tuple[TrafficLight, str]:
+NO_REQUIREMENTS_REASON: Final = (
+    "в документе не найдено ни одного требования: разрабатывать и тестировать нечего, "
+    "нужен документ с требованиями"
+)
+
+
+def traffic_light(
+    findings: Sequence[Finding], *, requirements: int | None = None
+) -> tuple[TrafficLight, str]:
     """Светофор «можно ли начинать разработку и тестирование» и причина одной фразой (``TRAFFIC_RULE``).
 
-    - Красный: есть нарушение с важностью «критично», которое мешает написать тест-кейс.
+    - Красный: есть нарушение с важностью «критично», которое мешает написать тест-кейс, или в документе
+      нет ни одного требования (``requirements == 0``: пустой шаблон, не ТЗ, #126).
     - Жёлтый: таких нет, но есть нарушения «важно» (или «критично», не мешающие тесту) или «неясно».
     - Зелёный: только «незначительно» или находок нет.
 
     Вопросы автору появляются позже (шаг 8), их учитывает ``light_with_questions``.
     """
+    if requirements == 0:
+        return TrafficLight.RED, NO_REQUIREMENTS_REASON
     violations = [f for f in findings if f.verdict is Verdict.VIOLATION]
     critical = [f for f in violations if f.severity is Severity.CRITICAL]
     blocking = [f for f in critical if f.blocks_testing]
@@ -443,7 +467,7 @@ def verify(found: Sequence[MergedFinding], doc: ParsedDocument, seg: Segmentatio
     findings = number(kept)
     status = requirement_status(findings, seg)
     summary = summarize(findings, discarded, seg, [q for _, quotes in results for q in quotes], status)
-    light, reason = traffic_light(findings)
+    light, reason = traffic_light(findings, requirements=len(seg.requirements))
     return Verification(
         findings=findings,
         discarded=discarded,
