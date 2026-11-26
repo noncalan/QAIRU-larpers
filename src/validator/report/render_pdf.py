@@ -31,6 +31,7 @@ from validator.models import (
     Requirement,
     Scope,
 )
+from validator.report.clarify_view import CLARIFY_TITLE, CLOSED_NOTE, ClarifyView
 from validator.report.fmt import money, pct, plain, quote_plain, status_label, when, where
 from validator.report.render_md import report_context
 
@@ -265,7 +266,15 @@ def _first_page(report: Report, ctx: dict[str, Any]) -> Json:
         "fix_empty": "Нарушений, которые нужно исправить до начала работ, не найдено.",
         "ask": ask,
         "ask_empty": "Вопросов, блокирующих разработку или тестирование, нет.",
+        "clarify": _first_page_clarify(ctx["clarify"]),
     }
+
+
+def _first_page_clarify(view: ClarifyView | None) -> str:
+    if view is None:
+        return ""
+    before = f" Светофор до ответов: {view.compare[0][1]}." if view.compare else ""
+    return f"{view.summary_line}{before} Подробности в разделе 6."
 
 
 # ---------------------------------------------------------------- разделы
@@ -442,7 +451,64 @@ def _withdrawn_blocks(report: Report, ctx: dict[str, Any]) -> list[Json]:
     return [{"t": "h2", "text": "Снятые вопросы: ответ есть в документе"}, _para(intro), _bullets(items)]
 
 
+def _clarify_blocks(view: ClarifyView | None, has_questions: bool) -> list[Json]:
+    """Раздел «Уточнения» в начале раздела вопросов: те же строки, что в Markdown (``clarify_view``)."""
+    if view is None:
+        return []
+    blocks: list[Json] = [{"t": "h2", "text": CLARIFY_TITLE}, _para(view.intro)]
+    blocks += [_note(w) for w in view.warnings]
+    if view.compare:
+        blocks.append(_table(["", "До ответов", "После ответов"], view.compare, [0.46, 0.27, 0.27]))
+    blocks.append(_para("Ответы автора"))
+    blocks.append(
+        _table(["Вопрос", "Ответ", "Что изменилось"], view.answers, [0.1, 0.55, 0.35], mono=[0], hyph=[2])
+    )
+    if view.reviewed:
+        blocks.append(_para(f"Закрыто ответами. {CLOSED_NOTE}"))
+        if view.closed:
+            blocks.append(
+                _table(
+                    ["Находка", "Ответ", "Почему закрыто", "Правка текста", "Место в документе"],
+                    view.closed,
+                    [0.17, 0.09, 0.26, 0.26, 0.22],
+                    hyph=[0, 1, 4],
+                )
+            )
+        else:
+            blocks.append(_para("Ответы не закрыли ни одной находки."))
+    if view.refined:
+        blocks.append(_para("Уточнено ответами. Находки остались в разделах 4 и 5 с примечанием."))
+        blocks.append(
+            _table(
+                ["Находка", "Ответ", "Что уточнено", "Что осталось открытым"],
+                view.refined,
+                [0.1, 0.1, 0.4, 0.4],
+                mono=[0],
+                hyph=[1],
+            )
+        )
+    if view.new:
+        blocks.append(
+            _para("Новые находки из-за ответов. Цитаты сверены с документом, карточки в разделах 4 и 5.")
+        )
+        blocks.append(
+            _table(
+                ["Находка", "Ответ", "Суть", "Как исправить"], view.new, [0.2, 0.1, 0.35, 0.35], hyph=[0, 1]
+            )
+        )
+    blocks.append(_para(f"Какие вопросы остались открытыми: {view.open_questions}."))
+    if has_questions:
+        blocks.append({"t": "h2", "text": "Открытые вопросы"})
+    return blocks
+
+
 def _questions_section(report: Report, ctx: dict[str, Any]) -> Json:
+    section = _questions_body(report, ctx)
+    clarify = _clarify_blocks(ctx["clarify"], bool(report.questions))
+    return {"title": section["title"], "blocks": [*clarify, *section["blocks"]]}
+
+
+def _questions_body(report: Report, ctx: dict[str, Any]) -> Json:
     title = SECTION_TITLES["questions"]
     v = report.verification
     if report.questions:
@@ -505,6 +571,7 @@ def _summary_section(report: Report, ctx: dict[str, Any]) -> Json:
         f"Критичных: {critical}.",
         f"Критичные классы по ТЗ (непроверяемые, противоречивые, неполные): {classes}.",
         f"Вопросов автору: {len(report.questions)}.",
+        *([f"Уточнения автора: {ctx['clarify'].summary_line}"] if ctx["clarify"] else []),
         f"Отброшено кодом: {discarded}.",
         f"Цитаты: сверено {s.quotes_exact + s.quotes_fuzzy} из {s.quotes_total} "
         f"(точно {s.quotes_exact}, нечётко {s.quotes_fuzzy}).",

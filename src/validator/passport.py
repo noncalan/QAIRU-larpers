@@ -24,6 +24,7 @@ from validator.models import (
     CallStatus,
     DocKind,
     ExitCode,
+    LLMStep,
     Passport,
     RunConfig,
     TokenUsage,
@@ -83,6 +84,25 @@ def prompts_sha256(root: Path = PROMPTS_DIR) -> str:
     return digest.hexdigest()
 
 
+def _models(cfg: RunConfig) -> dict[str, str]:
+    """Шаг → «модель · effort». Сверку с ответами автора показываем, только если ответы переданы."""
+    return {
+        step.value: model.label
+        for step, model in cfg.step_models.items()
+        if step is not LLMStep.CLARIFY or cfg.answers_path is not None
+    }
+
+
+def _file_sha256(path: Path | None) -> str | None:
+    """SHA-256 файла ответов автора для паспорта; None, если файла нет или он не читается."""
+    if path is None:
+        return None
+    try:
+        return hashlib.sha256(path.read_bytes()).hexdigest()
+    except OSError:
+        return None
+
+
 def _cost(calls: Sequence[CallRecord]) -> float | None:
     costs = [c.cost_usd for c in calls if c.cost_usd is not None]
     return round(sum(costs), 4) if costs else None
@@ -123,7 +143,7 @@ def build_passport(
         backend_used=backend_used,
         profile=cfg.profile,
         passes=cfg.passes,
-        models={step.value: model.label for step, model in cfg.step_models.items()},
+        models=_models(cfg),
         models_actual=sorted({c.model_actual for c in calls if c.model_actual}),
         # Повторённая попытка не отдельный вызов: считаем вызовы по их последней попытке.
         calls_total=sum(c.status is not CallStatus.RETRIED for c in calls),
@@ -131,4 +151,6 @@ def build_passport(
         tokens=tokens,
         cost_usd=_cost(calls),
         exit_code=exit_code,
+        answers_file=cfg.answers_path.name if cfg.answers_path is not None else None,
+        answers_sha256=_file_sha256(cfg.answers_path),
     )

@@ -7,13 +7,13 @@
     "document_sha256": "827b313b968e08fe35310bff9dc37687099888e4c9d5bc364e3403f4b2cc66db",
     "document_size_bytes": 205814,
     "document_pages": 8,
-    "started_at": "2026-11-25T23:14:45.751241Z",
-    "finished_at": "2026-11-25T23:14:46.010645Z",
-    "duration_s": 0.26,
-    "agent_version": "90fd51a-dirty",
+    "started_at": "2026-11-26T02:41:56.190871Z",
+    "finished_at": "2026-11-26T02:41:56.495568Z",
+    "duration_s": 0.3,
+    "agent_version": "b5695c9-dirty",
     "agent_version_source": "git",
     "agent_dirty": true,
-    "prompts_sha256": "52bad12278cec466d777949f2289670997fddbe7dc21ee3cd740cabddfd517ac",
+    "prompts_sha256": "4d294e69b13d2f2e24d2236eb4f702870629b82cb7ac5dd8347fc7e73eb63fb0",
     "os": "Linux 6.18.44-fc-v880 (x86_64)",
     "python": "3.13.18",
     "backend_requested": "replay",
@@ -43,7 +43,9 @@
       "cache_read_input_tokens": 1813
     },
     "cost_usd": 3.0408,
-    "exit_code": 0
+    "exit_code": 0,
+    "answers_file": null,
+    "answers_sha256": null
   },
   "document": {
     "name": "requirements.pdf",
@@ -11401,6 +11403,7 @@
     }
   ],
   "questions_withdrawn": [],
+  "clarification": null,
   "conclusion": {
     "traffic_light": "red",
     "headline": "Начинать разработку и тестирование нельзя: 8 критичных нарушений мешают написать тест-кейсы (F-01, F-02, F-03, F-04, F-05 и ещё 3)",
@@ -11421,7 +11424,7 @@
     ]
   },
   "metrics": {
-    "duration_s": 0.26,
+    "duration_s": 0.3,
     "calls_total": 6,
     "calls_failed": 0,
     "calls_cached": 0,

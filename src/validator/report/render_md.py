@@ -29,6 +29,7 @@ from validator.models import (
     Requirement,
     Scope,
 )
+from validator.report.clarify_view import CLARIFY_TITLE, CLOSED_NOTE, clarify_view
 from validator.report.fmt import FILTERS
 
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
@@ -156,6 +157,9 @@ def report_context(report: Report) -> dict[str, Any]:
         "input_status": _input_status(report),
         "no_violations": NO_VIOLATIONS,
         "addressee_label": _addressee_label,
+        "clarify": clarify_view(report),
+        "clarify_title": CLARIFY_TITLE,
+        "closed_note": CLOSED_NOTE,
     }
 
 

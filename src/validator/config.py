@@ -43,6 +43,8 @@ STEP_MODELS: dict[LLMStep, StepModel] = {
     LLMStep.TEST_DRAFT: StepModel(model=SONNET, effort=Effort.HIGH),
     LLMStep.QUESTIONS: StepModel(model=OPUS, effort=Effort.HIGH),
     LLMStep.QUESTIONS_CRITIC: StepModel(model=OPUS, effort=Effort.HIGH),
+    # Сверка находок с ответами автора (--answers, #42): та же модель, что у вопросов.
+    LLMStep.CLARIFY: StepModel(model=OPUS, effort=Effort.HIGH),
 }
 
 
