@@ -20,6 +20,7 @@
     "backend_used": null,
     "profile": "standard",
     "passes": 3,
+    "search_input": "blocks",
     "models": {},
     "models_actual": [],
     "calls_total": 0,

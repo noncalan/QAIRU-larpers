@@ -7,10 +7,10 @@
     "document_sha256": "827b313b968e08fe35310bff9dc37687099888e4c9d5bc364e3403f4b2cc66db",
     "document_size_bytes": 205814,
     "document_pages": 8,
-    "started_at": "2026-11-26T02:17:38.014899Z",
-    "finished_at": "2026-11-26T02:17:38.221284Z",
-    "duration_s": 0.21,
-    "agent_version": "0e62e94-dirty",
+    "started_at": "2026-11-26T02:29:05.280035Z",
+    "finished_at": "2026-11-26T02:29:05.576089Z",
+    "duration_s": 0.3,
+    "agent_version": "fb118b6-dirty",
     "agent_version_source": "git",
     "agent_dirty": true,
     "prompts_sha256": "52bad12278cec466d777949f2289670997fddbe7dc21ee3cd740cabddfd517ac",
@@ -20,6 +20,7 @@
     "backend_used": "replay",
     "profile": "standard",
     "passes": 3,
+    "search_input": "blocks",
     "models": {
       "segment": "claude-sonnet-5-5 · medium",
       "search": "claude-opus-5-5 · medium",
@@ -63,6 +64,15 @@
       "level": "info",
       "message": "Ответы модели взяты из записи прогона tests/fixtures/e2e/pdf/run (6 шт.)",
       "action": "Модель не вызывалась, отчёт пересобран из записанных ответов",
+      "hint": "",
+      "location": null,
+      "step": "llm"
+    },
+    {
+      "code": "LLM-005",
+      "level": "info",
+      "message": "Проходов поиска в записи: 3, модель claude-opus-5-5 · medium; в настройках было 1, claude-opus-5-5 · medium",
+      "action": "Число проходов и модель поиска взяты из записи прогона",
       "hint": "",
       "location": null,
       "step": "llm"
@@ -11421,7 +11431,7 @@
     ]
   },
   "metrics": {
-    "duration_s": 0.21,
+    "duration_s": 0.3,
     "calls_total": 6,
     "calls_failed": 0,
     "calls_cached": 0,

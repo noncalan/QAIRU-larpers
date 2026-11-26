@@ -20,6 +20,7 @@
     "backend_used": "cli",
     "profile": "standard",
     "passes": 3,
+    "search_input": "blocks",
     "models": {
       "search": "claude-opus-5-5 · medium",
       "questions": "claude-opus-5-5 · high"
