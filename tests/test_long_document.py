@@ -350,7 +350,7 @@ def test_set_check_keeps_only_known_pairs_from_different_parts(
     owner = requirement_parts(seg.requirements, plan)
     last = next(r for r in seg.requirements if owner[r.id] == len(plan.parts))
     assert cand.quotes == [seg.requirements[0].quote, last.quote], "цитаты подставил код из требований"
-    dropped = [d for d in outcome.diagnostics if d.code == "LLM-063"]
+    dropped = [d for d in outcome.diagnostics if d.code == "LLM-073"]
     assert dropped and "из одной части" in dropped[0].message and "известных требований" in dropped[0].message
 
 
@@ -380,7 +380,7 @@ def test_set_check_failure_is_a_warning_not_a_crash(
     outcome = set_check(seg, plan, llm, cfg)
 
     assert outcome.candidates == []
-    assert [(d.code, d.level) for d in outcome.diagnostics] == [("LLM-062", DiagLevel.WARNING)]
+    assert [(d.code, d.level) for d in outcome.diagnostics] == [("LLM-072", DiagLevel.WARNING)]
 
 
 def test_set_check_reply_parsing_is_lenient(long_doc: ParsedDocument, plan: PartPlan, tmp_path: Path) -> None:
@@ -485,7 +485,7 @@ def test_pipeline_checks_long_document_by_parts(tmp_path: Path, monkeypatch: pyt
     assert steps.count(LLMStep.SEGMENT) == len(parts)
     assert steps.count(LLMStep.SEARCH) == 2 * len(parts)
     assert steps.count(LLMStep.SET_CHECK) == 1
-    info = [d for d in outcome.diagnostics if d.code == "LLM-060"]
+    info = [d for d in outcome.diagnostics if d.code == "LLM-070"]
     assert info and info[0].level is DiagLevel.INFO and f"частей: {len(parts)}" in info[0].message
     assert report.verification is not None
     cross = [
@@ -504,7 +504,7 @@ def test_budget_below_estimate_warns_before_calls(tmp_path: Path, monkeypatch: p
 
     outcome, _ = run_long(tmp_path, monkeypatch, max_budget_usd=0.5)
 
-    warning = [d for d in outcome.diagnostics if d.code == "LLM-061"]
+    warning = [d for d in outcome.diagnostics if d.code == "LLM-071"]
     assert warning and warning[0].level is DiagLevel.WARNING
     assert notices and "--max-budget-usd" in notices[0]
 

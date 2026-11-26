@@ -37,7 +37,9 @@
       "cache_read_input_tokens": 0
     },
     "cost_usd": 1.62,
-    "exit_code": 0
+    "exit_code": 0,
+    "answers_file": null,
+    "answers_sha256": null
   },
   "document": {
     "name": "rooms.md",
@@ -201,6 +203,7 @@
   },
   "questions": [],
   "questions_withdrawn": [],
+  "clarification": null,
   "conclusion": {
     "traffic_light": "green",
     "headline": "Можно начинать разработку и тестирование: нарушений не найдено",

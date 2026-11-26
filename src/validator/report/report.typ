@@ -178,6 +178,10 @@
         #text(size: 7.5pt, fill: muted)[#s.at(0)]
       ]),
     )
+    if f.at("clarify", default: "") != "" {
+      v(6pt)
+      par[#text(size: 9pt)[#strong[Уточнения автора.] #f.clarify]]
+    }
     heading(level: 2)[Что исправить первым]
     if f.fix.len() == 0 {
       par[#f.fix_empty]

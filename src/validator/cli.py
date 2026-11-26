@@ -16,8 +16,10 @@ from typing import Annotated, Any
 
 import typer
 
+from validator.clarify import AnswersError, load_answers
+from validator.clarify.ask import ANSWERS_FILE, ask_questions, pick_questions, write_answers
 from validator.config import load_config
-from validator.models import Backend, CacheMode, ExitCode, Profile, SearchInput
+from validator.models import Backend, CacheMode, ExitCode, Profile, RunConfig, RunOutcome, SearchInput
 from validator.passport import agent_version
 from validator.pipeline import NOTICE_LOGGER, run
 
@@ -102,8 +104,12 @@ def main(
     backend: Annotated[Backend, typer.Option(help="Как вызывать модель")] = Backend.AUTO,
     replay: Annotated[Path | None, typer.Option(help="Папка run/ прошлого прогона для replay")] = None,
     cache: Annotated[CacheMode, typer.Option(help="Кеш ответов модели")] = CacheMode.USE,
-    answers: Annotated[Path | None, typer.Option(help="answers.yaml с ответами автора")] = None,
-    ask: Annotated[bool, typer.Option("--ask", help="Задать вопросы автору в терминале")] = False,
+    answers: Annotated[
+        Path | None, typer.Option(help="answers.yaml с ответами автора: повторная проверка с ответами")
+    ] = None,
+    ask: Annotated[
+        bool, typer.Option("--ask", help="Задать главные вопросы в терминале и сразу проверить с ответами")
+    ] = False,
     max_budget_usd: Annotated[float | None, typer.Option(min=0.01, help="Стоп по цене прогона, $")] = None,
     critic: Annotated[
         bool, typer.Option("--critic", help="Включить критика находок (шаг 6б, по eval пока выключен)")
@@ -138,6 +144,7 @@ def main(
     if output_path.suffix.lower() not in OUTPUT_SUFFIXES:
         typer.echo(f"Файл отчёта должен иметь расширение .md или .pdf: {output_path}", err=True)
         raise typer.Exit(ExitCode.USAGE)
+    _check_answers(answers, ask)
     try:
         cfg = load_config(
             input_path,
@@ -161,4 +168,47 @@ def main(
     with _notices():
         outcome = run(cfg)
     typer.echo(outcome.message, err=outcome.exit_code is not ExitCode.OK)
+    if ask:
+        outcome = _ask_and_rerun(cfg, outcome)
     raise typer.Exit(int(outcome.exit_code))
+
+
+def _check_answers(answers: Path | None, ask: bool) -> None:
+    """Файл ответов проверяем до прогона: ошибка схемы это ошибка аргументов (код 2), а не отчёт."""
+    if answers is not None and ask:
+        typer.echo(
+            "Укажите что-то одно: --answers (ответы из файла) или --ask (ответы в терминале).", err=True
+        )
+        raise typer.Exit(ExitCode.USAGE)
+    if answers is None:
+        return
+    try:
+        load_answers(answers)
+    except AnswersError as exc:
+        typer.echo(f"{exc.message}. {exc.hint}", err=True)
+        raise typer.Exit(ExitCode.USAGE) from exc
+
+
+def _read_line(prompt: str) -> str | None:
+    try:
+        return input(prompt)
+    except EOFError:
+        return None
+
+
+def _ask_and_rerun(cfg: RunConfig, first: RunOutcome) -> RunOutcome:
+    """``--ask``: главные вопросы прогона 1 в терминале, ``answers.yaml`` и сразу прогон 2 с ответами."""
+    report = first.report
+    if report is None or not report.questions:
+        typer.echo("Вопросов автору нет: повторная проверка не нужна.")
+        return first
+    answers = ask_questions(pick_questions(report), _read_line, typer.echo)
+    if not answers:
+        typer.echo("Ответов нет: повторная проверка не нужна, отчёт выше.")
+        return first
+    path = cfg.out_dir / ANSWERS_FILE
+    write_answers(path, report, answers)
+    typer.echo(f"Ответы записаны в {path}. Повторная проверка с ответами…")
+    second = run(cfg.model_copy(update={"answers_path": path, "ask": False}))
+    typer.echo(second.message, err=second.exit_code is not ExitCode.OK)
+    return second

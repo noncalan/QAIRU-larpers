@@ -48,6 +48,8 @@ STEP_MODELS: dict[LLMStep, StepModel] = {
     LLMStep.QUESTIONS_CRITIC: StepModel(model=OPUS, effort=Effort.HIGH),
     # Сверка требований между частями длинного документа (#38): как проход поиска, effort из профиля.
     LLMStep.SET_CHECK: StepModel(model=OPUS, effort=Effort.MEDIUM),
+    # Сверка находок с ответами автора (--answers, #42): та же модель, что у вопросов.
+    LLMStep.CLARIFY: StepModel(model=OPUS, effort=Effort.HIGH),
 }
 
 

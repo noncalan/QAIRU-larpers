@@ -36,6 +36,12 @@ WITNESS_OVERHEAD_TOKENS = 8_000
 WITNESS_OUTPUT_TOKENS = 16_000
 """Ответ свидетеля: 14–16 тыс. токенов. Критик находок (``--critic``) не замерен, считаем как свидетеля."""
 
+CLARIFY_OVERHEAD_TOKENS = 24_000
+"""Вход сверки с ответами автора (``--answers``) сверх документа: находки и ответы (32 тыс. в записи MD)."""
+
+CLARIFY_OUTPUT_TOKENS = 12_000
+"""Ответ сверки с ответами автора: 11,4 тыс. токенов в записи MD."""
+
 SET_CHECK_INPUT_SHARE = 0.35
 """Сжатый список требований для сверки на токен документа (короткие формулировки вместо блоков)."""
 SET_CHECK_OUTPUT_TOKENS = 12_000
@@ -78,7 +84,7 @@ def _per_part(cfg: RunConfig, step: LLMStep, plan: PartPlan, ratio: float, calls
 
 def estimate_run(plan: PartPlan, cfg: RunConfig) -> RunEstimate:
     """Оценка по плану частей: нарезка и поиск по частям, сверка (если частей несколько), свидетель (и критик
-    находок с ``--critic``), вопросы и их критик."""
+    находок с ``--critic``), вопросы и их критик, сверка с ответами автора (с ``--answers``)."""
     view = min(plan.tokens, FULL_VIEW_MAX_TOKENS)
     steps = [
         _per_part(cfg, LLMStep.SEGMENT, plan, SEGMENT_OUTPUT_PER_TOKEN, 1),
@@ -111,6 +117,14 @@ def estimate_run(plan: PartPlan, cfg: RunConfig) -> RunEstimate:
             ),
         ),
     ]
+    if cfg.answers_path is not None:
+        steps.append(
+            StepEstimate(
+                LLMStep.CLARIFY,
+                1,
+                _cost(cfg, LLMStep.CLARIFY, view + CLARIFY_OVERHEAD_TOKENS, CLARIFY_OUTPUT_TOKENS),
+            )
+        )
     return RunEstimate(tuple(steps))
 
 
