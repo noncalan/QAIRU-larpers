@@ -9,8 +9,11 @@
 
 from __future__ import annotations
 
+import contextlib
 import json
+import socket
 import threading
+import time
 from collections.abc import Callable, Iterator
 from pathlib import Path
 from typing import Any
@@ -19,7 +22,7 @@ import httpx2
 import pytest
 
 from conftest import FIXTURES_LLM, REQUIREMENTS
-from validator.config import load_config
+from validator.config import CALL_TIMEOUT_S, load_config
 from validator.errors import LLMError
 from validator.llm import (
     AnthropicAPI,
@@ -29,7 +32,13 @@ from validator.llm import (
     response_cost,
     to_payload,
 )
-from validator.llm.anthropic_api import FALLBACK_BETA, MAX_OUTPUT_TOKENS
+from validator.llm.anthropic_api import (
+    CONNECT_TIMEOUT_S,
+    FALLBACK_BETA,
+    MAX_OUTPUT_TOKENS,
+    STREAM_IDLE_TIMEOUT_S,
+    request_timeout,
+)
 from validator.llm.base import parse_cli_payload
 from validator.models import (
     Backend,
@@ -309,7 +318,67 @@ def test_timeout_is_llm_012() -> None:
     err = failure(slow, max_retries=0)
 
     assert err.code == "LLM-012"
-    assert err.retryable
+    assert not err.retryable  # SDK повторяет таймаут сам: второй круг агента удвоил бы ожидание
+
+
+def test_request_timeout_is_short_for_connect_and_silence() -> None:
+    t = request_timeout(CALL_TIMEOUT_S)
+
+    assert t.connect == CONNECT_TIMEOUT_S and t.read == STREAM_IDLE_TIMEOUT_S
+    assert t.connect < t.read < CALL_TIMEOUT_S
+    small = request_timeout(2)
+    assert small.connect == small.read == 2
+
+
+@pytest.fixture
+def silent_server() -> Iterator[str]:
+    """Сервер принимает соединение и молчит: так выглядит сеть, где адрес API молча режется."""
+    srv = socket.socket()
+    srv.bind(("127.0.0.1", 0))
+    srv.listen(50)
+    held: list[socket.socket] = []
+
+    def accept() -> None:
+        with contextlib.suppress(OSError):
+            while True:
+                held.append(srv.accept()[0])
+
+    threading.Thread(target=accept, daemon=True).start()
+    yield f"http://127.0.0.1:{srv.getsockname()[1]}"
+    srv.close()
+    for conn in held:
+        conn.close()
+
+
+def test_silent_network_fails_after_sdk_retries_without_agent_retry(silent_server: str) -> None:
+    """Ревью Fable: молчащая сеть держала вызов 7,2 × таймаут (около 2,4 ч при 1200 с). Теперь ждём не
+    дольше попыток SDK × тишина, и агент поверх SDK не повторяет."""
+    client = AnthropicAPI(FAKE_KEY, max_retries=1)
+    client._client = client._client.with_options(
+        base_url=silent_server
+    )  # адрес явно: ANTHROPIC_BASE_URL не влияет
+    rec = RecordingClient(client, sleep=lambda _s: None)
+    req = request().model_copy(update={"timeout_s": 1})
+
+    started = time.monotonic()
+    with pytest.raises(LLMError) as caught:
+        rec.call(req)
+    elapsed = time.monotonic() - started
+
+    assert caught.value.code == "LLM-012" and not caught.value.retryable
+    assert [r.attempt for r in rec.records] == [1]
+    assert elapsed < 2 * req.timeout_s + 5  # две попытки SDK по секунде тишины и пауза SDK между ними
+
+
+def test_stream_longer_than_call_timeout_is_cut(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Поток идёт, но дольше таймаута вызова: прерываем по общей длительности, без повтора."""
+    clock = iter(range(0, 10_000, 20))
+    monkeypatch.setattr("validator.llm.anthropic_api._monotonic", lambda: float(next(clock)))
+
+    err = failure(Recorder(lambda: stream_response(sse_body("text"))))
+
+    assert err.code == "LLM-012" and not err.retryable
+    assert "дольше таймаута вызова 30 с" in err.message
 
 
 def test_truncated_answer_is_an_error_not_a_partial_report() -> None:
@@ -372,18 +441,18 @@ def test_answer_against_schema_still_carries_its_tokens() -> None:
                 headers={"content-type": "text/event-stream", "content-encoding": "gzip"},
                 content=b"\x00 not gzip at all",
             ),
-            "LLM-004",  # httpx2 считает битое сжатие ошибкой транспорта: как обрыв, повторяем
+            "LLM-004",  # httpx2 считает битое сжатие ошибкой соединения: SDK уже повторил, агент нет
         ),
     ],
     ids=["bad-json-event", "bad-gzip"],
 )
-def test_garbled_stream_is_a_retryable_error_not_a_crash(
-    broken: Callable[[], httpx2.Response], code: str
-) -> None:
-    err = failure(Recorder(broken))
+def test_garbled_stream_is_an_error_not_a_crash(broken: Callable[[], httpx2.Response], code: str) -> None:
+    rec = Recorder(broken)
+    err = failure(rec)
 
     assert err.code == code
-    assert err.retryable
+    # Повтор ровно в одном слое: что повторил SDK (несколько запросов), агент второй раз не повторяет.
+    assert err.retryable is (len(rec.requests) == 1)
 
 
 # ---------------------------------------------------------------- ключ и выбор бэкенда

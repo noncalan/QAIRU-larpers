@@ -66,7 +66,20 @@ MAX_OUTPUT_TOKENS = 128_000
 """Предел вывода Opus 5.5, Sonnet 5.5 и Haiku 5.5 (справка SDK): мышление на xhigh тоже идёт в вывод."""
 
 SDK_MAX_RETRIES = 2
-"""Повторы самого SDK на 408/409/429/5xx и обрыве соединения, с паузой из ``retry-after``."""
+"""Повторы самого SDK на 408/409/429/5xx, таймауте и обрыве соединения, с паузой из ``retry-after``.
+
+Ошибки, которые SDK уже повторил (таймаут и обрыв до начала ответа), агент второй раз не повторяет
+(``retryable=False``): иначе повторы перемножаются. Обрыв и тишина посреди потока SDK не повторяет,
+их один раз повторяет ``calllog.RecordingClient``."""
+
+CONNECT_TIMEOUT_S = 10.0
+"""Ждать соединения с API. Раньше таймаут вызова (1200 с) стоял и на соединение: в сети, где адрес молча
+режется, один вызов ждал 3 попытки SDK × 2 попытки агента × 1200 с, около 2,4 часа (ревью Fable)."""
+
+STREAM_IDLE_TIMEOUT_S = 300.0
+"""Сколько ждать следующих байт ответа: заголовков или очередного события потока. Поток событий идёт
+непрерывно, пока модель пишет, и API шлёт события ``ping``; как часто при долгом мышлении, вживую не
+проверено, поэтому запас в 5 минут тишины. Общую длительность одного запроса держит ``req.timeout_s``."""
 
 FALLBACK_BETA = "server-side-fallback-2026-07-01"
 
@@ -249,18 +262,25 @@ class AnthropicAPI:
         # и в паспорте было бы неясно, чей доступ работал.
         self._client = anthropic.Anthropic(api_key=key, max_retries=max_retries, http_client=http_client)
 
-    def _stream(self, req: LLMRequest) -> BetaMessage:
-        client = self._client.with_options(timeout=float(req.timeout_s))
+    def _stream(self, req: LLMRequest, started: float) -> BetaMessage:
+        """Поток ответа. Тишину держит таймаут ``httpx2``, общую длительность проверяем по событиям."""
+        client = self._client.with_options(timeout=request_timeout(req.timeout_s))
+        deadline = started + req.timeout_s
         with client.beta.messages.stream(**_request_args(req)) as stream:
+            for _event in stream:
+                if _monotonic() > deadline:
+                    raise _deadline_error(req, _monotonic() - started)
             return stream.get_final_message()
 
     def call(self, req: LLMRequest) -> LLMResponse:
-        started = time.monotonic()
+        started = _monotonic()
         try:
-            message = self._stream(req)
+            message = self._stream(req, started)
+        except LLMError:
+            raise
         except Exception as exc:  # ошибки SDK и транспорта становятся LLMError, прочие летят дальше
-            raise _sdk_error(exc, req, time.monotonic() - started) from exc
-        duration_ms = int((time.monotonic() - started) * 1000)
+            raise _sdk_error(exc, req, _monotonic() - started) from exc
+        duration_ms = int((_monotonic() - started) * 1000)
         return self._response(message, req, duration_ms)
 
     def _response(self, message: BetaMessage, req: LLMRequest, duration_ms: int) -> LLMResponse:
@@ -318,19 +338,56 @@ class AnthropicAPI:
             raise
 
 
+def _monotonic() -> float:
+    """Часы вызова (отдельной функцией, чтобы тест подменил их, не трогая ``time`` у SDK)."""
+    return time.monotonic()
+
+
+def request_timeout(timeout_s: int) -> httpx2.Timeout:
+    """Таймауты ``httpx2`` одного запроса: соединение коротко, тишина не дольше ``STREAM_IDLE_TIMEOUT_S``."""
+    limit = float(timeout_s)
+    return httpx2.Timeout(min(limit, STREAM_IDLE_TIMEOUT_S), connect=min(limit, CONNECT_TIMEOUT_S))
+
+
+_HINT_NETWORK = (
+    "Проверьте, открыт ли api.anthropic.com из этой сети (прокси, ANTHROPIC_BASE_URL); "
+    "или запустите через подписку: --backend cli"
+)
+
+
+def _deadline_error(req: LLMRequest, elapsed_s: float) -> LLMError:
+    return _error(
+        f"Claude API отвечает дольше таймаута вызова {req.timeout_s} с (прошло {elapsed_s:.0f} с): "
+        "вызов прерван",
+        LLM_TIMEOUT,
+        req,
+        hint="Повторите прогон; если повторяется, возьмите профиль quick",
+        retryable=False,
+    )
+
+
 def _sdk_error(exc: Exception, req: LLMRequest, elapsed_s: float) -> LLMError:
     """Исключение SDK или транспорта ``httpx2`` как ``LLMError`` с кодом, подсказкой и правом на повтор."""
     if isinstance(exc, anthropic.APITimeoutError):
+        # SDK уже сделал SDK_MAX_RETRIES повторов: ещё один круг агента только удвоил бы ожидание.
         return _error(
-            f"Claude API не ответил: таймаут {req.timeout_s} с, прошло {elapsed_s:.0f} с с повторами SDK",
+            f"Claude API не ответил: нет соединения или ответа после {SDK_MAX_RETRIES + 1} попыток SDK, "
+            f"прошло {elapsed_s:.0f} с",
             LLM_TIMEOUT,
             req,
-            hint="Повторите прогон; если повторяется, возьмите профиль quick",
-            retryable=True,
+            hint=_HINT_NETWORK,
+            retryable=False,
         )
     if isinstance(exc, anthropic.APIStatusError):
         return _status_error(exc, req)
-    if isinstance(exc, anthropic.APIConnectionError | httpx2.TransportError | httpx2.StreamError):
+    if isinstance(exc, anthropic.APIConnectionError):
+        # Соединение не открылось: SDK его уже повторил, как и таймаут.
+        failure = classify_error("connection error")
+        text = str(exc) or type(exc).__name__
+        return _error(
+            f"Нет связи с Claude API: {text[:300]}", failure.code, req, hint=_HINT_NETWORK, retryable=False
+        )
+    if isinstance(exc, httpx2.TransportError | httpx2.StreamError):
         # Обрыв посреди тела ответа: httpx2 бросает свою ошибку, SDK её не оборачивает.
         return _connection_error(exc, req)
     if isinstance(exc, anthropic.APIResponseValidationError | httpx2.HTTPError | ValueError):

@@ -22,6 +22,7 @@ from validator.config import load_config
 from validator.models import Backend, CacheMode, ExitCode, Profile, RunConfig, RunOutcome, SearchInput
 from validator.passport import agent_version
 from validator.pipeline import NOTICE_LOGGER, run
+from validator.questions import safe_questions_path
 
 OUTPUT_SUFFIXES = (".md", ".pdf")
 USAGE = (
@@ -103,6 +104,14 @@ def main(
     ] = None,
     backend: Annotated[Backend, typer.Option(help="Как вызывать модель")] = Backend.AUTO,
     replay: Annotated[Path | None, typer.Option(help="Папка run/ прошлого прогона для replay")] = None,
+    replay_by_position: Annotated[
+        bool,
+        typer.Option(
+            "--replay-by-position",
+            hidden=True,
+            help="Разработка: replay берёт ответ по шагу и номеру вызова, если ключ запроса не совпал",
+        ),
+    ] = False,
     cache: Annotated[CacheMode, typer.Option(help="Кеш ответов модели")] = CacheMode.USE,
     answers: Annotated[
         Path | None, typer.Option(help="answers.yaml с ответами автора: повторная проверка с ответами")
@@ -161,6 +170,7 @@ def main(
             passes=passes,
             backend=backend,
             replay_dir=replay,
+            replay_by_position=replay_by_position,
             cache=cache,
             answers_path=answers,
             ask=ask,
@@ -215,7 +225,7 @@ def _ask_and_rerun(cfg: RunConfig, first: RunOutcome) -> RunOutcome:
     if not answers:
         typer.echo("Ответов нет: повторная проверка не нужна, отчёт выше.")
         return first
-    path = cfg.out_dir / ANSWERS_FILE
+    path = safe_questions_path(cfg.out_dir / ANSWERS_FILE)  # ответы прошлого --ask не затираем
     write_answers(path, report, answers)
     typer.echo(f"Ответы записаны в {path}. Повторная проверка с ответами…")
     second = run(cfg.model_copy(update={"answers_path": path, "ask": False}))

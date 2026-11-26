@@ -14,6 +14,7 @@ from conftest import REQUIREMENTS
 from validator import pipeline
 from validator.config import load_config
 from validator.ingest.blocks import is_empty_cell_quote
+from validator.lint.rules import RULE_BY_ID
 from validator.models import (
     Anchor,
     Backend,
@@ -25,6 +26,7 @@ from validator.models import (
     DocKind,
     ExitCode,
     Finding,
+    FindingSource,
     MergedFinding,
     ParsedDocument,
     Property,
@@ -36,15 +38,23 @@ from validator.models import (
     Scope,
     Segmentation,
     Severity,
+    SourceKind,
     TrafficLight,
     Verdict,
     Verification,
+    Witness,
 )
 from validator.questions import QuestionsOutcome
 from validator.report.fmt import quote_text
 from validator.segment import fallback_segmentation
 from validator.severity import SEVERITY_TABLE, severity_disputed, table_severity
-from validator.verify import TRAFFIC_RULE, light_with_questions, traffic_light, verify
+from validator.verify import (
+    NO_REQUIREMENTS_REASON,
+    TRAFFIC_RULE,
+    light_with_questions,
+    traffic_light,
+    verify,
+)
 
 LIBRARY = """# Библиотека
 
@@ -319,12 +329,18 @@ def test_set_level_gap_quoting_a_heading_is_bound_to_section(doc: ParsedDocument
     assert not any(ver.requirement_status.values())
 
 
-def test_requirement_finding_outside_requirements_gets_note(doc: ParsedDocument, seg: Segmentation) -> None:
+def test_requirement_finding_outside_requirements_goes_to_set_level(
+    doc: ParsedDocument, seg: Segmentation
+) -> None:
+    """#118: находка без требования о документе в целом, отчёт показывает её в проверке набора."""
     ver = verify([merged("Выдача книг", block_ids=("B002",))], doc, seg)
 
     finding = only(ver.findings)
     assert finding.requirement_ids == []
-    assert any("не входит ни в одно требование" in note for note in finding.notes)
+    assert finding.scope is Scope.SET
+    assert finding.property is Property.UNAMBIGUOUS  # свойство модели не меняется, строка набора по set_level
+    assert ver.summary.set_level == 1
+    assert any("не входит ни в одно требование" in note and "набора" in note for note in finding.notes)
 
 
 def test_empty_segmentation_does_not_add_a_note_to_every_finding(doc: ParsedDocument) -> None:
@@ -333,6 +349,7 @@ def test_empty_segmentation_does_not_add_a_note_to_every_finding(doc: ParsedDocu
     finding = only(ver.findings)
     assert finding.requirement_ids == []
     assert finding.notes == []
+    assert finding.scope is Scope.REQUIREMENT  # без нарезки отнести к набору не к чему
     assert ver.requirement_status == {}
 
 
@@ -374,18 +391,24 @@ def test_model_hint_is_kept_but_does_not_decide(doc: ParsedDocument, seg: Segmen
 
     assert (result.severity, result.severity_hint) == (Severity.MINOR, Severity.CRITICAL)
     assert result.severity_disputed
-    assert any("расходятся больше чем на уровень" in note for note in result.notes)
+    assert "модель оценила «критично»: оценки расходятся больше чем на уровень" in result.severity_basis
+    assert not any("расходятся" in note for note in result.notes)  # служебное, не в карточку (#125)
     assert "прослеживаемость" in result.severity_basis
 
 
-def test_dispute_note_names_table_value_and_final_severity(doc: ParsedDocument, seg: Segmentation) -> None:
+def test_dispute_is_in_severity_basis_with_table_value_and_final_severity(
+    doc: ParsedDocument, seg: Segmentation
+) -> None:
     unclear = merged(LIMIT_FIVE, verdict=Verdict.UNCLEAR, blocks_testing=True, hint=Severity.MINOR)
 
     result = only(verify([unclear], doc, seg).findings)
 
-    assert result.severity is Severity.MAJOR
+    assert result.severity is Severity.MINOR
     assert result.severity_disputed
-    assert "дала «критично», итог после правил кода «важно»" in result.notes[0]
+    basis = result.severity_basis
+    assert "мешает написать тест-кейс: «критично»" in basis
+    assert "не выше «незначительно»" in basis
+    assert basis.endswith("модель оценила «незначительно»: оценки расходятся больше чем на уровень")
 
 
 @pytest.mark.parametrize(
@@ -394,7 +417,7 @@ def test_dispute_note_names_table_value_and_final_severity(doc: ParsedDocument, 
         (None, Severity.CRITICAL),
         (Severity.CRITICAL, Severity.CRITICAL),
         (Severity.MAJOR, Severity.MAJOR),
-        (Severity.MINOR, Severity.MAJOR),
+        (Severity.MINOR, Severity.MINOR),
     ],
     ids=["no_hint", "hint_critical", "hint_major", "hint_minor"],
 )
@@ -409,6 +432,122 @@ def test_table_critical_needs_model_hint_to_agree(
 
     assert result.severity is expected
     assert ("подсказка модели" in result.severity_basis) is (expected is not Severity.CRITICAL)
+
+
+def lint_source(m: MergedFinding, rule_id: str) -> MergedFinding:
+    return m.model_copy(
+        update={"sources": [*m.sources, FindingSource(kind=SourceKind.LINT, rule_id=rule_id)]}
+    )
+
+
+def test_form_defect_found_only_by_model_is_minor_even_if_it_blocks_testing(
+    doc: ParsedDocument, seg: Segmentation
+) -> None:
+    finding = merged(
+        LIMIT_FIVE,
+        defect=DefectType.TERMINOLOGY,
+        prop=Property.SET_CONSISTENT,
+        blocks_testing=True,
+        hint=Severity.MAJOR,
+    )
+
+    result = only(verify([finding], doc, seg).findings)
+
+    assert result.severity is Severity.MINOR
+    assert "дефект формы, кодом не подтверждён" in result.severity_basis
+
+
+def test_linter_rule_that_blocks_testing_keeps_table_severity(doc: ParsedDocument, seg: Segmentation) -> None:
+    placeholder = {"defect": DefectType.PLACEHOLDER, "prop": Property.COMPLETE, "blocks_testing": True}
+    marker = lint_source(merged(LIMIT_FIVE, **placeholder), "L-05")
+    confirmed = lint_source(merged(SAME_DAY, mid="M-002", hint=Severity.MINOR, **placeholder), "L-05")
+
+    ver = verify([marker, confirmed], doc, seg)
+
+    assert [f.severity for f in ver.findings] == [Severity.MAJOR, Severity.MAJOR]
+
+
+def test_linter_rule_that_does_not_block_testing_does_not_confirm_models_mark(
+    doc: ParsedDocument, seg: Segmentation
+) -> None:
+    assert not RULE_BY_ID["L-10"].blocks_testing
+    finding = lint_source(
+        merged(LIMIT_FIVE, defect=DefectType.NOT_ATOMIC, prop=Property.SINGULAR, blocks_testing=True),
+        "L-10",
+    )
+
+    result = only(verify([finding], doc, seg).findings)
+
+    assert result.severity is Severity.MINOR
+
+
+def test_checked_witness_keeps_form_defect_and_low_hint_finding_at_table_severity(
+    doc: ParsedDocument, seg: Segmentation
+) -> None:
+    witness = Witness(scenario="Один сценарий", checked=True)
+    form = merged(
+        LIMIT_FIVE, defect=DefectType.TERMINOLOGY, prop=Property.SET_CONSISTENT, blocks_testing=True
+    )
+    low = merged(
+        SAME_DAY, mid="M-002", defect=DefectType.INCOMPLETE, prop=Property.COMPLETE, hint=Severity.MINOR
+    )
+    proven = [m.model_copy(update={"witness": witness}) for m in (form, low)]
+
+    ver = verify(proven, doc, seg)
+
+    assert [f.severity for f in ver.findings] == [Severity.MAJOR, Severity.MAJOR]
+
+
+def test_low_model_hint_caps_unconfirmed_finding_at_minor(doc: ParsedDocument, seg: Segmentation) -> None:
+    incomplete = {"defect": DefectType.INCOMPLETE, "prop": Property.COMPLETE}
+    low = merged(LIMIT_FIVE, hint=Severity.MINOR, **incomplete)
+    medium = merged(SAME_DAY, mid="M-002", hint=Severity.MAJOR, **incomplete)
+
+    by_mid = {f.merged_id: f for f in verify([low, medium], doc, seg).findings}
+
+    assert by_mid["M-001"].severity is Severity.MINOR
+    assert "подсказка модели «низко», кодом не подтверждено" in by_mid["M-001"].severity_basis
+    assert by_mid["M-002"].severity is Severity.MAJOR
+
+
+def test_low_hint_on_table_critical_gives_one_basis_line_about_the_hint(
+    doc: ParsedDocument, seg: Segmentation
+) -> None:
+    finding = merged(LIMIT_FIVE, blocks_testing=True, hint=Severity.MINOR)
+
+    result = only(verify([finding], doc, seg).findings)
+
+    assert result.severity is Severity.MINOR
+    assert result.severity_basis.count("подсказка модели") == 1
+    assert result.severity_disputed
+
+
+def test_low_hint_does_not_lower_injected_instruction(doc: ParsedDocument, seg: Segmentation) -> None:
+    finding = merged(
+        LIMIT_FIVE, defect=DefectType.INJECTED_INSTRUCTION, prop=Property.CORRECT, hint=Severity.MINOR
+    )
+
+    result = only(verify([finding], doc, seg).findings)
+
+    assert result.severity is Severity.MAJOR
+
+
+def test_form_defect_that_model_called_critical_is_marked_as_disputed(
+    doc: ParsedDocument, seg: Segmentation
+) -> None:
+    finding = merged(
+        LIMIT_FIVE,
+        defect=DefectType.TERMINOLOGY,
+        prop=Property.SET_CONSISTENT,
+        blocks_testing=True,
+        hint=Severity.CRITICAL,
+    )
+
+    result = only(verify([finding], doc, seg).findings)
+
+    assert result.severity is Severity.MINOR
+    assert result.severity_disputed
+    assert "модель оценила «критично»" in result.severity_basis
 
 
 def test_model_hint_never_raises_severity(doc: ParsedDocument, seg: Segmentation) -> None:
@@ -570,6 +709,15 @@ def test_critical_without_blocking_testing_is_yellow_and_named() -> None:
         "нарушений, которые мешают написать тест-кейсы, нет, но есть 1 критичное нарушение без влияния "
         "на тест-кейсы (F-01) и 1 важное нарушение (F-02)"
     )
+
+
+def test_document_without_requirements_is_red_not_green() -> None:
+    """#126: нет требований, нет и нарушений, но разрабатывать и тестировать нечего."""
+    light, reason = traffic_light([], requirements=0)
+
+    assert light is TrafficLight.RED
+    assert reason == NO_REQUIREMENTS_REASON
+    assert traffic_light([], requirements=3)[0] is TrafficLight.GREEN
 
 
 @pytest.mark.parametrize(

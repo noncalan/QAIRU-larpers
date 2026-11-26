@@ -33,7 +33,9 @@
   ``prompts/part_note.md``. Находки части ``k``-го прохода собираются в ``PassResult`` прохода ``k``, поэтому
   «найдено в N из K» считается, как у документа целиком. Находка только о блоках раздела терминов из
   чужой части отбрасывается: её найдёт своя часть. Упавшая часть прохода даёт ``LLM-030`` с номером части,
-  проход считается удавшимся, если удалась хоть одна его часть.
+  проход считается удавшимся, если удалась хоть одна его часть, а номер упавшей части остаётся в
+  ``PassResult.parts_failed``. Часть, на которой не удался ни один проход, конвейер отмечает ошибкой
+  ``LLM-035``: её требования в отчёте «не проверено моделью», а не «нарушений нет».
 """
 
 from __future__ import annotations
@@ -584,7 +586,11 @@ def _part_failure(o: _Outcome, exc: ValidatorError, ctx: _Context, sections: str
 def _combine(
     jobs: Sequence[tuple[_Context, int]], outcomes: Sequence[_Outcome], plan: PartPlan
 ) -> list[PassResult]:
-    """Итоги частей в ``PassResult`` по номеру прохода: проход удался, если удалась хоть одна его часть."""
+    """Итоги частей в ``PassResult`` по номеру прохода: проход удался, если удалась хоть одна его часть.
+
+    Упавшие части прохода остаются в ``PassResult.parts_failed``: по ним матрица покрытия и раздел 4
+    отчёта узнают, какие требования этот проход не проверял.
+    """
     sections = {p.index: "; ".join(p.sections) for p in plan.parts}
     passes = jobs[0][0].cfg.passes
     succeeded = {index for (_, index), o in zip(jobs, outcomes, strict=True) if o.error is None}
@@ -623,6 +629,7 @@ def _combine(
                 call_ids=[cid for _, o in mine for cid in o.call_ids],
                 error=error,
                 diagnostics=diagnostics,
+                parts_failed=[ctx.part for ctx, o in mine if o.error is not None],
             )
         )
     return results

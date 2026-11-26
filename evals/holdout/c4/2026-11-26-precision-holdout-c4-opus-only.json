@@ -1,0 +1,1141 @@
+{
+ "schema_version": "1",
+ "name": "holdout-c4-opus-only",
+ "created_at": "2026-11-26T21:04:55.972967+05:00",
+ "settings": {
+  "labelers": [
+   {
+    "labeler": "opus",
+    "model": "claude-opus-5-5",
+    "effort": "high"
+   }
+  ],
+  "mode": "cache",
+  "seed": 49,
+  "batch_size": 40,
+  "control_share": 0.125,
+  "document": "data/holdout/c4/c4_tech_task.md",
+  "document_sha256": "fe3bf62e887c60fcfd9739bbe248a0c222490d443dafa9e86a0a4955eabe31f6",
+  "runs": [
+   "evals/holdout/c4"
+  ]
+ },
+ "items": [
+  {
+   "uid": "agent:evals/holdout/c4#F-01",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-01",
+   "quote": "Пользователи могут регистрироваться, авторизоваться и выполнять CRUD-операции над своими компаниями и сотрудниками. … `company` (может быть null)",
+   "place": "раздел «c4_tech_task_example › Контекст (C1)», строка 7",
+   "property": "Согласованность, неполнота",
+   "explanation": "правило «свои сотрудники» нечем реализовать для сотрудников с company = null.",
+   "severity": "критично",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B004"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-02",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-02",
+   "quote": "Привязка сотрудника к компании (1:1 или null). … `DELETE /api/companies/{id}` Удалить компанию (если нет сотрудников).",
+   "place": "раздел «c4_tech_task_example › Компоненты (C3)», строка 27",
+   "property": "Согласованность, противоречие",
+   "explanation": "от кратности связи зависят схема БД (уникальный внешний ключ или нет) и тест привязки второго сотрудника.",
+   "severity": "критично",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B017"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-03",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-03",
+   "quote": "`POST /api/auth/login` Вход (устанавливает session cookie).",
+   "place": "раздел «Код (C4) › Эндпоинты», строки 46–47",
+   "property": "Полнота требования, неполнота",
+   "explanation": "клиент и тест не знают, что отправлять и что проверять. Не заданы: - формат тела запроса (JSON или form-data) и его поля; - код и тело успешного ответа; - код при неверных учётных данных (401 отсутствует в R-32); - поведение при повторном входе; - ограничение числа неудачных попыток.",
+   "severity": "критично",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B031"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-04",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-04",
+   "quote": "**Компании** (требуется авторизация): … Глобальная обработка исключений с возвратом структурированных ошибок (HTTP 400, 404, 409).",
+   "place": "раздел «Код (C4) › Эндпоинты», строка 53",
+   "property": "Полнота набора, неполнота",
+   "explanation": "тесты доступа не имеют ожидаемого кода. Перечень не задаёт ответ на: - запрос без сессии; - запрос с истёкшей сессией; - доступ к чужому объекту; - внутренние ошибки (500).",
+   "severity": "критично",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B034"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-05",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-05",
+   "quote": "`POST /api/companies` Создать компанию: `{ \"name\": \"ООО Ромашка\", \"inn\": \"1234567890\", ... }`. … `POST /api/employees` Создать сотрудника: `{ \"firstName\": \"Иван\", \"age\": 30, ... }`.",
+   "place": "раздел «Код (C4) › Эндпоинты», строки 56–57",
+   "property": "Полнота требования, неполнота",
+   "explanation": "не определён контракт запросов и ответов создания и обновления. Не заданы: - полный состав полей; - можно ли передать companyId при создании сотрудника; - как передаётся владелец компании (из сессии или из тела); - реакция на неизвестные поля; - состав тела ответа.",
+   "severity": "критично",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B036"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-06",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-06",
+   "quote": "`GET /api/companies/{id}` Получить компанию по ID (только свои).",
+   "place": "раздел «Код (C4) › Эндпоинты», строки 58–59",
+   "property": "Полнота требования, неполнота",
+   "explanation": "тесты доступа не имеют ожидаемого результата. Ограничение «только свои» указано только для GET по ID. Не заданы: - распространяется ли оно на PUT и DELETE компании и на операции с сотрудниками; - какой код возвращается для чужого объекта: 403 или 404.",
+   "severity": "критично",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B037"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-07",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-07",
+   "quote": "`GET /api/employees?companyId=1` Список сотрудников (всех или по компании).",
+   "place": "раздел «Код (C4) › Эндпоинты», строки 66–67",
+   "property": "Однозначность, двусмысленность",
+   "explanation": "состав списка и тест на него определить нельзя. Также не задан ответ, если companyId: - указывает на несуществующую компанию; - указывает на чужую компанию; - не является числом.",
+   "severity": "критично",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B041"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-08",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-08",
+   "quote": "Создать безопасный REST-бекенд с использованием Spring Boot 3.4, Hibernate 6, PostgreSQL и Flyway.",
+   "place": "раздел «c4_tech_task_example › Контекст (C1)», строка 8",
+   "property": "Проверяемость, непроверяемость",
+   "explanation": "не определено, какие свойства безопасности проверять на приёмке, поэтому каждый проверяющий оценит «безопасность» по-своему.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B004"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-09",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-09",
+   "quote": "Сессионная аутентификация через Spring Security.",
+   "place": "раздел «c4_tech_task_example › Компоненты (C3)», строка 21",
+   "property": "Полнота требования, неполнота",
+   "explanation": "безопасность сессии нельзя проверить на приёмке. Не заданы: - время жизни сессии и время простоя до её завершения; - атрибуты cookie (HttpOnly, Secure, SameSite); - смена идентификатора сессии после входа; - хранилище сессий.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B011"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-10",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-10",
+   "quote": "Сессионная аутентификация через Spring Security.",
+   "place": "раздел «c4_tech_task_example › Компоненты (C3)», строка 21",
+   "property": "Полнота набора, неполнота",
+   "explanation": "Spring Security по умолчанию отклоняет POST, PUT, PATCH и DELETE без CSRF-токена при cookie-сессии; у автора нужно узнать, включена ли защита CSRF и как клиент получает токен.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B011"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-11",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-11",
+   "quote": "Создание/редактирование/удаление компаний с валидацией ИНН, ОГРН.",
+   "place": "раздел «c4_tech_task_example › Компоненты (C3)», строка 24",
+   "property": "Однозначность, двусмысленность",
+   "explanation": "один разработчик проверит только длину и цифры, другой ещё и контрольное число, и тест на ИНН с неверной контрольной суммой не имеет одного ожидаемого результата.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B014"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-12",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-12",
+   "quote": "`id`, `login` (уникальный), `password`, `createdAt`.",
+   "place": "раздел «Код (C4) › Требования к сущностям», строка 36",
+   "property": "Полнота требования, неполнота",
+   "explanation": "без ограничений нельзя написать тесты граничных значений и недопустимого ввода при регистрации. Не заданы: - минимальная и максимальная длина login (50 указано только в примере SQL); - допустимые символы login; - учитывается ли регистр при проверке уникальности; - обрезаются ли пробелы; - минимальная длина и состав password (пример «pass» — 4 символа); - максимальная длина password (у BCrypt есть предел 72 байта).",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B023"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-13",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-13",
+   "quote": "`id`, `name` (обязательное), `fullLegalName`, `inn` (уникальный, 10/12 цифр), `ogrn` (уникальный, 13 цифр), `user` (связь с владельцем).",
+   "place": "раздел «Код (C4) › Требования к сущностям», строка 38",
+   "property": "Полнота требования, неполнота",
+   "explanation": "обязательной названа только name, поэтому не ясно, принимать ли компанию без inn, ogrn или fullLegalName. Не заданы: - обязательность inn, ogrn, fullLegalName; - максимальная длина name и fullLegalName; - допустимость пустой строки и пробелов; - можно ли менять inn и ogrn через PUT.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B025"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-14",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-14",
+   "quote": "`inn` (уникальный, 10/12 цифр), `ogrn` (уникальный, 13 цифр)",
+   "place": "раздел «Код (C4) › Требования к сущностям», строка 38",
+   "property": "Корректность, некорректность",
+   "explanation": "12-значный ИНН бывает у ИП, а у ИП ОГРНИП из 15 цифр; у автора нужно узнать, поддерживаются ли ИП и нужно ли согласовать длину ОГРН с длиной ИНН.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B025"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-15",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-15",
+   "quote": "`inn` (уникальный, 10/12 цифр)",
+   "place": "раздел «Код (C4) › Требования к сущностям», строка 38",
+   "property": "Однозначность, двусмысленность",
+   "explanation": "от этого зависят ограничение в БД и тест R-43; у автора нужно узнать, уникален ли ИНН и ОГРН во всей системе или в пределах владельца.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B025"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-16",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-16",
+   "quote": "`inn` (уникальный, 10/12 цифр) … minLength = 10, maxLength = 12",
+   "place": "раздел «Код (C4) › Требования к сущностям», строка 38",
+   "property": "Согласованность, противоречие",
+   "explanation": "схема OpenAPI будет описывать не тот диапазон, что проверяет валидация.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B025"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-17",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-17",
+   "quote": "`id`, `firstName`, `lastName`, `middleName`, `gender` (enum: MALE, FEMALE), `age`, `maritalStatus` (enum: MARRIED, SINGLE), `company` (может быть null).",
+   "place": "раздел «Код (C4) › Требования к сущностям», строка 40",
+   "property": "Полнота требования, неполнота",
+   "explanation": "без ограничений не написать тесты валидации сотрудника. Не заданы: - какие поля обязательны (в примере только firstName и age); - максимальная длина имён; - тип и диапазон age (допустимы ли 0, отрицательные, 200) и его единицы (полные годы); - реакция на значение вне enum; - чувствительность enum к регистру.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B027"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-18",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-18",
+   "quote": "`POST /api/auth/register` Регистрация: `{ \"login\": \"user1\", \"password\": \"pass\" }`.",
+   "place": "раздел «Код (C4) › Эндпоинты», строки 44–45",
+   "property": "Полнота требования, неполнота",
+   "explanation": "не написать негативные тесты регистрации и тест на её последствия. Не заданы: - код и тело успешного ответа; - код при занятом login (409?); - код при невалидных данных; - создаётся ли сессия сразу после регистрации; - поведение при вызове с уже активной сессией.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B030"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-19",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-19",
+   "quote": "`POST /api/auth/logout` Выход.",
+   "place": "раздел «Код (C4) › Эндпоинты», строки 48–49",
+   "property": "Полнота требования, неполнота",
+   "explanation": "тест на выход не имеет ожидаемого результата. Не заданы: - код успешного ответа; - инвалидируется ли сессия на сервере; - удаляется ли cookie; - ответ при вызове без сессии; - ответ на последующий запрос со старым cookie.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B032"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-20",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-20",
+   "quote": "`GET /api/users/me` Информация о текущем пользователе.",
+   "place": "раздел «Код (C4) › Эндпоинты», строки 50–51",
+   "property": "Полнота требования, неполнота",
+   "explanation": "не ясно, какие поля возвращать и что ответить без сессии; нет запрета возвращать хэш пароля, поэтому его нечем проверить.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B033"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-21",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-21",
+   "quote": "`POST /api/companies` Создать компанию: `{ \"name\": \"ООО Ромашка\", \"inn\": \"1234567890\", ... }`.",
+   "place": "раздел «Код (C4) › Эндпоинты», строки 56–57",
+   "property": "Полнота набора, неполнота",
+   "explanation": "тесты позитивных сценариев не имеют ожидаемых кодов и тел. Ни для одной операции не заданы: - код успеха (200, 201, 204); - тело ответа.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B036"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-22",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-22",
+   "quote": "`DELETE /api/companies/{id}` Удалить компанию (если нет сотрудников).",
+   "place": "раздел «Код (C4) › Эндпоинты», строки 62–63",
+   "property": "Полнота требования, неполнота",
+   "explanation": "негативный тест удаления не имеет ожидаемого результата. Не заданы: - код ответа, если сотрудники есть (409?); - текст ошибки; - код успешного удаления; - ответ на повторное удаление.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B039"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-23",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-23",
+   "quote": "`PATCH /api/employees/{id}/company` Привязать к компании: `{ \"companyId\": 1 }` (или null).",
+   "place": "раздел «Код (C4) › Эндпоинты», строки 70–71",
+   "property": "Полнота требования, неполнота",
+   "explanation": "негативные тесты привязки не написать. Не заданы ответы на случаи: - привязка к чужой компании; - привязка к несуществующей компании; - сотрудник уже привязан к другой компании (перепривязка или отказ); - повторная привязка к той же компании; - код и тело успешного ответа.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B043"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-24",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-24",
+   "quote": "`PUT /api/employees/{id}` Обновить сотрудника.",
+   "place": "раздел «Код (C4) › Эндпоинты», строки 72–73",
+   "property": "Однозначность, двусмысленность",
+   "explanation": "две реализации дадут разное состояние после одного и того же запроса.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B044"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-25",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-25",
+   "quote": "Глобальная обработка исключений с возвратом структурированных ошибок (HTTP 400, 404, 409).",
+   "place": "раздел «Код (C4) › Технические требования», строка 79",
+   "property": "Проверяемость, непроверяемость",
+   "explanation": "«структурированных» не определено, поэтому тест не может проверить тело ошибки. Не заданы: - поля тела ошибки; - формат списка ошибок по полям для 400.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B048"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-26",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-26",
+   "quote": "Настройка CORS (разрешить все для тестового окружения).",
+   "place": "раздел «Код (C4) › Технические требования», строка 81",
+   "property": "Выполнимость, невыполнимость",
+   "explanation": "от решения зависит конфигурация CORS; у автора нужно узнать: - нужны ли credentials в кросс-доменных запросах; - какие origin разрешать; - какие правила действуют вне тестового окружения.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B050"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-27",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-27",
+   "quote": "Логирование ключевых операций (создание компании, ошибки авторизации).",
+   "place": "раздел «Код (C4) › Технические требования», строка 82",
+   "property": "Однозначность, двусмысленность",
+   "explanation": "«ключевых» не определено, а перечень в скобках не сказано, полный он или пример, поэтому логирование нечем проверить. Не заданы: - полный перечень событий; - уровень журнала; - поля записи; - запрет писать пароль и хэш пароля в журнал.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B051"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-28",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-28",
+   "quote": "Пример: попытка создания компании с неуникальным ИНН должна возвращать HTTP 409.",
+   "place": "раздел «c4_tech_task_example › Инструкция для разработчика», строка 118",
+   "property": "Валидируемость, неполнота",
+   "explanation": "из негативных случаев задан только один пример (неуникальный ИНН). Не названы проверяемые критерии: - доступ без сессии; - доступ к чужим объектам; - невалидные ИНН и ОГРН; - удаление компании с сотрудниками; - отсутствие пароля в ответах.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B064"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-29",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-29",
+   "quote": "Корректная работа всех эндпоинтов (Postman-коллекция приветствуется).",
+   "place": "раздел «c4_tech_task_example › Критерии оценки», строка 123",
+   "property": "Проверяемость, непроверяемость",
+   "explanation": "«корректная» не задана через ожидаемые результаты, а «приветствуется» не говорит, обязательна ли коллекция.",
+   "severity": "важно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B066"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-30",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-30",
+   "quote": "c4_tech_task_example",
+   "place": "раздел «c4_tech_task_example», строка 1",
+   "property": "Соответствие шаблону, прослеживаемость и оформление",
+   "explanation": "на требования нельзя сослаться в тестах и при изменениях. Отсутствуют: - уникальные ID требований; - модальность «должен»; - приоритеты; - версия и дата документа.",
+   "severity": "незначительно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B001"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-31",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-31",
+   "quote": "Сессионная аутентификация через Spring Security. … **Компании** (требуется авторизация):",
+   "place": "раздел «c4_tech_task_example › Компоненты (C3)», строка 21",
+   "property": "Понятность, разнобой терминов и единиц",
+   "explanation": "не ясно, требуется ли только наличие сессии (аутентификация) или ещё проверка прав (авторизация), а от этого зависят коды 401 и 403.",
+   "severity": "незначительно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B011"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-32",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-32",
+   "quote": "**User** (аккаунт): … `user` (связь с владельцем)",
+   "place": "раздел «Код (C4) › Требования к сущностям», строка 35",
+   "property": "Понятность, разнобой терминов и единиц",
+   "explanation": "имена «пользователь», «аккаунт», «владелец», «текущий пользователь» не связаны определением, и неясно, совпадает ли владелец компании с создавшим её пользователем.",
+   "severity": "незначительно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B022"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-33",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-33",
+   "quote": "`id`, `firstName`, `lastName`, `middleName`, `gender` (enum: MALE, FEMALE), `age`, `maritalStatus` (enum: MARRIED, SINGLE), `company` (может быть null).",
+   "place": "раздел «Код (C4) › Требования к сущностям», строка 40",
+   "property": "Полнота набора, неполнота",
+   "explanation": "обрабатываются ФИО, пол, возраст и семейное положение, но не указаны цель их сбора и требования к защите; у автора нужно узнать, нужны ли эти требования для учебного проекта.",
+   "severity": "незначительно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B027"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "agent:evals/holdout/c4#F-34",
+   "origin": "agent",
+   "run": "evals/holdout/c4",
+   "ref": "F-34",
+   "quote": "Чистый код, соблюдение принципов SOLID.",
+   "place": "раздел «c4_tech_task_example › Критерии оценки», строка 124",
+   "property": "Проверяемость, непроверяемость",
+   "explanation": "оценки двух проверяющих разойдутся, потому что нет измеримых признаков.",
+   "severity": "незначительно",
+   "finder": "проходы",
+   "passes": "1 из 1",
+   "blocks": [
+    "B067"
+   ],
+   "control": null,
+   "donors": []
+  },
+  {
+   "uid": "control:1.1",
+   "origin": "control",
+   "run": null,
+   "ref": "1.1",
+   "quote": "Создать скрипты `V1__init_tables.sql`, `V2__add_constraints.sql`.",
+   "place": "раздел «c4_tech_task_example › Инструкция для разработчика», строка 92",
+   "property": "Соответствие шаблону, прослеживаемость и оформление",
+   "explanation": "Фразу «Создать скрипты `V1__init_tables.sql`, `V2__add_constraints.sql`.» можно сформулировать короче и с другим порядком слов. Смысл требования и ожидаемый результат проверки от этого не меняются, но текст читался бы ровнее.",
+   "severity": null,
+   "finder": null,
+   "passes": null,
+   "blocks": [],
+   "control": "nitpick",
+   "donors": []
+  },
+  {
+   "uid": "control:1.2",
+   "origin": "control",
+   "run": null,
+   "ref": "1.2",
+   "quote": "Добавить описания эндпоинтов через аннотации `@Operation`, `@Schema`.",
+   "place": "раздел «c4_tech_task_example › Инструкция для разработчика», строка 104",
+   "property": "Соответствие шаблону, прослеживаемость и оформление",
+   "explanation": "Фразу «Добавить описания эндпоинтов через аннотации `@Operation`,» можно сформулировать короче и с другим порядком слов. Смысл требования и ожидаемый результат проверки от этого не меняются, но текст читался бы ровнее.",
+   "severity": null,
+   "finder": null,
+   "passes": null,
+   "blocks": [],
+   "control": "nitpick",
+   "donors": []
+  },
+  {
+   "uid": "control:1.3",
+   "origin": "control",
+   "run": null,
+   "ref": "1.3",
+   "quote": "id`, `firstName`, `lastName`, `middleName`, `gender` (enum: MALE, FEMALE), `age`, `maritalStatus` (enum: MARRIED, SINGLE), `company` (может быть null).",
+   "place": "раздел «Код (C4) › Требования к сущностям», строка 40",
+   "property": "Соответствие шаблону, прослеживаемость и оформление",
+   "explanation": "Фразу «id`, `firstName`, `lastName`, `middleName`, `gender` (enum:» можно сформулировать короче и с другим порядком слов. Смысл требования и ожидаемый результат проверки от этого не меняются, но текст читался бы ровнее.",
+   "severity": null,
+   "finder": null,
+   "passes": null,
+   "blocks": [],
+   "control": "nitpick",
+   "donors": []
+  },
+  {
+   "uid": "control:1.4",
+   "origin": "control",
+   "run": null,
+   "ref": "1.4",
+   "quote": "GET /api/companies/{id}`  \n     Получить компанию по ID (только свои).",
+   "place": "раздел «Код (C4) › Эндпоинты», строки 58–59",
+   "property": "Соответствие шаблону, прослеживаемость и оформление",
+   "explanation": "Предлагаю переписать «GET /api/companies/{id}` Получить компанию по ID» более деловым языком. Содержание остаётся тем же, проверить требование можно и сейчас.",
+   "severity": null,
+   "finder": null,
+   "passes": null,
+   "blocks": [],
+   "control": "nitpick",
+   "donors": []
+  },
+  {
+   "uid": "control:1.5",
+   "origin": "control",
+   "run": null,
+   "ref": "1.5",
+   "quote": "Логирование ключевых операций (создание компании, ошибки авторизации).",
+   "place": "раздел «Код (C4) › Технические требования», строка 82",
+   "property": "Соответствие шаблону, прослеживаемость и оформление",
+   "explanation": "Фразу «Логирование ключевых операций (создание компании, ошибки» можно сформулировать короче и с другим порядком слов. Смысл требования и ожидаемый результат проверки от этого не меняются, но текст читался бы ровнее.",
+   "severity": null,
+   "finder": null,
+   "passes": null,
+   "blocks": [],
+   "control": "nitpick",
+   "donors": []
+  }
+ ],
+ "batches": [
+  {
+   "index": 1,
+   "uids": [
+    "agent:evals/holdout/c4#F-17",
+    "agent:evals/holdout/c4#F-34",
+    "agent:evals/holdout/c4#F-29",
+    "agent:evals/holdout/c4#F-25",
+    "agent:evals/holdout/c4#F-11",
+    "control:1.3",
+    "agent:evals/holdout/c4#F-19",
+    "agent:evals/holdout/c4#F-12",
+    "agent:evals/holdout/c4#F-28",
+    "agent:evals/holdout/c4#F-01",
+    "agent:evals/holdout/c4#F-13",
+    "agent:evals/holdout/c4#F-23",
+    "agent:evals/holdout/c4#F-16",
+    "agent:evals/holdout/c4#F-21",
+    "agent:evals/holdout/c4#F-22",
+    "agent:evals/holdout/c4#F-06",
+    "control:1.4",
+    "agent:evals/holdout/c4#F-04",
+    "control:1.5",
+    "agent:evals/holdout/c4#F-05",
+    "agent:evals/holdout/c4#F-18",
+    "agent:evals/holdout/c4#F-15",
+    "agent:evals/holdout/c4#F-09",
+    "agent:evals/holdout/c4#F-33",
+    "agent:evals/holdout/c4#F-20",
+    "control:1.1",
+    "agent:evals/holdout/c4#F-14",
+    "agent:evals/holdout/c4#F-10",
+    "agent:evals/holdout/c4#F-27",
+    "control:1.2",
+    "agent:evals/holdout/c4#F-31",
+    "agent:evals/holdout/c4#F-32",
+    "agent:evals/holdout/c4#F-24",
+    "agent:evals/holdout/c4#F-02",
+    "agent:evals/holdout/c4#F-30",
+    "agent:evals/holdout/c4#F-07",
+    "agent:evals/holdout/c4#F-26",
+    "agent:evals/holdout/c4#F-03",
+    "agent:evals/holdout/c4#F-08"
+   ]
+  }
+ ],
+ "labels": {
+  "opus": {
+   "agent:evals/holdout/c4#F-17": {
+    "label": "real",
+    "reason": "У Employee не заданы обязательность полей, длина имён, диапазон age и реакция на значение вне enum: тесты валидации не написать."
+   },
+   "agent:evals/holdout/c4#F-34": {
+    "label": "disputed",
+    "reason": "Это критерий оценки тестового задания, а не требование к продукту. Он субъективен, но на реализацию почти не влияет."
+   },
+   "agent:evals/holdout/c4#F-29": {
+    "label": "disputed",
+    "reason": "Это критерий оценки. Слово «приветствуется» однозначно значит «необязательно», а «корректность» раскрывается через сами эндпоинты."
+   },
+   "agent:evals/holdout/c4#F-25": {
+    "label": "real",
+    "reason": "Формат «структурированных ошибок» нигде не описан: тело ответа на 400/404/409 проверить нельзя."
+   },
+   "agent:evals/holdout/c4#F-11": {
+    "label": "disputed",
+    "reason": "В технических требованиях указан @Pattern для ИНН/ОГРН, то есть подразумевается проверка формата. Вопрос о контрольном числе всё же остаётся."
+   },
+   "control:1.3": {
+    "label": "false",
+    "reason": "Чисто стилистическая правка. Сам рецензент пишет, что смысл и ожидаемый результат не меняются."
+   },
+   "agent:evals/holdout/c4#F-19": {
+    "label": "real",
+    "reason": "Для logout не заданы код ответа, инвалидация сессии и удаление cookie: у теста нет ожидаемого результата."
+   },
+   "agent:evals/holdout/c4#F-12": {
+    "label": "real",
+    "reason": "Ограничения на login и password не заданы, длина 50 есть только в примере SQL, пример пароля «pass»: граничные тесты регистрации не написать."
+   },
+   "agent:evals/holdout/c4#F-28": {
+    "label": "disputed",
+    "reason": "Раздел явно даёт пример, а не полный перечень тестов. Негативные сценарии полезно перечислить, но это скорее пожелание."
+   },
+   "agent:evals/holdout/c4#F-01": {
+    "label": "real",
+    "reason": "У Employee нет связи с владельцем, только company, которая может быть null. Определить, чьи это сотрудники, нечем."
+   },
+   "agent:evals/holdout/c4#F-13": {
+    "label": "real",
+    "reason": "Обязательным названо только name. Непонятно, можно ли создать компанию без inn/ogrn и менять их через PUT."
+   },
+   "agent:evals/holdout/c4#F-23": {
+    "label": "real",
+    "reason": "Для PATCH привязки не заданы ответы на чужую или несуществующую компанию, на перепривязку и успешный ответ."
+   },
+   "agent:evals/holdout/c4#F-16": {
+    "label": "real",
+    "reason": "В тексте «10/12 цифр», а в схеме minLength 10 и maxLength 12, то есть допускается 11 цифр. Документация расходится с правилом валидации."
+   },
+   "agent:evals/holdout/c4#F-21": {
+    "label": "real",
+    "reason": "Ни для одного эндпоинта не указаны код успеха и тело ответа: ожидаемый результат в позитивных тестах не задан."
+   },
+   "agent:evals/holdout/c4#F-22": {
+    "label": "real",
+    "reason": "Не указан код отказа при наличии сотрудников: 409 или 400, оба есть в списке кодов. Негативный тест неоднозначен."
+   },
+   "agent:evals/holdout/c4#F-06": {
+    "label": "real",
+    "reason": "C1 говорит о «своих» компаниях, но код для чужого объекта (403 или 404) нигде не задан: тест доступа неоднозначен."
+   },
+   "control:1.4": {
+    "label": "false",
+    "reason": "Стилистическая правка. Рецензент сам признаёт, что требование проверяемо уже сейчас."
+   },
+   "agent:evals/holdout/c4#F-04": {
+    "label": "real",
+    "reason": "Указано, что нужна авторизация, но в перечне кодов нет 401/403: ответ на запрос без сессии не определён."
+   },
+   "control:1.5": {
+    "label": "false",
+    "reason": "Стилистическая правка без влияния на смысл и проверку."
+   },
+   "agent:evals/holdout/c4#F-05": {
+    "label": "real",
+    "reason": "В примерах тел запросов стоит «...». Полный состав полей, передача companyId и источник владельца не определены."
+   },
+   "agent:evals/holdout/c4#F-18": {
+    "label": "real",
+    "reason": "Для регистрации не заданы код успеха, код при занятом login и создание сессии: негативные тесты неоднозначны."
+   },
+   "agent:evals/holdout/c4#F-15": {
+    "label": "disputed",
+    "reason": "Слово «уникальный» естественно читается как уникальность во всей системе. Ссылка на «тест R-43» на документ не опирается."
+   },
+   "agent:evals/holdout/c4#F-09": {
+    "label": "disputed",
+    "reason": "Для тестового задания параметры сессии можно оставить по умолчанию Spring Security. Это скорее пожелание."
+   },
+   "agent:evals/holdout/c4#F-33": {
+    "label": "disputed",
+    "reason": "Это учебное тестовое задание. Требования к защите персональных данных уместны, но на реализацию API почти не влияют."
+   },
+   "agent:evals/holdout/c4#F-20": {
+    "label": "real",
+    "reason": "Состав ответа /users/me не задан, запрета на возврат хэша пароля нет: тест на утечку пароля не написать."
+   },
+   "control:1.1": {
+    "label": "false",
+    "reason": "Стилистическая правка без влияния на смысл."
+   },
+   "agent:evals/holdout/c4#F-14": {
+    "label": "real",
+    "reason": "12-значный ИНН бывает у ИП, а их ОГРНИП состоит из 15 цифр. Правило «13 цифр» отклонит корректные данные ИП."
+   },
+   "agent:evals/holdout/c4#F-10": {
+    "label": "real",
+    "reason": "При cookie-сессии Spring Security по умолчанию требует CSRF-токен. Без решения на этот счёт POST/PUT/DELETE будут возвращать 403."
+   },
+   "agent:evals/holdout/c4#F-27": {
+    "label": "disputed",
+    "reason": "Слово «ключевых» размыто, но примеры приведены. Логирование в тестовом задании почти не проверяется тестами."
+   },
+   "control:1.2": {
+    "label": "false",
+    "reason": "Стилистическая правка без влияния на смысл."
+   },
+   "agent:evals/holdout/c4#F-31": {
+    "label": "disputed",
+    "reason": "Слова «авторизация» и «аутентификация» перемешаны, но по контексту нужны и сессия, и проверка владения. Ключевой вопрос о кодах поднят в №16 и №18."
+   },
+   "agent:evals/holdout/c4#F-32": {
+    "label": "false",
+    "reason": "Документ сам связывает термины: User — это аккаунт, user в Company — владелец. Владелец по смыслу — текущий пользователь."
+   },
+   "agent:evals/holdout/c4#F-24": {
+    "label": "disputed",
+    "reason": "Объяснение размыто. Семантика PUT (полная замена) стандартна, но меняет ли PUT поле company, неясно."
+   },
+   "agent:evals/holdout/c4#F-02": {
+    "label": "real",
+    "reason": "«1:1» противоречит фразе «если нет сотрудников» и фильтру списка сотрудников по компании. От этого зависит, уникален ли FK."
+   },
+   "agent:evals/holdout/c4#F-30": {
+    "label": "disputed",
+    "reason": "У тестового задания действительно нет ID, версий и модальности «должен», но разработку это почти не задевает."
+   },
+   "agent:evals/holdout/c4#F-07": {
+    "label": "real",
+    "reason": "Неясно, «всех» — это все сотрудники пользователя или всей системы. Не заданы ответы на чужой, несуществующий или нечисловой companyId."
+   },
+   "agent:evals/holdout/c4#F-26": {
+    "label": "real",
+    "reason": "«Разрешить все» вместе с cookie-сессией невыполнимо: wildcard origin нельзя совмещать с credentials."
+   },
+   "agent:evals/holdout/c4#F-03": {
+    "label": "real",
+    "reason": "Для login не заданы формат тела, коды успеха и ошибки. Ссылка на R-32 ложная, но суть верна."
+   },
+   "agent:evals/holdout/c4#F-08": {
+    "label": "disputed",
+    "reason": "Слово «безопасный» размыто, но частично раскрыто в C3 (BCrypt, Spring Security, доступ только к своим объектам)."
+   }
+  }
+ },
+ "calls": [
+  {
+   "labeler": "opus",
+   "batch": 1,
+   "key": "c005001bb490c84733088eaab45563eb729fa86ede4e6ba6b3c2de684209f9c0",
+   "source": "cache",
+   "model": "claude-opus-5-5",
+   "cost_usd": 0.175556,
+   "duration_ms": 39203,
+   "cache_path": "evals/cache/precision/c005001bb490c84733088eaab45563eb729fa86ede4e6ba6b3c2de684209f9c0.json"
+  }
+ ],
+ "overall": {
+  "name": "все находки",
+  "by_labeler": {
+   "opus": {
+    "total": 34,
+    "labeled": 34,
+    "real": 21,
+    "disputed": 12,
+    "false": 1
+   }
+  },
+  "consensus": {
+   "total": 34,
+   "labeled": 0,
+   "real": 0,
+   "disputed": 0,
+   "false": 0
+  },
+  "agreement": {
+   "both": 0,
+   "same": 0,
+   "kappa3": null,
+   "kappa2": null
+  }
+ },
+ "by_run": [
+  {
+   "name": "агент: evals/holdout/c4",
+   "by_labeler": {
+    "opus": {
+     "total": 34,
+     "labeled": 34,
+     "real": 21,
+     "disputed": 12,
+     "false": 1
+    }
+   },
+   "consensus": {
+    "total": 34,
+    "labeled": 0,
+    "real": 0,
+    "disputed": 0,
+    "false": 0
+   },
+   "agreement": {
+    "both": 0,
+    "same": 0,
+    "kappa3": null,
+    "kappa2": null
+   }
+  }
+ ],
+ "by_severity": [
+  {
+   "name": "критично",
+   "by_labeler": {
+    "opus": {
+     "total": 7,
+     "labeled": 7,
+     "real": 7,
+     "disputed": 0,
+     "false": 0
+    }
+   },
+   "consensus": {
+    "total": 7,
+    "labeled": 0,
+    "real": 0,
+    "disputed": 0,
+    "false": 0
+   },
+   "agreement": {
+    "both": 0,
+    "same": 0,
+    "kappa3": null,
+    "kappa2": null
+   }
+  },
+  {
+   "name": "важно",
+   "by_labeler": {
+    "opus": {
+     "total": 22,
+     "labeled": 22,
+     "real": 14,
+     "disputed": 8,
+     "false": 0
+    }
+   },
+   "consensus": {
+    "total": 22,
+    "labeled": 0,
+    "real": 0,
+    "disputed": 0,
+    "false": 0
+   },
+   "agreement": {
+    "both": 0,
+    "same": 0,
+    "kappa3": null,
+    "kappa2": null
+   }
+  },
+  {
+   "name": "незначительно",
+   "by_labeler": {
+    "opus": {
+     "total": 5,
+     "labeled": 5,
+     "real": 0,
+     "disputed": 4,
+     "false": 1
+    }
+   },
+   "consensus": {
+    "total": 5,
+    "labeled": 0,
+    "real": 0,
+    "disputed": 0,
+    "false": 0
+   },
+   "agreement": {
+    "both": 0,
+    "same": 0,
+    "kappa3": null,
+    "kappa2": null
+   }
+  }
+ ],
+ "by_finder": [
+  {
+   "name": "проходы",
+   "by_labeler": {
+    "opus": {
+     "total": 34,
+     "labeled": 34,
+     "real": 21,
+     "disputed": 12,
+     "false": 1
+    }
+   },
+   "consensus": {
+    "total": 34,
+    "labeled": 0,
+    "real": 0,
+    "disputed": 0,
+    "false": 0
+   },
+   "agreement": {
+    "both": 0,
+    "same": 0,
+    "kappa3": null,
+    "kappa2": null
+   }
+  }
+ ],
+ "by_passes": [
+  {
+   "name": "1 из 1",
+   "by_labeler": {
+    "opus": {
+     "total": 34,
+     "labeled": 34,
+     "real": 21,
+     "disputed": 12,
+     "false": 1
+    }
+   },
+   "consensus": {
+    "total": 34,
+    "labeled": 0,
+    "real": 0,
+    "disputed": 0,
+    "false": 0
+   },
+   "agreement": {
+    "both": 0,
+    "same": 0,
+    "kappa3": null,
+    "kappa2": null
+   }
+  }
+ ],
+ "controls": {
+  "opus": {
+   "total": 5,
+   "labeled": 5,
+   "caught": 5,
+   "not_real": 5
+  }
+ },
+ "controls_by_kind": {
+  "nitpick": {
+   "opus": {
+    "total": 5,
+    "labeled": 5,
+    "caught": 5,
+    "not_real": 5
+   }
+  }
+ },
+ "judge": [],
+ "warnings": [],
+ "notes": [
+  "evals/holdout/c4: сравнения с судьёй нет: Нет вердикта судьи в кеше для evals/holdout/c4 (ключ 66595c7119fc…). Запустите с --judge cli, чтобы вызвать судью (Opus 5.5 high, несколько минут)"
+ ]
+}

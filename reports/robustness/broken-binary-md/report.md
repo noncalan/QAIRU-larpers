@@ -1,6 +1,6 @@
 # Отчёт о проверке требований: binary.md
 
-Проверка по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3). Отчёт сформировал агент QAIRU validator 4ebb9e2, 2026-11-26 07:43:16 UTC.
+Проверка по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3). Отчёт сформировал агент QAIRU validator 104b463, 2026-11-26 12:54:54 UTC.
 
 ## Итог на первой странице
 
@@ -12,10 +12,10 @@
 |---|---|
 | Документ | binary.md (unknown, 4096 байт) |
 | SHA-256 документа | 54a36fa7d84a65cb1f6c346f2ca106b6a60f06db4cc73be6c4a8530df0a63b3c |
-| Дата прогона | 2026-11-26 07:43:16 UTC |
+| Дата прогона | 2026-11-26 12:54:54 UTC |
 | Длительность | 0.0 с |
-| Версия агента | 4ebb9e2 (источник: git) |
-| Хеш промптов | 1fc8be63f489 |
+| Версия агента | 104b463 (источник: git) |
+| Хеш промптов | 7dd96b1cffa4 |
 | Способ вызова модели | модель не вызывалась (запрошено: фикстуры тестов (без модели)) |
 | Модели по шагам | segment: claude-sonnet-5-5 · medium; search: claude-opus-5-5 · medium; search_transfer: claude-haiku-5-5 · medium; evidence: claude-opus-5-5 · high; critic: claude-opus-5-5 · high; test_draft: claude-sonnet-5-5 · high; questions: claude-opus-5-5 · high; questions_critic: claude-opus-5-5 · high; set_check: claude-opus-5-5 · medium |
 | Фактические модели | — |

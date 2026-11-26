@@ -482,6 +482,22 @@ def test_fallback_takes_content_blocks_and_skips_short_ones(doc: ParsedDocument)
     assert_quotes_from_document(doc, seg)
 
 
+def test_label_in_first_cell_of_table_row_is_source_id_without_model(
+    make_md: Callable[[str], ParsedDocument],
+) -> None:
+    """#126: номер требования из первой ячейки строки таблицы есть и у нарезки без модели."""
+    doc = make_md(
+        "# Склад\n\n| ID | Требование |\n|---|---|\n"
+        "| WH-7 | Система печатает этикетку для каждой поставки. |\n"
+        "| **NFR-2** | Отчёт по остаткам формируется не дольше пяти секунд. |\n"
+        "| поставка | Кладовщик принимает поставку по накладной. |\n"
+    )
+
+    seg = fallback_segmentation(doc)
+
+    assert [r.source_id for r in seg.requirements] == ["WH-7", "NFR-2", None]
+
+
 def test_fallback_without_requirements_gives_diagnostic(make_md: Callable[[str], ParsedDocument]) -> None:
     seg = fallback_segmentation(make_md("# Шаблон\n\nЗаполнить позже.\n"))
 

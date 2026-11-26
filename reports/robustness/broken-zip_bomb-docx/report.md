@@ -1,6 +1,6 @@
 # Отчёт о проверке требований: zip_bomb.docx
 
-Проверка по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3). Отчёт сформировал агент QAIRU validator 4ebb9e2, 2026-11-26 07:43:17 UTC.
+Проверка по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3). Отчёт сформировал агент QAIRU validator 104b463, 2026-11-26 12:54:55 UTC.
 
 ## Итог на первой странице
 
@@ -12,10 +12,10 @@
 |---|---|
 | Документ | zip_bomb.docx (unknown, 322268 байт) |
 | SHA-256 документа | bcdec21fa8d2581a82826e0a1d2d0e4757781f9bb8ecae47b592014a57fa7c1e |
-| Дата прогона | 2026-11-26 07:43:17 UTC |
+| Дата прогона | 2026-11-26 12:54:55 UTC |
 | Длительность | 0.0 с |
-| Версия агента | 4ebb9e2 (источник: git) |
-| Хеш промптов | 1fc8be63f489 |
+| Версия агента | 104b463 (источник: git) |
+| Хеш промптов | 7dd96b1cffa4 |
 | Способ вызова модели | модель не вызывалась (запрошено: фикстуры тестов (без модели)) |
 | Модели по шагам | segment: claude-sonnet-5-5 · medium; search: claude-opus-5-5 · medium; search_transfer: claude-haiku-5-5 · medium; evidence: claude-opus-5-5 · high; critic: claude-opus-5-5 · high; test_draft: claude-sonnet-5-5 · high; questions: claude-opus-5-5 · high; questions_critic: claude-opus-5-5 · high; set_check: claude-opus-5-5 · medium |
 | Фактические модели | — |

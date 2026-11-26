@@ -11,6 +11,7 @@ from collections.abc import Iterable, Sequence
 
 from validator.evidence_metrics import evidence_metrics
 from validator.models import (
+    BlockKind,
     CallStatus,
     ChecklistUse,
     Conclusion,
@@ -19,12 +20,14 @@ from validator.models import (
     Diagnostic,
     DocumentInfo,
     Finding,
+    ParsedDocument,
     Question,
     QuestionPriority,
     Report,
     ReportStatus,
     RunContext,
     RunMetrics,
+    Severity,
     TrafficLight,
     Verdict,
     Verification,
@@ -39,7 +42,8 @@ from validator.report.run_metrics import (
 )
 
 FIRST_PAGE_ITEMS = 5
-"""Сколько исправлений и вопросов на первой странице (решение 1 сессии идеи: 5 и 5)."""
+"""Сколько исправлений и вопросов на первой странице (решение 1 сессии идеи: 5 и 5). Критичные нарушения
+показываются все, даже если их больше (#123): каждое из них одно решает, можно ли начинать работу."""
 
 
 def _dedupe(diagnostics: Iterable[Diagnostic]) -> list[Diagnostic]:
@@ -53,23 +57,59 @@ def _split(diagnostics: Sequence[Diagnostic]) -> tuple[list[Diagnostic], list[Di
     return inputs, others
 
 
+def impact(f: Finding) -> tuple[int, int]:
+    """Насколько широко бьёт находка: затронуто требований и пропусков в попытке тест-кейса."""
+    gaps = len(f.test_draft.gap_items) if f.test_draft is not None else 0
+    return len(f.requirement_ids), gaps
+
+
 def _fix_first(ver: Verification) -> list[str]:
-    """Первая страница: нарушения со сверенной цитатой по важности, затем в порядке верификатора."""
+    """Первая страница: нарушения со сверенной цитатой, все критичные и до ``FIRST_PAGE_ITEMS`` всего.
+
+    Порядок: важность; внутри неё сначала то, что мешает написать тест-кейс, затем то, что затрагивает
+    больше требований и оставляет больше пропусков в попытке теста; при равенстве порядок верификатора.
+    """
     candidates = [
         f for f in ver.findings if f.verdict is Verdict.VIOLATION and any(q.verified for q in f.quotes)
     ]
-    candidates.sort(key=lambda f: f.severity.rank)  # сортировка устойчивая: порядок верификатора сохраняется
-    return [f.id for f in candidates[:FIRST_PAGE_ITEMS]]
+    order = {f.id: n for n, f in enumerate(candidates)}
+
+    def key(f: Finding) -> tuple[int, bool, int, int, int]:
+        reqs, gaps = impact(f)
+        return f.severity.rank, not f.blocks_testing, -reqs, -gaps, order[f.id]
+
+    candidates.sort(key=key)
+    critical = sum(f.severity is Severity.CRITICAL for f in candidates)
+    return [f.id for f in candidates[: max(critical, FIRST_PAGE_ITEMS)]]
 
 
-def _ask_first(questions: Sequence[Question]) -> list[str]:
-    """Вопросы, блокирующие работу (P0, затем P1), по порядку в списке вопросов."""
+def _ask_first(questions: Sequence[Question], fix_first: Sequence[str] = ()) -> list[str]:
+    """Вопросы, блокирующие работу: P0, затем P1. Внутри приоритета сначала вопросы к находкам из «Что
+    исправить первым» в их порядке (блокеры наверх, #123), затем остальные в порядке списка вопросов."""
+    rank = {fid: n for n, fid in enumerate(fix_first)}
     blocking = [q for q in questions if q.priority in (QuestionPriority.P0, QuestionPriority.P1)]
-    blocking.sort(key=lambda q: q.priority.value)  # P0 раньше P1, порядок внутри приоритета сохраняется
+    order = {q.id: n for n, q in enumerate(blocking)}
+
+    def key(q: Question) -> tuple[str, int, int]:
+        linked = min((rank[f] for f in q.related_findings if f in rank), default=len(rank))
+        return q.priority.value, linked, order[q.id]
+
+    blocking.sort(key=key)
     return [q.id for q in blocking[:FIRST_PAGE_ITEMS]]
 
 
-def _conclusion(ctx: RunContext, errors: Sequence[Diagnostic]) -> Conclusion:
+def _lower_first(message: str) -> str:
+    """«Документ …» → «документ …» внутри скобок заголовка; «PDF …» и «LLM …» не трогаем."""
+    if len(message) > 1 and message[0].isupper() and (message[1].islower() or message[1] == " "):
+        return message[0].lower() + message[1:]
+    return message
+
+
+def _conclusion(
+    ctx: RunContext, errors: Sequence[Diagnostic], cautions: Sequence[Diagnostic] = ()
+) -> Conclusion:
+    """Итог первой страницы. ``errors``: проверка неполная; ``cautions``: предупреждения входа (код 3,
+    вход прочитан с оговорками), тогда итог не зелёный и называет оговорку (#126)."""
     if ctx.doc is None:
         reason = errors[0].message if errors else "вход не прочитан"
         return Conclusion(
@@ -91,11 +131,16 @@ def _conclusion(ctx: RunContext, errors: Sequence[Diagnostic]) -> Conclusion:
     if errors:
         light = TrafficLight.RED if light is TrafficLight.RED else TrafficLight.YELLOW
         headline = f"Проверка выполнена не полностью ({errors[0].message}). По проверенной части: {reason}"
+    elif cautions:
+        light = TrafficLight.RED if light is TrafficLight.RED else TrafficLight.YELLOW
+        caution = _lower_first(cautions[0].message)
+        headline = f"Проверка выполнена с оговорками ({caution}). По прочитанному: {reason}"
+    fix_first = _fix_first(ver)
     return Conclusion(
         traffic_light=light,
         headline=headline,
-        fix_first=_fix_first(ver),
-        ask_first=_ask_first(ctx.questions),
+        fix_first=fix_first,
+        ask_first=_ask_first(ctx.questions, fix_first),
     )
 
 
@@ -152,6 +197,19 @@ def _metrics(ctx: RunContext) -> RunMetrics:
     )
 
 
+TITLE_MAX_CHARS = 200
+"""Название документа в паспорте длиннее этого обрезается: заголовок не должен растягивать таблицу."""
+
+
+def document_title(doc: ParsedDocument) -> str | None:
+    """Название документа: первый заголовок текста (у файла без заголовков названия нет)."""
+    heading = next((b for b in doc.blocks if b.kind is BlockKind.HEADING and b.text.strip()), None)
+    if heading is None:
+        return None
+    title = " ".join(heading.text.lstrip("#").split())
+    return title[: TITLE_MAX_CHARS - 1].rstrip() + "…" if len(title) > TITLE_MAX_CHARS else title or None
+
+
 def _document(ctx: RunContext) -> DocumentInfo | None:
     if ctx.doc is not None:
         doc = ctx.doc
@@ -159,6 +217,7 @@ def _document(ctx: RunContext) -> DocumentInfo | None:
             name=doc.name,
             path=doc.path,
             kind=doc.kind,
+            title=document_title(doc),
             sha256=doc.sha256,
             size_bytes=doc.size_bytes,
             pages=doc.pages,
@@ -177,7 +236,7 @@ def _coverage(ctx: RunContext) -> CoverageMatrix | None:
     """Матрица покрытия: только когда есть и нарезка, и находки (иначе не по чему её строить)."""
     if ctx.verification is None or ctx.segmentation is None:
         return None
-    return build_coverage(ctx.verification, ctx.segmentation.requirements, ctx.passes)
+    return build_coverage(ctx.verification, ctx.segmentation.requirements, ctx.passes, ctx.parts)
 
 
 def build_report(ctx: RunContext) -> Report:
@@ -201,8 +260,9 @@ def build_report(ctx: RunContext) -> Report:
         questions=list(ctx.questions),
         questions_withdrawn=list(ctx.questions_withdrawn),
         clarification=ctx.clarification,
-        conclusion=_conclusion(ctx, errors),
+        conclusion=_conclusion(ctx, errors, [d for d in inputs if d.level is DiagLevel.WARNING]),
         metrics=_metrics(ctx),
         coverage=_coverage(ctx),
         checklists=_checklists(ctx),
+        questions_file=ctx.questions_file,
     )

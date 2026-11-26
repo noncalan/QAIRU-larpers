@@ -49,7 +49,7 @@ from validator.questions import critic
 from validator.questions.candidates import Candidate, collect_candidates, shortlist
 from validator.questions.cards import CardDraft, CheckLog, draft_from_card, finalize
 from validator.questions.editor import EditorReply, edit, normalize_candidate_id
-from validator.questions.export import questions_payload, write_questions_yaml
+from validator.questions.export import questions_payload, safe_questions_path, write_questions_yaml
 from validator.questions.fallback import draft_from_candidate
 from validator.questions.metrics import question_metrics
 from validator.questions.scoring import priority
@@ -89,9 +89,8 @@ def _fallback(
     cands: list[Candidate], ver: Verification, seg: Segmentation, reason: str, hint: str
 ) -> QuestionsOutcome:
     log = CheckLog()
-    req_types = {r.id: r.type for r in seg.requirements}
     drafts = [draft_from_candidate(c) for c in cands]
-    questions = finalize(drafts, {f.id: f for f in ver.findings}, req_types, log, merge_similar=False)
+    questions = finalize(drafts, {f.id: f for f in ver.findings}, log, merge_similar=False)
     failed = Diagnostic(
         code=LLM_QUESTIONS_FAILED,
         level=DiagLevel.WARNING,
@@ -169,11 +168,10 @@ def _from_reply(
     dropped, ignored = _unanswered(reply, cands, drafts, log)
     if not drafts and (reply.cards or reply.invalid or not dropped):
         return None
-    req_types = {r.id: r.type for r in seg.requirements}
-    rescued = [c for c in ignored if priority(c.findings, req_types) is QuestionPriority.P0]
+    rescued = [c for c in ignored if priority(c.findings) is QuestionPriority.P0]
     log.rescued += len(rescued)
     drafts += [draft_from_candidate(c) for c in rescued]
-    questions = finalize(drafts, {f.id: f for f in ver.findings}, req_types, log)
+    questions = finalize(drafts, {f.id: f for f in ver.findings}, log)
     logger.info(
         "Вопросы: кандидатов %d, карточек редактора %d, отклонил %d, пропустил %d, в отчёте %d",
         len(cands),
@@ -214,10 +212,9 @@ def draft_questions(
     if not cands:
         logger.info("Вопросы: кандидатов нет, редактор не вызывался")
         return QuestionsOutcome()
-    req_types = {r.id: r.type for r in seg.requirements}
-    shown = shortlist(cands, req_types)
+    shown = shortlist(cands)
     try:
-        outcome = _from_reply(edit(shown, doc, req_types, llm, cfg), shown, doc, ver, seg, len(cands))
+        outcome = _from_reply(edit(shown, doc, llm, cfg), shown, doc, ver, seg, len(cands))
     except LLMError as exc:
         return _fallback(cands, ver, seg, exc.message, exc.hint)
     except Exception as exc:  # граница редактора: ответ модели внешний, карточки кода терять нельзя
@@ -260,5 +257,6 @@ __all__ = [
     "draft_questions",
     "question_metrics",
     "questions_payload",
+    "safe_questions_path",
     "write_questions_yaml",
 ]

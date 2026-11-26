@@ -4,13 +4,17 @@
 таблиц в форме «Колонка: значение; …» (``render_for_model``) и иногда так их и цитирует, а в документе
 такого текста нет. Тогда сверяем по ячейкам: каждое значение ищем отдельно, и если нашлись ячейки одной
 строки, в карточку идёт дословный фрагмент этой строки документа от первой найденной ячейки до последней.
+
+Короткие значения ячеек («string», «1–64») и одну ячейку с названием колонки («Ожидаемый результат: …»)
+по отдельности не найти. Поэтому последняя попытка: цитата дословно входит в строку таблицы в том виде,
+в каком её видела модель (``Block.serialized``), и в документ идёт текст ячеек, которые она накрывает (#120).
 """
 
 from __future__ import annotations
 
 from collections.abc import Sequence
 
-from validator.models import ParsedDocument, Quote
+from validator.models import Block, BlockKind, ParsedDocument, Quote
 from validator.text import MIN_FUZZY_CHARS, locate_quote, normalize
 
 ROW_SEPARATOR = ";"
@@ -63,6 +67,56 @@ def _row_fragment(doc: ParsedDocument, raw: str, within: Sequence[str]) -> Quote
     return fragment if fragment.verified else None
 
 
+def _loose(text: str) -> str:
+    """Текст для сравнения с сериализацией строки: нормализация, без разметки Markdown и лишних пробелов."""
+    return " ".join(normalize(text.replace("`", "").replace("**", ""))[0].split())
+
+
+def _cell_spans(row: Block, serialized: str) -> list[tuple[int, int, int]]:
+    """Где в ``_loose(row.serialized)`` стоит текст каждой непустой ячейки: (номер ячейки, начало, конец)."""
+    out: list[tuple[int, int, int]] = []
+    cursor = 0
+    for k, cell in enumerate(row.cells):
+        text = _loose(cell.text)
+        if not text:
+            continue
+        labelled = _loose(f"{cell.column}: {cell.text}")
+        pos = serialized.find(labelled, cursor)
+        start = pos + len(labelled) - len(text) if pos >= 0 else serialized.find(text, cursor)
+        if start < 0:
+            continue
+        out.append((k, start, start + len(text)))
+        cursor = start + len(text)
+    return out
+
+
+def _serialized_row(doc: ParsedDocument, raw: str, within: Sequence[str]) -> Quote | None:
+    """Цитата из строки таблицы в виде «Колонка: значение; …»: фрагмент документа по накрытым ячейкам.
+
+    Строку берём среди блоков ``within``, иначе единственную строку документа, где цитата есть.
+    """
+    needle = _loose(raw)
+    if len(needle) < MIN_FUZZY_CHARS:
+        return None
+    rows = [
+        b for b in doc.blocks if b.kind is BlockKind.TABLE_ROW and b.cells and needle in _loose(b.serialized)
+    ]
+    named = {ref.split(".", 1)[0] for ref in within}
+    picked = [b for b in rows if b.id in named] or (rows if len(rows) == 1 else [])
+    if not picked:
+        return None
+    row = picked[0]
+    serialized = _loose(row.serialized)
+    start = serialized.find(needle)
+    end = start + len(needle)
+    covered = [row.cells[k] for k, s, e in _cell_spans(row, serialized) if s < end and start < e]
+    if not covered:
+        return None
+    fragment = doc.text[covered[0].char_start : covered[-1].char_end]
+    found = locate_quote(doc, fragment, within=[row.id])
+    return found if found.verified else None
+
+
 def verify_quote(doc: ParsedDocument, raw: str, within: Sequence[str]) -> Quote | None:
     """Сверенная цитата (или фрагмент строки таблицы) либо None, если в документе её нет."""
     if not raw.strip():
@@ -70,4 +124,4 @@ def verify_quote(doc: ParsedDocument, raw: str, within: Sequence[str]) -> Quote 
     found = locate_in(doc, raw, within)
     if found.verified:
         return found
-    return _row_fragment(doc, raw, within)
+    return _row_fragment(doc, raw, within) or _serialized_row(doc, raw, within)

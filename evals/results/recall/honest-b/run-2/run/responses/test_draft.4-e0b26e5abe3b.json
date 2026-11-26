@@ -1,0 +1,231 @@
+{
+ "envelope_version": 1,
+ "key": "e0b26e5abe3b80aec2c783b82cd5054c99379641af7112bc0732b5f47b3a3485",
+ "call_id": "test_draft.4",
+ "step": "test_draft",
+ "call_index": 4,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T12:50:10.869415+00:00",
+ "payload": {
+  "duration_api_ms": 56621,
+  "stop_reason": "end_turn",
+  "session_id": "d669401e-05e7-4ec6-b093-f7e7641264bf",
+  "total_cost_usd": 0.12183159999999998,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 10197,
+   "cache_read_input_tokens": 2296,
+   "output_tokens": 8081,
+   "output_tokens_details": {
+    "thinking_tokens": 5741
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 10197,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 8081,
+     "cache_read_input_tokens": 2296,
+     "cache_creation_input_tokens": 10197,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 10197
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 8081,
+    "cacheReadInputTokens": 2296,
+    "cacheCreationInputTokens": 10197,
+    "webSearchRequests": 0,
+    "costUSD": 0.12183159999999998,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 5741,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 10197,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n**M-055.** Чтобы описать результат для `amount`=999, нужен HTTP-код. Тело ответа можно взять из документа, но оно зависит от кода. Документ даёт два несовместимых варианта: пример `result`=ERROR лежит в разделе 200, а «параметры заполнены неверно» отнесено к 400. Единого кода нет, поэтому ставлю пропуск на код и на тело. Из документа известны диапазон и то, что прежняя настройка сохраняется.\n\n**M-056.** Для успешного сохранения нужны код и тело. Код 200 назван явно в заголовке и в описании статуса. Код 201 встречается только в общем правиле «200 или 201 — успешный». Слово «Created» в заголовке дефект именования, но на ожидаемый код не влияет. Тело даёт пример в разделе 200, поэтому тест написать можно.\n\n**M-057.** Находка о том, когда возвращается 403, а условия для 403 в документе нет. Для чужой карты документ прямо называет 404, но это другое поведение. Тест 403 получает пропуск на условие и на тело, потому что единственный пример тела относится к 404.\n\n**M-058.** Нужно знать, есть ли в теле ошибки 4xx/5xx поле `result`. Таблица ответа описывает `result` без привязки к коду, а пример 400 его не содержит. Текст `message` и код 400 известны, а наличие `result` нет, поэтому на него ставлю пропуск.\n\n## Ответ\n\n```json\n{\n  \"drafts\": [\n    {\n      \"finding\": \"M-055\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователь вошёл в приложение (действует Bearer-сессия). Карта принадлежит ему, для неё сохранён порог 50 000 ₸, уведомление включено.\",\n      \"steps\": [\n        \"Отправить запрос сохранения порога для этой карты с amount=999 (ниже допустимого минимума), enabled=1.\"\n      ],\n      \"expected\": \"Сервис возвращает HTTP-код [?1]. Тело ответа: [?2]. Прежняя настройка (порог 50 000 ₸, включено) не изменилась.\",\n      \"values\": [\n        {\"value\": \"от 1 000 до 1 000 000 ₸ включительно\", \"quote\": \"Держатель активной карты KZT задаёт целый порог от 1 000 до 1 000 000 ₸ включительно.\"},\n        {\"value\": \"вернуть прежнее состояние\", \"quote\": \"При отклонении суммы вернуть прежнее состояние и результат ERROR.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"HTTP-код ответа при amount вне диапазона: пример с result=ERROR и «Проверьте сумму» стоит в разделе 200, а 400 описан как «параметры запроса заполнены неверно»; единый код не назван\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"состав тела при отклонённой сумме: для 200 есть пример с result=ERROR и message «Проверьте сумму», для 400 пример {\\\"message\\\":\\\"Некорректный запрос\\\"} без result; какой из них ждать, зависит от неназванного кода\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-056\",\n      \"can_write\": true,\n      \"precondition\": \"Пользователь вошёл в приложение (действует Bearer-сессия). Карта demo-42 принадлежит ему.\",\n      \"steps\": [\n        \"Отправить запрос сохранения порога как в примере CURL: cardId=demo-42, amount=50000, enabled=1.\"\n      ],\n      \"expected\": \"HTTP-код 200. Тело ответа: result=\\\"OK\\\", amount=\\\"50000\\\", enabled=\\\"1\\\".\",\n      \"values\": [\n        {\"value\": \"200\", \"quote\": \"200. Successful — Created\"},\n        {\"value\": \"{\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}\", \"quote\": \"{\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}\"}\n      ],\n      \"gaps\": [],\n      \"note\": \"Код 200 назван явно в заголовке и в описании статуса, а 201 есть только в общем правиле «200 или 201 — успешный». Слово «Created» в заголовке неточно, но ожидаемый код не меняет. Заголовок стоит поправить.\"\n    },\n    {\n      \"finding\": \"M-057\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователь вошёл в приложение (действует Bearer-сессия). Создано условие, при котором доступ к ресурсу запрещён: [?1].\",\n      \"steps\": [\n        \"Отправить запрос сохранения порога при этом условии.\"\n      ],\n      \"expected\": \"HTTP-код 403. Тело ответа: [?2].\",\n      \"values\": [\n        {\"value\": \"403\", \"quote\": \"403. Unsuccessful — Forbidden\"},\n        {\"value\": \"404\", \"quote\": \"Для чужой карты возвращается 404, как и для отсутствующей карты.\"},\n        {\"value\": \"Карта не найдена\", \"quote\": \"{\\\"message\\\":\\\"Карта не найдена\\\"}\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"условие, при котором возвращается 403: «доступ запрещён» не расшифровано, а чужая и отсутствующая карта по документу дают 404\", \"part\": \"precondition\"},\n        {\"number\": 2, \"missing\": \"тело ответа 403: единственный пример {\\\"message\\\":\\\"Карта не найдена\\\"} относится к 404\", \"part\": \"expected\"}\n      ],\n      \"note\": \"Запрос по чужой карте проверяется отдельным тестом: ожидается 404 и message «Карта не найдена».\"\n    },\n    {\n      \"finding\": \"M-058\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователь вошёл в приложение (действует Bearer-сессия).\",\n      \"steps\": [\n        \"Отправить запрос сохранения порога без обязательного параметра cardId (amount=50000, enabled=1).\"\n      ],\n      \"expected\": \"HTTP-код 400. В теле message=\\\"Некорректный запрос\\\". Поле result в теле: [?1].\",\n      \"values\": [\n        {\"value\": \"400\", \"quote\": \"400. Unsuccessful — Bad request\"},\n        {\"value\": \"Некорректный запрос\", \"quote\": \"{\\\"message\\\":\\\"Некорректный запрос\\\"}\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"есть ли в теле ответа 4xx/5xx поле result со значением ERROR: таблица ответа описывает result без привязки к коду, а пример 400 его не содержит\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    }\n  ]\n}\n```",
+  "ttft_ms": 43892,
+  "type": "result",
+  "duration_ms": 60431,
+  "uuid": "6ed8cfb9-65e1-4e20-906f-ce33ebdd1f9e",
+  "ttft_stream_ms": 1067,
+  "time_to_request_ms": 164,
+  "time_to_request_phases_ms": {
+   "other": 8,
+   "system_prompt": 3,
+   "resume_other": 0,
+   "process_user_input": 5,
+   "input_attachments": 10,
+   "input_hooks": 4,
+   "conversation_append": 0,
+   "tool_pool_refresh": 39,
+   "init_message": 42,
+   "init_frame_send": 3,
+   "engine_pickup": 2,
+   "loop_entry": 17,
+   "message_prep": 3,
+   "model_config_wait": 1,
+   "autocompact": 4,
+   "request_announcements": 7,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 2,
+   "client_creation": 6,
+   "request_build": 5
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 114,
+  "time_to_request_cpu_ms": 132,
+  "time_to_request_major_faults": 0,
+  "process_rss_mib_turn_start": 201,
+  "process_anon_mib_turn_start": 123,
+  "process_rss_mib_result": 205,
+  "process_anon_mib_result": 120,
+  "process_peak_rss_mib": 220,
+  "process_cpu_ms_turn": 1027,
+  "process_wall_ms_turn": 60430,
+  "tool_pool_build_count": 4,
+  "tool_pool_build_lapsed_count": 1,
+  "tool_pool_moved_at_lapse_count": 0,
+  "tool_pool_limit_ms": 30000,
+  "process_cpu_ms_streaming": 646,
+  "process_wall_ms_streaming": 55707,
+  "main_stream_count": 1,
+  "main_stream_event_count": 433,
+  "main_stream_chunk_count": 426,
+  "process_turn_states": {
+   "main_stream": {
+    "cpu_ms": 646,
+    "wall_ms": 55707,
+    "entries": 1
+   },
+   "first_event_wait": {
+    "cpu_ms": 210,
+    "wall_ms": 901,
+    "entries": 1
+   },
+   "before_first_request": {
+    "cpu_ms": 132,
+    "wall_ms": 164,
+    "entries": 1
+   },
+   "after_last_request": {
+    "cpu_ms": 39,
+    "wall_ms": 3658,
+    "entries": 1
+   }
+  },
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 2,
+   "cpu_ms": 10,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 4,
+   "ambient_wait_ms": 1,
+   "render_ms": 2,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 0,
+   "after_ms": 1,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 1,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 1,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 0,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1068,
+  "time_to_request_from_spawn_ms": 1751687,
+  "warm_spare_claimed": false,
+  "flag_fetch_kick": "not_asked_warm",
+  "time_origin_ms": 1795697349361.0835,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "process_start_tuning": 0
+ }
+}

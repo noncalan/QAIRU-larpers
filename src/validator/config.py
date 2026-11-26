@@ -66,7 +66,7 @@ class ProfileSpec:
 PROFILES: dict[Profile, ProfileSpec] = {
     Profile.QUICK: ProfileSpec(1, Effort.MEDIUM, "1 проход, Opus medium: отладка и быстрый прогон"),
     Profile.STANDARD: ProfileSpec(1, Effort.MEDIUM, "1 проход, Opus medium: обычный прогон (D-011)"),
-    Profile.SUBMIT: ProfileSpec(1, Effort.XHIGH, "1 проход, Opus xhigh: отчёт на сдачу и финал (D-011)"),
+    Profile.SUBMIT: ProfileSpec(1, Effort.XHIGH, "1 проход, Opus xhigh: опция, не для сдачи (D-012)"),
 }
 
 SEARCH_INPUT = SearchInput.BLOCKS
@@ -148,6 +148,7 @@ def load_config(
     passes: int | None = None,
     backend: Backend = Backend.AUTO,
     replay_dir: Path | None = None,
+    replay_by_position: bool = False,
     cache: CacheMode = CacheMode.USE,
     answers_path: Path | None = None,
     ask: bool = False,
@@ -171,6 +172,7 @@ def load_config(
         passes=passes if passes is not None else spec.passes,
         backend=backend,
         replay_dir=replay_dir,
+        replay_by_position=replay_by_position,
         cache=cache,
         cache_dir=CACHE_DIR,
         answers_path=answers_path,

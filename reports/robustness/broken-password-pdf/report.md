@@ -1,6 +1,6 @@
 # Отчёт о проверке требований: password.pdf
 
-Проверка по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3). Отчёт сформировал агент QAIRU validator 4ebb9e2, 2026-11-26 07:43:14 UTC.
+Проверка по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3). Отчёт сформировал агент QAIRU validator 104b463, 2026-11-26 12:54:53 UTC.
 
 ## Итог на первой странице
 
@@ -11,11 +11,11 @@
 | Параметр | Значение |
 |---|---|
 | Документ | password.pdf (unknown, 2071 байт) |
-| SHA-256 документа | d54cfe85ed870e522ec6504a1ae64e3ab06c5b58c102667c210f510b60dda794 |
-| Дата прогона | 2026-11-26 07:43:14 UTC |
+| SHA-256 документа | 019368a849324ac2dc5999aa4b9e59b631530ded3c56d8f0b6abca5a122967fc |
+| Дата прогона | 2026-11-26 12:54:53 UTC |
 | Длительность | 0.03 с |
-| Версия агента | 4ebb9e2 (источник: git) |
-| Хеш промптов | 1fc8be63f489 |
+| Версия агента | 104b463 (источник: git) |
+| Хеш промптов | 7dd96b1cffa4 |
 | Способ вызова модели | модель не вызывалась (запрошено: фикстуры тестов (без модели)) |
 | Модели по шагам | segment: claude-sonnet-5-5 · medium; search: claude-opus-5-5 · medium; search_transfer: claude-haiku-5-5 · medium; evidence: claude-opus-5-5 · high; critic: claude-opus-5-5 · high; test_draft: claude-sonnet-5-5 · high; questions: claude-opus-5-5 · high; questions_critic: claude-opus-5-5 · high; set_check: claude-opus-5-5 · medium |
 | Фактические модели | — |
@@ -33,7 +33,7 @@
 
 | Параметр | Значение |
 |---|---|
-| Файл | password.pdf (2071 байт, SHA-256: d54cfe85ed870e522ec6504a1ae64e3ab06c5b58c102667c210f510b60dda794) |
+| Файл | password.pdf (2071 байт, SHA-256: 019368a849324ac2dc5999aa4b9e59b631530ded3c56d8f0b6abca5a122967fc) |
 | Тип по содержимому | unknown |
 | Символов извлечено, блоков | 0, 0 |
 | Статус входа | НЕ ПРОЧИТАН: проверка невозможна |

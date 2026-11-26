@@ -19,9 +19,13 @@ from validator.errors import INT_SELFCHECK_FAILED, INT_SELFCHECK_WARNING, INT_ST
 from validator.models import (
     Backend,
     CellState,
+    CoverageCell,
     DiagLevel,
     DocKind,
+    DocumentInfo,
+    DocumentPart,
     ExitCode,
+    PassResult,
     Property,
     QuoteMatch,
     Report,
@@ -29,6 +33,7 @@ from validator.models import (
     SelfCheckItem,
 )
 from validator.report import render_md
+from validator.report.coverage import build_coverage
 from validator.report.selfcheck import TZ_SECTIONS, check_report, selfcheck_diagnostics
 
 
@@ -328,6 +333,95 @@ def test_matrix_row_for_set_property_pointing_at_requirement_finding_is_caught()
     broken = report.model_copy(update={"coverage": report.coverage.model_copy(update={"set_rows": set_rows})})
 
     assert "matrix" in failed_ids(check(broken))
+
+
+def matrix_failures(sc: SelfCheck) -> list[str]:
+    return next(i for i in sc.items if i.id == "matrix").failures
+
+
+def with_row(report: Report, index: int, **changes: object) -> Report:
+    assert report.coverage is not None
+    rows = list(report.coverage.rows)
+    rows[index] = rows[index].model_copy(update=changes)
+    return report.model_copy(update={"coverage": report.coverage.model_copy(update={"rows": rows})})
+
+
+def test_set_level_finding_hidden_behind_clean_row_is_caught() -> None:
+    """#118: раздел 4 пишет у R-02 противоречие F-01, а матрица «√» по всем колонкам. Самопроверка
+    не может сказать «пройдена»."""
+    report = full()
+    assert report.coverage is not None
+    clean = CoverageCell(state=CellState.CLEAN)
+    broken = with_row(report, 1, set_cell=clean)  # R-02: как матрица RC1 до правки
+
+    sc = check(broken)
+
+    assert "matrix" in failed_ids(sc)
+    failures = matrix_failures(sc)
+    assert any(f.startswith("R-02: F-01 есть у требования в разделе 4") for f in failures)
+    assert any(f.startswith("R-02: в разделе 4 F-01, в матрице находок нет") for f in failures)
+    assert any(d.code == INT_SELFCHECK_FAILED for d in selfcheck_diagnostics(sc))
+
+
+def test_markdown_where_section_4_and_matrix_disagree_is_caught() -> None:
+    report = full()
+    markdown = render_md(report)
+    row = next(line for line in markdown.splitlines() if line.startswith("| R-02 |") and "F-01 (" in line)
+    tampered = markdown.replace(row, row.replace(row.split("|")[-2], " нарушений нет "))
+
+    failures = matrix_failures(check(report, tampered))
+
+    assert any(f.startswith("R-02: в разделе 4 находок нет, в матрице F-01") for f in failures)
+
+
+def two_parts(report: Report, *, second_ok: int) -> Report:
+    assert report.document is not None and report.segmentation is not None
+    ids = [r.id for r in report.segmentation.requirements]
+    parts = [
+        DocumentPart(index=1, first_block="B001", last_block="B020", passes_ok=1, requirement_ids=ids[:3]),
+        DocumentPart(
+            index=2, first_block="B021", last_block="B044", passes_ok=second_ok, requirement_ids=ids[3:]
+        ),
+    ]
+    document: DocumentInfo = report.document.model_copy(update={"parts": parts})
+    return report.model_copy(update={"document": document})
+
+
+def test_clean_cells_in_a_part_that_no_pass_searched_are_caught() -> None:
+    """Сбой модели на части 2 из 2: матрица по-старому пишет «√» у её требований. Это нарушение."""
+    report = two_parts(full(), second_ok=0)  # матрица фабрики строилась так, будто искали везде
+
+    failures = matrix_failures(check(report))
+
+    assert any(f.startswith("R-04: «нарушений нет», а часть 2 поиском не проверена") for f in failures)
+    assert any("непроверенные части в матрице: [], а в паспорте: [2]" in f for f in failures)
+
+
+def test_matrix_built_with_parts_passes_the_check() -> None:
+    report = two_parts(full(), second_ok=0)
+    assert report.verification is not None and report.segmentation is not None and report.document
+    passes = [PassResult(index=1, ok=True, parts_failed=[2])]
+    matrix = build_coverage(
+        report.verification, report.segmentation.requirements, passes, report.document.parts
+    )
+    fixed = report.model_copy(update={"coverage": matrix})
+    markdown = render_md(fixed)
+
+    sc = check(fixed, markdown)
+
+    assert "matrix" not in failed_ids(sc), matrix_failures(sc)
+    assert "| R-04 | НФТ-1 | не проверено моделью |" in markdown
+    assert "| R-05 | НФТ-2 | F-03 (важно, неясно); остальное не проверено моделью |" in markdown
+    assert "Не проверено моделью: 3" in markdown and "Поиском не проверены: часть 2 из 2" in markdown
+
+
+def test_clean_cells_when_no_pass_worked_are_caught() -> None:
+    report = full()
+    metrics = report.metrics.model_copy(update={"passes_ok": 0})
+
+    failures = matrix_failures(check(report.model_copy(update={"metrics": metrics})))
+
+    assert any(f.startswith("R-01: «нарушений нет», а ни один проход поиска не отработал") for f in failures)
 
 
 def test_many_failures_are_cut_to_ten_lines_with_the_total() -> None:
