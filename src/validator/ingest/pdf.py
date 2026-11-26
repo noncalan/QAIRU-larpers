@@ -42,6 +42,7 @@ from validator.ingest.pdf_backends import (
     RawPage,
     get_backend,
 )
+from validator.ingest.pdf_cell_text import vocabulary
 from validator.ingest.pdf_layout import (
     LayoutStats,
     Line,
@@ -52,7 +53,7 @@ from validator.ingest.pdf_layout import (
     group_lines,
 )
 from validator.ingest.pdf_table_lines import table_part_lines
-from validator.ingest.pdf_tables import LogicalTable, PageTable, find_tables, link_tables
+from validator.ingest.pdf_tables import LogicalTable, PageTable, cell_lines, find_tables, link_tables, rejoin
 from validator.ingest.quality import page_ranges
 from validator.models import DiagLevel, Diagnostic, Extraction, SourceLine, TextSignals
 
@@ -378,7 +379,8 @@ def parse_pdf(path: Path, backend: str | None = None, *, ocr: bool | None = None
     finally:
         source.close()
         reader.close()
-    tables = link_tables(read.tables, read.heights)
+    vocab = vocabulary((line.text for lines in read.prose for line in lines), cell_lines(read.tables))
+    tables = link_tables(rejoin(read.tables, vocab), read.heights, vocab)
     marked = find_furniture(read.prose)
     body = [line for lines in read.prose for line in lines if (line.page, line.page_line) not in marked]
     furniture = [line for lines in read.prose for line in lines if (line.page, line.page_line) in marked]

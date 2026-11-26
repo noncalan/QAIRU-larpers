@@ -1488,6 +1488,7 @@ class Passport(Contract):
     agent_version: str
     agent_version_source: str = Field(description="git, AGENT_VERSION или unknown")
     agent_dirty: bool = False
+    agent_commit: str | None = Field(default=None, description="Короткий хеш коммита агента (git)")
     prompts_sha256: str
     os: str
     python: str
@@ -1643,6 +1644,7 @@ class DocumentInfo(Contract):
     name: str
     path: str
     kind: DocKind
+    title: str | None = Field(default=None, description="Название документа: первый заголовок текста")
     sha256: str | None = None
     size_bytes: int | None = None
     pages: int | None = None

@@ -13,6 +13,7 @@
     "agent_version": "v0.9.0",
     "agent_version_source": "git",
     "agent_dirty": false,
+    "agent_commit": null,
     "prompts_sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
     "os": "Linux 6.1 (x86_64)",
     "python": "3.12.0",
@@ -50,6 +51,7 @@
     "name": "rooms.md",
     "path": "/tmp/rooms.md",
     "kind": "md",
+    "title": null,
     "sha256": "abababababababababababababababababababababababababababababababab",
     "size_bytes": 2048,
     "pages": null,
@@ -714,7 +716,7 @@
           {
             "kind": "lint",
             "pass_index": null,
-            "rule_id": "LNT-04",
+            "rule_id": "L-10",
             "call_id": null,
             "checklist_item": null
           }

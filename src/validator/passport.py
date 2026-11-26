@@ -36,13 +36,13 @@ AGENT_VERSION_ENV = "AGENT_VERSION"
 GIT_TIMEOUT_S = 10
 
 
-def _git_describe() -> str | None:
+def _git(*args: str) -> str | None:
     git = shutil.which("git")
     if git is None:
         return None
     try:
         result = subprocess.run(
-            [git, "describe", "--tags", "--always", "--dirty"],
+            [git, *args],
             cwd=PACKAGE_DIR,
             capture_output=True,
             text=True,
@@ -53,6 +53,15 @@ def _git_describe() -> str | None:
         return None
     out = result.stdout.strip()
     return out if result.returncode == 0 and out else None
+
+
+def _git_describe() -> str | None:
+    return _git("describe", "--tags", "--always", "--dirty")
+
+
+def agent_commit() -> str | None:
+    """Короткий хеш коммита агента: рядом с тегом в паспорте, чтобы версию можно было найти и без тега."""
+    return _git("rev-parse", "--short", "HEAD")
 
 
 def agent_version() -> tuple[str, str, bool]:
@@ -137,6 +146,7 @@ def build_passport(
         agent_version=version,
         agent_version_source=source,
         agent_dirty=dirty,
+        agent_commit=agent_commit() if source == "git" else None,
         prompts_sha256=prompts_sha256(),
         os=f"{platform.system()} {platform.release()} ({platform.machine()})",
         python=platform.python_version(),

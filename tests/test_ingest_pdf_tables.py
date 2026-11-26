@@ -79,6 +79,44 @@ def test_requirements_pdf_cells_match_docx_cells(pdf_doc: ParsedDocument) -> Non
             assert [squash(c) for c in pdf[number][index]] == [squash(c) for c in row], (number, index + 1)
 
 
+BROKEN_IN_LAYOUT = {
+    "Идентификатор карты": "Иденти фикатор",
+    "limit_kzt": "limit_kz t",
+    "Признак включения": "включен ия",
+    "Исход сохранения": "сохранени я",
+    "Description": "Descriptio n",
+    "cardId=demo-42": "demo- 42",
+}
+"""Слова, которые вёрстка PDF рвёт у края узкой колонки без знака переноса (#121): целое слово и обрывки."""
+
+
+def test_words_broken_at_narrow_column_edge_are_glued(pdf_doc: ParsedDocument) -> None:
+    for word, broken in BROKEN_IN_LAYOUT.items():
+        assert word in pdf_doc.text, word
+        assert broken not in pdf_doc.text, broken
+
+
+def test_pdf_cells_match_docx_cells_word_for_word(pdf_doc: ParsedDocument) -> None:
+    """Ячейки PDF и DOCX совпадают по словам. Осталось одно известное расхождение: хвост «о» после обрывка
+    («интеграционног о») похож на служебное слово «о», и склейка без словаря его не трогает."""
+    docx = table_rows(parse(DOCX, DocKind.DOCX))
+    pdf = table_rows(pdf_doc)
+
+    def words(text: str) -> str:
+        return " ".join(re.sub(r"\s+([.,:;])", r"\1", text).split())
+
+    differ = [
+        (number, index, a)
+        for number, rows in docx.items()
+        for index, row in enumerate(rows)
+        for a, b in zip(pdf[number][index], row, strict=True)
+        if words(a) != words(b)
+    ]
+
+    assert len(differ) <= 1, differ
+    assert all("интеграционног о" in text for _, _, text in differ)
+
+
 def test_table_text_is_not_duplicated_in_the_paragraph_flow(pdf_doc: ParsedDocument) -> None:
     assert pdf_doc.text.count("Февральский счётчик") == 1
     assert pdf_doc.text.count("Сохранение порога") == 1

@@ -378,18 +378,24 @@ def test_model_hint_is_kept_but_does_not_decide(doc: ParsedDocument, seg: Segmen
 
     assert (result.severity, result.severity_hint) == (Severity.MINOR, Severity.CRITICAL)
     assert result.severity_disputed
-    assert any("расходятся больше чем на уровень" in note for note in result.notes)
+    assert "модель оценила «критично»: оценки расходятся больше чем на уровень" in result.severity_basis
+    assert not any("расходятся" in note for note in result.notes)  # служебное, не в карточку (#125)
     assert "прослеживаемость" in result.severity_basis
 
 
-def test_dispute_note_names_table_value_and_final_severity(doc: ParsedDocument, seg: Segmentation) -> None:
+def test_dispute_is_in_severity_basis_with_table_value_and_final_severity(
+    doc: ParsedDocument, seg: Segmentation
+) -> None:
     unclear = merged(LIMIT_FIVE, verdict=Verdict.UNCLEAR, blocks_testing=True, hint=Severity.MINOR)
 
     result = only(verify([unclear], doc, seg).findings)
 
     assert result.severity is Severity.MINOR
     assert result.severity_disputed
-    assert "дала «критично», итог после правил кода «незначительно»" in result.notes[0]
+    basis = result.severity_basis
+    assert "мешает написать тест-кейс: «критично»" in basis
+    assert "не выше «незначительно»" in basis
+    assert basis.endswith("модель оценила «незначительно»: оценки расходятся больше чем на уровень")
 
 
 @pytest.mark.parametrize(
@@ -528,7 +534,7 @@ def test_form_defect_that_model_called_critical_is_marked_as_disputed(
 
     assert result.severity is Severity.MINOR
     assert result.severity_disputed
-    assert "итог после правил кода «незначительно»" in result.notes[0]
+    assert "модель оценила «критично»" in result.severity_basis
 
 
 def test_model_hint_never_raises_severity(doc: ParsedDocument, seg: Segmentation) -> None:
