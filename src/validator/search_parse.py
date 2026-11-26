@@ -3,7 +3,8 @@
 Ответ прохода размечен строго (#14): раздел «## Находки», подразделы «### Отдельные требования» и
 «### Набор требований», каждая находка начинается строкой «#### Н-k. <суть>», дальше строки
 «- Поле: значение» (Блоки, Цитата (одна или две), Свойство, Тип дефекта, Вердикт, Сценарий,
-Почему мешает, Тест, Важность, Как исправить). Значения полей разбирает ``search_values.py``.
+Почему мешает, Тест, Важность, Как исправить; с доменными чек-листами ещё «Чек-лист», #35).
+Значения полей разбирает ``search_values.py``.
 
 Разбор детерминированный и бесплатный. Находка, в которой код не нашёл обязательных полей
 (цитата, свойство, тип дефекта), не теряется: ``search.py`` отдаёт её текст на перенос в JSON
@@ -76,6 +77,7 @@ class Key:
     TEST = "test"
     SEVERITY = "severity"
     FIX = "fix"
+    CHECKLIST = "checklist"
 
 
 _FIELD_NAMES = {
@@ -94,6 +96,10 @@ _FIELD_NAMES = {
     "важность": Key.SEVERITY,
     "как исправить": Key.FIX,
     "исправление": Key.FIX,
+    "чек-лист": Key.CHECKLIST,
+    "чек лист": Key.CHECKLIST,
+    "чеклист": Key.CHECKLIST,
+    "пункт чек-листа": Key.CHECKLIST,
 }
 
 SINGLE_FIELDS = (Key.PROPERTY, Key.DEFECT_TYPE, Key.VERDICT, Key.TEST, Key.SEVERITY, Key.FIX)
@@ -295,6 +301,8 @@ class Draft:
     test_gap: str | None = None
     severity_hint: Severity | None = None
     suggestion: str | None = None
+    checklist: str | None = None
+    """Строка «Чек-лист:» как её написала модель (#35); ID пункта проверяет ``search.py``."""
 
 
 NOT_A_FINDING = "не в формате находки"
@@ -336,6 +344,7 @@ def draft_from_raw(raw: RawFinding) -> Draft | list[str]:
         test_gap=test_gap,
         severity_hint=parse_severity(raw.first(Key.SEVERITY)),
         suggestion=clean(unwrap(raw.first(Key.FIX))),
+        checklist=clean(raw.first(Key.CHECKLIST)),
     )
 
 

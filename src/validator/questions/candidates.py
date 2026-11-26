@@ -116,7 +116,11 @@ def finding_origins(f: Finding) -> tuple[QuestionOrigin, ...]:
     has_clarify = bool(f.suggestion and CLARIFY.search(f.suggestion))
     if has_clarify or f.blocks_testing:
         kinds = [s.kind for s in f.sources]
-        found.add(next((_SOURCE_ORIGIN[k] for k in kinds if k in _SOURCE_ORIGIN), QuestionOrigin.FINDING))
+        origin = next((_SOURCE_ORIGIN[k] for k in kinds if k in _SOURCE_ORIGIN), QuestionOrigin.FINDING)
+        # Проход отметил находку пунктом доменного чек-листа (#35): вопрос из чек-листа.
+        if origin is QuestionOrigin.FINDING and any(s.checklist_item for s in f.sources):
+            origin = QuestionOrigin.CHECKLIST
+        found.add(origin)
     return tuple(o for o in ORIGIN_ORDER if o in found)
 
 

@@ -19,6 +19,7 @@ from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 from validator.models import (
     Addressee,
+    ChecklistUse,
     DefectType,
     DiagLevel,
     Finding,
@@ -139,6 +140,42 @@ def _input_status(report: Report) -> str:
     return "ПРОЧИТАН ПОЛНОСТЬЮ"
 
 
+CHECKLISTS_NOTE = (
+    "Доменный чек-лист включается, только если слова его области встретились хотя бы в нескольких блоках "
+    "документа. Пункты включённых чек-листов проход поиска получил как подсказки, где искать; находка по "
+    "пункту проходит ту же сверку цитат, что и остальные."
+)
+
+
+def checklist_reason(use: ChecklistUse) -> str:
+    """Почему чек-лист включён или нет: число блоков со словами области и примеры слов."""
+    words = ", ".join(f"«{w}»" for w in use.triggers)
+    found = f"слова области в {use.matched_blocks} блоках (нужно от {use.min_blocks})"
+    return f"{found}: {words}" if words else found
+
+
+def checklist_state(use: ChecklistUse, enabled: bool) -> str:
+    if use.used:
+        return "включён"
+    if not enabled and use.triggered:
+        return "сработал, но чек-листы выключены"
+    return "не включён"
+
+
+def checklists_passport(report: Report) -> str:
+    """Строка паспорта: какие чек-листы ушли в промпт поиска."""
+    p, uses = report.passport, report.checklists
+    if not uses:
+        return "—"
+    if not p.checklists_enabled:
+        return "выключены (--no-checklists)"
+    used = [u for u in uses if u.used]
+    if not used:
+        return "ни один не включён: слов их областей в документе мало"
+    items = sum(u.items for u in used)
+    return f"{', '.join(u.title for u in used)} ({items} пунктов)"
+
+
 def report_context(report: Report) -> dict[str, Any]:
     """Всё, что нужно шаблонам отчёта: готовые списки, связи и подписи. Общий источник для MD и PDF."""
     ver = report.verification
@@ -163,6 +200,10 @@ def report_context(report: Report) -> dict[str, Any]:
         "blocks_development": blocking[QuestionPriority.P0],
         "blocks_testing": blocking[QuestionPriority.P1],
         "input_status": _input_status(report),
+        "checklists_passport": checklists_passport(report),
+        "checklist_reason": checklist_reason,
+        "checklist_state": checklist_state,
+        "checklists_note": CHECKLISTS_NOTE,
         "no_violations": NO_VIOLATIONS,
         "addressee_label": _addressee_label,
         "step_label": step_label,

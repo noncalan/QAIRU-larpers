@@ -99,6 +99,14 @@ def main(
             help="Что видит поиск: blocks (документ с ID блоков) или raw (текст без ID, блоки по цитате)",
         ),
     ] = None,
+    checklists: Annotated[
+        bool | None,
+        typer.Option(
+            "--checklists/--no-checklists",
+            help="Доменные чек-листы (деньги, даты, API…) в поиске, если их слова есть в документе",
+            show_default="по умолчанию включены",
+        ),
+    ] = None,
     version: Annotated[
         bool, typer.Option("--version", callback=_version, is_eager=True, help="Версия агента")
     ] = False,
@@ -125,6 +133,7 @@ def main(
             max_budget_usd=max_budget_usd,
             pdf_backend=pdf_backend,
             search_input=search_input,
+            checklists=checklists,
         )
     except ValueError as exc:
         typer.echo(str(exc), err=True)

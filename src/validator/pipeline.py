@@ -29,6 +29,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TypeVar
 
+from validator.checklists import select_checklists
 from validator.errors import (
     CFG_NOT_IMPLEMENTED,
     IN_NO_TEXT,
@@ -51,6 +52,7 @@ from validator.merge import merge
 from validator.models import (
     Backend,
     CandidateFinding,
+    ChecklistUse,
     DiagLevel,
     Diagnostic,
     DocKind,
@@ -99,6 +101,7 @@ class _State:
     verification: Verification | None = None
     questions: list[Question] = field(default_factory=list)
     questions_withdrawn: list[WithdrawnQuestion] = field(default_factory=list)
+    checklists: list[ChecklistUse] = field(default_factory=list)
     client: RecordingClient | None = None
     backend_used: Backend | None = None
     pdf_written: bool = False
@@ -245,7 +248,18 @@ def _execute(state: _State) -> None:
     state.segmentation = seg
     state.diagnostics.extend(seg.diagnostics)
     state.lint_hits = _step(state, "lint", lambda: lint(doc, seg), list, action="Линтер пропущен")
-    state.passes = _step(state, "search", lambda: search(doc, llm, cfg), list, action="Поиск пропущен")
+    chosen = _step(
+        state,
+        "checklists",
+        lambda: select_checklists(doc, enabled=cfg.checklists),
+        lambda: None,
+        action="Поиск идёт без доменных чек-листов",
+    )
+    state.checklists = list(chosen.uses) if chosen else []
+    active = chosen.active if chosen else ()
+    state.passes = _step(
+        state, "search", lambda: search(doc, llm, cfg, active), list, action="Поиск пропущен"
+    )
     for p in state.passes:
         state.diagnostics.extend(p.diagnostics)
     if not any(p.ok for p in state.passes):
@@ -330,6 +344,7 @@ def _context(
         backend_used=state.backend_used,
         calls=calls,
         exit_code=code,
+        checklists=[u.id for u in state.checklists if u.used],
     )
     return RunContext(
         cfg=cfg,
@@ -348,6 +363,7 @@ def _context(
         diagnostics=[*state.diagnostics, *extra],
         calls=list(calls),
         passport=passport,
+        checklists=state.checklists,
     )
 
 

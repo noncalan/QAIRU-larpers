@@ -21,6 +21,8 @@
     "profile": "standard",
     "passes": 3,
     "search_input": "blocks",
+    "checklists_enabled": true,
+    "checklists": [],
     "models": {
       "search": "claude-opus-5-5 · medium",
       "questions": "claude-opus-5-5 · high"
@@ -292,6 +294,8 @@
     "passes_ok": 3,
     "candidates_passes": 0,
     "candidates_lint": 2,
+    "candidates_checklist": 0,
+    "findings_checklist": 0,
     "discarded_by_reason": {},
     "critic_reviewed": 0,
     "critic_downgraded": 0,
@@ -609,5 +613,6 @@
       }
     ],
     "summary": "ТЗ п. 6: 6 из 6 разделов; находок нет; цитат в находках нет; счётчики сводки сходятся с таблицами"
-  }
+  },
+  "checklists": []
 }

@@ -21,6 +21,8 @@
     "profile": "standard",
     "passes": 3,
     "search_input": "blocks",
+    "checklists_enabled": true,
+    "checklists": [],
     "models": {},
     "models_actual": [],
     "calls_total": 0,
@@ -83,6 +85,8 @@
     "passes_ok": 0,
     "candidates_passes": 0,
     "candidates_lint": 0,
+    "candidates_checklist": 0,
+    "findings_checklist": 0,
     "discarded_by_reason": {},
     "critic_reviewed": 0,
     "critic_downgraded": 0,
@@ -90,5 +94,6 @@
     "found_in": []
   },
   "coverage": null,
-  "selfcheck": null
+  "selfcheck": null,
+  "checklists": []
 }

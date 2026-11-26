@@ -21,6 +21,11 @@
     "profile": "standard",
     "passes": 3,
     "search_input": "blocks",
+    "checklists_enabled": true,
+    "checklists": [
+      "DT",
+      "MON"
+    ],
     "models": {
       "search": "claude-opus-5-5 · medium",
       "questions": "claude-opus-5-5 · high"
@@ -369,19 +374,22 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": null
+            "call_id": null,
+            "checklist_item": "DT-04"
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": null
+            "call_id": null,
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": null
+            "call_id": null,
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -442,13 +450,15 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": null
+            "call_id": null,
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": null
+            "call_id": null,
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -509,7 +519,8 @@
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": null
+            "call_id": null,
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -570,7 +581,8 @@
             "kind": "lint",
             "pass_index": null,
             "rule_id": "LNT-04",
-            "call_id": null
+            "call_id": null,
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -634,13 +646,15 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": null
+            "call_id": null,
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": null
+            "call_id": null,
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -1103,6 +1117,8 @@
     "passes_ok": 3,
     "candidates_passes": 6,
     "candidates_lint": 2,
+    "candidates_checklist": 1,
+    "findings_checklist": 1,
     "discarded_by_reason": {
       "quote_not_found": 1
     },
@@ -1600,5 +1616,62 @@
       }
     ],
     "summary": "ТЗ п. 6: 6 из 6 разделов; у 5 из 5 находок есть якорь; цитат в находках сверено 100 % (цитат модели до фильтра: 100 %); счётчики сводки сходятся с таблицами"
-  }
+  },
+  "checklists": [
+    {
+      "id": "DT",
+      "title": "Даты, время и периоды",
+      "items": 6,
+      "min_blocks": 2,
+      "matched_blocks": 4,
+      "triggers": [
+        "час",
+        "время",
+        "ночью"
+      ],
+      "triggered": true,
+      "used": true,
+      "findings": [
+        "F-01"
+      ]
+    },
+    {
+      "id": "MON",
+      "title": "Деньги и суммы",
+      "items": 6,
+      "min_blocks": 2,
+      "matched_blocks": 2,
+      "triggers": [
+        "цену",
+        "оплата"
+      ],
+      "triggered": true,
+      "used": true,
+      "findings": []
+    },
+    {
+      "id": "API",
+      "title": "API и интеграции",
+      "items": 8,
+      "min_blocks": 2,
+      "matched_blocks": 0,
+      "triggers": [],
+      "triggered": false,
+      "used": false,
+      "findings": []
+    },
+    {
+      "id": "PD",
+      "title": "Персональные данные и безопасность",
+      "items": 6,
+      "min_blocks": 2,
+      "matched_blocks": 1,
+      "triggers": [
+        "пароль"
+      ],
+      "triggered": false,
+      "used": false,
+      "findings": []
+    }
+  ]
 }

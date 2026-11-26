@@ -14,6 +14,7 @@ from validator.models import (
     Addressee,
     Anchor,
     Backend,
+    ChecklistUse,
     Conclusion,
     DiagLevel,
     Diagnostic,
@@ -85,6 +86,7 @@ def passport(**changes: object) -> Passport:
         "backend_used": Backend.CLI,
         "profile": Profile.STANDARD,
         "passes": 3,
+        "checklists_enabled": True,
         "models": {"search": "claude-opus-5-5 · medium", "questions": "claude-opus-5-5 · high"},
         "models_actual": ["claude-opus-5-5"],
         "calls_total": 5,
@@ -174,6 +176,10 @@ def findings() -> list[Finding]:
             requirement_ids=["R-02"],
             explanation="Правило отмены в двух местах задаёт разный срок: за час и в любое время.",
             suggestion="Отмена брони возможна не позднее чем за [уточнить: срок] до начала.",
+            sources=[
+                FindingSource(kind=SourceKind.PASS, pass_index=1, checklist_item="DT-04"),
+                *(FindingSource(kind=SourceKind.PASS, pass_index=i) for i in (2, 3)),
+            ],
         ),
         _finding(
             2,
@@ -378,6 +384,8 @@ def _metrics(
         passes_total=3,
         passes_ok=3,
         candidates_passes=s.findings_total + s.discarded_total,
+        candidates_checklist=sum(any(src.checklist_item for src in f.sources) for f in ver.findings),
+        findings_checklist=sum(any(src.checklist_item for src in f.sources) for f in ver.findings),
         candidates_lint=2,
         discarded_by_reason=discarded_by_reason(ver),
         found_in=found_in_distribution(ver.findings),
@@ -394,6 +402,7 @@ def _report(
     diagnostics: list[Diagnostic] | None = None,
     pass_: Passport | None = None,
     withdrawn: list[WithdrawnQuestion] | None = None,
+    checklists: list[ChecklistUse] | None = None,
 ) -> Report:
     pp = pass_ or passport()
     report = Report(
@@ -418,18 +427,61 @@ def _report(
         conclusion=_conclusion(ver, qs),
         metrics=_metrics(ver, pp, qs, withdrawn or []),
         coverage=build_coverage(ver, reqs, [PassResult(index=1, ok=True)]),
+        checklists=checklists or [],
     )
     return report.model_copy(update={"selfcheck": check_report(report, render_md(report))})
 
 
+def checklist_uses() -> list[ChecklistUse]:
+    """Доменные чек-листы прогона (#35): один включён с находкой, один включён без находок, два нет."""
+    return [
+        ChecklistUse(
+            id="DT",
+            title="Даты, время и периоды",
+            items=6,
+            min_blocks=2,
+            matched_blocks=4,
+            triggers=["час", "время", "ночью"],
+            triggered=True,
+            used=True,
+            findings=["F-01"],
+        ),
+        ChecklistUse(
+            id="MON",
+            title="Деньги и суммы",
+            items=6,
+            min_blocks=2,
+            matched_blocks=2,
+            triggers=["цену", "оплата"],
+            triggered=True,
+            used=True,
+        ),
+        ChecklistUse(
+            id="API", title="API и интеграции", items=8, min_blocks=2, matched_blocks=0, triggered=False, used=False
+        ),
+        ChecklistUse(
+            id="PD",
+            title="Персональные данные и безопасность",
+            items=6,
+            min_blocks=2,
+            matched_blocks=1,
+            triggers=["пароль"],
+            triggered=False,
+            used=False,
+        ),
+    ]
+
+
 def full_report() -> Report:
-    """Критичная находка, неясность, нечёткая цитата, OCR, линтер, три вопроса, предупреждения."""
+    """Критичная находка, неясность, нечёткая цитата, OCR, линтер, три вопроса, предупреждения, чек-листы."""
     found = findings()
     ver = _verification(found, REQS, TrafficLight.RED, "критичных нарушений: 1")
     return _report(
         ver,
         questions(),
         REQS,
+        checklists=checklist_uses(),
+        pass_=passport(checklists=["DT", "MON"]),
         status=ReportStatus.PARTIAL,
         withdrawn=withdrawn_questions(),
         input_diagnostics=[

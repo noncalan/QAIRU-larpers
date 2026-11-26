@@ -101,6 +101,7 @@ def build_passport(
     backend_used: Backend | None,
     calls: Sequence[CallRecord],
     exit_code: ExitCode,
+    checklists: Sequence[str] = (),
 ) -> Passport:
     version, source, dirty = agent_version()
     tokens = sum((c.usage for c in calls), TokenUsage())
@@ -124,6 +125,8 @@ def build_passport(
         profile=cfg.profile,
         passes=cfg.passes,
         search_input=cfg.search_input,
+        checklists_enabled=cfg.checklists,
+        checklists=list(checklists),
         models={step.value: model.label for step, model in cfg.step_models.items()},
         models_actual=sorted({c.model_actual for c in calls if c.model_actual}),
         # Повторённая попытка не отдельный вызов: считаем вызовы по их последней попытке.
