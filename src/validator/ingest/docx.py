@@ -5,6 +5,8 @@
 свои смещения в тексте (якорь «таблица M, строка R, ячейка C»). Заголовки определяем по стилю и
 уровню структуры, метки автонумерации («1.», «3.2.», «•») добавляем в текст абзаца, как их показывает
 Word. Сноски идут блоками сразу после абзаца со ссылкой на них, колонтитулы блоками в начале.
+Шапку таблицы берём из ``w:tblHeader`` или угадываем по виду первой строки (``docx_header``, #139):
+флаг оформления ``w:tblLook firstRow`` сам по себе шапкой не считается.
 
 Что не читаем и о чём говорим в диагностике: текстовые рамки (``IN-037``). Исправления в режиме
 правки читаем как принятые: вставки включены, удалённый текст пропущен (``IN-036``).
@@ -27,6 +29,7 @@ from lxml import etree
 
 from validator.errors import IN_DOCX_BROKEN, IN_DOCX_TEXT_BOXES, IN_DOCX_TRACKED_CHANGES, InputError
 from validator.ingest.blocks import ParsedLines, text_diagnostics
+from validator.ingest.docx_header import HeaderKind, looks_like_header
 from validator.ingest.docx_numbering import NS, Numbering, W
 from validator.models import BlockKind, DiagLevel, Diagnostic, DocKind, Extraction, SourceLine
 
@@ -71,6 +74,11 @@ def _val(element: etree._Element | None) -> str | None:
     return None if element is None else element.get(_w("val"))
 
 
+def _on(element: etree._Element | None) -> bool | None:
+    """Флаг вида ``<w:b/>``, ``<w:b w:val="0"/>``: None, если элемента нет."""
+    return None if element is None else element.get(_w("val")) not in ("0", "false", "off")
+
+
 def _iter_blocks(parent: etree._Element) -> Iterator[etree._Element]:
     """Абзацы и таблицы по порядку, с заходом в элементы управления содержимым и разметку."""
     for child in parent:
@@ -99,6 +107,7 @@ class _StyleInfo:
     level: int | None = None
     numbering: tuple[str, int | None] | None = None
     code: bool = False
+    bold: bool | None = None
 
 
 @dataclass
@@ -153,6 +162,7 @@ class _Context:
         level: int | None = None
         numbering: tuple[str, int | None] | None = None
         code = False
+        bold: bool | None = None
         seen: set[str] = set()
         style = self._style(style_id)
         while style is not None and len(seen) < MAX_STYLE_DEPTH and style.style_id not in seen:
@@ -160,18 +170,49 @@ class _Context:
             level = level if level is not None else _level_from_style(style)
             numbering = numbering or _numbering_of(style.element.find("w:pPr", NS))
             code = code or bool(_CODE_STYLE.match(style.name or ""))
+            bold = bold if bold is not None else _on(style.element.find("w:rPr/w:b", NS))
             style = style.base_style
-        info = self.styles[key] = _StyleInfo(level, numbering, code)
+        info = self.styles[key] = _StyleInfo(level, numbering, code, bold)
         return info
 
-    def _style(self, style_id: str | None) -> Any:
+    def _style(self, style_id: str | None, kind: WD_STYLE_TYPE = WD_STYLE_TYPE.PARAGRAPH) -> Any:
         styles = self.document.styles
         try:
             if style_id:
-                return styles.get_by_id(style_id, WD_STYLE_TYPE.PARAGRAPH)
-            return styles.default(WD_STYLE_TYPE.PARAGRAPH)
+                return styles.get_by_id(style_id, kind)
+            return styles.default(kind)
         except (KeyError, ValueError):
             return None
+
+    def run_bold(self, run: etree._Element, inherited: bool) -> bool:
+        """Жирный ли текст фрагмента: своё оформление, затем стиль знаков, затем унаследованное."""
+        rpr = run.find("w:rPr", NS)
+        if rpr is None:
+            return inherited
+        own = _on(rpr.find("w:b", NS))
+        if own is not None:
+            return own
+        style_id = _val(rpr.find("w:rStyle", NS))
+        style = self._style(style_id, WD_STYLE_TYPE.CHARACTER) if style_id else None
+        from_style = _on(style.element.find("w:rPr/w:b", NS)) if style is not None else None
+        return inherited if from_style is None else from_style
+
+    def paragraph_bold(self, paragraph: etree._Element | None) -> bool | None:
+        """Жирность из стиля абзаца (с цепочкой «основан на»); None, если стиль её не задаёт."""
+        if paragraph is None:
+            return None
+        return self._style_info(self._style_id(paragraph.find("w:pPr", NS))).bold
+
+    def table_first_row_bold(self, table: etree._Element) -> bool:
+        """Стиль таблицы выделяет первую строку жирным (особое оформление «строка заголовка»)."""
+        style_id = _val(table.find("w:tblPr/w:tblStyle", NS))
+        style = self._style(style_id, WD_STYLE_TYPE.TABLE) if style_id else None
+        if style is None:
+            return False
+        for conditional in style.element.findall("w:tblStylePr", NS):
+            if conditional.get(_w("type")) == "firstRow":
+                return bool(_on(conditional.find("w:rPr/w:b", NS)))
+        return False
 
     @staticmethod
     def _style_id(ppr: etree._Element | None) -> str | None:
@@ -278,31 +319,54 @@ def _cell_text(ctx: _Context, tc: etree._Element) -> str:
     return " ".join(" ".join(parts).split())
 
 
-def _has_header(table: etree._Element, rows: list[etree._Element]) -> bool:
-    if len(rows) < 2:
-        return False
-    if rows[0].find("w:trPr/w:tblHeader", NS) is not None:
-        return True
+def _first_row_flag(table: etree._Element) -> bool | None:
+    """Флаг оформления «первая строка особая» из ``w:tblLook``; None, если таблица его не задаёт."""
     look = table.find("w:tblPr/w:tblLook", NS)
     if look is None:
-        return True
+        return None
     first_row = look.get(_w("firstRow"))
     if first_row is not None:
-        return first_row not in ("0", "false")
+        return first_row not in ("0", "false", "off")
     value = look.get(_w("val"))
     try:
-        return bool(int(value, 16) & FIRST_ROW_FLAG) if value else True
+        return bool(int(value, 16) & FIRST_ROW_FLAG) if value else None
     except ValueError:
-        return True
+        return None
 
 
-def _table_lines(ctx: _Context, table: etree._Element) -> list[SourceLine]:
-    ctx.tables += 1
-    rows = table.findall("w:tr", NS)
-    header = _has_header(table, rows)
+def _row_bold(ctx: _Context, row: etree._Element, base: bool) -> bool | None:
+    """Весь ли текст строки жирный; None, если в строке нет текста."""
+    flags: list[bool] = []
+    for t in row.iter(_w("t")):
+        run = t.getparent()
+        if not (t.text or "").strip() or run is None or _local(run) != "r":
+            continue
+        paragraph = next(run.iterancestors(_w("p")), None)
+        from_style = ctx.paragraph_bold(paragraph)
+        flags.append(ctx.run_bold(run, base if from_style is None else from_style))
+    return all(flags) if flags else None
+
+
+def _header_kind(
+    ctx: _Context, table: etree._Element, rows: list[etree._Element], cells: list[list[str]]
+) -> HeaderKind:
+    """Шапка по разметке (``w:tblHeader``), угаданная по виду первой строки или её нет (#139)."""
+    if len(rows) < 2:
+        return HeaderKind.NONE
+    if _on(rows[0].find("w:trPr/w:tblHeader", NS)):
+        return HeaderKind.MARKED
+    flag = _first_row_flag(table)
+    if flag is False:
+        return HeaderKind.NONE
+    styled = ctx.table_first_row_bold(table)
+    bold = [_row_bold(ctx, row, styled and index == 0) for index, row in enumerate(rows)]
+    return HeaderKind.GUESSED if looks_like_header(cells, bold) else HeaderKind.NONE
+
+
+def _row_cells(ctx: _Context, rows: list[etree._Element]) -> list[list[str]]:
     above: dict[int, str] = {}
-    out: list[SourceLine] = []
-    for index, row in enumerate(rows):
+    out: list[list[str]] = []
+    for row in rows:
         cells: list[str] = []
         column = 0
         for tc in row.findall("w:tc", NS):
@@ -311,17 +375,27 @@ def _table_lines(ctx: _Context, table: etree._Element) -> list[SourceLine]:
             above[column] = text
             cells.append(text)
             column += _span(tc)
-        out.append(
-            SourceLine(
-                text=CELL_SEPARATOR.join(cells),
-                table=ctx.tables,
-                row=index,
-                cells=cells,
-                header=header and index == 0,
-                extraction=Extraction.TABLE,
-            )
-        )
+        out.append(cells)
     return out
+
+
+def _table_lines(ctx: _Context, table: etree._Element) -> list[SourceLine]:
+    ctx.tables += 1
+    rows = table.findall("w:tr", NS)
+    cells = _row_cells(ctx, rows)
+    header = _header_kind(ctx, table, rows, cells)
+    return [
+        SourceLine(
+            text=CELL_SEPARATOR.join(row),
+            table=ctx.tables,
+            row=index,
+            cells=row,
+            header=header is not HeaderKind.NONE and index == 0,
+            header_guessed=header is HeaderKind.GUESSED and index == 0,
+            extraction=Extraction.TABLE,
+        )
+        for index, row in enumerate(cells)
+    ]
 
 
 # ---------------------------------------------------------------- сноски и колонтитулы

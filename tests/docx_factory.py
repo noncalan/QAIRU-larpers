@@ -30,7 +30,16 @@ STYLES = """
   <w:pPr><w:numPr><w:numId w:val="1"/></w:numPr></w:pPr></w:style>
 <w:style w:type="paragraph" w:styleId="SourceCode"><w:name w:val="Source Code"/></w:style>
 <w:style w:type="paragraph" w:styleId="Loop"><w:name w:val="Loop"/><w:basedOn w:val="Loop"/></w:style>
+<w:style w:type="paragraph" w:styleId="TableHeading"><w:name w:val="Table Heading"/><w:basedOn w:val="Normal"/>
+  <w:rPr><w:b/></w:rPr></w:style>
+<w:style w:type="table" w:styleId="HeaderTable"><w:name w:val="Header Table"/>
+  <w:tblStylePr w:type="firstRow"><w:rPr><w:b/></w:rPr></w:tblStylePr></w:style>
 """
+
+WORD_LOOK = (
+    'w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1" w:val="04A0"'
+)
+"""``w:tblLook`` новой таблицы Word и python-docx: флаг оформления, а не признак шапки (#139)."""
 
 NUMBERING = """
 <w:abstractNum w:abstractNumId="0">
@@ -54,12 +63,18 @@ NUMBERING = """
 """
 
 
-def run(text: str) -> str:
-    return f'<w:r><w:t xml:space="preserve">{text}</w:t></w:r>'
+def run(text: str, *, bold: bool = False) -> str:
+    rpr = "<w:rPr><w:b/></w:rPr>" if bold else ""
+    return f'<w:r>{rpr}<w:t xml:space="preserve">{text}</w:t></w:r>'
 
 
 def para(
-    text: str = "", *, style: str | None = None, num: tuple[int, int] | None = None, raw: str = ""
+    text: str = "",
+    *,
+    style: str | None = None,
+    num: tuple[int, int] | None = None,
+    raw: str = "",
+    bold: bool = False,
 ) -> str:
     props = ""
     if style:
@@ -67,26 +82,38 @@ def para(
     if num:
         props += f'<w:numPr><w:ilvl w:val="{num[1]}"/><w:numId w:val="{num[0]}"/></w:numPr>'
     ppr = f"<w:pPr>{props}</w:pPr>" if props else ""
-    return f"<w:p>{ppr}{run(text) if text else ''}{raw}</w:p>"
+    return f"<w:p>{ppr}{run(text, bold=bold) if text else ''}{raw}</w:p>"
 
 
-def cell(text: str = "", *, span: int = 1, vmerge: str | None = None, inner: str = "") -> str:
+def cell(
+    text: str = "",
+    *,
+    span: int = 1,
+    vmerge: str | None = None,
+    inner: str = "",
+    bold: bool = False,
+    style: str | None = None,
+) -> str:
     props = ""
     if span > 1:
         props += f'<w:gridSpan w:val="{span}"/>'
     if vmerge is not None:
         props += f'<w:vMerge w:val="{vmerge}"/>' if vmerge else "<w:vMerge/>"
     tcpr = f"<w:tcPr>{props}</w:tcPr>" if props else ""
-    return f"<w:tc>{tcpr}{para(text)}{inner}</w:tc>"
+    return f"<w:tc>{tcpr}{para(text, bold=bold, style=style)}{inner}</w:tc>"
 
 
-def row(*cells: str, header: bool = False) -> str:
-    trpr = "<w:trPr><w:tblHeader/></w:trPr>" if header else ""
+def row(*cells: str, header: bool | str = False) -> str:
+    """Строка таблицы; ``header=True`` ставит ``<w:tblHeader/>``, строка ставит его со значением ``w:val``."""
+    mark = f'<w:tblHeader w:val="{header}"/>' if isinstance(header, str) else "<w:tblHeader/>"
+    trpr = f"<w:trPr>{mark}</w:trPr>" if header is not False else ""
     return f"<w:tr>{trpr}{''.join(cells)}</w:tr>"
 
 
-def table(*rows: str) -> str:
-    return f"<w:tbl><w:tblPr/><w:tblGrid/>{''.join(rows)}</w:tbl>"
+def table(*rows: str, look: str | None = None, style: str | None = None) -> str:
+    """Таблица; ``look``: атрибуты ``w:tblLook`` (например ``WORD_LOOK``), ``style``: стиль таблицы."""
+    props = (f'<w:tblStyle w:val="{style}"/>' if style else "") + (f"<w:tblLook {look}/>" if look else "")
+    return f"<w:tbl><w:tblPr>{props}</w:tblPr><w:tblGrid/>{''.join(rows)}</w:tbl>"
 
 
 def footnote_ref(note_id: int) -> str:

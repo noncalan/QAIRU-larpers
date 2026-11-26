@@ -480,11 +480,19 @@ class _Builder:
             self.is_md and self.header is None and i + 1 < n and _is_separator(self.text(i + 1))
         )
         if is_header:
-            self.header = [_clean_cell(c) for c in cells]
+            header = [_clean_cell(c) for c in cells]
+            if line.header_guessed:
+                # Шапка угадана по виду (DOCX, #139): строка сама блок без названий колонок, чтобы при
+                # неверной догадке её текст не выпал из нарезки и проверки.
+                self.row_block(i, line, cells, [])
+            self.header = header
             return i + 1
+        self.row_block(i, line, cells, self.header or [])
+        return i + 1
+
+    def row_block(self, i: int, line: SourceLine, cells: list[str], hdr: Sequence[str]) -> None:
         # Пустая строка таблицы тоже блок: незаполненная форма это факт документа.
         self.table_row += 1
-        hdr = self.header or []
         serialized = _serialize_row(hdr, cells)
         start = self.starts[i]
         table_cells = _locate_cells(line.text, cells, hdr, start)
@@ -497,7 +505,6 @@ class _Builder:
             table=self.table_no,
             row=self.table_row,
         )
-        return i + 1
 
 
 def _is_separator(text: str) -> bool:

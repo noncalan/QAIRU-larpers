@@ -688,7 +688,10 @@ class Anchor(Contract):
     page_line: int | None = Field(default=None, description="Строка на странице PDF сверху, с 1")
     paragraph: int | None = Field(default=None, description="Абзац DOCX, с 1")
     table: int | None = Field(default=None, description="Номер таблицы в документе, с 1")
-    row: int | None = Field(default=None, description="Строка таблицы, с 1 (без строки заголовка)")
+    row: int | None = Field(
+        default=None,
+        description="Строка таблицы, с 1 (без строки заголовка; угаданный заголовок DOCX считается строкой)",
+    )
     cell: int | None = Field(default=None, description="Ячейка в строке таблицы, с 1")
     column: str | None = Field(default=None, description="Заголовок колонки ячейки")
     extraction: Extraction = Field(default=Extraction.TEXT, description="Откуда взят текст")
@@ -718,6 +721,13 @@ class SourceLine(Contract):
     row: int | None = None
     cells: list[str] = Field(default_factory=list, description="Ячейки строки таблицы")
     header: bool = Field(default=False, description="Строка заголовка таблицы")
+    header_guessed: bool = Field(
+        default=False,
+        description=(
+            "Заголовок угадан по виду строки, а не задан разметкой (DOCX, #139): строка даёт названия "
+            "колонок и сама остаётся блоком, чтобы её текст не выпал из проверки"
+        ),
+    )
     kind: BlockKind | None = Field(default=None, description="Явный вид блока: сноска, колонтитул, код")
     extraction: Extraction = Extraction.TEXT
 
