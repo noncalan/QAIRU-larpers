@@ -123,6 +123,7 @@
 | Модели по шагам | {% for step, label in p.models.items() %}{{ step }}: {{ label }}{% if not loop.last %}; {% endif %}{% else %}—{% endfor %} |
 | Фактические модели | {{ p.models_actual | join(", ") if p.models_actual else "—" }} |
 | Профиль | {{ p.profile.value }}, проходов поиска: {{ p.passes }}{% if p.search_input.value == "raw" %}, поиск по тексту без ID блоков{% endif %} |
+| Доменные чек-листы | {{ checklists_passport | cell }} |
 | Вызовов модели | {{ p.calls_total }} (с ошибкой: {{ p.calls_failed }}) |
 | Токены | вход {{ p.tokens.input_tokens }}, выход {{ p.tokens.output_tokens }}, запись в кеш {{ p.tokens.cache_creation_input_tokens }}, чтение из кеша {{ p.tokens.cache_read_input_tokens }} |
 | Цена по тарифу API | {{ p.cost_usd | money }} |
@@ -234,6 +235,19 @@
 {% endfor %}
 {% else %}
 Проверка набора не выполнена, смотрите диагностику прогона.
+{% endif %}
+{% if r.checklists %}
+
+### Доменные чек-листы
+
+{{ checklists_note }}{% if not p.checklists_enabled %} В этом прогоне чек-листы выключены (`--no-checklists`).{% endif %}
+
+
+| Чек-лист | Статус | Почему | Пунктов | Находки с пунктом чек-листа |
+|---|---|---|---|---|
+{% for u in r.checklists %}
+| {{ u.title }} ({{ u.id }}) | {{ checklist_state(u, p.checklists_enabled) }} | {{ checklist_reason(u) | cell }} | {{ u.items }} | {{ u.findings | join(", ") if u.findings else "—" }} |
+{% endfor %}
 {% endif %}
 
 ## 6. Вопросы автору ТЗ
@@ -465,6 +479,9 @@
 |---|---|
 | Кандидаты от проходов поиска | {{ m.candidates_passes }} (проходов отработало {{ m.passes_ok }} из {{ m.passes_total }}) |
 | Кандидаты от правил линтера | {{ m.candidates_lint }} |
+{% if m.candidates_checklist %}
+| Из них с пунктом доменного чек-листа | {{ m.candidates_checklist }} (в отчёте находок с пунктом: {{ m.findings_checklist }}) |
+{% endif %}
 | После слияния | {{ m.merged_total }} |
 {% for reason, n in m.discarded_by_reason.items() %}
 | Отброшено: {{ reason.label }} | {{ n }} |

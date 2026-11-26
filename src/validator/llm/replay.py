@@ -112,6 +112,10 @@ class ReplayLLM:
     def responses_total(self) -> int:
         return len(self._by_key)
 
+    def has_key(self, key: str) -> bool:
+        """Есть ли в записи ответ ровно на этот запрос (по ключу, а не по номеру вызова)."""
+        return key in self._by_key
+
     def recorded(self, step: LLMStep) -> dict[int, StepModel]:
         """Какие вызовы шага есть в записи: номер вызова → модель и effort, с которыми он делался."""
         return dict(self._recorded.get(step.value, {}))

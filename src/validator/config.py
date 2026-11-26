@@ -73,6 +73,10 @@ SEARCH_INPUT = SearchInput.BLOCKS
 """Вход поиска по умолчанию: документ с ID блоков. ``raw`` (текст без ID, блоки по цитате) нужен для
 замера B′ на контрольной точке (#37); что выбрать по умолчанию, решает D-011, п. 2."""
 
+CHECKLISTS = True
+"""Доменные чек-листы с триггерами в промпте поиска по умолчанию (#35). Выключаются ``--no-checklists``;
+решение по умолчанию и цифры eval: описание PR #35 и ``src/validator/checklists/README.md``."""
+
 CALL_TIMEOUT_S = 1200
 """Таймаут одного вызова: проход Opus xhigh идёт до 7,5 минуты (исследование 21), берём с запасом."""
 MAX_CALL_TIMEOUT_S = 3600
@@ -150,6 +154,7 @@ def load_config(
     max_budget_usd: float | None = None,
     pdf_backend: str | None = None,
     search_input: SearchInput | None = None,
+    checklists: bool | None = None,
     ocr: bool | None = None,
     env_file: Path | None = None,
     critic: bool = False,
@@ -174,6 +179,7 @@ def load_config(
         max_budget_usd=max_budget_usd,
         pdf_backend=cast(PdfBackendName, pdf_engine),
         search_input=search_input if search_input is not None else SEARCH_INPUT,
+        checklists=checklists if checklists is not None else CHECKLISTS,
         step_models=step_models(profile),
         fake_fixtures=default_fixtures_dir() if backend is Backend.FAKE else None,
         call_timeout_s=CALL_TIMEOUT_S,
@@ -183,6 +189,7 @@ def load_config(
 
 
 __all__ = [
+    "CHECKLISTS",
     "PROFILES",
     "SEARCH_INPUT",
     "STEP_MODELS",

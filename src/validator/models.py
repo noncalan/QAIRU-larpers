@@ -852,11 +852,15 @@ class FindingSource(Contract):
     pass_index: int | None = Field(default=None, description="Номер прохода поиска, с 1")
     rule_id: str | None = Field(default=None, description="ID правила линтера или пункта чек-листа")
     call_id: str | None = None
+    checklist_item: str | None = Field(
+        default=None, description="Пункт доменного чек-листа, по которому проход отметил находку (#35)"
+    )
 
     @property
     def label(self) -> str:
         if self.kind is SourceKind.PASS:
-            return f"проход {self.pass_index}"
+            item = f" (чек-лист {self.checklist_item})" if self.checklist_item else ""
+            return f"проход {self.pass_index}{item}"
         if self.kind is SourceKind.LINT:
             return f"линтер, правило {self.rule_id}"
         if self.kind is SourceKind.SET_CHECK:
@@ -1364,6 +1368,9 @@ class RunConfig(Contract):
     fake_fixtures: Path | None = Field(default=None, description="Папка фикстур для бэкенда fake")
     pdf_backend: PdfBackendName = Field(default="mupdf", description="Движок PDF (#26)")
     search_input: SearchInput = Field(default=SearchInput.BLOCKS, description="Вход поиска (#37, D-011)")
+    checklists: bool = Field(
+        default=True, description="Доменные чек-листы с триггерами в промпте поиска (#35)"
+    )
     call_timeout_s: int = Field(default=1200, ge=1)
     has_api_key: bool = Field(default=False, description="Есть ли ANTHROPIC_API_KEY (сам ключ не храним)")
     critic: bool = Field(
@@ -1443,6 +1450,10 @@ class Passport(Contract):
     profile: Profile
     passes: int
     search_input: SearchInput = Field(default=SearchInput.BLOCKS, description="Вход поиска (#37, D-011)")
+    checklists_enabled: bool = Field(default=False, description="Чек-листы включены настройкой прогона (#35)")
+    checklists: list[str] = Field(
+        default_factory=list, description="ID чек-листов, которые сработали и ушли в промпт поиска (#35)"
+    )
     models: dict[str, str] = Field(default_factory=dict, description="Шаг → «модель · effort»")
     models_actual: list[str] = Field(default_factory=list, description="Фактические модели из ответов")
     calls_total: int = 0
@@ -1542,6 +1553,12 @@ class RunMetrics(Contract):
     passes_ok: int = Field(default=0, description="Проходов поиска, которые отработали")
     candidates_passes: int = Field(default=0, description="Кандидатов от проходов поиска")
     candidates_lint: int = Field(default=0, description="Кандидатов от правил линтера")
+    candidates_checklist: int = Field(
+        default=0, description="Кандидатов проходов с меткой пункта доменного чек-листа (#35)"
+    )
+    findings_checklist: int = Field(
+        default=0, description="Находок отчёта, которые хотя бы один проход отметил пунктом чек-листа (#35)"
+    )
     discarded_by_reason: dict[DiscardReason, int] = Field(
         default_factory=dict, description="Отброшено верификатором по причинам"
     )
@@ -1676,6 +1693,22 @@ class SelfCheck(Contract):
         return all(item.passed for item in self.items if item.integrity)
 
 
+class ChecklistUse(Contract):
+    """Доменный чек-лист в прогоне (#35): сработали ли триггеры, ушёл ли в промпт, какие находки по нему."""
+
+    id: str = Field(description="ID чек-листа: MON, DT, API…")
+    title: str
+    items: int = Field(ge=0, description="Пунктов в чек-листе")
+    min_blocks: int = Field(ge=1, description="Сколько блоков с триггерами нужно для включения")
+    matched_blocks: int = Field(ge=0, description="В скольких блоках документа встретились триггеры")
+    triggers: list[str] = Field(default_factory=list, description="Примеры сработавших слов")
+    triggered: bool = Field(description="Триггеры встретились хотя бы в min_blocks блоках")
+    used: bool = Field(description="Пункты ушли в промпт поиска (сработал и чек-листы включены)")
+    findings: list[str] = Field(
+        default_factory=list, description="F-NN находок, которые проход отметил пунктом этого чек-листа"
+    )
+
+
 class Report(Contract):
     """Всё содержимое отчёта. report.json это сериализация этой модели, из неё рендерятся MD и PDF."""
 
@@ -1700,6 +1733,9 @@ class Report(Contract):
     metrics: RunMetrics = Field(default_factory=RunMetrics)
     coverage: CoverageMatrix | None = Field(default=None, description="Матрица покрытия критериев (#43)")
     selfcheck: SelfCheck | None = Field(default=None, description="Самопроверка отчёта по ТЗ п. 6 (#43)")
+    checklists: list[ChecklistUse] = Field(
+        default_factory=list, description="Доменные чек-листы: включённые и нет, с причиной (#35)"
+    )
 
 
 class RunContext(Contract):
@@ -1728,6 +1764,7 @@ class RunContext(Contract):
     diagnostics: list[Diagnostic] = Field(default_factory=list)
     calls: list[CallRecord] = Field(default_factory=list)
     passport: Passport
+    checklists: list[ChecklistUse] = Field(default_factory=list, description="Выбор чек-листов (#35)")
 
 
 class RunOutcome(Contract):

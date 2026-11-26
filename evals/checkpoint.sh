@@ -3,6 +3,9 @@
 #   B  агент, 1 проход medium            × 3   (профиль quick)
 #   B′ то же на тексте без ID блоков     × 2   (--search-input raw)
 #   C  агент, 3 прохода medium           × 3   (профиль standard)
+# Доменные чек-листы (#35) включены по умолчанию; B, B′ и C идут с --no-checklists, как на контрольной точке:
+#   cl/…    B с чек-листами (--checklists) на requirements.md
+#   task/…  B с чек-листами на ТЗ кейса docs/case/task.md (чужой документ, эталона нет)
 # A (базовая линия) уже есть: evals/results/2026-11-26-baseline.json.
 #
 # Не больше трёх прогонов одновременно. У каждого прогона своя папка и свой кеш ответов (.cache/ в ней,
@@ -13,7 +16,7 @@
 # Использование: evals/checkpoint.sh [ПАПКА] [БЭКЕНД] [ПРОГОНЫ...]
 #   ПАПКА    по умолчанию evals/results/checkpoint
 #   БЭКЕНД   cli (подписка, по умолчанию) или fake (проверка команд без сети, на фикстурах тестов)
-#   ПРОГОНЫ  например «b/run-2 c/run-1»; по умолчанию все восемь
+#   ПРОГОНЫ  например «b/run-2 c/run-1» или «cl/run-1 task/run-1»; по умолчанию восемь прогонов D-011
 set -uo pipefail
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
@@ -22,6 +25,7 @@ BACKEND=${2:-cli}
 shift $(($# < 2 ? $# : 2))
 mkdir -p "$OUT" && OUT=$(cd "$OUT" && pwd)  # абсолютный путь: прогон идёт из своей папки
 DOC=$ROOT/data/input/requirements.md
+TASK_DOC=$ROOT/docs/case/task.md
 MAX_PARALLEL=3
 
 case "$BACKEND" in
@@ -31,19 +35,28 @@ esac
 
 args_for() {
   case "$1" in
-    b/*) echo "--profile quick --passes 1" ;;
-    b-raw/*) echo "--profile quick --passes 1 --search-input raw" ;;
-    c/*) echo "--profile standard --passes 3" ;;
-    *) echo "Неизвестный прогон: $1 (нужно b/…, b-raw/… или c/…)" >&2; return 2 ;;
+    b/*) echo "--profile quick --passes 1 --no-checklists" ;;
+    b-raw/*) echo "--profile quick --passes 1 --search-input raw --no-checklists" ;;
+    c/*) echo "--profile standard --passes 3 --no-checklists" ;;
+    cl/* | task/*) echo "--profile quick --passes 1 --checklists" ;;
+    *) echo "Неизвестный прогон: $1 (нужно b/…, b-raw/…, c/…, cl/… или task/…)" >&2; return 2 ;;
+  esac
+}
+
+doc_for() {
+  case "$1" in
+    task/*) echo "$TASK_DOC" ;;
+    *) echo "$DOC" ;;
   esac
 }
 
 one_run() {
-  local name=$1 dir=$OUT/$1 opts code started=$SECONDS
+  local name=$1 dir=$OUT/$1 opts doc code started=$SECONDS
   opts=$(args_for "$name") || return 2
+  doc=$(doc_for "$name")
   mkdir -p "$dir/.cache"
   # shellcheck disable=SC2086  # opts это список флагов
-  (cd "$dir" && uv run --project "$ROOT" validator "$DOC" report.md --backend "$BACKEND" $opts \
+  (cd "$dir" && uv run --project "$ROOT" validator "$doc" report.md --backend "$BACKEND" $opts \
     >"$dir/.cache/cli-output.txt" 2>&1)
   code=$?
   echo "$name: код $code, $((SECONDS - started)) с"

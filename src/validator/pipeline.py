@@ -32,6 +32,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TypeVar
 
+from validator.checklists import Selection, select_checklists
 from validator.clarify import AnswersError, AnswersFile, clarify, load_answers
 from validator.errors import (
     CFG_NOT_IMPLEMENTED,
@@ -42,6 +43,7 @@ from validator.errors import (
     LLM_ALL_PASSES_FAILED,
     LLM_BUDGET_ESTIMATE,
     LLM_LONG_DOCUMENT,
+    LLM_REPLAYED,
     OUT_OVERWRITES_INPUT,
     OUT_WRITE_FAILED,
     InputError,
@@ -56,10 +58,12 @@ from validator.lint import lint
 from validator.llm import RecordingClient, align_config, instrument, make_client, write_calls_jsonl
 from validator.llm.base import LLMClient
 from validator.llm.calllog import LIVE_BACKENDS
+from validator.llm.replay import ReplayLLM
 from validator.merge import merge
 from validator.models import (
     Backend,
     CandidateFinding,
+    ChecklistUse,
     Clarification,
     DiagLevel,
     Diagnostic,
@@ -85,7 +89,7 @@ from validator.questions import build_questions, write_questions_yaml
 from validator.refs import humanize
 from validator.report import PdfRenderError, build_report, render_md, render_pdf
 from validator.report.selfcheck import check_report, selfcheck_diagnostics
-from validator.search import search
+from validator.search import first_pass_request, search
 from validator.segment import fallback_segmentation, segment
 from validator.set_check import set_check
 from validator.verify import light_with_questions, verify
@@ -116,6 +120,7 @@ class _State:
     verification: Verification | None = None
     questions: list[Question] = field(default_factory=list)
     questions_withdrawn: list[WithdrawnQuestion] = field(default_factory=list)
+    checklists: list[ChecklistUse] = field(default_factory=list)
     clarification: Clarification | None = None
     client: RecordingClient | None = None
     backend_used: Backend | None = None
@@ -355,20 +360,7 @@ def _execute(state: _State) -> None:
     state.segmentation = seg
     state.diagnostics.extend(seg.diagnostics)
     state.lint_hits = _step(state, "lint", lambda: lint(doc, seg), list, action="Линтер пропущен")
-    state.passes = _step(state, "search", lambda: search(doc, llm, cfg, plan), list, action="Поиск пропущен")
-    for p in state.passes:
-        state.diagnostics.extend(p.diagnostics)
-    if not any(p.ok for p in state.passes):
-        state.diagnostics.append(
-            Diagnostic(
-                code=LLM_ALL_PASSES_FAILED,
-                level=DiagLevel.ERROR,
-                message="Ни один проход поиска дефектов не удался",
-                action="Отчёт собран по правилам линтера без модели",
-                hint="Проверьте доступ к модели (см. диагностику выше) и запустите снова",
-                step="search",
-            )
-        )
+    cfg = _search_step(state, doc, plan, client, llm)
     state.set_check = _step(
         state,
         "set_check",
@@ -432,6 +424,63 @@ def _execute(state: _State) -> None:
     )
 
 
+def _search_step(
+    state: _State, doc: ParsedDocument, plan: PartPlan, client: LLMClient, llm: LLMClient
+) -> RunConfig:
+    """Шаг 4 с выбором доменных чек-листов перед ним; возвращает конфигурацию после выбора (#35)."""
+    chosen = _step(
+        state,
+        "checklists",
+        lambda: _choose_checklists(state, doc, plan, client),
+        lambda: None,
+        action="Поиск идёт без доменных чек-листов",
+    )
+    cfg = state.cfg
+    state.checklists = list(chosen.uses) if chosen else []
+    active = chosen.active if chosen else ()
+    state.passes = _step(
+        state, "search", lambda: search(doc, llm, cfg, plan, active), list, action="Поиск пропущен"
+    )
+    for p in state.passes:
+        state.diagnostics.extend(p.diagnostics)
+    if not any(p.ok for p in state.passes):
+        state.diagnostics.append(
+            Diagnostic(
+                code=LLM_ALL_PASSES_FAILED,
+                level=DiagLevel.ERROR,
+                message="Ни один проход поиска дефектов не удался",
+                action="Отчёт собран по правилам линтера без модели",
+                hint="Проверьте доступ к модели (см. диагностику выше) и запустите снова",
+                step="search",
+            )
+        )
+    return cfg
+
+
+def _choose_checklists(state: _State, doc: ParsedDocument, plan: PartPlan, client: LLMClient) -> Selection:
+    """Доменные чек-листы для поиска (#35). Replay записи без них (до #35 или ``--no-checklists``)
+    выключает их сам: иначе проход искался бы по другому ключу и брался бы из записи по номеру вызова."""
+    cfg = state.cfg
+    chosen = select_checklists(doc, enabled=cfg.checklists)
+    if not (isinstance(client, ReplayLLM) and chosen.active):
+        return chosen
+    with_lists = first_pass_request(doc, plan, cfg, chosen.active).key
+    without = first_pass_request(doc, plan, cfg).key
+    if client.has_key(with_lists) or not client.has_key(without):
+        return chosen
+    state.cfg = cfg.model_copy(update={"checklists": False})
+    state.diagnostics.append(
+        Diagnostic(
+            code=LLM_REPLAYED,
+            level=DiagLevel.INFO,
+            message="Проход поиска в записи сделан без доменных чек-листов",
+            action="Replay идёт без чек-листов, как в записи",
+            step="checklists",
+        )
+    )
+    return select_checklists(doc, enabled=False)
+
+
 # ---------------------------------------------------------------- выходы
 
 
@@ -452,6 +501,7 @@ def _context(
         backend_used=state.backend_used,
         calls=calls,
         exit_code=code,
+        checklists=[u.id for u in state.checklists if u.used],
     )
     return RunContext(
         cfg=cfg,
@@ -473,6 +523,7 @@ def _context(
         diagnostics=[*state.diagnostics, *extra],
         calls=list(calls),
         passport=passport,
+        checklists=state.checklists,
     )
 
 

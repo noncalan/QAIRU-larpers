@@ -19,6 +19,7 @@ from typing import Any
 import pytest
 
 from validator import evidence_critic, evidence_witness, pipeline
+from validator.checklists import load_checklists, render_section
 from validator.config import LONG_DOC_TOKENS, estimate_tokens, load_config
 from validator.estimate import estimate_run
 from validator.ingest import parse
@@ -306,6 +307,20 @@ def test_search_runs_each_pass_on_each_part(long_doc: ParsedDocument, plan: Part
         owners = [plan.part_of(c.block_ids[0]) for c in p.candidates]
         assert owners == [part.index for part in plan.parts], "ID блоков в находках глобальные"
         assert len({c.cid for c in p.candidates}) == len(p.candidates)
+
+
+def test_checklists_section_goes_to_every_part(
+    long_doc: ParsedDocument, plan: PartPlan, tmp_path: Path
+) -> None:
+    llm = ScriptedLLM(long_doc)
+    lists = load_checklists()[:1]
+    section = render_section(lists)
+
+    search(long_doc, llm, cfg_for(tmp_path, passes=1), plan, lists)
+
+    prompts = [r.prompt for r in llm.requests if r.step is LLMStep.SEARCH]
+    assert len(prompts) == len(plan.parts) > 1
+    assert all(section.strip() in p for p in prompts), "раздел чек-листов в промпте каждой части (#35)"
 
 
 def test_failed_part_of_a_pass_keeps_other_parts(

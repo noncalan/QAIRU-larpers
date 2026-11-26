@@ -21,6 +21,10 @@
   Цитата, которая встречается дословно несколько раз, привязывается к первому месту (это видно в
   диагностике ``LLM-034``). Перенос в JSON и в режиме ``raw`` видит документ с ID блоков: так его промпт
   описывает вход. Запись прогона ``raw`` пересобирается replay с тем же флагом ``--search-input raw``.
+- Доменные чек-листы (#35): если ``checklists`` выбрал пункты для документа, их раздел
+  (``checklists.render_section``) идёт в пользовательский промпт после документа. Строку «Чек-лист:»
+  находки код сверяет со списком пунктов в промпте и пишет в ``FindingSource.checklist_item``; ID пункта,
+  которого в промпте не было, отбрасывается. Без включённых чек-листов промпт тот же, что до #35.
 - Упавший проход это ``PassResult(ok=False)`` с диагностикой ``LLM-030`` «Проход k из K не удался»
   (``INT-002``, если упал код разбора), остальные идут дальше («K−1 из K»). Если упали все, шаг
   возвращает упавшие проходы без находок, а конвейер собирает отчёт без находок модели (``LLM-031``).
@@ -38,8 +42,9 @@ import logging
 from collections import Counter
 from collections.abc import Sequence
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
+from validator.checklists import Checklist, item_id, render_section
 from validator.config import call_timeout
 from validator.errors import (
     INT_STEP_DEGRADED,
@@ -70,7 +75,7 @@ from validator.models import (
 )
 from validator.parts import Part, PartPlan, part_note, part_view, plan_parts, render_part
 from validator.prompting import fill, load_prompt
-from validator.search_parse import Draft, RawFinding, draft_from_raw, split_findings
+from validator.search_parse import Draft, Key, RawFinding, draft_from_raw, split_findings
 from validator.search_transfer import (
     TRANSFER_ATTEMPTS,
     TRANSFER_SYSTEM,
@@ -100,7 +105,15 @@ def search_text(doc: ParsedDocument, cfg: RunConfig) -> str:
     return render_for_model(doc)
 
 
-def search_request(rendered: str, cfg: RunConfig, index: int) -> LLMRequest:
+def search_prompt(rendered: str, checklists: str = "") -> str:
+    """Пользовательский промпт прохода: документ, затем раздел доменных чек-листов, если он есть."""
+    prompt = fill(load_prompt(SEARCH_USER), document=rendered)
+    if not checklists:
+        return prompt
+    return f"{prompt.rstrip()}\n\n{checklists.strip()}\n"
+
+
+def search_request(rendered: str, cfg: RunConfig, index: int, checklists: str = "") -> LLMRequest:
     """Запрос одного прохода: свободный текст, без схемы, модель и effort из профиля."""
     model = cfg.model_for(LLMStep.SEARCH)
     return LLMRequest(
@@ -109,7 +122,7 @@ def search_request(rendered: str, cfg: RunConfig, index: int) -> LLMRequest:
         model=model.model,
         effort=model.effort,
         system=load_prompt(SEARCH_SYSTEM),
-        prompt=fill(load_prompt(SEARCH_USER), document=rendered),
+        prompt=search_prompt(rendered, checklists),
         timeout_s=call_timeout(cfg, rendered),
     )
 
@@ -127,6 +140,10 @@ class _Context:
     ``raw`` всё равно не берутся."""
     llm: LLMClient
     cfg: RunConfig
+    checklists: str = ""
+    """Раздел доменных чек-листов для промпта прохода; пусто, если чек-листы не включены."""
+    items: frozenset[str] = frozenset()
+    """ID пунктов чек-листов, которые были в промпте: только их код принимает из строки «Чек-лист»."""
     part: int = 1
     """Номер части длинного документа (#38); у документа целиком 1."""
     parts: int = 1
@@ -259,6 +276,7 @@ def _drafts(ctx: _Context, index: int, text: str, out: _Outcome) -> list[Draft]:
     p = _parse(text)
     if p.has_section and not p.pending:
         return [d for _, d in p.drafts]
+    tags = {raw.position: raw.first(Key.CHECKLIST) for raw in p.pending if raw.first(Key.CHECKLIST)}
     whole = not p.has_section
     fragments = (
         [Fragment(position=0, section=None, text=text)] if whole else list(map(Fragment.of, p.pending))
@@ -282,7 +300,21 @@ def _drafts(ctx: _Context, index: int, text: str, out: _Outcome) -> list[Draft]:
             location=f"search.{ctx.call_index(index)}",
         )
     out.diagnostics.append(_transfer_note(ctx, index, p, moved, whole))
-    return [d for _, d in sorted(p.drafts + moved.drafts, key=lambda pd: pd[0])]
+    # Метку фрагмента получает запись, только если фрагмент дал одну запись: у слипшихся находок
+    # строка «Чек-лист» относится к одной из них, и какой именно, неизвестно.
+    per_fragment = Counter(int(pos) for pos, _ in moved.drafts)
+    moved_drafts = [
+        (pos, _tagged(d, tags.get(int(pos)) if per_fragment[int(pos)] == 1 else None))
+        for pos, d in moved.drafts
+    ]
+    return [d for _, d in sorted(p.drafts + moved_drafts, key=lambda pd: pd[0])]
+
+
+def _tagged(draft: Draft, checklist: str | None) -> Draft:
+    """Перенос в JSON не знает строки «Чек-лист»: берём её из текста фрагмента, который переносили."""
+    if draft.checklist or not checklist:
+        return draft
+    return replace(draft, checklist=checklist)
 
 
 def _known_blocks(
@@ -378,12 +410,13 @@ def _placement_note(index: int, call_id: str, notes: _Placement) -> Diagnostic |
 
 def _candidates(ctx: _Context, index: int, call_id: str, drafts: Sequence[Draft], out: _Outcome) -> None:
     notes = _Placement()
-    source = FindingSource(kind=SourceKind.PASS, pass_index=index, call_id=call_id)
     for seq, d in enumerate(drafts, 1):
         cid = ctx.cid(index, seq)
         block_ids = _block_ids(ctx, d, cid, notes)
         if block_ids and ctx.context_blocks.issuperset(block_ids):
             continue  # только о разделе терминов из другой части: его проверяет своя часть
+        item = item_id(d.checklist, ctx.items) if d.checklist and ctx.items else None
+        source = FindingSource(kind=SourceKind.PASS, pass_index=index, call_id=call_id, checklist_item=item)
         out.candidates.append(
             CandidateFinding(
                 cid=cid,
@@ -415,7 +448,7 @@ def _examples(ids: Sequence[str]) -> str:
 
 def _run_pass(ctx: _Context, out: _Outcome) -> None:
     """Один проход: вызов модели, разбор ответа, при нужде перенос в JSON, проверка ID блоков."""
-    req = search_request(ctx.rendered, ctx.cfg, ctx.call_index(out.index))
+    req = search_request(ctx.rendered, ctx.cfg, ctx.call_index(out.index), ctx.checklists)
     out.call_ids.append(req.call_id)
     try:
         resp = ctx.llm.call(req)
@@ -491,7 +524,12 @@ def _result(o: _Outcome, ok: int, total: int) -> PassResult:
 
 
 def _part_context(
-    doc: ParsedDocument, plan: PartPlan, part: Part, llm: LLMClient, cfg: RunConfig
+    doc: ParsedDocument,
+    plan: PartPlan,
+    part: Part,
+    llm: LLMClient,
+    cfg: RunConfig,
+    checklists: Sequence[Checklist] = (),
 ) -> _Context:
     marked = render_part(doc, plan, part, with_context=True)
     return _Context(
@@ -503,7 +541,20 @@ def _part_context(
         part=part.index,
         parts=len(plan.parts),
         context_blocks=frozenset(b.id for b in plan.context_for(part)),
+        checklists=render_section(checklists),
+        items=frozenset(i.id for c in checklists for i in c.items),
     )
+
+
+def first_pass_request(
+    doc: ParsedDocument, plan: PartPlan, cfg: RunConfig, checklists: Sequence[Checklist] = ()
+) -> LLMRequest:
+    """Запрос первого прохода по первой части, как его отправит ``search``: по его ключу replay узнаёт,
+    с чек-листами ли сделана запись (#35)."""
+    part = plan.parts[0]
+    marked = render_part(doc, plan, part, with_context=True)
+    rendered = marked if cfg.search_input is SearchInput.BLOCKS else _raw_part(doc, plan, part)
+    return search_request(rendered, cfg, 1, render_section(checklists))
 
 
 def _raw_part(doc: ParsedDocument, plan: PartPlan, part: Part) -> str:
@@ -578,16 +629,22 @@ def _combine(
 
 
 def search(
-    doc: ParsedDocument, llm: LLMClient, cfg: RunConfig, plan: PartPlan | None = None
+    doc: ParsedDocument,
+    llm: LLMClient,
+    cfg: RunConfig,
+    plan: PartPlan | None = None,
+    checklists: Sequence[Checklist] = (),
 ) -> list[PassResult]:
     """``cfg.passes`` проходов по документу. Упавший проход это ``PassResult(ok=False)``, а не исключение.
 
     ``plan``: части длинного документа (#38); без него документ идёт целиком, если он не длинный.
+    ``checklists``: доменные чек-листы, которые выбрал ``checklists.select_checklists`` (#35); их раздел
+    идёт в промпт каждой части.
     """
     for name in (SEARCH_SYSTEM, SEARCH_USER, TRANSFER_SYSTEM, TRANSFER_USER):
         load_prompt(name)
     plan = plan if plan is not None else plan_parts(doc)
-    contexts = [_part_context(doc, plan, part, llm, cfg) for part in plan.parts]
+    contexts = [_part_context(doc, plan, part, llm, cfg, checklists) for part in plan.parts]
     jobs = [(ctx, k) for ctx in contexts for k in range(1, cfg.passes + 1)]
     with ThreadPoolExecutor(
         max_workers=min(MAX_PARALLEL_PASSES, len(jobs)), thread_name_prefix="search"
@@ -599,4 +656,11 @@ def search(
     return _combine(jobs, outcomes, plan)
 
 
-__all__ = ["MAX_PARALLEL_PASSES", "search", "search_request", "search_text"]
+__all__ = [
+    "MAX_PARALLEL_PASSES",
+    "first_pass_request",
+    "search",
+    "search_prompt",
+    "search_request",
+    "search_text",
+]

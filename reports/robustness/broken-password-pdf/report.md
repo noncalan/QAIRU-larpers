@@ -1,6 +1,6 @@
 # Отчёт о проверке требований: password.pdf
 
-Проверка по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3). Отчёт сформировал агент QAIRU validator 360d378, 2026-11-26 02:30:52 UTC.
+Проверка по ISO/IEC/IEEE 29148:2018 (п. 5.2.5, 5.2.6) и IEEE 830-1998 (п. 4.3). Отчёт сформировал агент QAIRU validator 4ebb9e2, 2026-11-26 07:43:14 UTC.
 
 ## Итог на первой странице
 
@@ -11,15 +11,16 @@
 | Параметр | Значение |
 |---|---|
 | Документ | password.pdf (unknown, 2071 байт) |
-| SHA-256 документа | ce8d5b7edf2be2e12d0bce7ed0418f5f8df7b9e4cde4522d894b2d2bcb0d118c |
-| Дата прогона | 2026-11-26 02:30:52 UTC |
+| SHA-256 документа | d54cfe85ed870e522ec6504a1ae64e3ab06c5b58c102667c210f510b60dda794 |
+| Дата прогона | 2026-11-26 07:43:14 UTC |
 | Длительность | 0.03 с |
-| Версия агента | 360d378 (источник: git) |
-| Хеш промптов | 52bad12278ce |
+| Версия агента | 4ebb9e2 (источник: git) |
+| Хеш промптов | 1fc8be63f489 |
 | Способ вызова модели | модель не вызывалась (запрошено: фикстуры тестов (без модели)) |
-| Модели по шагам | segment: claude-sonnet-5-5 · medium; search: claude-opus-5-5 · medium; search_transfer: claude-haiku-5-5 · medium; evidence: claude-opus-5-5 · high; critic: claude-opus-5-5 · high; test_draft: claude-sonnet-5-5 · high; questions: claude-opus-5-5 · high; questions_critic: claude-opus-5-5 · high |
+| Модели по шагам | segment: claude-sonnet-5-5 · medium; search: claude-opus-5-5 · medium; search_transfer: claude-haiku-5-5 · medium; evidence: claude-opus-5-5 · high; critic: claude-opus-5-5 · high; test_draft: claude-sonnet-5-5 · high; questions: claude-opus-5-5 · high; questions_critic: claude-opus-5-5 · high; set_check: claude-opus-5-5 · medium |
 | Фактические модели | — |
 | Профиль | quick, проходов поиска: 1 |
+| Доменные чек-листы | — |
 | Вызовов модели | 0 (с ошибкой: 0) |
 | Токены | вход 0, выход 0, запись в кеш 0, чтение из кеша 0 |
 | Цена по тарифу API | — |
@@ -32,7 +33,7 @@
 
 | Параметр | Значение |
 |---|---|
-| Файл | password.pdf (2071 байт, SHA-256: ce8d5b7edf2be2e12d0bce7ed0418f5f8df7b9e4cde4522d894b2d2bcb0d118c) |
+| Файл | password.pdf (2071 байт, SHA-256: d54cfe85ed870e522ec6504a1ae64e3ab06c5b58c102667c210f510b60dda794) |
 | Тип по содержимому | unknown |
 | Символов извлечено, блоков | 0, 0 |
 | Статус входа | НЕ ПРОЧИТАН: проверка невозможна |
@@ -46,6 +47,10 @@
 **Проверка не выполнена: PDF защищён паролем на открытие**
 
 Разделы о требованиях не сформированы: документ не удалось прочитать. Исправьте вход по таблице выше и запустите проверку снова.
+
+### Что сделать
+
+- Снимите пароль (сохраните копию без защиты) и запустите проверку снова
 
 ## Диагностика прогона
 
