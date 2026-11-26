@@ -1,7 +1,8 @@
 // Рендер схемы mermaid в SVG и PNG для слайдов и README (issue #45).
 //
 // Запуск (нужны Node 18+, пакеты mermaid и playwright с установленным Chromium):
-//   npm install --prefix /tmp/mmd mermaid@11.4.1 playwright
+//   npm install --prefix /tmp/mmd mermaid@11.4.1 playwright@1.49.1
+//   npx --prefix /tmp/mmd playwright install chromium     (на Linux: install --with-deps chromium)
 //   NODE_PATH=/tmp/mmd/node_modules node scripts/render_diagram.mjs docs/img/pipeline.mmd docs/img/pipeline
 // Пишет docs/img/pipeline.svg и docs/img/pipeline.png. Сеть во время рендера не нужна:
 // mermaid подключается из локального пакета, шрифт берётся из системы.
@@ -48,6 +49,9 @@ try {
     { definition, font: FONT },
   );
   writeFileSync(`${outBase}.svg`, svg);
+  // У SVG mermaid ширина 100 %: окно браузера должно вместить схему целиком, иначе PNG сожмётся.
+  const width = await page.evaluate(() => document.querySelector("#out svg").viewBox.baseVal.width);
+  await page.setViewportSize({ width: Math.ceil(width) + 16, height: 1000 });
   const element = await page.$("#out svg");
   await element.screenshot({ path: `${outBase}.png`, omitBackground: false });
   console.log(`Записано: ${path.normalize(outBase)}.svg, ${path.normalize(outBase)}.png`);
