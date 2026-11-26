@@ -58,8 +58,9 @@ class Hybrid:
 
     backend = Backend.CLI
 
-    def __init__(self, recording: Path, *, live: bool, dump: Path | None) -> None:
+    def __init__(self, recording: Path, *, live: bool, dump: Path | None, reuse: bool = False) -> None:
         self.replay = ReplayLLM(recording)
+        self.reuse = reuse
         self.live = ClaudeCLI() if live else None
         self.dump = dump
         self.live_calls: list[str] = []
@@ -67,7 +68,7 @@ class Hybrid:
     def call(self, req: LLMRequest) -> LLMResponse:
         if req.step not in LIVE_STEPS:
             return self.replay.call(req)
-        if req.key in self.replay._by_key:
+        if req.key in self.replay._by_key or self.reuse:
             return self.replay.call(req)
         if self.dump is not None:
             self.dump.mkdir(parents=True, exist_ok=True)
@@ -103,8 +104,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     mode.add_argument("--live", action="store_true", help="Свидетель и критик живые, если нет в записи")
     mode.add_argument("--no-evidence", action="store_true", help="Без шага 6 (те же находки поиска)")
     mode.add_argument(
+        "--reuse", action="store_true", help="Ответы шага 6 из записи по шагу и номеру, даже если промпт другой"
+    )
+    mode.add_argument(
         "--dry-run", action="store_true", help="Только промпты шага 6 в out/prompts, без модели"
     )
+    ap.add_argument("--critic", action="store_true", help="Включить критика находок (по умолчанию выключен)")
     args = ap.parse_args(argv)
 
     recording = args.recording / "run" if (args.recording / "run").is_dir() else args.recording
@@ -112,9 +117,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     passport = report["passport"]
     profile = args.profile or Profile(passport["profile"])
     source = args.input or _input_for(args.recording)
-    cfg = load_config(source, args.out / "report.md", profile=profile, passes=passport["passes"])
+    cfg = load_config(
+        source, args.out / "report.md", profile=profile, passes=passport["passes"], critic=args.critic
+    )
     hybrid = Hybrid(
-        recording, live=args.live, dump=args.out / "prompts" if args.dry_run or args.live else None
+        recording,
+        live=args.live,
+        dump=args.out / "prompts" if args.dry_run or args.live else None,
+        reuse=args.reuse,
     )
 
     def client(_: RunConfig) -> tuple[Hybrid, list[Diagnostic]]:

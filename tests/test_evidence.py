@@ -7,13 +7,19 @@
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any
 
+import pymupdf
 import pytest
 
+import report_factory as factory
+from conftest import REQUIREMENTS
 from questions_helpers import cli_payload, make_cfg
+from validator import pipeline
+from validator.config import load_config
 from validator.errors import (
     LLM_CRITIC_DECIDED,
     LLM_CRITIC_FAILED,
@@ -31,9 +37,12 @@ from validator.evidence_witness import parse_reply as parse_witness
 from validator.evidence_witness import select as select_for_witness
 from validator.llm import FakeLLM
 from validator.models import (
+    Backend,
     CriticAction,
     DefectType,
     DiscardReason,
+    DocKind,
+    ExitCode,
     FindingSource,
     LLMRequest,
     LLMResponse,
@@ -41,12 +50,14 @@ from validator.models import (
     MergedFinding,
     ParsedDocument,
     Property,
+    Report,
     Severity,
     SourceKind,
 )
 from validator.questions.candidates import finding_origins
 from validator.questions.scoring import priority
 from validator.refs import humanize
+from validator.report import render_md, render_pdf
 from validator.segment import fallback_segmentation
 from validator.verify import verify
 
@@ -108,16 +119,15 @@ def contradiction(mid: int = 1, quotes: Sequence[str] = (HOUR, ANYTIME), **field
 
 
 def missing_capacity(mid: int = 2, **fields: Any) -> MergedFinding:
-    """Ложная находка: «вместимость не задана», хотя документ её задаёт в другом разделе."""
+    """Ложная находка: «вместимость не задана», хотя документ её задаёт в другом разделе (2 прохода из 3)."""
+    base = {"blocks_testing": True, "severity_hint": Severity.CRITICAL, "found_in": 2, "sources": PASSES[:2]}
     return merged(
         mid,
         [FOUR_HOURS],
         property=Property.COMPLETE,
         defect_type=DefectType.INCOMPLETE,
         title="Не задано, сколько человек вмещает переговорная",
-        blocks_testing=True,
-        severity_hint=Severity.CRITICAL,
-        **fields,
+        **{**base, **fields},
     )
 
 
@@ -158,8 +168,11 @@ def llm(
     return FakeLLM(root=Path("/nonexistent"), responses=responses)
 
 
-def run(doc: ParsedDocument, tmp_path: Path, found: Sequence[MergedFinding], client: Any) -> Any:
-    return gather(found, doc, client, make_cfg(doc, tmp_path))
+def run(
+    doc: ParsedDocument, tmp_path: Path, found: Sequence[MergedFinding], client: Any, *, critic: bool = True
+) -> Any:
+    cfg = make_cfg(doc, tmp_path).model_copy(update={"critic": critic})
+    return gather(found, doc, client, cfg)
 
 
 def codes(outcome: Any) -> set[str]:
@@ -284,6 +297,30 @@ def test_critic_drop_with_basis_elsewhere_goes_to_discarded_with_reason(
     assert critic is not None and critic.basis is not None and critic.basis.located == CAPACITY
     assert ver.summary.discarded_by_reason == {DiscardReason.CRITIC_REJECTED: 1}
     assert LLM_CRITIC_DECIDED in codes(out)
+
+
+def test_critic_does_not_drop_a_finding_that_every_pass_found(doc: ParsedDocument, tmp_path: Path) -> None:
+    client = llm([], [decision("M-002", "снять", CAPACITY)])
+
+    out = run(doc, tmp_path, [missing_capacity(found_in=3, sources=PASSES)], client)
+    [finding] = verify(out.findings, doc, fallback_segmentation(doc)).findings
+
+    critic = finding.critic
+    assert critic is not None and critic.action is CriticAction.DOWNGRADE
+    assert critic.proposed is CriticAction.DROP and "все проходы" in critic.note
+    assert finding.severity is Severity.MAJOR
+
+
+def test_critic_is_off_by_default_and_report_says_so(doc: ParsedDocument, tmp_path: Path) -> None:
+    client = llm([witness_rec("M-001", [(HOUR, "отмена отклонена"), (ANYTIME, "бронь отменена")])])
+
+    out = run(doc, tmp_path, [contradiction(), missing_capacity()], client, critic=False)
+
+    assert [r.step for r in client.requests] == [LLMStep.EVIDENCE]
+    assert all(f.critic is None for f in out.findings)
+    metrics = evidence_metrics(out.findings, critic_enabled=False)
+    assert metrics is not None and not metrics.critic_enabled and metrics.witness_checked == 1
+    assert evidence_metrics([], critic_enabled=False) is not None
 
 
 def test_critic_drop_based_on_the_findings_own_quote_only_downgrades(
@@ -541,3 +578,65 @@ def test_metrics_count_kept_downgraded_dropped_and_overruled(doc: ParsedDocument
         1,
     )
     assert metrics.critic_overruled == 2
+
+
+# ---------------------------------------------------------------- отчёт
+
+
+def _pdf_text(data: bytes) -> str:
+    with pymupdf.open(stream=data, filetype="pdf") as pdf:
+        pages = [page.get_text() for page in pdf]
+    return re.sub(r"\s+", " ", " ".join(pages))
+
+
+def test_witness_critic_and_dropped_findings_appear_in_markdown_and_pdf() -> None:
+    report = Report.model_validate_json((factory.FIXTURES / "full.report.json").read_text(encoding="utf-8"))
+
+    markdown, text = render_md(report), _pdf_text(render_pdf(report))
+
+    for needle in (
+        "Пример-свидетель (код сверил цитаты и различие ожиданий)",
+        "Встреча начинается в 15:00, пользователь отменяет бронь в 14:30",
+        "отмена отклонена",
+        "Два места задают разный срок отмены, общего правила в документе нет",
+        "Ночное окно задаёт администратор, это не дефект требования",
+        "Находки, снятые критиком",
+        "Вместимость задана в разделе об ограничениях",
+        "запрошен для",
+        "Критик находок",
+    ):
+        assert needle in markdown, needle
+        assert needle in text, needle
+
+
+def test_report_says_when_critic_was_off() -> None:
+    report = Report.model_validate_json((factory.FIXTURES / "full.report.json").read_text(encoding="utf-8"))
+    assert report.metrics.evidence is not None
+    off = report.metrics.evidence.model_copy(update={"critic_enabled": False})
+    report = report.model_copy(update={"metrics": report.metrics.model_copy(update={"evidence": off})})
+
+    markdown, text = render_md(report), _pdf_text(render_pdf(report))
+
+    assert "выключен в этом прогоне, включается флагом --critic" in markdown
+    assert "выключен в этом прогоне, включается флагом --critic" in text
+
+
+# ---------------------------------------------------------------- конвейер
+
+
+@pytest.mark.parametrize("critic", [False, True], ids=["default", "critic"])
+def test_pipeline_runs_step_6_on_fake_backend(tmp_path: Path, critic: bool) -> None:
+    cfg = load_config(REQUIREMENTS[DocKind.MD], tmp_path / "report.md", backend=Backend.FAKE, critic=critic)
+
+    outcome = pipeline.run(cfg)
+
+    assert outcome.exit_code is ExitCode.OK and outcome.report is not None
+    ev = outcome.report.metrics.evidence
+    assert ev is not None and ev.witness_checked >= 1 and ev.critic_enabled is critic
+    assert (ev.critic_reviewed >= 1) is critic
+    assert outcome.report.passport.calls_failed == 0
+    codes = {d.code for d in outcome.report.diagnostics}
+    assert LLM_WITNESS_CHECKED in codes and (LLM_CRITIC_DECIDED in codes) is critic
+    markdown = (tmp_path / "report.md").read_text(encoding="utf-8")
+    assert "Пример-свидетель (код сверил цитаты и различие ожиданий)" in markdown
+    assert ("**Критик:**" in markdown) is critic

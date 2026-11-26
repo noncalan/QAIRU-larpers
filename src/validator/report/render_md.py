@@ -217,7 +217,9 @@ def evidence_metric_rows(m: EvidenceMetrics | None) -> list[tuple[str, str]]:
                 f"{m.witness_rejected}, сценария нет {m.witness_declined}",
             )
         )
-    if m.critic_reviewed:
+    if not m.critic_enabled:
+        rows.append(("Критик находок", "выключен в этом прогоне, включается флагом --critic"))
+    elif m.critic_reviewed:
         rows.append(
             (
                 "Критик находок",

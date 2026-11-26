@@ -109,7 +109,7 @@ def _metrics(ctx: RunContext) -> RunMetrics:
         quotes_verified=verified,
         verified_quote_share=round(verified / quotes_total, 4) if quotes_total else None,
         questions=question_metrics(ctx.questions, ctx.questions_withdrawn) if ver else None,
-        evidence=evidence_metrics(ctx.merged),
+        evidence=evidence_metrics(ctx.merged, critic_enabled=ctx.cfg.critic),
     )
 
 

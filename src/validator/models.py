@@ -1231,6 +1231,10 @@ class RunConfig(Contract):
     pdf_backend: PdfBackendName = Field(default="mupdf", description="Движок PDF (#26)")
     call_timeout_s: int = Field(default=1200, ge=1)
     has_api_key: bool = Field(default=False, description="Есть ли ANTHROPIC_API_KEY (сам ключ не храним)")
+    critic: bool = Field(
+        default=False,
+        description="Критик находок (шаг 6б, #39). По eval пока выключен, включается флагом --critic",
+    )
 
     @property
     def out_dir(self) -> Path:
@@ -1348,6 +1352,7 @@ class EvidenceMetrics(Contract):
     critic_overruled: int = Field(
         default=0, description="Решений «понизить» или «снять», которые код не принял как есть"
     )
+    critic_enabled: bool = Field(default=True, description="Был ли критик включён в прогоне (--critic)")
 
 
 class RunMetrics(Contract):

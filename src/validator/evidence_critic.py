@@ -15,6 +15,8 @@
 - «снять» принимается, только если цитата-основание сверена с документом и в ней есть текст вне цитат самой
   находки (``MIN_NEW_CHARS``): документ отвечает на находку в другом месте или в той части фразы, которую
   находка не учла. Основание почти целиком из цитаты находки: код не снимает, а понижает важность на уровень.
+- Находку нашли все проходы поиска (K > 1): «снять» код тоже заменяет понижением на уровень. Одна модель
+  против согласия K независимых проходов, а пропущенный дефект дороже лишней находки (цифры eval: PR по #39).
 - «понизить» принимается со сверенной цитатой-основанием; понижает важность верификатор (``severity``),
   повысить критик не может.
 - Нет сверенной цитаты-основания: находка остаётся как есть, предложение критика видно в отчёте.
@@ -64,7 +66,6 @@ from validator.models import (
 )
 from validator.prompting import PROMPTS_DIR, fill, load_prompt
 from validator.questions.editor import extract_json
-from validator.questions.quotes import verify_quote
 from validator.severity import severity_disputed, severity_for, table_severity
 
 logger = logging.getLogger("validator")
@@ -77,9 +78,6 @@ STEP: Final = "evidence"
 REPLY_KEY: Final = "decisions"
 MAX_FINDINGS: Final = 60
 """Сколько находок в одном вызове. Три прохода дают до ~40 рискованных; сверх лимита идут самые важные."""
-MIN_BASIS_CHARS: Final = 3
-"""Сколько букв и цифр должно быть в цитате-основании. Короткое основание («0» или «1», значение ячейки)
-код принимает только дословным: нечёткий поиск коротких цитат ничего не доказывает."""
 MIN_NEW_CHARS: Final = 12
 """Сколько символов цитаты-основания «снять» должно лежать вне цитат находки (как ``MIN_FUZZY_CHARS``)."""
 
@@ -236,28 +234,33 @@ class CriticLog:
     dropped: int = 0
     no_basis: int = 0
     own_basis: int = 0
+    consensus: int = 0
     missing: int = 0
 
     def details(self) -> list[str]:
         labels = (
             (self.no_basis, "предложение без сверенной цитаты-основания, находка оставлена как есть"),
             (self.own_basis, "«снять» с основанием почти из цитаты самой находки: код не снял"),
+            (self.consensus, "«снять» находку, которую нашли все проходы: код не снял"),
             (self.missing, "находок без решения критика"),
         )
         return [f"{text}: {count}" for count, text in labels if count]
 
 
 def _basis(raw: str, own: Sequence[Quote], doc: ParsedDocument) -> Quote | None:
-    text = raw.strip()
-    if sum(ch.isalnum() for ch in text) < MIN_BASIS_CHARS:
-        return None
-    within = top_blocks(own)
-    return locate_model_quote(doc, text, within) or verify_quote(doc, text, within)
+    return locate_model_quote(doc, raw, top_blocks(own))
 
 
 OWN_BASIS_NOTE: Final = (
     "Основание почти целиком повторяет цитату самой находки и не показывает ответ в другом месте документа."
 )
+
+
+CONSENSUS_NOTE: Final = "Находку нашли все проходы поиска, одного мнения критика мало, чтобы её снять."
+
+
+def _why_not_dropped(elsewhere: bool) -> str:
+    return CONSENSUS_NOTE if elsewhere else OWN_BASIS_NOTE
 
 
 def _lower(current: Severity, proposed: Severity | None) -> Severity | None:
@@ -267,8 +270,19 @@ def _lower(current: Severity, proposed: Severity | None) -> Severity | None:
     return target if target.rank > current.rank else None
 
 
+def unanimous(m: MergedFinding) -> bool:
+    """Находку нашли все проходы поиска (K > 1): одного мнения критика мало, чтобы её снять."""
+    return m.of > 1 and m.found_in >= m.of
+
+
 def judge(
-    r: ReplyDecision, current: Severity, own: Sequence[Quote], doc: ParsedDocument, log: CriticLog
+    r: ReplyDecision,
+    current: Severity,
+    own: Sequence[Quote],
+    doc: ParsedDocument,
+    log: CriticLog,
+    *,
+    consensus: bool = False,
 ) -> CriticDecision:
     """Решение критика, которое принимает код (см. описание модуля). ``current``: важность до критика."""
     reason = one_line(r.reason).rstrip(".") or "критик не указал причину"
@@ -281,15 +295,17 @@ def judge(
         log.kept += 1
         note = "Цитата-основание не найдена в документе, поэтому код оставил находку как есть."
         return CriticDecision(action=CriticAction.KEEP, reason=reason, proposed=r.decision, note=note)
-    if r.decision is CriticAction.DROP and new_chars(basis, own) >= MIN_NEW_CHARS:
+    elsewhere = new_chars(basis, own) >= MIN_NEW_CHARS
+    if r.decision is CriticAction.DROP and elsewhere and not consensus:
         log.dropped += 1
         return CriticDecision(action=CriticAction.DROP, reason=reason, basis=basis)
     own_basis = r.decision is CriticAction.DROP
-    log.own_basis += own_basis
+    log.own_basis += own_basis and not elsewhere
+    log.consensus += own_basis and elsewhere
     lowered = _lower(current, None if own_basis else r.severity)
     if lowered is None:
         log.kept += 1
-        why = OWN_BASIS_NOTE + " " if own_basis else ""
+        why = _why_not_dropped(elsewhere) + " " if own_basis else ""
         if r.severity is not None and not own_basis and current is not Severity.MINOR:
             limit = f"Предложенная важность «{r.severity.label}» не ниже текущей «{current.label}»"
         else:
@@ -301,7 +317,7 @@ def judge(
     log.downgraded += 1
     if not own_basis:
         return CriticDecision(action=CriticAction.DOWNGRADE, reason=reason, severity=lowered, basis=basis)
-    note = f"{OWN_BASIS_NOTE} Код не снял находку, а понизил её важность на уровень."
+    note = f"{_why_not_dropped(elsewhere)} Код не снял находку, а понизил её важность на уровень."
     return CriticDecision(
         action=CriticAction.DOWNGRADE,
         reason=reason,
@@ -356,7 +372,9 @@ def apply(
         if reply is None:
             out.append(m)
             continue
-        decision = judge(reply, asked[m.mid].severity, located.get(m.mid, ()), doc, log)
+        pick = asked[m.mid]
+        own = located.get(m.mid, ())
+        decision = judge(reply, pick.severity, own, doc, log, consensus=unanimous(pick.finding))
         out.append(m.model_copy(update={"critic": decision}))
     reviewed = len(asked) - log.missing
     logger.info(

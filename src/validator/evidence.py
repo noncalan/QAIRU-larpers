@@ -88,6 +88,8 @@ def gather(
         return EvidenceOutcome()
     located = locate_findings(findings, doc)
     findings, witness_diags = _with_witness(findings, located, doc, llm, cfg)
+    if not cfg.critic:
+        return EvidenceOutcome(findings=findings, diagnostics=witness_diags)
     findings, critic_diags = _with_critic(findings, located, doc, llm, cfg)
     return EvidenceOutcome(findings=findings, diagnostics=[*witness_diags, *critic_diags])
 

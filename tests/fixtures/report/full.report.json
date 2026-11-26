@@ -1240,7 +1240,8 @@
       "critic_kept": 1,
       "critic_downgraded": 1,
       "critic_dropped": 1,
-      "critic_overruled": 1
+      "critic_overruled": 1,
+      "critic_enabled": true
     }
   }
 }

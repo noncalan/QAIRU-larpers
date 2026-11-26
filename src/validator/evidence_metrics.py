@@ -11,11 +11,16 @@ from collections.abc import Sequence
 from validator.models import CriticAction, EvidenceMetrics, MergedFinding
 
 
-def evidence_metrics(found: Sequence[MergedFinding]) -> EvidenceMetrics | None:
-    """Шаг 6 в цифрах по находкам после шага; None, если ни свидетеля, ни решения критика нет."""
+def evidence_metrics(
+    found: Sequence[MergedFinding], *, critic_enabled: bool = True
+) -> EvidenceMetrics | None:
+    """Шаг 6 в цифрах по находкам после шага; None, если ни свидетеля, ни решения критика нет.
+
+    Критик выключен (``--critic`` не задан): метрики есть всегда, чтобы отчёт об этом сказал.
+    """
     witnesses = [m.witness for m in found if m.witness is not None]
     decisions = [m.critic for m in found if m.critic is not None]
-    if not witnesses and not decisions:
+    if not witnesses and not decisions and critic_enabled:
         return None
     checked = sum(w.checked for w in witnesses)
     declined = sum(not w.checked and not w.scenario.strip() for w in witnesses)
@@ -29,6 +34,7 @@ def evidence_metrics(found: Sequence[MergedFinding]) -> EvidenceMetrics | None:
         critic_downgraded=sum(d.action is CriticAction.DOWNGRADE for d in decisions),
         critic_dropped=sum(d.action is CriticAction.DROP for d in decisions),
         critic_overruled=sum(d.proposed is not None for d in decisions),
+        critic_enabled=critic_enabled,
     )
 
 
