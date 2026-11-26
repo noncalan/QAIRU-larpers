@@ -27,6 +27,7 @@ from statistics import median
 
 from validator.ingest.blocks import LIST_ITEM
 from validator.ingest.pdf_backends import Glyph, RawPage
+from validator.ingest.pdf_columns import detect_columns
 
 # ---------------------------------------------------------------- границы и словари
 
@@ -117,6 +118,7 @@ class Line:
     chars: int = 0
     band: str | None = None  # "top" или "bottom": полоса колонтитулов
     heading_level: int | None = None
+    flow_start: bool = False  # После границы колонки начинается новый абзац, даже при переносе слова.
 
     @property
     def center(self) -> float:
@@ -177,10 +179,10 @@ def row_text(row: list[Glyph], gap_em: float) -> str:
     return _line_text(row, gap_em)
 
 
-def build_lines(page: RawPage, gap_em: float) -> list[Line]:
+def build_lines(page: RawPage, gap_em: float, rows: list[list[Glyph]] | None = None) -> list[Line]:
     """Строки страницы сверху вниз, слева направо. ``page_line`` это порядковый номер строки на странице."""
     lines: list[Line] = []
-    for row in _cluster(page.glyphs):
+    for row in rows if rows is not None else cluster_rows(page.glyphs):
         text = _line_text(row, gap_em)
         if not text:
             continue
@@ -209,6 +211,35 @@ def build_lines(page: RawPage, gap_em: float) -> list[Line]:
             )
         )
     return lines
+
+
+def prose_lines(page: RawPage, gap_em: float, *, has_tables: bool) -> tuple[list[Line], bool]:
+    """Строки вне ячеек в порядке чтения и признак неуверенной раскладки."""
+    rows = cluster_rows(page.glyphs)
+    columns = detect_columns(rows, page.rules)
+    if columns is None:
+        return build_lines(page, gap_em, rows), False
+    if not columns.certain or has_tables:
+        # Для таблицы среди колонок порядок относительно обеих сторон неоднозначен.
+        return build_lines(page, gap_em, rows), True
+
+    body = [g for row in rows[columns.first : columns.stop] for g in row]
+    groups = (
+        rows[: columns.first],
+        cluster_rows([g for g in body if g.x0 < columns.split]),
+        cluster_rows([g for g in body if g.x0 >= columns.split]),
+        rows[columns.stop :],
+    )
+    lines: list[Line] = []
+    for group in groups:
+        offset = len(lines)
+        for line in build_lines(page, gap_em, group):
+            lines.append(
+                replace(
+                    line, page_line=offset + line.page_line, flow_start=bool(offset) and line.page_line == 1
+                )
+            )
+    return lines, False
 
 
 # ---------------------------------------------------------------- колонтитулы
@@ -335,6 +366,7 @@ def _merge_wrapped_headings(lines: list[Line]) -> list[Line]:
         prev = out[-1] if out else None
         if (
             prev is not None
+            and not line.flow_start
             and line.heading_level is not None
             and prev.heading_level == line.heading_level
             and prev.page == line.page
@@ -359,7 +391,12 @@ def _starts_item(text: str) -> bool:
 
 def _breaks(prev: Line, cur: Line, first: Line, stats: LayoutStats) -> bool:
     """Начинает ли ``cur`` новый абзац после ``prev`` (``first`` это первая строка текущего абзаца)."""
-    if prev.heading_level is not None or cur.heading_level is not None or _starts_item(cur.text):
+    if (
+        cur.flow_start
+        or prev.heading_level is not None
+        or cur.heading_level is not None
+        or _starts_item(cur.text)
+    ):
         return True
     if prev.page != cur.page:
         # Стык страниц: абзац продолжается, если предложение не закончено и строка идёт с маленькой буквы.

@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import logging
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -31,6 +32,7 @@ from validator.models import (
     LLMRequest,
     LLMResponse,
     LLMStep,
+    ReplaySource,
     StepModel,
 )
 
@@ -50,6 +52,14 @@ def resolve_run_dir(path: Path) -> Path:
     return path
 
 
+def _shown_path(path: Path) -> str:
+    """Путь к записи для паспорта: от рабочей папки, чтобы отчёт не выдавал домашний каталог машины."""
+    try:
+        return path.resolve().relative_to(Path.cwd().resolve()).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
 class ReplayLLM:
     """Отвечает записанными ответами прошлого прогона."""
 
@@ -62,6 +72,8 @@ class ReplayLLM:
         self._by_position: dict[tuple[str, int], dict[str, Any]] = {}
         self._recorded: dict[str, dict[int, StepModel]] = {}
         self._logged: dict[str, set[int]] = {}
+        self._spans: list[tuple[datetime, datetime]] = []
+        self._backends: set[Backend] = set()
         self.by_position_calls: list[str] = []
         self._index()
         self._read_log()
@@ -106,6 +118,31 @@ class ReplayLLM:
             )
             if isinstance(step, str) and isinstance(index, int):
                 self._logged.setdefault(step, set()).add(index)
+            if isinstance(record, dict):
+                self._remember_call(record)
+
+    def _remember_call(self, record: dict[str, Any]) -> None:
+        """Когда и чем вызывали модель при записи: для паспорта (``source``)."""
+        try:
+            start = datetime.fromisoformat(str(record.get("started_at")))
+        except ValueError:
+            return
+        duration = record.get("duration_ms")
+        end = start + timedelta(milliseconds=duration if isinstance(duration, int | float) else 0)
+        self._spans.append((start, end))
+        backend = record.get("backend")
+        if backend in {b.value for b in Backend} and backend != Backend.REPLAY.value:
+            self._backends.add(Backend(backend))
+
+    def source(self) -> ReplaySource:
+        """Что за запись: папка, сколько в ней ответов, когда и чем её писали (по ``calls.jsonl``)."""
+        return ReplaySource(
+            path=_shown_path(self.run_dir),
+            responses=self.responses_total,
+            recorded_from=min((s for s, _ in self._spans), default=None),
+            recorded_to=max((e for _, e in self._spans), default=None),
+            backends=sorted(self._backends, key=lambda b: b.value),
+        )
 
     def calls_in_recording(self, step: LLMStep) -> int:
         """Сколько вызовов шага было в записанном прогоне, считая и упавшие (по наибольшему номеру)."""

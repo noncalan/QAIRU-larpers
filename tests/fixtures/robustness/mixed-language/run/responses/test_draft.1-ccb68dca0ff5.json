@@ -1,0 +1,231 @@
+{
+ "envelope_version": 1,
+ "key": "ccb68dca0ff55f8d44ca818bf98fc704f0c5008c48f93ee630f5666aed89263a",
+ "call_id": "test_draft.1",
+ "step": "test_draft",
+ "call_index": 1,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T22:37:59.799087+00:00",
+ "payload": {
+  "duration_api_ms": 80497,
+  "stop_reason": "end_turn",
+  "session_id": "3f756853-3d80-4bb4-8434-440f2b6b23be",
+  "total_cost_usd": 0.1450476,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 6256,
+   "cache_read_input_tokens": 2296,
+   "output_tokens": 11979,
+   "output_tokens_details": {
+    "thinking_tokens": 6403
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 6256,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 11979,
+     "cache_read_input_tokens": 2296,
+     "cache_creation_input_tokens": 6256,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 6256
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 11979,
+    "cacheReadInputTokens": 2296,
+    "cacheCreationInputTokens": 6256,
+    "webSearchRequests": 0,
+    "costUSD": 0.1450476,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 6403,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 6256,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n**M-005.** Для результата нужны критерии попадания заказа в список и лимит одновременно принятых заказов. Документ их не называет, пропуски на обоих.\n\n**M-006.** Нужно знать, к какому списку относятся требования об обновлении. Из документа это не следует. Единственное числовое значение (60 секунд) есть, но экран для проверки неизвестен, поэтому пропуск.\n\n**M-007.** Для результата нужны предельная задержка и точка отсчёта. В документе только «as soon as» и «пропал из списка» без срока. Срок обновления списка (60 секунд) не задан как срок скрытия, поэтому его не подставляю.\n\n**M-008.** Результат для второго курьера и владелец заказа при гонке в документе не заданы. Из документа известны только скрытие заказа после принятия и период обновления списка.\n\n**M-009.** Тариф «утверждается позже», ни ставок, ни формулы, ни валюты в документе нет. Сумма оплаты неизвестна.\n\n**M-010.** Из документа есть только результат при несовпадении кода. Длина, срок, лимит попыток и действие после исчерпания лимита не заданы.\n\n**M-011.** Ветка отказа SMS-шлюза в документе отсутствует, ожидаемый результат неизвестен.\n\n**M-012.** Известен только отрицательный исход проверки кода. Результат при верном коде и момент отправки SMS в документе не заданы.\n\n**M-013.** Состояние заказа и курьеров после переназначения, судьба кода и оплата в документе не описаны.\n\n**M-014.** Что считается «ответом», документ не говорит. Допустимость переназначения в сценарии проверяющих зависит от толкования.\n\n**M-015.** Порог в минутах и точка отсчёта не заданы. Реакция на попытку переназначить раньше срока тоже не описана.\n\n**M-016.** Названий состояний и допустимых переходов в документе нет. Результат отказа курьера от принятого заказа неизвестен.\n\n**M-017.** Из документа известно только, что диспетчер может переназначить заказ. Полномочия курьера в этой операции и вид отказа в доступе не заданы.\n\n## Ответ\n\n```json\n{\n  \"drafts\": [\n    {\n      \"finding\": \"M-005\",\n      \"can_write\": false,\n      \"precondition\": \"Курьер вошёл в приложение. В системе есть заказы в разных состояниях, в разных зонах и на разном расстоянии от курьера; у курьера уже есть принятые заказы.\",\n      \"steps\": [\n        \"Открыть список доступных заказов.\",\n        \"Сравнить показанные заказы с имеющимися в системе.\",\n        \"Принимать заказы по одному, пока приём не будет отклонён или не закончатся доступные.\"\n      ],\n      \"expected\": \"В списке показаны только заказы, соответствующие критериям [?1]. Курьер может держать одновременно не более [?2] принятых заказов.\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"критерии попадания заказа в список доступных: статус заказа, зона или расстояние, смена курьера\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"лимит одновременно принятых заказов у одного курьера и реакция системы при его превышении\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-006\",\n      \"can_write\": false,\n      \"precondition\": \"Курьер вошёл в приложение, у него есть принятые заказы, в системе есть доступные заказы.\",\n      \"steps\": [\n        \"Открыть экран [?1].\",\n        \"Создать в системе новый заказ.\",\n        \"Засечь время до появления нового заказа на экране без ручного обновления.\"\n      ],\n      \"expected\": \"Список на этом экране обновляется at least once every 60 seconds.\",\n      \"values\": [\n        {\"value\": \"at least once every 60 seconds\", \"quote\": \"The order list shall refresh at least once every 60 seconds.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"к какому списку относятся требования об обновлении: списку доступных заказов или списку всех заказов курьера, включая принятые (один это список или разные)\", \"part\": \"steps\"}\n      ],\n      \"note\": \"Требование «в реальном времени» числом не выражено, поэтому проверяется только срок обновления из второго требования.\"\n    },\n    {\n      \"finding\": \"M-007\",\n      \"can_write\": false,\n      \"precondition\": \"Курьеры A и B онлайн, оба видят один и тот же доступный заказ.\",\n      \"steps\": [\n        \"Курьер A принимает заказ.\",\n        \"Засечь время до исчезновения заказа из списка курьера B.\"\n      ],\n      \"expected\": \"Курьер принял заказ, заказ пропал из списка у остальных курьеров: не позднее чем через [?1] после [?2].\",\n      \"values\": [\n        {\"value\": \"пропал из списка у остальных курьеров\", \"quote\": \"Курьер принял заказ, заказ пропал из списка у остальных курьеров.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"предельная задержка скрытия заказа у остальных курьеров (в секундах) и доля случаев, в которых она должна соблюдаться\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"точка отсчёта задержки: нажатие кнопки курьером, подтверждение принятия сервером или другое событие\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-008\",\n      \"can_write\": false,\n      \"precondition\": \"Курьеры A и B видят один и тот же доступный заказ. Список курьера B ещё не обновился (список обновляется at least once every 60 seconds).\",\n      \"steps\": [\n        \"Курьер A принимает заказ.\",\n        \"Курьер B, не обновляя список, нажимает «принять» на том же заказе.\",\n        \"Повторить с одновременным нажатием «принять» обоими курьерами.\"\n      ],\n      \"expected\": \"При запоздалом принятии курьер B получает [?1]. При одновременном принятии заказ получает [?2].\",\n      \"values\": [\n        {\"value\": \"at least once every 60 seconds\", \"quote\": \"The order list shall refresh at least once every 60 seconds.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"результат попытки принять заказ, который уже принят другим курьером: отказ, сообщение, состояние заказа и списка у курьера B\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"какой курьер получает заказ при одновременном принятии и по какому правилу определяется победитель\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-009\",\n      \"can_write\": false,\n      \"precondition\": \"Заказ доставлен курьером, действует тариф [?1].\",\n      \"steps\": [\n        \"Дождаться расчёта оплаты по заказу.\",\n        \"Открыть начисление курьеру по этому заказу.\"\n      ],\n      \"expected\": \"Оплата курьера по заказу равна [?2].\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"сам тариф: формула, ставки, валюта; в документе сказано только, что тариф утверждается позже\", \"part\": \"precondition\"},\n        {\"number\": 2, \"missing\": \"ожидаемая сумма оплаты, правило округления, момент расчёта и правила для переназначенного или неподтверждённого заказа\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-010\",\n      \"can_write\": false,\n      \"precondition\": \"Заказ в доставке, клиент получил по SMS одноразовый код ([?1]).\",\n      \"steps\": [\n        \"Курьер вводит неверный код.\",\n        \"Курьер повторяет неверный ввод, пока не превысит лимит попыток [?2].\",\n        \"На другом заказе курьер вводит верный код после истечения срока действия [?3].\"\n      ],\n      \"expected\": \"Code entered by the courier does not match the customer's code: the delivery is not confirmed. После исчерпания лимита попыток: [?4]. Верный код после истечения срока: [?5].\",\n      \"values\": [\n        {\"value\": \"the delivery is not confirmed\", \"quote\": \"Code entered by the courier does not match the customer's code: the delivery is not confirmed.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"длина и алфавит кода\", \"part\": \"precondition\"},\n        {\"number\": 2, \"missing\": \"число разрешённых попыток ввода\", \"part\": \"steps\"},\n        {\"number\": 3, \"missing\": \"срок действия кода в минутах и точка отсчёта срока\", \"part\": \"steps\"},\n        {\"number\": 4, \"missing\": \"действие системы после исчерпания попыток (блокировка, новый код, эскалация) и лимит повторной отправки кода\", \"part\": \"expected\"},\n        {\"number\": 5, \"missing\": \"результат ввода верного кода с истёкшим сроком\", \"part\": \"expected\"}\n      ],\n      \"note\": \"Для неверного кода результат в документе есть, для границ параметров нет.\"\n    },\n    {\n      \"finding\": \"M-011\",\n      \"can_write\": false,\n      \"precondition\": \"Заказ в доставке, SMS-шлюз возвращает ошибку (или SMS клиенту не доставлено).\",\n      \"steps\": [\n        \"Курьер прибывает к клиенту и запрашивает подтверждение доставки.\",\n        \"Курьер пытается подтвердить доставку без кода.\"\n      ],\n      \"expected\": \"Система отвечает на отказ шлюза так: [?1]. Курьер видит [?2]. Заказ переходит в состояние [?3].\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"действие системы при отказе SMS-шлюза или недоставке: повторная отправка, уведомление, число попыток\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"что видит курьер и как он может завершить доставку, если клиент недоступен\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"состояние заказа в этой ветке; сейчас заказ может зависнуть без подтверждения\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-012\",\n      \"can_write\": false,\n      \"precondition\": \"Заказ принят курьером и доставляется; SMS с кодом отправляется клиенту в момент [?1].\",\n      \"steps\": [\n        \"Курьер вводит код, не совпадающий с кодом клиента.\",\n        \"Курьер вводит код, совпадающий с кодом клиента.\"\n      ],\n      \"expected\": \"На несовпадающий код: the delivery is not confirmed. На совпадающий код система [?2].\",\n      \"values\": [\n        {\"value\": \"the delivery is not confirmed\", \"quote\": \"Code entered by the courier does not match the customer's code: the delivery is not confirmed.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"кто и когда генерирует и отправляет SMS с кодом (какое событие запускает отправку)\", \"part\": \"precondition\"},\n        {\"number\": 2, \"missing\": \"результат сверки при совпадении кода: новое состояние заказа и реакция системы; в документе описан только случай несовпадения\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-013\",\n      \"can_write\": false,\n      \"precondition\": \"Заказ принят курьером A, курьер A не отвечает долгое время. Курьер B свободен.\",\n      \"steps\": [\n        \"Диспетчер переназначает заказ курьеру B.\",\n        \"Проверить экраны курьеров A и B, состояние заказа и начисления.\"\n      ],\n      \"expected\": \"Заказ закреплён за [?1]. Курьер A видит [?2]. Курьер B [?3]. Старый SMS-код [?4]. Оплату по заказу получает [?5].\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"состояние и владелец заказа после переназначения\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"что видит и получает прежний курьер (уведомление, исчезновение заказа)\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"уведомляется ли новый курьер и может ли он отказаться\", \"part\": \"expected\"},\n        {\"number\": 4, \"missing\": \"действует ли ранее отправленный SMS-код после переназначения\", \"part\": \"expected\"},\n        {\"number\": 5, \"missing\": \"кто получает оплату по заказу\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-014\",\n      \"can_write\": false,\n      \"precondition\": \"Курьер A в сети, у него принятый заказ. Он не меняет статус заказа и не отвечает на звонок диспетчера. Условие «не отвечает долгое время» считается выполненным.\",\n      \"steps\": [\n        \"Диспетчер пытается переназначить заказ другому курьеру.\"\n      ],\n      \"expected\": \"Переназначение [?1].\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"какое событие считается «ответом» курьера (звонок, сообщение в приложении, геопозиция, смена статуса) и, значит, разрешено ли переназначение в этом сценарии\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-015\",\n      \"can_write\": false,\n      \"precondition\": \"Курьер A принял заказ и не отвечает. Отсчёт молчания идёт от [?1].\",\n      \"steps\": [\n        \"Через минуту до порога [?2] диспетчер пытается переназначить заказ.\",\n        \"Через [?2] с точки отсчёта диспетчер пытается переназначить заказ снова.\"\n      ],\n      \"expected\": \"До порога система [?3]. После порога переназначение выполняется.\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"момент начала отсчёта молчания курьера (принятие заказа, последний сигнал, запрос диспетчера)\", \"part\": \"precondition\"},\n        {\"number\": 2, \"missing\": \"порог «долгого времени» в минутах\", \"part\": \"steps\"},\n        {\"number\": 3, \"missing\": \"реакция системы на попытку переназначить до порога (запрет, предупреждение, разрешение)\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-016\",\n      \"can_write\": false,\n      \"precondition\": \"Заказ принят курьером A и находится в состоянии [?1].\",\n      \"steps\": [\n        \"Курьер A пытается отказаться от принятого заказа.\"\n      ],\n      \"expected\": \"Отказ [?2], заказ переходит в состояние [?3].\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"перечень состояний заказа и их названия: в документе состояния только подразумеваются\", \"part\": \"precondition\"},\n        {\"number\": 2, \"missing\": \"может ли курьер отказаться от принятого заказа и какие действия допустимы из состояния «принят»\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"допустимые переходы между состояниями и результирующее состояние после отказа\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-017\",\n      \"can_write\": false,\n      \"precondition\": \"Заказ принят курьером A. В систему вошёл курьер B (роль «курьер»).\",\n      \"steps\": [\n        \"Курьер B пытается переназначить заказ курьера A другому курьеру.\"\n      ],\n      \"expected\": \"Система [?1].\",\n      \"values\": [\n        {\"value\": \"Диспетчер\", \"quote\": \"Диспетчер может переназначить заказ другому курьеру, если курьер не отвечает долгое время.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"полномочия курьера в операции переназначения (запрещена или нет), форма и текст ошибки доступа, а также интерфейс, через который работает диспетчер\", \"part\": \"expected\"}\n      ],\n      \"note\": \"Документ говорит только, что диспетчер может переназначить заказ; запрет для других ролей не задан.\"\n    }\n  ]\n}\n```",
+  "ttft_ms": 50360,
+  "type": "result",
+  "duration_ms": 83276,
+  "uuid": "dd48c344-b9a7-40ed-ae77-ea8045253834",
+  "ttft_stream_ms": 1025,
+  "time_to_request_ms": 89,
+  "time_to_request_phases_ms": {
+   "other": 9,
+   "system_prompt": 3,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 10,
+   "input_hooks": 3,
+   "conversation_append": 0,
+   "tool_pool_refresh": 2,
+   "init_message": 7,
+   "init_frame_send": 5,
+   "engine_pickup": 1,
+   "loop_entry": 4,
+   "message_prep": 2,
+   "model_config_wait": 11,
+   "autocompact": 2,
+   "request_announcements": 6,
+   "query_setup": 1,
+   "model_gates": 1,
+   "tool_schema_build": 2,
+   "message_normalization": 3,
+   "client_creation": 4,
+   "request_build": 9
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 39,
+  "time_to_request_cpu_ms": 100,
+  "time_to_request_major_faults": 0,
+  "process_rss_mib_turn_start": 202,
+  "process_anon_mib_turn_start": 124,
+  "process_rss_mib_result": 204,
+  "process_anon_mib_result": 119,
+  "process_peak_rss_mib": 220,
+  "process_cpu_ms_turn": 1512,
+  "process_wall_ms_turn": 83275,
+  "tool_pool_build_count": 5,
+  "tool_pool_build_lapsed_count": 2,
+  "tool_pool_moved_at_lapse_count": 0,
+  "tool_pool_limit_ms": 30000,
+  "process_cpu_ms_streaming": 1116,
+  "process_wall_ms_streaming": 79550,
+  "main_stream_count": 1,
+  "main_stream_event_count": 957,
+  "main_stream_chunk_count": 951,
+  "process_turn_states": {
+   "main_stream": {
+    "cpu_ms": 1116,
+    "wall_ms": 79550,
+    "entries": 1
+   },
+   "first_event_wait": {
+    "cpu_ms": 247,
+    "wall_ms": 935,
+    "entries": 1
+   },
+   "before_first_request": {
+    "cpu_ms": 100,
+    "wall_ms": 89,
+    "entries": 1
+   },
+   "after_last_request": {
+    "cpu_ms": 49,
+    "wall_ms": 2701,
+    "entries": 1
+   }
+  },
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 2,
+   "cpu_ms": 11,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 1,
+   "ambient_start_ms": 4,
+   "ambient_wait_ms": 2,
+   "render_ms": 1,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 1,
+   "waits_ms": 0,
+   "placement_ms": 1,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 2,
+   "images_ms": 0,
+   "post_process_ms": 1,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 2,
+   "headers_ms": 1,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 3,
+   "record_attempt_ms": 0,
+   "other_ms": 1,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 1,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1026,
+  "time_to_request_from_spawn_ms": 1438169,
+  "warm_spare_claimed": false,
+  "flag_fetch_kick": "not_asked_warm",
+  "time_origin_ms": 1795732595389.3647,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "process_start_tuning": 0
+ }
+}

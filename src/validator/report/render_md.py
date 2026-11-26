@@ -63,7 +63,15 @@ from validator.report.first_page import (
     tz_class_findings,
 )
 from validator.report.fmt import FILTERS, ChecklistItems, found_text, plain, where
-from validator.report.passport_view import document_line, models_line, tokens_in, tokens_text, version_line
+from validator.report.passport_view import (
+    backend_line,
+    document_line,
+    models_line,
+    replay_line,
+    tokens_in,
+    tokens_text,
+    version_line,
+)
 from validator.report.run_metrics import step_label
 from validator.report.testdraft_view import draft_stats, draft_view, stats_line
 
@@ -496,6 +504,8 @@ def report_context(report: Report) -> dict[str, Any]:
         "segmentation_note": SEGMENTATION_NOTE,
         "passport_document": document_line(report),
         "passport_version": version_line(report),
+        "passport_backend": backend_line(report),
+        "passport_replay": replay_line(report),
         "passport_models": models_line(report),
         "tokens_text": tokens_text,
         "tokens_in": tokens_in,

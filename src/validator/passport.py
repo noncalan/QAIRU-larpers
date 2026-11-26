@@ -26,6 +26,7 @@ from validator.models import (
     ExitCode,
     LLMStep,
     Passport,
+    ReplaySource,
     RunConfig,
     TokenUsage,
 )
@@ -131,6 +132,7 @@ def build_passport(
     calls: Sequence[CallRecord],
     exit_code: ExitCode,
     checklists: Sequence[str] = (),
+    replay: ReplaySource | None = None,
 ) -> Passport:
     version, source, dirty = agent_version()
     tokens = sum((c.usage for c in calls), TokenUsage())
@@ -163,6 +165,8 @@ def build_passport(
         calls_total=sum(c.status is not CallStatus.RETRIED for c in calls),
         calls_failed=sum(c.status is CallStatus.ERROR for c in calls),
         calls_cached=sum(c.status is CallStatus.CACHED for c in calls),
+        calls_replayed=sum(c.status is CallStatus.REPLAYED for c in calls),
+        replay=replay,
         tokens=tokens,
         cost_usd=_cost(calls),
         exit_code=exit_code,

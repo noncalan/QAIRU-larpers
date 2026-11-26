@@ -33,7 +33,9 @@
     ],
     "calls_total": 5,
     "calls_failed": 0,
-    "calls_cached": 0,
+    "calls_cached": 1,
+    "calls_replayed": 0,
+    "replay": null,
     "tokens": {
       "input_tokens": 30000,
       "output_tokens": 12000,
@@ -223,7 +225,7 @@
     "duration_s": 240.5,
     "calls_total": 5,
     "calls_failed": 0,
-    "calls_cached": 0,
+    "calls_cached": 1,
     "tokens": {
       "input_tokens": 30000,
       "output_tokens": 12000,
@@ -636,6 +638,38 @@
         "passed": true,
         "integrity": true,
         "detail": "3 требований × 11 свойств и колонка «Набор», ячеек: 36; свойств набора: 8; у каждого требования те же находки, что в разделе 4",
+        "failures": []
+      },
+      {
+        "id": "traffic",
+        "title": "Светофор и вывод пересчитаны по находкам и вопросам",
+        "passed": true,
+        "integrity": true,
+        "detail": "🟢 можно начинать разработку и тестирование: пересчитан по находкам и вопросам автору, вывод на первой странице тот же",
+        "failures": []
+      },
+      {
+        "id": "first_page",
+        "title": "«Что исправить первым» и «Какие вопросы задать первыми» пересчитаны",
+        "passed": true,
+        "integrity": true,
+        "detail": "исправить первым: 0 (критичных 0, все на месте); вопросов первыми: 0",
+        "failures": []
+      },
+      {
+        "id": "refs",
+        "title": "Каждая ссылка F-, R-, Q- ведёт на объект отчёта",
+        "passed": true,
+        "integrity": true,
+        "detail": "ссылок проверено: 0, все ведут на объекты отчёта",
+        "failures": []
+      },
+      {
+        "id": "passport",
+        "title": "Паспорт сходится с журналом вызовов и кодом завершения",
+        "passed": true,
+        "integrity": true,
+        "detail": "вызовов модели 5, как в журнале по шагам; код 0 и состояние «проверка выполнена полностью» сходятся с диагностикой",
         "failures": []
       }
     ],

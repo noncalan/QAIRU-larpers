@@ -1,0 +1,231 @@
+{
+ "envelope_version": 1,
+ "key": "f882d92dcf2143f45421f8a3fcaef46db54954ed44ac9ab7b45931e1a75be0db",
+ "call_id": "questions.1",
+ "step": "questions",
+ "call_index": 1,
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T22:33:35.157884+00:00",
+ "payload": {
+  "duration_api_ms": 106906,
+  "stop_reason": "end_turn",
+  "session_id": "dd57c013-e674-40ae-b0a7-418c1643d33f",
+  "total_cost_usd": 0.37628399999999995,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 16352,
+   "cache_read_input_tokens": 0,
+   "output_tokens": 12273,
+   "output_tokens_details": {
+    "thinking_tokens": 3351
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 16352,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 12273,
+     "cache_read_input_tokens": 0,
+     "cache_creation_input_tokens": 16352,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 16352
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-opus-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 12273,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 16352,
+    "webSearchRequests": 0,
+    "costUSD": 0.37628399999999995,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3351,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 16352,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n- **C-01.** Документ заявляет, что сервис заменит бумажный журнал, но не говорит, какие события записываются. Главное решение — состав журнала. Права на просмотр и срок хранения назову в `why`.\n- **C-02.** Ответ задаёт критерий достижения бизнес-цели. Он не меняет ни реализацию, ни ожидаемый результат теста, поэтому вопрос не нужен.\n- **C-03.** Не задан вход участников в сервис. AC-01 упоминает список посылок клиента, значит, вход клиента нужен. Главное решение — способ входа клиента. Матрицу прав, формат кода и хранение контактов назову в `why`.\n- **C-04.** Главное решение — что происходит с резервом, если курьер не заложил посылку. Выбор ячейки по размеру и одновременные запросы назову в `why`.\n- **C-05.** Главное решение — канал уведомления. Источник контакта и повторы отправки назову в `why`.\n- **C-06 и C-17.** Оба кандидата о том, что измеряет срок «5 минут»: передачу провайдеру или получение клиентом. Объединяю в один вопрос, долю случаев назову в `why`.\n- **C-07.** В кандидате несколько независимых решений. Главное — реакция на подбор кода. Получение кода, шаблон уведомления, повторный ввод кода и состояние ячейки после выдачи назову в `why`.\n- **C-08.** Противоречие: 48 часов в FR-03 и 72 часа в NFR-02. Начало отсчёта и границу срока назову в `why`.\n- **C-09.** Главное решение — состояние ячейки с посылкой после истечения кода. Условие «if needed» вынесено в вопрос по C-10.\n- **C-10.** Разбиение FR-04 на части — правка текста. Из кандидата остаётся одно решение — когда уведомлять управляющего. Делаю его отдельным вопросом.\n- **C-11.** Главное решение — можно ли блокировать занятую ячейку. Разблокировку и уведомления назову в `why`.\n- **C-12.** Вместо платы стоит «TBD». Главное решение — начисляется ли плата и с какого момента. Сумму, плательщика и способ оплаты назову в `why`.\n- **C-13.** Для «quickly» нужен порог времени. Нагрузку и точки замера назову в `why`.\n- **C-14.** Главное решение — процент доступности. Метрику удобства назову в `why`.\n- **C-15.** Источник протокола не указан. Закрытый выбор — одна модель контроллера или несколько. Название и версию руководства назову в `why`.\n- **C-16.** Главное решение — что считается фиксацией закладки. От неё отсчитываются срок кода и срок уведомления. Список посылок и недостающие критерии приёмки назову в `why`.\n\n## Ответ\n\n```json\n{\n  \"questions\": [\n    {\n      \"candidates\": [\"C-08\"],\n      \"addressee\": [\"business\"],\n      \"topic\": \"срок действия кода\",\n      \"quotes\": [\n        \"The customer shall open the compartment with a one-time code valid for 48 hours.\",\n        \"A one-time code shall remain valid for 72 hours after the parcel is placed.\"\n      ],\n      \"question\": \"Посылку заложили в понедельник в 10:00, клиент вводит код в среду в 22:00 (через 60 часов): ячейка открывается?\",\n      \"why\": \"FR-03 и NFR-02 задают разные сроки, а от срока зависят открытие ячейки, автоосвобождение и плата. Отдельно нужно подтвердить начало отсчёта (закладка) и действует ли код ровно в момент окончания срока.\",\n      \"options\": [\n        {\n          \"text\": \"Нет: код действует 48 часов\",\n          \"change\": \"Оставить 48 часов в FR-03, в NFR-02 заменить срок ссылкой на FR-03\",\n          \"grounded_in\": \"The customer shall open the compartment with a one-time code valid for 48 hours.\"\n        },\n        {\n          \"text\": \"Да: код действует 72 часа с закладки\",\n          \"change\": \"Исправить FR-03 на 72 часа, в NFR-02 оставить одно требование о сроке\",\n          \"grounded_in\": \"A one-time code shall remain valid for 72 hours after the parcel is placed.\"\n        }\n      ],\n      \"if_unanswered\": \"Команда возьмёт 48 часов из функционального требования. Если верно 72, клиенты потеряют сутки на получение посылки, а плата начнётся раньше.\"\n    },\n    {\n      \"candidates\": [\"C-16\"],\n      \"addressee\": [\"business\", \"architect\"],\n      \"topic\": \"фиксация закладки\",\n      \"quotes\": [\"A parcel placed by the courier appears in the customer's list of parcels.\"],\n      \"question\": \"Курьер положил посылку и закрыл дверцу, но не подтвердил закладку в сервисе: посылка считается заложенной?\",\n      \"why\": \"От момента закладки отсчитываются срок кода и срок уведомления. Нужны также состав записи в списке посылок клиента и критерии приёмки для FR-01, FR-03–FR-05 и NFR.\",\n      \"options\": [\n        {\n          \"text\": \"Да: закладку фиксирует сигнал контроллера о закрытии дверцы\",\n          \"change\": \"Добавить FR о фиксации закладки по сигналу контроллера; отсчёт сроков — от сигнала\",\n          \"grounded_in\": null\n        },\n        {\n          \"text\": \"Нет: закладка фиксируется только подтверждением курьера\",\n          \"change\": \"Добавить FR о подтверждении закладки курьером; без подтверждения код и уведомление не создаются\",\n          \"grounded_in\": null\n        },\n        {\n          \"text\": \"Нет: нужны и сигнал контроллера, и подтверждение курьера\",\n          \"change\": \"Добавить FR с двумя условиями и сценарий, когда пришло только одно из них\",\n          \"grounded_in\": null\n        }\n      ],\n      \"if_unanswered\": \"Команда возьмёт подтверждение курьера. Если курьер забудет подтвердить, клиент не получит код, а ячейка останется занятой без отсчёта срока.\"\n    },\n    {\n      \"candidates\": [\"C-09\"],\n      \"addressee\": [\"business\"],\n      \"topic\": \"ячейка после истечения кода\",\n      \"quotes\": [\"The system shall release the compartment automatically when the code expires and notify the courier, the customer and, if needed, the building manager.\"],\n      \"question\": \"Код к ячейке №7 истёк, посылка лежит внутри, через минуту другой курьер пытается зарезервировать ячейку №7: что происходит?\",\n      \"why\": \"Система не может освободить физически занятую ячейку. От решения зависят статусы ячейки, судьба посылки и связь с платой из FR-06.\",\n      \"options\": [\n        {\n          \"text\": \"Ячейка сразу становится свободной, резерв проходит\",\n          \"change\": \"Оставить FR-04 как есть и описать, что делать с посылкой внутри\",\n          \"grounded_in\": \"The system shall release the compartment automatically when the code expires\"\n        },\n        {\n          \"text\": \"Ячейка ждёт изъятия: курьер получает код изъятия, ячейка свободна только после изъятия, резерв отклоняется\",\n          \"change\": \"Добавить статус «ожидает изъятия» и код изъятия для курьера, переписать FR-04\",\n          \"grounded_in\": null\n        },\n        {\n          \"text\": \"Посылка остаётся для клиента на платном хранении, резерв отклоняется\",\n          \"change\": \"Переписать FR-04 и связать его с FR-06: код продлевается, начисляется плата\",\n          \"grounded_in\": \"The storage fee for an uncollected parcel is TBD.\"\n        }\n      ],\n      \"if_unanswered\": \"Команда сделает ячейку свободной по тексту FR-04. Тогда второй курьер получит ячейку, в которой лежит чужая посылка.\"\n    },\n    {\n      \"candidates\": [\"C-07\"],\n      \"addressee\": [\"security\"],\n      \"topic\": \"подбор одноразового кода\",\n      \"quotes\": [\"The customer shall open the compartment with a one-time code valid for 48 hours.\"],\n      \"question\": \"У ячейки №7 подряд вводят неверный код несколько раз: что делает система после превышения лимита попыток?\",\n      \"why\": \"Без лимита код можно подобрать, а негативные тесты не имеют ожидаемого результата. Отдельно нужно определить, как клиент получает код (шаблон, язык уведомления), как система отвечает на истёкший или использованный код и в каком состоянии ячейка после выдачи посылки.\",\n      \"options\": [\n        {\n          \"text\": \"Ввод для ячейки блокируется на фиксированное время, код продолжает действовать\",\n          \"change\": \"Указать лимит попыток и время блокировки, добавить негативные критерии приёмки\",\n          \"grounded_in\": null\n        },\n        {\n          \"text\": \"Код аннулируется, клиенту отправляется новый\",\n          \"change\": \"Указать лимит попыток и правило перевыпуска кода с уведомлением клиента\",\n          \"grounded_in\": null\n        },\n        {\n          \"text\": \"Лимита нет, каждый раз показывается сообщение об ошибке\",\n          \"change\": \"Указать текст ошибки; в разделе безопасности зафиксировать, что риск подбора принят\",\n          \"grounded_in\": null\n        }\n      ],\n      \"if_unanswered\": \"Команда сделает блокировку ввода на время, выбранное разработчиком. Лимит может оказаться слишком мягким для защиты или слишком жёстким для клиента.\"\n    },\n    {\n      \"candidates\": [\"C-05\"],\n      \"addressee\": [\"business\", \"architect\"],\n      \"topic\": \"канал уведомления\",\n      \"quotes\": [\"The system shall send the customer a notification as soon as possible after the parcel is placed in the compartment.\"],\n      \"question\": \"Посылка заложена в ячейку: по какому каналу клиент получает уведомление с кодом?\",\n      \"why\": \"От канала зависят интеграция с провайдером, хранимые контакты клиента и проверка доставки; то же решение действует для уведомлений из FR-04. Нужно также определить, откуда берётся контакт и что делать, если уведомление не доставлено (повторы, резервный канал).\",\n      \"options\": [\n        {\n          \"text\": \"SMS на номер телефона\",\n          \"change\": \"Указать SMS в FR-02 и FR-04, хранить номер телефона клиента\",\n          \"grounded_in\": null\n        },\n        {\n          \"text\": \"Электронное письмо\",\n          \"change\": \"Указать e-mail в FR-02 и FR-04, хранить адрес почты клиента\",\n          \"grounded_in\": null\n        },\n        {\n          \"text\": \"Push в приложении, SMS — если push не доставлен\",\n          \"change\": \"Описать основной и резервный каналы и условие переключения\",\n          \"grounded_in\": null\n        }\n      ],\n      \"if_unanswered\": \"Команда сделает только SMS. Если клиенты ждут другой канал, интеграцию и хранение контактов придётся переделывать.\"\n    },\n    {\n      \"candidates\": [\"C-03\"],\n      \"addressee\": [\"security\", \"business\"],\n      \"topic\": \"вход клиента\",\n      \"quotes\": [\n        \"Actors: courier, customer, building manager.\",\n        \"A parcel placed by the courier appears in the customer's list of parcels.\"\n      ],\n      \"question\": \"Клиент хочет открыть в сервисе список своих посылок: как он подтверждает, что это он?\",\n      \"why\": \"Способ входа не задан ни для одной роли, поэтому тесты доступа написать нельзя. Отдельно нужны вход курьера и управляющего, матрица прав ролей, длина кода и правила хранения контактов клиента.\",\n      \"options\": [\n        {\n          \"text\": \"Номер телефона и одноразовый код из SMS\",\n          \"change\": \"Добавить требование о входе по телефону, хранить номер как идентификатор клиента\",\n          \"grounded_in\": null\n        },\n        {\n          \"text\": \"Учётная запись с логином и паролем\",\n          \"change\": \"Добавить регистрацию, вход и восстановление пароля для клиента\",\n          \"grounded_in\": null\n        },\n        {\n          \"text\": \"Без учётной записи, по персональной ссылке из уведомления\",\n          \"change\": \"Описать ссылку, её срок действия и что по ней видно; список посылок ограничить одной посылкой\",\n          \"grounded_in\": null\n        }\n      ],\n      \"if_unanswered\": \"Команда сделает вход по SMS-коду. Если нужен другой способ, придётся менять данные клиента и проверки доступа.\"\n    },\n    {\n      \"candidates\": [\"C-04\"],\n      \"addressee\": [\"business\"],\n      \"topic\": \"срок резерва ячейки\",\n      \"quotes\": [\"The courier shall be able to reserve a free locker compartment for a parcel before delivery.\"],\n      \"question\": \"Курьер зарезервировал ячейку в 10:00 и не заложил посылку: когда резерв снимается?\",\n      \"why\": \"Без срока брошенные резервы держат ячейки занятыми, а тест не знает, когда ячейка снова станет свободной. Нужно также задать выбор ячейки (размер, постамат), ответ при отсутствии свободных ячеек и правило для двух одновременных запросов.\",\n      \"options\": [\n        {\n          \"text\": \"Автоматически через фиксированное число минут\",\n          \"change\": \"Указать срок резерва в FR-01 и добавить критерий приёмки на автоснятие\",\n          \"grounded_in\": null\n        },\n        {\n          \"text\": \"Только когда курьер сам отменит резерв\",\n          \"change\": \"Добавить в FR-01 отмену резерва курьером, автоснятия нет\",\n          \"grounded_in\": null\n        },\n        {\n          \"text\": \"В конце рабочего дня\",\n          \"change\": \"Указать в FR-01 время ежедневного снятия резервов\",\n          \"grounded_in\": null\n        }\n      ],\n      \"if_unanswered\": \"Команда сделает автоснятие через срок, выбранный разработчиком. Курьеры могут потерять резерв в пути или, наоборот, надолго занимать ячейки.\"\n    },\n    {\n      \"candidates\": [\"C-06\", \"C-17\"],\n      \"addressee\": [\"business\", \"architect\"],\n      \"topic\": \"срок уведомления\",\n      \"quotes\": [\n        \"The system shall send the customer a notification as soon as possible after the parcel is placed in the compartment.\",\n        \"The customer receives a notification within 5 minutes after the parcel is placed.\"\n      ],\n      \"question\": \"Посылку заложили в 10:00, система передала уведомление провайдеру в 10:03, клиент получил его в 10:07: срок соблюдён?\",\n      \"why\": \"FR-02 говорит об отправке без срока, AC-02 — о получении за 5 минут, а время получения зависит от оператора связи. От ответа зависят точка замера в тесте и данные, которые система фиксирует; нужна также доля случаев, в которых срок обязателен.\",\n      \"options\": [\n        {\n          \"text\": \"Да: срок считается до передачи провайдеру\",\n          \"change\": \"В FR-02 указать 5 минут до передачи провайдеру, фиксировать время передачи в журнале, переписать AC-02\",\n          \"grounded_in\": \"The system shall send the customer a notification as soon as possible after the parcel is placed in the compartment.\"\n        },\n        {\n          \"text\": \"Нет: срок считается до получения клиентом\",\n          \"change\": \"Хранить статус доставки от провайдера и проверять AC-02 по нему, сослаться на AC-02 в FR-02\",\n          \"grounded_in\": \"The customer receives a notification within 5 minutes after the parcel is placed.\"\n        }\n      ],\n      \"if_unanswered\": \"Команда будет считать срок до передачи провайдеру. Задержки у оператора связи тогда не станут нарушением, хотя по AC-02 они нарушение.\"\n    },\n    {\n      \"candidates\": [\"C-12\"],\n      \"addressee\": [\"business\"],\n      \"topic\": \"плата за хранение\",\n      \"quotes\": [\"The storage fee for an uncollected parcel is TBD.\"],\n      \"question\": \"Клиент не забрал посылку до истечения кода: начисляется ли ему плата за хранение и с какого момента?\",\n      \"why\": \"Вместо правила стоит «TBD», поэтому функцию с деньгами нельзя ни реализовать, ни проверить. После выбора нужны сумма, валюта, единица начисления и способ оплаты.\",\n      \"options\": [\n        {\n          \"text\": \"Платы в этой версии нет\",\n          \"change\": \"Удалить FR-06 или перенести его в будущие версии\",\n          \"grounded_in\": null\n        },\n        {\n          \"text\": \"Плата за каждые сутки с момента истечения кода\",\n          \"change\": \"Заполнить FR-06: сумма, валюта, начало начисления — истечение кода\",\n          \"grounded_in\": \"The storage fee for an uncollected parcel is TBD.\"\n        },\n        {\n          \"text\": \"Плата за каждые сутки с момента закладки\",\n          \"change\": \"Заполнить FR-06: сумма, валюта, начало начисления — закладка\",\n          \"grounded_in\": \"The storage fee for an uncollected parcel is TBD.\"\n        }\n      ],\n      \"if_unanswered\": \"Команда не будет делать начисление. Если плата нужна, её придётся добавить позже вместе с оплатой и расчётом.\"\n    },\n    {\n      \"candidates\": [\"C-11\"],\n      \"addressee\": [\"business\"],\n      \"topic\": \"блокировка занятой ячейки\",\n      \"quotes\": [\"The building manager shall be able to block a compartment for maintenance.\"],\n      \"question\": \"Управляющий блокирует ячейку №7, в которой лежит посылка с действующим кодом: что происходит?\",\n      \"why\": \"Не описано, как блокировка влияет на посылку, код и резерв. Нужно также определить, исчезает ли ячейка из списка свободных, кто снимает блокировку и уведомляются ли курьер и клиент.\",\n      \"options\": [\n        {\n          \"text\": \"Блокировка запрещена, пока ячейка занята или зарезервирована\",\n          \"change\": \"В FR-05 разрешить блокировку только свободной ячейки, добавить сообщение об отказе\",\n          \"grounded_in\": null\n        },\n        {\n          \"text\": \"Блокировка проходит, код клиента продолжает работать\",\n          \"change\": \"В FR-05 указать, что блокировка закрывает ячейку только для новых резервов\",\n          \"grounded_in\": null\n        },\n        {\n          \"text\": \"Блокировка проходит, код аннулируется, курьеру поручается забрать посылку\",\n          \"change\": \"Описать в FR-05 аннулирование кода и уведомления курьеру и клиенту\",\n          \"grounded_in\": null\n        }\n      ],\n      \"if_unanswered\": \"Команда запретит блокировку занятой ячейки. Если ремонт срочный, управляющий не сможет закрыть неисправную ячейку.\"\n    },\n    {\n      \"candidates\": [\"C-10\"],\n      \"addressee\": [\"business\"],\n      \"topic\": \"уведомление управляющего\",\n      \"quotes\": [\"notify the courier, the customer and, if needed, the building manager.\"],\n      \"question\": \"Код к ячейке №7 истёк, посылка не забрана, сбоев не было: получает ли управляющий уведомление?\",\n      \"why\": \"Условие «if needed» не определено, поэтому у теста два возможных результата. Ответ задаст отдельное требование об уведомлении управляющего.\",\n      \"options\": [\n        {\n          \"text\": \"Да, при каждом истечении кода\",\n          \"change\": \"В FR-04 убрать «if needed», уведомлять управляющего всегда\",\n          \"grounded_in\": null\n        },\n        {\n          \"text\": \"Нет; только если курьер не изъял посылку за заданное число часов\",\n          \"change\": \"Добавить требование с условием и сроком изъятия\",\n          \"grounded_in\": null\n        },\n        {\n          \"text\": \"Нет; только при технической ошибке ячейки или контроллера\",\n          \"change\": \"Добавить требование об уведомлении при сбое и перечень сбоев\",\n          \"grounded_in\": null\n        }\n      ],\n      \"if_unanswered\": \"Команда будет уведомлять управляющего всегда. Он получит лишние сообщения на каждое истечение кода.\"\n    },\n    {\n      \"candidates\": [\"C-01\"],\n      \"addressee\": [\"business\"],\n      \"topic\": \"состав журнала\",\n      \"quotes\": [\"The service replaces the paper log kept by building managers.\"],\n      \"question\": \"Управляющий открывает журнал постамата за неделю: какие события он должен в нём увидеть?\",\n      \"why\": \"Ни одно требование не описывает журнал, хотя сервис заявлен как его замена. Нужно также определить, кто кроме управляющего видит журнал и сколько хранятся записи.\",\n      \"options\": [\n        {\n          \"text\": \"Все операции: резерв, закладка, выдача, истечение кода, блокировка — с временем и исполнителем\",\n          \"change\": \"Добавить FR о журнале с полным перечнем событий и полей\",\n          \"grounded_in\": null\n        },\n        {\n          \"text\": \"Только закладка и выдача посылок — с временем и исполнителем\",\n          \"change\": \"Добавить FR о журнале с двумя видами событий\",\n          \"grounded_in\": null\n        }\n      ],\n      \"if_unanswered\": \"Команда запишет все операции. Если управляющему нужен краткий журнал, записей и персональных данных в нём будет больше, чем требуется.\"\n    },\n    {\n      \"candidates\": [\"C-14\"],\n      \"addressee\": [\"business\", \"architect\"],\n      \"topic\": \"доступность сервиса\",\n      \"quotes\": [\"The service shall be highly available and shall have a user-friendly interface.\"],\n      \"question\": \"За месяц сервис был недоступен 4 часа вне плановых работ: требование доступности выполнено?\",\n      \"why\": \"Для «highly available» нет порога и периода измерения, а от порога зависят архитектура и мониторинг. Нужна также измеримая метрика удобства интерфейса.\",\n      \"options\": [\n        {\n          \"text\": \"Нет: требуется 99,9 % за месяц (около 43 минут простоя)\",\n          \"change\": \"Указать в NFR-03 99,9 % за календарный месяц без учёта плановых работ\",\n          \"grounded_in\": null\n        },\n        {\n          \"text\": \"Нет: требуется 99,5 % за месяц (около 3,6 часа простоя)\",\n          \"change\": \"Указать в NFR-03 99,5 % за календарный месяц без учёта плановых работ\",\n          \"grounded_in\": null\n        },\n        {\n          \"text\": \"Да: достаточно 99 % за месяц (около 7,3 часа простоя)\",\n          \"change\": \"Указать в NFR-03 99 % за календарный месяц без учёта плановых работ\",\n          \"grounded_in\": null\n        }\n      ],\n      \"if_unanswered\": \"Команда возьмёт 99,5 %. Если нужно 99,9 %, потребуются резервирование и дежурства, которые не заложены в план.\"\n    },\n    {\n      \"candidates\": [\"C-13\"],\n      \"addressee\": [\"business\", \"architect\"],\n      \"topic\": \"скорость списка ячеек\",\n      \"quotes\": [\"The page with the list of free compartments shall load quickly.\"],\n      \"question\": \"Курьер открывает список свободных ячеек в час пик: за какое время список должен загружаться в 95 % запросов?\",\n      \"why\": \"У «quickly» нет порога, поэтому нагрузочный тест не имеет критерия прохождения. Нужны также уровень нагрузки и точки начала и конца замера.\",\n      \"options\": [\n        {\n          \"text\": \"Не дольше 1 секунды\",\n          \"change\": \"Указать в NFR-01 1 с для 95 % запросов\",\n          \"grounded_in\": null\n        },\n        {\n          \"text\": \"Не дольше 3 секунд\",\n          \"change\": \"Указать в NFR-01 3 с для 95 % запросов\",\n          \"grounded_in\": null\n        },\n        {\n          \"text\": \"Не дольше 5 секунд\",\n          \"change\": \"Указать в NFR-01 5 с для 95 % запросов\",\n          \"grounded_in\": null\n        }\n      ],\n      \"if_unanswered\": \"Команда возьмёт 3 секунды. Если нужна 1 секунда, придётся переделывать запросы и кэширование.\"\n    },\n    {\n      \"candidates\": [\"C-15\"],\n      \"addressee\": [\"architect\"],\n      \"topic\": \"протокол контроллера\",\n      \"quotes\": [\"All data exchange with the locker controller shall use the proprietary protocol defined in the controller manual.\"],\n      \"question\": \"Во всех домах установлены контроллеры одной модели с одной версией протокола?\",\n      \"why\": \"Руководство и модель контроллера не названы, поэтому разработчик может взять не ту редакцию протокола. После ответа нужно указать название, версию и производителя руководства.\",\n      \"options\": [\n        {\n          \"text\": \"Да, одна модель и одна версия протокола\",\n          \"change\": \"Указать в NFR-04 модель контроллера, название и версию руководства\",\n          \"grounded_in\": null\n        },\n        {\n          \"text\": \"Нет, моделей несколько, сервис поддерживает все\",\n          \"change\": \"Перечислить в NFR-04 модели и версии протокола, добавить тесты для каждой\",\n          \"grounded_in\": null\n        },\n        {\n          \"text\": \"Нет, моделей несколько, сервис поддерживает только одну\",\n          \"change\": \"Указать поддерживаемую модель и что происходит с постаматами других моделей\",\n          \"grounded_in\": null\n        }\n      ],\n      \"if_unanswered\": \"Команда реализует одну версию протокола по доступному руководству. Постаматы с другими контроллерами работать не будут.\"\n    }\n  ],\n  \"dropped\": [\n    {\n      \"candidate\": \"C-02\",\n      \"reason\": \"Критерий, по которому бумажный журнал считается заменённым, относится к оценке бизнес-цели. Ответ не меняет ни реализацию, ни ожидаемый результат тестов; состав журнала задан вопросом по C-01.\"\n    }\n  ]\n}\n```",
+  "ttft_ms": 38011,
+  "type": "result",
+  "duration_ms": 109625,
+  "uuid": "71d2d57d-9a2e-47b4-91f0-d246bf93c5ae",
+  "ttft_stream_ms": 1947,
+  "time_to_request_ms": 59,
+  "time_to_request_phases_ms": {
+   "other": 7,
+   "system_prompt": 2,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 7,
+   "input_hooks": 2,
+   "conversation_append": 1,
+   "tool_pool_refresh": 1,
+   "init_message": 5,
+   "init_frame_send": 2,
+   "engine_pickup": 1,
+   "loop_entry": 3,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "request_announcements": 5,
+   "query_setup": 1,
+   "model_gates": 1,
+   "tool_schema_build": 1,
+   "message_normalization": 2,
+   "client_creation": 6,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 9,
+  "time_to_request_cpu_ms": 67,
+  "time_to_request_major_faults": 0,
+  "process_rss_mib_turn_start": 204,
+  "process_anon_mib_turn_start": 126,
+  "process_rss_mib_result": 206,
+  "process_anon_mib_result": 121,
+  "process_peak_rss_mib": 223,
+  "process_cpu_ms_turn": 1801,
+  "process_wall_ms_turn": 109624,
+  "tool_pool_build_count": 5,
+  "tool_pool_build_lapsed_count": 2,
+  "tool_pool_moved_at_lapse_count": 0,
+  "tool_pool_limit_ms": 30000,
+  "process_cpu_ms_streaming": 1457,
+  "process_wall_ms_streaming": 105007,
+  "main_stream_count": 1,
+  "main_stream_event_count": 1419,
+  "main_stream_chunk_count": 1413,
+  "process_turn_states": {
+   "main_stream": {
+    "cpu_ms": 1457,
+    "wall_ms": 105007,
+    "entries": 1
+   },
+   "first_event_wait": {
+    "cpu_ms": 241,
+    "wall_ms": 1886,
+    "entries": 1
+   },
+   "before_first_request": {
+    "cpu_ms": 66,
+    "wall_ms": 59,
+    "entries": 1
+   },
+   "after_last_request": {
+    "cpu_ms": 37,
+    "wall_ms": 2672,
+    "entries": 1
+   }
+  },
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 1,
+   "cpu_ms": 7,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 1,
+   "render_ms": 1,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 2,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 1,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 2,
+   "record_attempt_ms": 0,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 1,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1947,
+  "time_to_request_from_spawn_ms": 1147267,
+  "warm_spare_claimed": false,
+  "flag_fetch_kick": "not_asked_warm",
+  "time_origin_ms": 1795732304607.4548,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "process_start_tuning": 0
+ }
+}

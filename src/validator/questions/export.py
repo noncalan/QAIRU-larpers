@@ -30,6 +30,12 @@
 
 Файл пишется всегда, даже без вопросов (тогда ``questions: []``), чтобы у прогона был один набор выходов.
 
+Прогон с ответами (``--answers``) переносит в конец списка вопросы, на которые автор уже ответил (#142), с
+их ответом и полем ``answered_in`` (из какого файла ответ). Тогда этот файл годится для следующего круга:
+автор отвечает на оставшиеся открытые вопросы и передаёт в ``--answers`` только его, ответы прошлых кругов
+не теряются. Перенесённый вопрос записан коротко: ``id``, ``question``, ``where``, выбранный вариант,
+``related_findings``, ``answer``, ``comment``, ``answered_in``.
+
 Ответы автора не затираются. Если в ``questions.yaml`` рядом с отчётом уже что-то вписал человек
 (``answered_by``, ``answer`` или ``comment`` хотя бы у одного вопроса) или файл не похож на наш, вопросы
 этого прогона пишутся в первый свободный ``questions-2.yaml``, ``questions-3.yaml``, …
@@ -39,13 +45,14 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 import yaml
 
-from validator.models import Question, QuestionOption, Quote
+from validator.models import AnswerKind, AuthorAnswer, Question, QuestionOption, Quote
 from validator.report.fmt import where
 
 SCHEMA_VERSION = 1
@@ -56,7 +63,8 @@ MAX_SPARE_FILES = 99
 HEADER = (
     "# Вопросы агента QAIRU к автору ТЗ.\n"
     "# Как ответить: в поле answer впишите букву варианта (A, B, …), свой ответ текстом или «пропустить»,\n"
-    "# пояснение можно добавить в comment. null значит «ответа нет».\n"
+    "# пояснение можно добавить в comment. null значит «ответа нет». «не знаю», «?», «уточню» вопрос не\n"
+    "# закрывают: он остаётся открытым.\n"
     "# Повторная проверка с ответами: validator ВХОД ВЫХОД --answers questions.yaml\n"
     "# Не меняйте id и document_sha256: по ним ответ сопоставляется с вопросом и версией документа.\n"
 )
@@ -86,6 +94,25 @@ def _question(q: Question) -> dict[str, Any]:
         "related_findings": list(q.related_findings),
         "answer": None,
         "comment": None,
+    }
+
+
+def carried_answer(a: AuthorAnswer, answered_in: str) -> dict[str, Any]:
+    """Отвеченный в прошлом круге вопрос для ``questions-N.yaml``: следующий круг прочитает его ответ.
+
+    Вариант записан вместе с правилом и правкой: если в следующем прогоне такого вопроса не будет, ответ
+    всё равно сопоставится по тексту вопроса и местам, а буква не потеряет смысл.
+    """
+    chosen = a.kind is AnswerKind.OPTION and a.option
+    return {
+        "id": a.question_id,
+        "question": a.question,
+        "where": [{"quote": w} for w in a.where],
+        "options": [{"label": a.option, "text": a.text, "change": a.change}] if chosen else [],
+        "related_findings": list(a.related_findings),
+        "answer": a.option if chosen else a.text,
+        "comment": a.comment or None,
+        "answered_in": answered_in,
     }
 
 
@@ -148,13 +175,30 @@ def write_questions_yaml(
     doc_name: str,
     doc_sha256: str | None,
     kept: Path | None = None,
+    answered: Sequence[AuthorAnswer] = (),
+    answers_file: str | None = None,
 ) -> None:
-    """Файл вопросов по схеме модуля. ``kept``: файл с ответами автора, ради которого выбрано другое имя."""
+    """Файл вопросов по схеме модуля.
+
+    ``kept``: файл с ответами автора, ради которого выбрано другое имя. ``answered``: ответы автора из
+    ``answers_file`` (прогон с ``--answers``); отвеченные переносятся в конец списка (#142).
+    """
     payload = questions_payload(questions, doc_name, doc_sha256)
+    open_ids = {q.id for q in questions}
+    carried = [a for a in answered if a.kind.answered and a.question_id not in open_ids]
+    if carried:
+        source = answers_file or "прошлый круг"
+        payload["questions"] += [carried_answer(a, source) for a in carried]
     body = yaml.safe_dump(payload, allow_unicode=True, sort_keys=False, width=YAML_WIDTH)
     note = (
         f"# Ответы в {kept.name} не тронуты: вопросы этого прогона записаны сюда, чтобы их не затереть.\n"
         if kept is not None
         else ""
     )
+    if carried:
+        note += (
+            f"# В конце списка уже отвеченные вопросы ({len(carried)}), ответы взяты из {source}\n"
+            "# (поле answered_in). Следующий круг: ответьте на открытые вопросы и передайте этот файл\n"
+            "# в --answers, прежние ответы тоже учтутся.\n"
+        )
     path.write_text(HEADER + note + body, encoding="utf-8")

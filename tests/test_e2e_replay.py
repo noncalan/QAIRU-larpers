@@ -55,24 +55,7 @@ VOLATILE = {
 MAX_DIFFERENCES_SHOWN = 20
 SHORT_VALUE = 300
 
-_STALE_QUESTIONS = (
-    "#122: P0 только при критичной находке; приоритет виден в промпте редактора вопросов, номера "
-    "вопросов в промпте критика: questions.1 и questions_critic.1 ждут общей перезаписи"
-)
-_STALE_MERGE = (
-    "#124: находки одного прохода не склеиваются по общей цитате, L-03 присоединяется к находке модели, "
-    "поэтому список находок и M-номера другие: evidence.1, test_draft.N и clarify идут по позиции; "
-    "#120: значения из ячеек таблиц больше не пропуски, вход questions.1 другой"
-)
-_STALE_PDF_TEXT = (
-    "#121: слова, разорванные у края узкой колонки PDF, теперь склеены («Идентификатор», «limit_kzt»), "
-    "текст документа и ключи всех запросов PDF поменялись; ответы находятся по номеру вызова"
-)
-STALE_RECORDINGS: dict[DocKind, str] = {
-    DocKind.MD: f"{_STALE_QUESTIONS}; {_STALE_MERGE}",
-    DocKind.PDF: f"{_STALE_PDF_TEXT}; {_STALE_QUESTIONS}; {_STALE_MERGE}",
-    DocKind.DOCX: f"{_STALE_QUESTIONS}; {_STALE_MERGE}",
-}
+STALE_RECORDINGS: dict[DocKind, str] = {}
 """Записи, которые отстали от кода и ждут живой перезаписи. Пока запись в этом списке, проверка «каждый
 ответ по ключу» для формата помечена как ожидаемо падающая (``strict``): после перезаписи она пройдёт,
 и pytest напомнит убрать формат отсюда. Снапшот отчёта сравнивается для всех форматов."""
@@ -189,6 +172,26 @@ def test_replayed_report_has_all_sections(replayed: tuple[DocKind, Path, int]) -
     assert report.status is ReportStatus.COMPLETE
     assert report.segmentation is not None and report.segmentation.requirements
     assert report.verification is not None and report.verification.findings
+
+
+def test_replayed_passport_names_the_record_and_its_share(replayed: tuple[DocKind, Path, int]) -> None:
+    """Пересборка не выдаёт себя за живой прогон (RC2): паспорт называет запись, когда и чем её писали,
+    и сколько ответов из неё взято («из записи 8 из 9»: без ``--answers`` сверка с ответами не нужна)."""
+    kind, out, _ = replayed
+    report = Report.model_validate_json((out / "report.json").read_text(encoding="utf-8"))
+    report_md = (out / "report.md").read_text(encoding="utf-8")
+    recorded = len(list((E2E / kind.value / "run" / "responses").glob("*.json")))
+    p = report.passport
+
+    assert p.replay is not None
+    assert p.replay.path == f"tests/fixtures/e2e/{kind.value}/run"
+    assert p.replay.responses == recorded
+    assert p.replay.backends == [Backend.CLI]
+    assert p.replay.recorded_from is not None and p.replay.recorded_to is not None
+    assert p.replay.recorded_from < p.replay.recorded_to
+    assert 0 < p.calls_replayed == p.calls_total <= recorded
+    assert f"из записи {p.calls_replayed} из {recorded} ответов, модель не вызывалась" in report_md
+    assert f"| Запись ответов модели | tests/fixtures/e2e/{kind.value}/run, записана 2026-" in report_md
 
 
 def test_replayed_report_matches_snapshot(replayed: tuple[DocKind, Path, int]) -> None:

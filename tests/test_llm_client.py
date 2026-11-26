@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import sys
+from datetime import timedelta
 from pathlib import Path
 from typing import Any
 
@@ -31,7 +32,7 @@ from validator.llm import (
 )
 from validator.llm.base import parse_cli_payload
 from validator.llm.cache import make_envelope, write_json_atomic
-from validator.llm.calllog import response_file_name
+from validator.llm.calllog import response_file_name, write_calls_jsonl
 from validator.llm.pricing import Tokens, price
 from validator.llm.schema import schema_errors
 from validator.models import (
@@ -546,6 +547,52 @@ def test_replay_of_empty_folder_fails_at_start(tmp_path: Path) -> None:
 
 
 # ---------------------------------------------------------------- выбор бэкенда
+
+
+def test_replay_source_names_record_window_and_backend(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Паспорт пересборки (RC2): сколько ответов в записи, когда и чем её писали, путь от рабочей папки."""
+    recorder = RecordingClient(LiveStub(), responses_dir=tmp_path / "run" / "responses")
+    recorder.call(request(1))
+    recorder.call(request(2))
+    write_calls_jsonl(tmp_path / "run" / "calls.jsonl", recorder.records)
+    monkeypatch.chdir(tmp_path)
+
+    source = ReplayLLM(tmp_path).source()
+
+    first, last = recorder.records[0], recorder.records[-1]
+    assert source.path == "run"
+    assert source.responses == 2
+    assert source.backends == [Backend.CLI]
+    assert source.recorded_from == first.started_at
+    assert source.recorded_to == last.started_at + timedelta(milliseconds=last.duration_ms or 0)
+
+
+def test_replay_source_without_call_log_has_no_window(tmp_path: Path) -> None:
+    """Запись без ``calls.jsonl`` (только ответы): окно и способ записи неизвестны, путь и число есть."""
+    source = ReplayLLM(_record_run(tmp_path, request(1))).source()
+
+    assert source.responses == 1
+    assert (source.recorded_from, source.recorded_to, source.backends) == (None, None, [])
+
+
+def test_replay_passport_counts_answers_taken_from_record(tmp_path: Path) -> None:
+    """Паспорт replay говорит, сколько ответов взято из записи и чем её писали (здесь фикстуры тестов)."""
+    run(_cfg(tmp_path, backend=Backend.FAKE))
+    replay_cfg = _cfg(tmp_path, backend=Backend.REPLAY, replay_dir=tmp_path / "out" / "run").model_copy(
+        update={"output_path": tmp_path / "out2" / "report.md"}
+    )
+
+    replayed = run(replay_cfg)
+
+    assert replayed.report is not None
+    p = replayed.report.passport
+    assert p.replay is not None and p.replay.backends == [Backend.FAKE]
+    assert p.calls_replayed == p.calls_total == p.replay.responses
+    report_md = (tmp_path / "out2" / "report.md").read_text(encoding="utf-8")
+    assert f"из записи {p.calls_replayed} из {p.replay.responses} ответов, модель не вызывалась" in report_md
+    assert "| Запись ответов модели |" in report_md
 
 
 def _cfg(tmp_path: Path, **update: Any) -> RunConfig:

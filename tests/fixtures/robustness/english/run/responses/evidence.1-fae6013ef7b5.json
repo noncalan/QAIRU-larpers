@@ -1,0 +1,231 @@
+{
+ "envelope_version": 1,
+ "key": "fae6013ef7b5e8230d5c2863f7e6c843270c21c614e2937b2885ab7da5c34a00",
+ "call_id": "evidence.1",
+ "step": "evidence",
+ "call_index": 1,
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T22:30:05.687177+00:00",
+ "payload": {
+  "duration_api_ms": 27383,
+  "stop_reason": "end_turn",
+  "session_id": "ab77a31b-95e2-49f5-aee2-5ac1a3251a5e",
+  "total_cost_usd": 0.110592,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 6378,
+   "cache_read_input_tokens": 0,
+   "output_tokens": 2978,
+   "output_tokens_details": {
+    "thinking_tokens": 1199
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 6378,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 2978,
+     "cache_read_input_tokens": 0,
+     "cache_creation_input_tokens": 6378,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 6378
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-opus-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 2978,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 6378,
+    "webSearchRequests": 0,
+    "costUSD": 0.110592,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1199,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 6378,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n- **M-013**: FR-03 (48 ч) против NFR-02 (72 ч). Код вводят через 60 ч после закладки: по одному месту он уже истёк, по другому ещё действует.\n- **M-012**: FR-03 не задаёт, от какого момента считать 48 ч. Код выдан при резервировании (FR-01), посылку заложили через 3 ч, код вводят через 47 ч после закладки, то есть через 50 ч после выдачи. Два правдоподобных начала отсчёта дают разный результат.\n- **M-015**: «release» в FR-04 можно понять как перевод ячейки в статус «свободна» для нового резервирования или как отпирание замка. Сценарий: код истёк, посылка лежит в ячейке, другой курьер пытается зарезервировать эту ячейку.\n- **M-016**: «if needed» в FR-04 можно понять как «когда посылка не забрана» или как «только при сбое освобождения». Сценарий: код истёк, посылка не забрана, освобождение прошло без ошибок.\n- **M-024**: это неполнота. В документе нет места, которое определяет закладку через датчик или через подтверждение курьера. Для сценария пришлось бы придумать правило, поэтому свидетеля нет.\n\n## Ответ\n\n```json\n{\n  \"witnesses\": [\n    {\n      \"id\": \"M-013\",\n      \"scenario\": \"Посылку заложили в ячейку №7 в понедельник в 10:00, клиент вводит одноразовый код в среду в 22:00, через 60 ч после закладки\",\n      \"readings\": [\n        {\n          \"quote\": \"The customer shall open the compartment with a one-time code valid for 48 hours.\",\n          \"reading\": \"\",\n          \"expectation\": \"код истёк, ячейка не открывается\"\n        },\n        {\n          \"quote\": \"A one-time code shall remain valid for 72 hours after the parcel is placed.\",\n          \"reading\": \"\",\n          \"expectation\": \"код действителен, ячейка открывается\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-012\",\n      \"scenario\": \"Курьер резервирует ячейку №7 в понедельник в 10:00, и клиенту выдаётся код. Посылку закладывают в 13:00. Клиент вводит код в среду в 12:00: это 47 ч после закладки и 50 ч после выдачи кода\",\n      \"readings\": [\n        {\n          \"quote\": \"The customer shall open the compartment with a one-time code valid for 48 hours.\",\n          \"reading\": \"48 часов отсчитываются от выдачи кода\",\n          \"expectation\": \"код недействителен, ячейка не открывается\"\n        },\n        {\n          \"quote\": \"The customer shall open the compartment with a one-time code valid for 48 hours.\",\n          \"reading\": \"48 часов отсчитываются от закладки посылки\",\n          \"expectation\": \"код действителен, ячейка открывается\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-015\",\n      \"scenario\": \"Код к ячейке №7 истёк в среду в 10:00, посылка не забрана и лежит внутри. В 10:01 курьер Б пытается зарезервировать ячейку №7\",\n      \"readings\": [\n        {\n          \"quote\": \"The system shall release the compartment automatically when the code expires and notify the courier, the customer and, if needed, the building manager.\",\n          \"reading\": \"release — перевести ячейку в статус «свободна» для нового резервирования\",\n          \"expectation\": \"ячейка №7 в списке свободных, резервирование курьера Б проходит, хотя внутри лежит посылка\"\n        },\n        {\n          \"quote\": \"The system shall release the compartment automatically when the code expires and notify the courier, the customer and, if needed, the building manager.\",\n          \"reading\": \"release — отпереть замок ячейки\",\n          \"expectation\": \"замок ячейки №7 отперт, статус занятости не меняется, резервирование курьера Б отклонено\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-016\",\n      \"scenario\": \"Код к ячейке №7 истёк в среду в 10:00, посылка не забрана, автоматическое освобождение прошло без ошибок\",\n      \"readings\": [\n        {\n          \"quote\": \"The system shall release the compartment automatically when the code expires and notify the courier, the customer and, if needed, the building manager.\",\n          \"reading\": \"уведомление управляющему нужно, если посылка осталась незабранной\",\n          \"expectation\": \"управляющий получает уведомление\"\n        },\n        {\n          \"quote\": \"The system shall release the compartment automatically when the code expires and notify the courier, the customer and, if needed, the building manager.\",\n          \"reading\": \"уведомление управляющему нужно только при сбое освобождения ячейки\",\n          \"expectation\": \"управляющий уведомления не получает\"\n        }\n      ],\n      \"reason\": \"\"\n    },\n    {\n      \"id\": \"M-024\",\n      \"scenario\": null,\n      \"readings\": [],\n      \"reason\": \"Это неполнота: ни одно место документа не определяет закладку ни через сигнал контроллера, ни через подтверждение курьера. Для сценария пришлось бы придумать правило, которого в документе нет\"\n    }\n  ]\n}\n```",
+  "ttft_ms": 14581,
+  "type": "result",
+  "duration_ms": 28108,
+  "uuid": "1f6598e7-1c45-48bd-a8e1-14174b5cc301",
+  "ttft_stream_ms": 1802,
+  "time_to_request_ms": 73,
+  "time_to_request_phases_ms": {
+   "other": 8,
+   "system_prompt": 2,
+   "resume_other": 0,
+   "process_user_input": 4,
+   "input_attachments": 8,
+   "input_hooks": 2,
+   "conversation_append": 0,
+   "tool_pool_refresh": 1,
+   "init_message": 5,
+   "init_frame_send": 4,
+   "engine_pickup": 1,
+   "loop_entry": 6,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 2,
+   "request_announcements": 8,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 2,
+   "message_normalization": 4,
+   "client_creation": 5,
+   "request_build": 8
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 23,
+  "time_to_request_cpu_ms": 69,
+  "time_to_request_major_faults": 0,
+  "process_rss_mib_turn_start": 202,
+  "process_anon_mib_turn_start": 124,
+  "process_rss_mib_result": 206,
+  "process_anon_mib_result": 120,
+  "process_peak_rss_mib": 220,
+  "process_cpu_ms_turn": 825,
+  "process_wall_ms_turn": 28107,
+  "tool_pool_build_count": 3,
+  "tool_pool_build_lapsed_count": 0,
+  "tool_pool_moved_at_lapse_count": 0,
+  "tool_pool_limit_ms": 30000,
+  "process_cpu_ms_streaming": 482,
+  "process_wall_ms_streaming": 25644,
+  "main_stream_count": 1,
+  "main_stream_event_count": 277,
+  "main_stream_chunk_count": 271,
+  "process_turn_states": {
+   "main_stream": {
+    "cpu_ms": 482,
+    "wall_ms": 25644,
+    "entries": 1
+   },
+   "first_event_wait": {
+    "cpu_ms": 229,
+    "wall_ms": 1727,
+    "entries": 1
+   },
+   "before_first_request": {
+    "cpu_ms": 69,
+    "wall_ms": 73,
+    "entries": 1
+   },
+   "after_last_request": {
+    "cpu_ms": 45,
+    "wall_ms": 663,
+    "entries": 1
+   }
+  },
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 1,
+   "cpu_ms": 8,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 1,
+   "render_ms": 2,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 1,
+   "waits_ms": 0,
+   "placement_ms": 1,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 2,
+   "images_ms": 0,
+   "post_process_ms": 1,
+   "after_ms": 0,
+   "other_ms": 1,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 2,
+   "headers_ms": 1,
+   "cache_break_record_ms": 2,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 2,
+   "record_attempt_ms": 0,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 1
+  },
+  "first_content_frame_ms": 1803,
+  "time_to_request_from_spawn_ms": 1019416,
+  "warm_spare_claimed": false,
+  "flag_fetch_kick": "not_asked_warm",
+  "time_origin_ms": 1795732176753.3208,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "process_start_tuning": 0
+ }
+}
