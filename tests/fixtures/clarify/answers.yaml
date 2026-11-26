@@ -105,8 +105,9 @@ questions:
   answer: пропустить
   comment: Уточним у владельца процессинга
 - id: Q-04
-  priority: P2
-  blocks: []
+  priority: P1
+  blocks:
+  - testing
   addressee:
   - architect
   topic: метод чтения настроек

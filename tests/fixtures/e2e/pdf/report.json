@@ -7,10 +7,10 @@
     "document_sha256": "827b313b968e08fe35310bff9dc37687099888e4c9d5bc364e3403f4b2cc66db",
     "document_size_bytes": 205814,
     "document_pages": 8,
-    "started_at": "2026-11-26T12:34:00.603644Z",
-    "finished_at": "2026-11-26T12:34:00.981677Z",
-    "duration_s": 0.38,
-    "agent_version": "52bd77a-dirty",
+    "started_at": "2026-11-26T12:41:11.436878Z",
+    "finished_at": "2026-11-26T12:41:11.878311Z",
+    "duration_s": 0.44,
+    "agent_version": "98e7636-dirty",
     "agent_version_source": "git",
     "agent_dirty": true,
     "prompts_sha256": "7dd96b1cffa406769efc8daf0df90f974ab4ef58757a546a07948210acc7492d",
@@ -97,6 +97,15 @@
       "hint": "",
       "location": null,
       "step": "test_draft"
+    },
+    {
+      "code": "LLM-051",
+      "level": "info",
+      "message": "Вопросы автору: код поправил карточки (связей с находками без общей цитаты или требования убрано: 3)",
+      "action": "В отчёт вошло вопросов: 15, кандидатов было: 40",
+      "hint": "",
+      "location": null,
+      "step": "questions"
     },
     {
       "code": "LLM-053",
@@ -3281,8 +3290,8 @@
               "missing": "месяц, к которому относится покупка: Ф-2 определяет месяц по дате совершения (январь), а критерий приёмки 2 для той же ситуации даёт рост февральского счётчика",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-07",
-              "question_withdrawn": false
+              "question_id": "Q-05",
+              "question_withdrawn": true
             }
           ],
           "note": "",
@@ -3445,7 +3454,7 @@
               "missing": "входит ли авторизация без клиринга в расходы: нет определения «проведённая покупка», перечня учитываемых типов операций (авторизации, отмены авторизации, комиссии, платежи за услуги, переводы между своими счетами) и их статусов",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-04",
+              "question_id": "Q-02",
               "question_withdrawn": false
             }
           ],
@@ -3637,7 +3646,7 @@
               "missing": "число push за месяц после смены порога: Ф-3 допускает не больше одного push в месяц, а Ф-4 требует push при следующем достижении нового порога независимо от истории. Документ не говорит, какое правило главное",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-03",
+              "question_id": "Q-06",
               "question_withdrawn": false
             }
           ],
@@ -3941,7 +3950,7 @@
               "missing": "операция чтения настройки (метод, URL, параметры): в части B описано только сохранение",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-06",
+              "question_id": "Q-07",
               "question_withdrawn": false
             },
             {
@@ -3949,7 +3958,7 @@
               "missing": "откуда и в каком поле ответа приходит сумма за месяц: ни одна операция её не возвращает",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-06",
+              "question_id": "Q-07",
               "question_withdrawn": false
             }
           ],
@@ -4067,8 +4076,8 @@
               "missing": "HTTP-метод для изменяющей операции: в параметрах метода и в примере вызова указан GET, но операция описана как сохранение порога, а в ячейке функциональных требований написано «чтение порога»; метод, подходящий для сохранения, не определён",
               "part": "шаги",
               "replaced": null,
-              "question_id": "Q-05",
-              "question_withdrawn": true
+              "question_id": "Q-04",
+              "question_withdrawn": false
             }
           ],
           "note": "",
@@ -4255,7 +4264,7 @@
               "missing": "единые код и тело ответа для недопустимой суммы: описание статуса 400 («параметры запроса заполнены неверно») и его тело «Некорректный запрос» противоречат правилу метода и примеру ответа {\"result\":\"ERROR\",\"message\":\"Проверьте сумму\"}, который приходит в разделе успешного ответа",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-02",
+              "question_id": "Q-03",
               "question_withdrawn": false
             }
           ],
@@ -4472,7 +4481,7 @@
               "missing": "какое именно событие запускает push: авторизация покупки или её проведение. Цель говорит «в момент покупки», Ф-2 считает только «проведённые» покупки; в документе нет определения «проведённая» и нет допустимой задержки между покупкой и push",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-04",
+              "question_id": "Q-02",
               "question_withdrawn": false
             }
           ],
@@ -4570,7 +4579,7 @@
               "missing": "за какой месяц и из какого источника берётся «сумма за месяц» и какое значение она показывает в этой ситуации",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-06",
+              "question_id": null,
               "question_withdrawn": false
             },
             {
@@ -4578,7 +4587,7 @@
               "missing": "тексты сообщений для каждой ошибки ввода: пусто, меньше 1 000, больше 1 000 000, дробное число, нецифровые символы. В документе указано только место сообщения",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-06",
+              "question_id": null,
               "question_withdrawn": false
             },
             {
@@ -4586,7 +4595,7 @@
               "missing": "поведение кнопки «Сохранить» при выключенном переключателе: сохраняет, проверяет ли поле, показывает ли ошибку",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-06",
+              "question_id": null,
               "question_withdrawn": false
             }
           ],
@@ -6882,7 +6891,7 @@
               "missing": "число push после достижения нового порога в том же месяце: одно место говорит «максимум один такой push за календарный месяц», другое — «следующее достижение вызывает push независимо от истории предыдущей настройки»; единого результата нет",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-03",
+              "question_id": null,
               "question_withdrawn": false
             }
           ],
@@ -7417,7 +7426,7 @@
               "missing": "состав тела ответа при отклонённой сумме: приходят ли прежние amount и enabled или только message; «вернуть прежнее состояние» это не определяет",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-02",
+              "question_id": "Q-03",
               "question_withdrawn": false
             },
             {
@@ -7425,7 +7434,7 @@
               "missing": "реакция на enabled вне «0 или 1» (например, 2): код, result и тело ответа не заданы",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-02",
+              "question_id": "Q-03",
               "question_withdrawn": false
             },
             {
@@ -7433,7 +7442,7 @@
               "missing": "реакция на отсутствие обязательного параметра: код, result и тело ответа не заданы",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-02",
+              "question_id": "Q-03",
               "question_withdrawn": false
             }
           ],
@@ -9538,8 +9547,8 @@
               "missing": "обязателен ли заголовок Content-Type: application/json при запросе без тела и какой код и тело вернутся, если его нет: один пункт требует заголовок, другой говорит, что тело не используется",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-05",
-              "question_withdrawn": true
+              "question_id": "Q-04",
+              "question_withdrawn": false
             }
           ],
           "note": "",
@@ -9635,7 +9644,7 @@
               "missing": "значение «При успехе» модель назвала без цитаты из документа, поэтому оно заменено пропуском",
               "part": "ожидаемый результат",
               "replaced": "При успехе",
-              "question_id": "Q-02",
+              "question_id": null,
               "question_withdrawn": false
             },
             {
@@ -9643,7 +9652,7 @@
               "missing": "значение «При ошибке» модель назвала без цитаты из документа, поэтому оно заменено пропуском",
               "part": "ожидаемый результат",
               "replaced": "При ошибке",
-              "question_id": "Q-02",
+              "question_id": null,
               "question_withdrawn": false
             },
             {
@@ -9651,7 +9660,7 @@
               "missing": "присутствует ли enabled в ответе с ошибкой: для enabled условие появления не задано, а в примере ответа с ошибкой этого поля нет",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-02",
+              "question_id": null,
               "question_withdrawn": false
             }
           ],
@@ -10109,6 +10118,109 @@
         "testing"
       ],
       "addressee": [
+        "business"
+      ],
+      "topic": "событие учёта покупки",
+      "quotes": [
+        {
+          "text": "Дать клиенту возможность узнать о достижении личного бюджета в момент покупки.",
+          "match": "exact",
+          "score": 100.0,
+          "located": "Дать клиенту возможность узнать о достижении личного бюджета в\nмомент покупки.",
+          "anchor": {
+            "char_start": 682,
+            "char_end": 760,
+            "block_ids": [
+              "B013"
+            ],
+            "sentence_ids": [
+              "B013.1"
+            ],
+            "line_start": 23,
+            "line_end": 24,
+            "page": 1,
+            "page_line": null,
+            "paragraph": null,
+            "table": null,
+            "row": null,
+            "cell": null,
+            "column": null,
+            "extraction": "text"
+          }
+        },
+        {
+          "text": "В расходы входят проведённые покупки.",
+          "match": "exact",
+          "score": 100.0,
+          "located": "В\nрасходы входят проведённые покупки.",
+          "anchor": {
+            "char_start": 1431,
+            "char_end": 1468,
+            "block_ids": [
+              "B023"
+            ],
+            "sentence_ids": [
+              "B023.3"
+            ],
+            "line_start": 49,
+            "line_end": 50,
+            "page": 2,
+            "page_line": null,
+            "paragraph": null,
+            "table": null,
+            "row": null,
+            "cell": null,
+            "column": null,
+            "extraction": "text"
+          }
+        }
+      ],
+      "question": "Расходы 48 500 ₸, порог 50 000 ₸; покупка на 1 500 ₸ авторизована 10 марта в 14:00, а проведена 12 марта в 09:00: когда клиент получает push?",
+      "why": "«Проведённая» покупка не определена, а цель говорит «в момент покупки». От ответа зависят источник событий и тест; отдельно не решено, учитываются ли отмены авторизации и комиссии.",
+      "options": [
+        {
+          "label": "A",
+          "text": "10 марта: расходы учитываются по авторизации",
+          "change": "Определить «проведённую» покупку как авторизацию; описать учёт отмены авторизации",
+          "grounded_in": "Дать клиенту возможность узнать о достижении личного бюджета в\nмомент покупки."
+        },
+        {
+          "label": "B",
+          "text": "12 марта: расходы учитываются по проведению (клирингу)",
+          "change": "Определить «проведённую» покупку как клиринг; переформулировать цель без «в момент покупки»",
+          "grounded_in": "В\nрасходы входят проведённые покупки."
+        }
+      ],
+      "if_unanswered": "Команда будет считать расходы по клирингу, и push придёт через дни после покупки, вопреки цели.",
+      "related_findings": [
+        "F-02",
+        "F-08"
+      ],
+      "origin": "witness_scenario",
+      "standard": [
+        "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Unambiguous)",
+        "IEEE 830-1998, п. 4.3.2",
+        "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Correct)",
+        "IEEE 830-1998, п. 4.3.1"
+      ],
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
+    },
+    {
+      "id": "Q-03",
+      "priority": "P0",
+      "blocks": [
+        "development",
+        "testing"
+      ],
+      "addressee": [
         "architect"
       ],
       "topic": "ответ на недопустимую сумму",
@@ -10217,17 +10329,14 @@
       "if_unanswered": "Команда вернёт 200 с ERROR по примеру, и тесты по описанию 400 упадут.",
       "related_findings": [
         "F-07",
-        "F-27",
-        "F-46"
+        "F-27"
       ],
       "origin": "witness_scenario",
       "standard": [
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
         "IEEE 830-1998, п. 4.3.4",
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Unambiguous)",
-        "IEEE 830-1998, п. 4.3.2",
-        "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Complete)",
-        "IEEE 830-1998, п. 4.3.3"
+        "IEEE 830-1998, п. 4.3.2"
       ],
       "review": {
         "answered": false,
@@ -10240,7 +10349,134 @@
       }
     },
     {
-      "id": "Q-03",
+      "id": "Q-04",
+      "priority": "P0",
+      "blocks": [
+        "development",
+        "testing"
+      ],
+      "addressee": [
+        "architect"
+      ],
+      "topic": "метод сохранения порога",
+      "quotes": [
+        {
+          "text": "GET",
+          "match": "exact",
+          "score": 100.0,
+          "located": "GET",
+          "anchor": {
+            "char_start": 5181,
+            "char_end": 5184,
+            "block_ids": [
+              "B063"
+            ],
+            "sentence_ids": [],
+            "line_start": 132,
+            "line_end": 132,
+            "page": 5,
+            "page_line": null,
+            "paragraph": null,
+            "table": 5,
+            "row": 2,
+            "cell": 2,
+            "column": "Значение",
+            "extraction": "table"
+          }
+        },
+        {
+          "text": "Заменить настройку и вернуть результат сохранения.",
+          "match": "exact",
+          "score": 100.0,
+          "located": "Заменить настройку и вернуть результат сохранения.",
+          "anchor": {
+            "char_start": 5728,
+            "char_end": 5778,
+            "block_ids": [
+              "B078"
+            ],
+            "sentence_ids": [
+              "B078.1"
+            ],
+            "line_start": 152,
+            "line_end": 152,
+            "page": 6,
+            "page_line": null,
+            "paragraph": null,
+            "table": null,
+            "row": null,
+            "cell": null,
+            "column": null,
+            "extraction": "text"
+          }
+        },
+        {
+          "text": "Content-Type: application/json.",
+          "match": "exact",
+          "score": 100.0,
+          "located": "Content-Type: application/json.",
+          "anchor": {
+            "char_start": 6499,
+            "char_end": 6530,
+            "block_ids": [
+              "B094"
+            ],
+            "sentence_ids": [
+              "B094.1"
+            ],
+            "line_start": 185,
+            "line_end": 185,
+            "page": 7,
+            "page_line": null,
+            "paragraph": null,
+            "table": null,
+            "row": null,
+            "cell": null,
+            "column": null,
+            "extraction": "text"
+          }
+        }
+      ],
+      "question": "Приложение сохраняет порог 50 000 ₸ для карты demo-42: передавать параметры через GET в строке запроса или через изменяющий метод с JSON-телом?",
+      "why": "GET меняет данные, а раздел тела одновременно требует JSON и говорит, что тело не используется. От ответа зависят контракт, обязательность Content-Type и тесты.",
+      "options": [
+        {
+          "label": "A",
+          "text": "GET с параметрами в строке запроса, без тела",
+          "change": "Удалить строку Content-Type; подтвердить GET в общих параметрах",
+          "grounded_in": "GET"
+        },
+        {
+          "label": "B",
+          "text": "Изменяющий метод (PUT или POST) с JSON-телом, Content-Type обязателен",
+          "change": "Заменить REST type, URL и CURL; перенести параметры в тело; задать ответ без Content-Type",
+          "grounded_in": "Content-Type: application/json."
+        }
+      ],
+      "if_unanswered": "Команда оставит GET, и повторы или кеширование на прокси могут менять или терять настройку.",
+      "related_findings": [
+        "F-06",
+        "F-45"
+      ],
+      "origin": "set_check",
+      "standard": [
+        "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Correct)",
+        "IEEE 830-1998, п. 4.3.1",
+        "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
+        "IEEE 830-1998, п. 4.3.4"
+      ],
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
+    },
+    {
+      "id": "Q-06",
       "priority": "P0",
       "blocks": [
         "development",
@@ -10322,15 +10558,12 @@
       ],
       "if_unanswered": "Команда выберет одно правило наугад, и тест на смену порога получит два ожидаемых результата.",
       "related_findings": [
-        "F-03",
-        "F-24"
+        "F-03"
       ],
       "origin": "witness_scenario",
       "standard": [
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
-        "IEEE 830-1998, п. 4.3.4",
-        "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Complete)",
-        "IEEE 830-1998, п. 4.3.3"
+        "IEEE 830-1998, п. 4.3.4"
       ],
       "review": {
         "answered": false,
@@ -10343,110 +10576,7 @@
       }
     },
     {
-      "id": "Q-04",
-      "priority": "P0",
-      "blocks": [
-        "development",
-        "testing"
-      ],
-      "addressee": [
-        "business"
-      ],
-      "topic": "событие учёта покупки",
-      "quotes": [
-        {
-          "text": "Дать клиенту возможность узнать о достижении личного бюджета в момент покупки.",
-          "match": "exact",
-          "score": 100.0,
-          "located": "Дать клиенту возможность узнать о достижении личного бюджета в\nмомент покупки.",
-          "anchor": {
-            "char_start": 682,
-            "char_end": 760,
-            "block_ids": [
-              "B013"
-            ],
-            "sentence_ids": [
-              "B013.1"
-            ],
-            "line_start": 23,
-            "line_end": 24,
-            "page": 1,
-            "page_line": null,
-            "paragraph": null,
-            "table": null,
-            "row": null,
-            "cell": null,
-            "column": null,
-            "extraction": "text"
-          }
-        },
-        {
-          "text": "В расходы входят проведённые покупки.",
-          "match": "exact",
-          "score": 100.0,
-          "located": "В\nрасходы входят проведённые покупки.",
-          "anchor": {
-            "char_start": 1431,
-            "char_end": 1468,
-            "block_ids": [
-              "B023"
-            ],
-            "sentence_ids": [
-              "B023.3"
-            ],
-            "line_start": 49,
-            "line_end": 50,
-            "page": 2,
-            "page_line": null,
-            "paragraph": null,
-            "table": null,
-            "row": null,
-            "cell": null,
-            "column": null,
-            "extraction": "text"
-          }
-        }
-      ],
-      "question": "Расходы 48 500 ₸, порог 50 000 ₸; покупка на 1 500 ₸ авторизована 10 марта в 14:00, а проведена 12 марта в 09:00: когда клиент получает push?",
-      "why": "«Проведённая» покупка не определена, а цель говорит «в момент покупки». От ответа зависят источник событий и тест; отдельно не решено, учитываются ли отмены авторизации и комиссии.",
-      "options": [
-        {
-          "label": "A",
-          "text": "10 марта: расходы учитываются по авторизации",
-          "change": "Определить «проведённую» покупку как авторизацию; описать учёт отмены авторизации",
-          "grounded_in": "Дать клиенту возможность узнать о достижении личного бюджета в\nмомент покупки."
-        },
-        {
-          "label": "B",
-          "text": "12 марта: расходы учитываются по проведению (клирингу)",
-          "change": "Определить «проведённую» покупку как клиринг; переформулировать цель без «в момент покупки»",
-          "grounded_in": "В\nрасходы входят проведённые покупки."
-        }
-      ],
-      "if_unanswered": "Команда будет считать расходы по клирингу, и push придёт через дни после покупки, вопреки цели.",
-      "related_findings": [
-        "F-02",
-        "F-08"
-      ],
-      "origin": "witness_scenario",
-      "standard": [
-        "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Unambiguous)",
-        "IEEE 830-1998, п. 4.3.2",
-        "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Correct)",
-        "IEEE 830-1998, п. 4.3.1"
-      ],
-      "review": {
-        "answered": false,
-        "answer": "",
-        "answer_quote": null,
-        "common_sense": false,
-        "obvious_fix": false,
-        "scenario": true,
-        "errors": []
-      }
-    },
-    {
-      "id": "Q-06",
+      "id": "Q-07",
       "priority": "P0",
       "blocks": [
         "development",
@@ -10552,112 +10682,12 @@
       ],
       "if_unanswered": "Команда сама придумает операцию чтения, и контракт мобильного банка с сервисом не будет согласован.",
       "related_findings": [
-        "F-05",
-        "F-09"
+        "F-05"
       ],
       "origin": "test_draft",
       "standard": [
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Complete)",
-        "IEEE 830-1998, п. 4.3.3",
-        "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Complete)"
-      ],
-      "review": {
-        "answered": false,
-        "answer": "",
-        "answer_quote": null,
-        "common_sense": false,
-        "obvious_fix": false,
-        "scenario": true,
-        "errors": []
-      }
-    },
-    {
-      "id": "Q-07",
-      "priority": "P0",
-      "blocks": [
-        "development",
-        "testing"
-      ],
-      "addressee": [
-        "business"
-      ],
-      "topic": "месяц учёта покупки",
-      "quotes": [
-        {
-          "text": "Месяц определяется по дате совершения покупки в Алматы.",
-          "match": "exact",
-          "score": 100.0,
-          "located": "Месяц определяется по дате совершения покупки в Алматы.",
-          "anchor": {
-            "char_start": 1375,
-            "char_end": 1430,
-            "block_ids": [
-              "B023"
-            ],
-            "sentence_ids": [
-              "B023.2"
-            ],
-            "line_start": 49,
-            "line_end": 49,
-            "page": 2,
-            "page_line": null,
-            "paragraph": null,
-            "table": null,
-            "row": null,
-            "cell": null,
-            "column": null,
-            "extraction": "text"
-          }
-        },
-        {
-          "text": "Февральский счётчик вырос на 4 000 ₸",
-          "match": "exact",
-          "score": 100.0,
-          "located": "Февральский счётчик вырос на 4 000 ₸",
-          "anchor": {
-            "char_start": 2885,
-            "char_end": 2921,
-            "block_ids": [
-              "B039"
-            ],
-            "sentence_ids": [],
-            "line_start": 94,
-            "line_end": 94,
-            "page": 3,
-            "page_line": null,
-            "paragraph": null,
-            "table": 2,
-            "row": 2,
-            "cell": 3,
-            "column": "Ожидаемый результат",
-            "extraction": "table"
-          }
-        }
-      ],
-      "question": "Покупка на 4 000 ₸ совершена 31 января в 23:58 по Алматы, а проведена 1 февраля в 00:03: в расходы какого месяца она входит?",
-      "why": "Ф-2 и критерий приёмки 2 дают для одной ситуации разные месяцы. От ответа зависят расчёт счётчика, хранимая дата и ожидаемый результат теста.",
-      "options": [
-        {
-          "label": "A",
-          "text": "В январь: месяц определяется по дате совершения покупки",
-          "change": "Исправить ожидаемый результат критерия 2 на «Январский счётчик вырос на 4 000 ₸»",
-          "grounded_in": "Месяц определяется по дате совершения покупки в Алматы."
-        },
-        {
-          "label": "B",
-          "text": "В февраль: месяц определяется по дате проведения покупки",
-          "change": "Переписать Ф-2: месяц определяется по дате проведения в Алматы; хранить дату проведения",
-          "grounded_in": "Февральский счётчик вырос на 4 000 ₸"
-        }
-      ],
-      "if_unanswered": "Команда возьмёт дату совершения по Ф-2, и критерий приёмки 2 не пройдёт.",
-      "related_findings": [
-        "F-01"
-      ],
-      "origin": "witness_scenario",
-      "standard": [
-        "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
-        "IEEE 830-1998, п. 4.3.4"
+        "IEEE 830-1998, п. 4.3.3"
       ],
       "review": {
         "answered": false,
@@ -11388,112 +11418,83 @@
           "testing"
         ],
         "addressee": [
-          "architect"
+          "business"
         ],
-        "topic": "метод сохранения порога",
+        "topic": "месяц учёта покупки",
         "quotes": [
           {
-            "text": "GET",
+            "text": "Месяц определяется по дате совершения покупки в Алматы.",
             "match": "exact",
             "score": 100.0,
-            "located": "GET",
+            "located": "Месяц определяется по дате совершения покупки в Алматы.",
             "anchor": {
-              "char_start": 5181,
-              "char_end": 5184,
+              "char_start": 1375,
+              "char_end": 1430,
               "block_ids": [
-                "B063"
+                "B023"
+              ],
+              "sentence_ids": [
+                "B023.2"
+              ],
+              "line_start": 49,
+              "line_end": 49,
+              "page": 2,
+              "page_line": null,
+              "paragraph": null,
+              "table": null,
+              "row": null,
+              "cell": null,
+              "column": null,
+              "extraction": "text"
+            }
+          },
+          {
+            "text": "Февральский счётчик вырос на 4 000 ₸",
+            "match": "exact",
+            "score": 100.0,
+            "located": "Февральский счётчик вырос на 4 000 ₸",
+            "anchor": {
+              "char_start": 2885,
+              "char_end": 2921,
+              "block_ids": [
+                "B039"
               ],
               "sentence_ids": [],
-              "line_start": 132,
-              "line_end": 132,
-              "page": 5,
+              "line_start": 94,
+              "line_end": 94,
+              "page": 3,
               "page_line": null,
               "paragraph": null,
-              "table": 5,
+              "table": 2,
               "row": 2,
-              "cell": 2,
-              "column": "Значение",
+              "cell": 3,
+              "column": "Ожидаемый результат",
               "extraction": "table"
-            }
-          },
-          {
-            "text": "Заменить настройку и вернуть результат сохранения.",
-            "match": "exact",
-            "score": 100.0,
-            "located": "Заменить настройку и вернуть результат сохранения.",
-            "anchor": {
-              "char_start": 5728,
-              "char_end": 5778,
-              "block_ids": [
-                "B078"
-              ],
-              "sentence_ids": [
-                "B078.1"
-              ],
-              "line_start": 152,
-              "line_end": 152,
-              "page": 6,
-              "page_line": null,
-              "paragraph": null,
-              "table": null,
-              "row": null,
-              "cell": null,
-              "column": null,
-              "extraction": "text"
-            }
-          },
-          {
-            "text": "Content-Type: application/json.",
-            "match": "exact",
-            "score": 100.0,
-            "located": "Content-Type: application/json.",
-            "anchor": {
-              "char_start": 6499,
-              "char_end": 6530,
-              "block_ids": [
-                "B094"
-              ],
-              "sentence_ids": [
-                "B094.1"
-              ],
-              "line_start": 185,
-              "line_end": 185,
-              "page": 7,
-              "page_line": null,
-              "paragraph": null,
-              "table": null,
-              "row": null,
-              "cell": null,
-              "column": null,
-              "extraction": "text"
             }
           }
         ],
-        "question": "Приложение сохраняет порог 50 000 ₸ для карты demo-42: передавать параметры через GET в строке запроса или через изменяющий метод с JSON-телом?",
-        "why": "GET меняет данные, а раздел тела одновременно требует JSON и говорит, что тело не используется. От ответа зависят контракт, обязательность Content-Type и тесты.",
+        "question": "Покупка на 4 000 ₸ совершена 31 января в 23:58 по Алматы, а проведена 1 февраля в 00:03: в расходы какого месяца она входит?",
+        "why": "Ф-2 и критерий приёмки 2 дают для одной ситуации разные месяцы. От ответа зависят расчёт счётчика, хранимая дата и ожидаемый результат теста.",
         "options": [
           {
             "label": "A",
-            "text": "GET с параметрами в строке запроса, без тела",
-            "change": "Удалить строку Content-Type; подтвердить GET в общих параметрах",
-            "grounded_in": "GET"
+            "text": "В январь: месяц определяется по дате совершения покупки",
+            "change": "Исправить ожидаемый результат критерия 2 на «Январский счётчик вырос на 4 000 ₸»",
+            "grounded_in": "Месяц определяется по дате совершения покупки в Алматы."
           },
           {
             "label": "B",
-            "text": "Изменяющий метод (PUT или POST) с JSON-телом, Content-Type обязателен",
-            "change": "Заменить REST type, URL и CURL; перенести параметры в тело; задать ответ без Content-Type",
-            "grounded_in": "Content-Type: application/json."
+            "text": "В февраль: месяц определяется по дате проведения покупки",
+            "change": "Переписать Ф-2: месяц определяется по дате проведения в Алматы; хранить дату проведения",
+            "grounded_in": "Февральский счётчик вырос на 4 000 ₸"
           }
         ],
-        "if_unanswered": "Команда оставит GET, и повторы или кеширование на прокси могут менять или терять настройку.",
+        "if_unanswered": "Команда возьмёт дату совершения по Ф-2, и критерий приёмки 2 не пройдёт.",
         "related_findings": [
-          "F-06",
-          "F-45"
+          "F-01"
         ],
-        "origin": "set_check",
+        "origin": "witness_scenario",
         "standard": [
-          "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Correct)",
-          "IEEE 830-1998, п. 4.3.1",
           "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
           "IEEE 830-1998, п. 4.3.4"
         ],
@@ -11741,7 +11742,7 @@
     ]
   },
   "metrics": {
-    "duration_s": 0.38,
+    "duration_s": 0.44,
     "calls_total": 8,
     "calls_failed": 0,
     "calls_cached": 0,
@@ -11776,8 +11777,8 @@
         "P1": 7
       },
       "by_addressee": {
-        "architect": 5,
-        "business": 8,
+        "architect": 6,
+        "business": 7,
         "security": 2
       }
     },

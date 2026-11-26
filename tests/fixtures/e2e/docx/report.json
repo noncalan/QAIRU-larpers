@@ -7,10 +7,10 @@
     "document_sha256": "7fd7c1d145b0c4e01ac8a502856b08eaf0cdbddc896069271687f6a2a16022d5",
     "document_size_bytes": 16072,
     "document_pages": null,
-    "started_at": "2026-11-26T12:34:03.876694Z",
-    "finished_at": "2026-11-26T12:34:04.183098Z",
-    "duration_s": 0.31,
-    "agent_version": "52bd77a-dirty",
+    "started_at": "2026-11-26T12:41:14.838186Z",
+    "finished_at": "2026-11-26T12:41:15.110556Z",
+    "duration_s": 0.27,
+    "agent_version": "98e7636-dirty",
     "agent_version_source": "git",
     "agent_dirty": true,
     "prompts_sha256": "7dd96b1cffa406769efc8daf0df90f974ab4ef58757a546a07948210acc7492d",
@@ -101,7 +101,7 @@
     {
       "code": "LLM-051",
       "level": "info",
-      "message": "Вопросы автору: код поправил карточки (карточек не по схеме или без вопроса: 1; кандидатов редактор не взял и не отклонил: 23)",
+      "message": "Вопросы автору: код поправил карточки (карточек не по схеме или без вопроса: 1; кандидатов редактор не взял и не отклонил: 23; связей с находками без общей цитаты или требования убрано: 7)",
       "action": "В отчёт вошло вопросов: 11, кандидатов было: 42",
       "hint": "",
       "location": null,
@@ -3234,7 +3234,7 @@
               "missing": "операция чтения: в дочернем документе описано только сохранение порога, нет метода, URL и полей ответа для получения порога, признака включения и суммы за месяц",
               "part": "шаги",
               "replaced": null,
-              "question_id": "Q-03",
+              "question_id": null,
               "question_withdrawn": false
             },
             {
@@ -3242,7 +3242,7 @@
               "missing": "значение поля «Порог, ₸» до первой настройки",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-03",
+              "question_id": null,
               "question_withdrawn": false
             },
             {
@@ -3250,7 +3250,7 @@
               "missing": "значение суммы до первой настройки, какой месяц показывается и в какой единице (тенге или тиыны) сумма",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-03",
+              "question_id": null,
               "question_withdrawn": false
             }
           ],
@@ -3597,7 +3597,7 @@
               "missing": "какой месяц верный: по правилу Ф-2 месяц берётся по дате совершения покупки (январь), а в критерии приёмки с той же покупкой растёт февральский счётчик",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-01",
+              "question_id": "Q-03",
               "question_withdrawn": false
             }
           ],
@@ -3765,7 +3765,7 @@
               "missing": "какое событие процессинга считается проведением: растут ли расходы и приходит ли push уже после авторизации",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-05",
+              "question_id": "Q-02",
               "question_withdrawn": false
             },
             {
@@ -3773,7 +3773,7 @@
               "missing": "итог и число push после клиринга, в том числе не учитывается ли покупка повторно, если проведением считалась авторизация",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-05",
+              "question_id": "Q-02",
               "question_withdrawn": false
             },
             {
@@ -3781,7 +3781,7 @@
               "missing": "что делать с отменённой авторизацией: учитывается ли она в расходах",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-05",
+              "question_id": "Q-02",
               "question_withdrawn": false
             }
           ],
@@ -3972,8 +3972,8 @@
               "missing": "число push при достижении нового порога после уже отправленного push в том же месяце: Ф-3 («максимум один за календарный месяц») даёт 0, Ф-4 («следующее достижение вызывает push независимо от истории предыдущей настройки») даёт 1; не сказано, сбрасывает ли смена порога месячный лимит",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-07",
-              "question_withdrawn": false
+              "question_id": "Q-04",
+              "question_withdrawn": true
             }
           ],
           "note": "",
@@ -4089,8 +4089,8 @@
               "missing": "каким HTTP-методом вызывается сохранение и должен ли GET менять настройку: в документе указан GET, но операция изменяет состояние, допустимое поведение не определено",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-04",
-              "question_withdrawn": true
+              "question_id": "Q-01",
+              "question_withdrawn": false
             }
           ],
           "note": "",
@@ -4276,7 +4276,7 @@
               "missing": "код и тело ответа на сумму вне диапазона: по разделам логики и 200 это 200 с result=ERROR и message=«Проверьте сумму», по статусу 400 и его телу это 400 с message=«Некорректный запрос»",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-02",
+              "question_id": "Q-05",
               "question_withdrawn": false
             }
           ],
@@ -4614,7 +4614,7 @@
               "missing": "значение «Итог 50 000 ₸ и один push» модель назвала без цитаты из документа, поэтому оно заменено пропуском",
               "part": "ожидаемый результат",
               "replaced": "Итог 50 000 ₸ и один push",
-              "question_id": "Q-05",
+              "question_id": "Q-02",
               "question_withdrawn": false
             },
             {
@@ -4622,7 +4622,7 @@
               "missing": "какое событие процессинга (авторизация или клиринг) считается проведением, после которого растут расходы и уходит push",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-05",
+              "question_id": "Q-02",
               "question_withdrawn": false
             },
             {
@@ -4630,7 +4630,7 @@
               "missing": "допустимая задержка между покупкой и push (цель говорит «в момент покупки», а срок в документе отсчитывается только от получения события сервисом)",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-05",
+              "question_id": "Q-02",
               "question_withdrawn": false
             }
           ],
@@ -4933,7 +4933,7 @@
               "missing": "ветка «уведомление выключено»: отправляется ли push и ведётся ли учёт при enabled=0",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-06",
+              "question_id": null,
               "question_withdrawn": false
             },
             {
@@ -4941,7 +4941,7 @@
               "missing": "ветка «ошибка отправки push»: повторы, признак отправки, судьба события",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-06",
+              "question_id": null,
               "question_withdrawn": false
             },
             {
@@ -4949,7 +4949,7 @@
               "missing": "значение «Итог 50 000 ₸ и один push» модель назвала без цитаты из документа, поэтому оно заменено пропуском",
               "part": "ожидаемый результат",
               "replaced": "Итог 50 000 ₸ и один push",
-              "question_id": "Q-06",
+              "question_id": null,
               "question_withdrawn": false
             },
             {
@@ -4957,7 +4957,7 @@
               "missing": "влияние возврата на уже отправленный push и признак отправки",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-06",
+              "question_id": null,
               "question_withdrawn": false
             }
           ],
@@ -5821,7 +5821,7 @@
               "missing": "в какой месяц попадает покупка, совершённая 31 января и проведённая 2 февраля: Ф-2 определяет месяц по дате совершения покупки, а критерий приёмки про покупку 31 января и проведение 1 февраля относит её к февральскому счётчику",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-01",
+              "question_id": null,
               "question_withdrawn": false
             },
             {
@@ -5829,7 +5829,7 @@
               "missing": "отправляется ли push, если порог января достигнут проведением в феврале (январь уже закрыт)",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-01",
+              "question_id": null,
               "question_withdrawn": false
             },
             {
@@ -5837,7 +5837,7 @@
               "missing": "по какому месяцу считается лимит push: по месяцу покупки или по месяцу отправки",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-01",
+              "question_id": null,
               "question_withdrawn": false
             },
             {
@@ -5845,7 +5845,7 @@
               "missing": "отправляется ли push в феврале, если push за январь отправлен 2 февраля; зависит от ответа на вопрос о месяце лимита",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-01",
+              "question_id": null,
               "question_withdrawn": false
             }
           ],
@@ -6409,7 +6409,7 @@
               "missing": "формат отображения карты (маска): документ называет только «последние четыре цифры»",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-11",
+              "question_id": "Q-10",
               "question_withdrawn": false
             },
             {
@@ -6417,7 +6417,7 @@
               "missing": "какая именно сумма передаётся: покупки (1 500 ₸), расходов месяца (50 000 ₸) или порога",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-11",
+              "question_id": "Q-10",
               "question_withdrawn": false
             },
             {
@@ -6425,7 +6425,7 @@
               "missing": "формат суммы: тенге или тиыны, разделители, символ валюты",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-11",
+              "question_id": "Q-10",
               "question_withdrawn": false
             },
             {
@@ -6433,7 +6433,7 @@
               "missing": "шаблон текста push и язык сообщения",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-11",
+              "question_id": "Q-10",
               "question_withdrawn": false
             }
           ],
@@ -6678,7 +6678,7 @@
               "missing": "срок хранения операций и месячных итогов",
               "part": "предусловие",
               "replaced": null,
-              "question_id": "Q-09",
+              "question_id": "Q-11",
               "question_withdrawn": false
             },
             {
@@ -6686,7 +6686,7 @@
               "missing": "что такое идентификатор карты: номер карты или токен",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-09",
+              "question_id": "Q-11",
               "question_withdrawn": false
             },
             {
@@ -6694,7 +6694,7 @@
               "missing": "требования к маскированию данных карты в хранилище",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-09",
+              "question_id": "Q-11",
               "question_withdrawn": false
             },
             {
@@ -6702,7 +6702,7 @@
               "missing": "требования к шифрованию хранимых данных",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-09",
+              "question_id": "Q-11",
               "question_withdrawn": false
             }
           ],
@@ -7397,7 +7397,7 @@
               "missing": "назначение метода: в описании написано «Сохранение порога», а в ссылке на функциональные требования «чтение порога»; неизвестно, сохраняет метод порог или возвращает текущий",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-03",
+              "question_id": "Q-08",
               "question_withdrawn": false
             }
           ],
@@ -7488,7 +7488,7 @@
               "missing": "чувствительно ли значение cardId (токен или номер карты) и допустимо ли писать его в журналы открытым или нужно маскировать",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-09",
+              "question_id": null,
               "question_withdrawn": false
             }
           ],
@@ -7592,7 +7592,7 @@
               "missing": "число 1 в ожидаемом результате не подтверждено цитатой из документа",
               "part": "ожидаемый результат",
               "replaced": "1",
-              "question_id": "Q-02",
+              "question_id": null,
               "question_withdrawn": false
             },
             {
@@ -7600,7 +7600,7 @@
               "missing": "число 64 в ожидаемом результате не подтверждено цитатой из документа",
               "part": "ожидаемый результат",
               "replaced": "64",
-              "question_id": "Q-02",
+              "question_id": null,
               "question_withdrawn": false
             },
             {
@@ -7608,7 +7608,7 @@
               "missing": "код и тело ответа, включая текст message, для enabled не 0 и не 1, пропущенного обязательного параметра, дробного или нечислового amount, cardId длиннее 64 символов: реакция описана только для суммы",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-02",
+              "question_id": null,
               "question_withdrawn": false
             },
             {
@@ -7616,7 +7616,7 @@
               "missing": "реакция на неактивную карту или карту не в KZT: в Ф-1 условие есть, а ответ метода не описан",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-02",
+              "question_id": null,
               "question_withdrawn": false
             },
             {
@@ -7624,7 +7624,7 @@
               "missing": "проверяется ли диапазон amount при enabled=0, и каким будет ответ",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-02",
+              "question_id": null,
               "question_withdrawn": false
             }
           ],
@@ -7749,7 +7749,7 @@
               "missing": "код первого сохранения: документ называет успешными 200 и 201, но не говорит, когда возвращается 201; в списке статусов описан только 200",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-10",
+              "question_id": "Q-09",
               "question_withdrawn": false
             },
             {
@@ -7757,7 +7757,7 @@
               "missing": "код повторного сохранения: условие выбора между 200 и 201 не задано",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-10",
+              "question_id": "Q-09",
               "question_withdrawn": false
             }
           ],
@@ -8017,7 +8017,7 @@
               "missing": "код и тело ответа для чужой карты: раздел «403» и описание статуса 403 дают «доступ запрещен», а правило внутри раздела требует 404 с телом «Карта не найдена»; 404 нет в перечне статусов, условие возврата 403 не определено",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-08",
+              "question_id": "Q-07",
               "question_withdrawn": false
             }
           ],
@@ -9504,8 +9504,8 @@
               "missing": "обязателен ли заголовок Content-Type и проверяет ли его сервер: заголовок указан в описании запроса, но тело не используется; ответ на запрос без заголовка не задан",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-04",
-              "question_withdrawn": true
+              "question_id": "Q-01",
+              "question_withdrawn": false
             }
           ],
           "note": "",
@@ -9625,7 +9625,7 @@
               "missing": "полный закрытый перечень кодов неуспешных ответов: оборот «и далее» его не задаёт, в списке статусов 400, 401, 403, 500, а 404 упомянут только в тексте",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-08",
+              "question_id": null,
               "question_withdrawn": false
             }
           ],
@@ -9864,6 +9864,247 @@
         "testing"
       ],
       "addressee": [
+        "architect"
+      ],
+      "topic": "HTTP-метод сохранения",
+      "quotes": [
+        {
+          "text": "GET",
+          "match": "exact",
+          "score": 100.0,
+          "located": "GET",
+          "anchor": {
+            "char_start": 5171,
+            "char_end": 5174,
+            "block_ids": [
+              "B063"
+            ],
+            "sentence_ids": [],
+            "line_start": 109,
+            "line_end": 109,
+            "page": null,
+            "page_line": null,
+            "paragraph": null,
+            "table": 5,
+            "row": 2,
+            "cell": 2,
+            "column": "Значение",
+            "extraction": "table"
+          }
+        },
+        {
+          "text": "Content-Type: application/json .",
+          "match": "exact",
+          "score": 100.0,
+          "located": "Content-Type: application/json .",
+          "anchor": {
+            "char_start": 6485,
+            "char_end": 6517,
+            "block_ids": [
+              "B094"
+            ],
+            "sentence_ids": [
+              "B094.1"
+            ],
+            "line_start": 160,
+            "line_end": 160,
+            "page": null,
+            "page_line": null,
+            "paragraph": 56,
+            "table": null,
+            "row": null,
+            "cell": null,
+            "column": null,
+            "extraction": "text"
+          }
+        },
+        {
+          "text": "Тело не используется.",
+          "match": "exact",
+          "score": 100.0,
+          "located": "Тело не используется.",
+          "anchor": {
+            "char_start": 6521,
+            "char_end": 6542,
+            "block_ids": [
+              "B095"
+            ],
+            "sentence_ids": [
+              "B095.1"
+            ],
+            "line_start": 162,
+            "line_end": 162,
+            "page": null,
+            "page_line": null,
+            "paragraph": 57,
+            "table": null,
+            "row": null,
+            "cell": null,
+            "column": null,
+            "extraction": "text"
+          }
+        }
+      ],
+      "question": "Приложение сохраняет порог 50 000 ₸ для карты demo-42: каким HTTP-методом и в какой части запроса передаются amount и enabled?",
+      "why": "GET меняет состояние, и кеш или прокси может повторить или закешировать сохранение. От выбора зависит, нужен ли заголовок Content-Type и что отвечать на запрос без него.",
+      "options": [
+        {
+          "label": "A",
+          "text": "GET с параметрами в строке запроса, без тела и Content-Type",
+          "change": "Убрать заголовок Content-Type из описания запроса",
+          "grounded_in": "GET"
+        },
+        {
+          "label": "B",
+          "text": "PUT или POST с amount и enabled в теле JSON, Content-Type обязателен",
+          "change": "Заменить REST type, перенести параметры в Request body, описать ответ на запрос без Content-Type",
+          "grounded_in": "Content-Type: application/json ."
+        },
+        {
+          "label": "C",
+          "text": "POST с параметрами в строке запроса, без тела и Content-Type",
+          "change": "Заменить REST type на POST и убрать заголовок Content-Type",
+          "grounded_in": "Тело не используется."
+        }
+      ],
+      "if_unanswered": "Команда оставит GET как в документе. Возможны повторные и закешированные сохранения, а проверка Content-Type останется неопределённой.",
+      "related_findings": [
+        "F-06",
+        "F-48"
+      ],
+      "origin": "set_check",
+      "standard": [
+        "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Correct)",
+        "IEEE 830-1998, п. 4.3.1",
+        "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
+        "IEEE 830-1998, п. 4.3.4"
+      ],
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
+    },
+    {
+      "id": "Q-02",
+      "priority": "P0",
+      "blocks": [
+        "development",
+        "testing"
+      ],
+      "addressee": [
+        "business"
+      ],
+      "topic": "момент учёта покупки",
+      "quotes": [
+        {
+          "text": "В расходы входят проведённые покупки.",
+          "match": "exact",
+          "score": 100.0,
+          "located": "В расходы входят проведённые покупки.",
+          "anchor": {
+            "char_start": 1431,
+            "char_end": 1468,
+            "block_ids": [
+              "B023"
+            ],
+            "sentence_ids": [
+              "B023.3"
+            ],
+            "line_start": 41,
+            "line_end": 41,
+            "page": null,
+            "page_line": null,
+            "paragraph": 17,
+            "table": null,
+            "row": null,
+            "cell": null,
+            "column": null,
+            "extraction": "text"
+          }
+        },
+        {
+          "text": "Дать клиенту возможность узнать о достижении личного бюджета в момент покупки.",
+          "match": "exact",
+          "score": 100.0,
+          "located": "Дать клиенту возможность узнать о достижении личного бюджета в момент покупки.",
+          "anchor": {
+            "char_start": 682,
+            "char_end": 760,
+            "block_ids": [
+              "B013"
+            ],
+            "sentence_ids": [
+              "B013.1"
+            ],
+            "line_start": 21,
+            "line_end": 21,
+            "page": null,
+            "page_line": null,
+            "paragraph": 7,
+            "table": null,
+            "row": null,
+            "cell": null,
+            "column": null,
+            "extraction": "text"
+          }
+        }
+      ],
+      "question": "Порог 50 000 ₸, расходы 48 500 ₸, покупку на 1 500 ₸ авторизовали 10 марта, а клиринг прошёл 12 марта: когда растут расходы и уходит push?",
+      "why": "Не задано, какое событие процессинга считается проведением покупки. От этого зависят событие, на которое подписывается сервис расходов, учёт отменённых авторизаций и все ожидаемые результаты тестов.",
+      "options": [
+        {
+          "label": "A",
+          "text": "Расходы растут и push уходит при авторизации, клиринг расходы не меняет",
+          "change": "В Ф-2 определить проведение как авторизацию; описать исключение отменённой авторизации из расходов",
+          "grounded_in": "Дать клиенту возможность узнать о достижении личного бюджета в момент покупки."
+        },
+        {
+          "label": "B",
+          "text": "Расходы растут и push уходит только при клиринге",
+          "change": "В Ф-2 определить проведение как клиринг; уточнить в цели, что уведомление приходит после проведения, а не в момент покупки",
+          "grounded_in": "В расходы входят проведённые покупки."
+        },
+        {
+          "label": "C",
+          "text": "Расходы растут при авторизации, при клиринге сумма заменяется окончательной",
+          "change": "Описать учёт по авторизации, корректировку по клирингу и связь событий по идентификатору операции",
+          "grounded_in": null
+        }
+      ],
+      "if_unanswered": "Команда буквально прочтёт «проведённые» как клиринг. Push будет приходить через дни после покупки, и цель «в момент покупки» не будет достигнута.",
+      "related_findings": [
+        "F-04",
+        "F-09"
+      ],
+      "origin": "witness_scenario",
+      "standard": [
+        "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Unambiguous)",
+        "IEEE 830-1998, п. 4.3.2",
+        "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Feasible)"
+      ],
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
+    },
+    {
+      "id": "Q-03",
+      "priority": "P0",
+      "blocks": [
+        "development",
+        "testing"
+      ],
+      "addressee": [
         "business"
       ],
       "topic": "месяц покупки на стыке",
@@ -9937,15 +10178,12 @@
       ],
       "if_unanswered": "Команда реализует Ф-2 (январь). Критерий приёмки будет падать, а push за январь может уйти в феврале и съесть февральский лимит.",
       "related_findings": [
-        "F-03",
-        "F-17"
+        "F-03"
       ],
       "origin": "witness_scenario",
       "standard": [
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
-        "IEEE 830-1998, п. 4.3.4",
-        "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Unambiguous)",
-        "IEEE 830-1998, п. 4.3.2"
+        "IEEE 830-1998, п. 4.3.4"
       ],
       "review": {
         "answered": false,
@@ -9958,7 +10196,7 @@
       }
     },
     {
-      "id": "Q-02",
+      "id": "Q-05",
       "priority": "P0",
       "blocks": [
         "development",
@@ -10070,230 +10308,12 @@
       ],
       "if_unanswered": "Команда вернёт 200 с ERROR по логике метода. Мониторинг и клиент сочтут отказ успехом, а тест по разделу статусов упадёт.",
       "related_findings": [
-        "F-07",
-        "F-29"
+        "F-07"
       ],
       "origin": "witness_scenario",
       "standard": [
-        "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
-        "IEEE 830-1998, п. 4.3.4",
-        "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Complete)",
-        "IEEE 830-1998, п. 4.3.3"
-      ],
-      "review": {
-        "answered": false,
-        "answer": "",
-        "answer_quote": null,
-        "common_sense": false,
-        "obvious_fix": false,
-        "scenario": true,
-        "errors": []
-      }
-    },
-    {
-      "id": "Q-03",
-      "priority": "P0",
-      "blocks": [
-        "development",
-        "testing"
-      ],
-      "addressee": [
-        "architect"
-      ],
-      "topic": "чтение настроек экрана",
-      "quotes": [
-        {
-          "text": "Приложение читает и сохраняет настройки через дочерний документ «Уведомление о расходах по карте — REST API».",
-          "match": "exact",
-          "score": 100.0,
-          "located": "Приложение читает и сохраняет настройки через дочерний документ «Уведомление о расходах по карте — REST API».",
-          "anchor": {
-            "char_start": 2386,
-            "char_end": 2495,
-            "block_ids": [
-              "B033"
-            ],
-            "sentence_ids": [
-              "B033.1"
-            ],
-            "line_start": 61,
-            "line_end": 61,
-            "page": null,
-            "page_line": null,
-            "paragraph": 27,
-            "table": null,
-            "row": null,
-            "cell": null,
-            "column": null,
-            "extraction": "text"
-          }
-        },
-        {
-          "text": "Сохранение порога. Функциональные требования: чтение порога",
-          "match": "exact",
-          "score": 100.0,
-          "located": "Сохранение порога. Функциональные требования: чтение порога",
-          "anchor": {
-            "char_start": 5099,
-            "char_end": 5158,
-            "block_ids": [
-              "B062"
-            ],
-            "sentence_ids": [],
-            "line_start": 108,
-            "line_end": 108,
-            "page": null,
-            "page_line": null,
-            "paragraph": null,
-            "table": 5,
-            "row": 1,
-            "cell": 2,
-            "column": "Значение",
-            "extraction": "table"
-          }
-        }
-      ],
-      "question": "Клиент открывает экран «Уведомления»: откуда приложение берёт порог, положение переключателя и сумму расходов за месяц?",
-      "why": "В части B описано только сохранение, и экран нечем заполнить. Отдельно нужны значения до первой настройки и единица суммы за месяц.",
-      "options": [
-        {
-          "label": "A",
-          "text": "Из отдельного метода чтения, который нужно описать в части B",
-          "change": "Добавить в часть B метод чтения с полями порога, признака включения и суммы текущего месяца; исправить описание метода сохранения",
-          "grounded_in": "Приложение читает и сохраняет настройки через дочерний документ «Уведомление о расходах по карте — REST API»."
-        },
-        {
-          "label": "B",
-          "text": "Из того же метода: вызов без amount и enabled возвращает текущую настройку",
-          "change": "Описать в части B режим чтения метода и сделать amount и enabled необязательными",
-          "grounded_in": "Сохранение порога. Функциональные требования: чтение порога"
-        },
-        {
-          "label": "C",
-          "text": "Из метода другого документа, на который нужно сослаться",
-          "change": "Исправить R-12.1 и описание метода: указать документ с методом чтения",
-          "grounded_in": null
-        }
-      ],
-      "if_unanswered": "Команда придумает свой метод чтения без согласования. Контракт с приложением и тесты экрана разойдутся.",
-      "related_findings": [
-        "F-01",
-        "F-27"
-      ],
-      "origin": "set_check",
-      "standard": [
-        "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Complete)",
-        "IEEE 830-1998, п. 4.3.3",
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
         "IEEE 830-1998, п. 4.3.4"
-      ],
-      "review": {
-        "answered": false,
-        "answer": "",
-        "answer_quote": null,
-        "common_sense": false,
-        "obvious_fix": false,
-        "scenario": true,
-        "errors": []
-      }
-    },
-    {
-      "id": "Q-05",
-      "priority": "P0",
-      "blocks": [
-        "development",
-        "testing"
-      ],
-      "addressee": [
-        "business"
-      ],
-      "topic": "момент учёта покупки",
-      "quotes": [
-        {
-          "text": "В расходы входят проведённые покупки.",
-          "match": "exact",
-          "score": 100.0,
-          "located": "В расходы входят проведённые покупки.",
-          "anchor": {
-            "char_start": 1431,
-            "char_end": 1468,
-            "block_ids": [
-              "B023"
-            ],
-            "sentence_ids": [
-              "B023.3"
-            ],
-            "line_start": 41,
-            "line_end": 41,
-            "page": null,
-            "page_line": null,
-            "paragraph": 17,
-            "table": null,
-            "row": null,
-            "cell": null,
-            "column": null,
-            "extraction": "text"
-          }
-        },
-        {
-          "text": "Дать клиенту возможность узнать о достижении личного бюджета в момент покупки.",
-          "match": "exact",
-          "score": 100.0,
-          "located": "Дать клиенту возможность узнать о достижении личного бюджета в момент покупки.",
-          "anchor": {
-            "char_start": 682,
-            "char_end": 760,
-            "block_ids": [
-              "B013"
-            ],
-            "sentence_ids": [
-              "B013.1"
-            ],
-            "line_start": 21,
-            "line_end": 21,
-            "page": null,
-            "page_line": null,
-            "paragraph": 7,
-            "table": null,
-            "row": null,
-            "cell": null,
-            "column": null,
-            "extraction": "text"
-          }
-        }
-      ],
-      "question": "Порог 50 000 ₸, расходы 48 500 ₸, покупку на 1 500 ₸ авторизовали 10 марта, а клиринг прошёл 12 марта: когда растут расходы и уходит push?",
-      "why": "Не задано, какое событие процессинга считается проведением покупки. От этого зависят событие, на которое подписывается сервис расходов, учёт отменённых авторизаций и все ожидаемые результаты тестов.",
-      "options": [
-        {
-          "label": "A",
-          "text": "Расходы растут и push уходит при авторизации, клиринг расходы не меняет",
-          "change": "В Ф-2 определить проведение как авторизацию; описать исключение отменённой авторизации из расходов",
-          "grounded_in": "Дать клиенту возможность узнать о достижении личного бюджета в момент покупки."
-        },
-        {
-          "label": "B",
-          "text": "Расходы растут и push уходит только при клиринге",
-          "change": "В Ф-2 определить проведение как клиринг; уточнить в цели, что уведомление приходит после проведения, а не в момент покупки",
-          "grounded_in": "В расходы входят проведённые покупки."
-        },
-        {
-          "label": "C",
-          "text": "Расходы растут при авторизации, при клиринге сумма заменяется окончательной",
-          "change": "Описать учёт по авторизации, корректировку по клирингу и связь событий по идентификатору операции",
-          "grounded_in": null
-        }
-      ],
-      "if_unanswered": "Команда буквально прочтёт «проведённые» как клиринг. Push будет приходить через дни после покупки, и цель «в момент покупки» не будет достигнута.",
-      "related_findings": [
-        "F-04",
-        "F-09"
-      ],
-      "origin": "witness_scenario",
-      "standard": [
-        "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Unambiguous)",
-        "IEEE 830-1998, п. 4.3.2",
-        "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Feasible)"
       ],
       "review": {
         "answered": true,
@@ -10396,14 +10416,12 @@
       ],
       "if_unanswered": "Команда будет вести учёт всегда и не досылать push, а тест включения уведомления останется без одного ожидаемого результата.",
       "related_findings": [
-        "F-02",
-        "F-11"
+        "F-02"
       ],
       "origin": "test_draft",
       "standard": [
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Complete)",
-        "IEEE 830-1998, п. 4.3.3",
-        "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Complete)"
+        "IEEE 830-1998, п. 4.3.3"
       ],
       "review": {
         "answered": false,
@@ -10417,106 +10435,6 @@
     },
     {
       "id": "Q-07",
-      "priority": "P0",
-      "blocks": [
-        "development",
-        "testing"
-      ],
-      "addressee": [
-        "business"
-      ],
-      "topic": "push после смены порога",
-      "quotes": [
-        {
-          "text": "На карту приходится максимум один такой push за календарный месяц.",
-          "match": "exact",
-          "score": 100.0,
-          "located": "На карту приходится максимум один такой push за календарный месяц.",
-          "anchor": {
-            "char_start": 1668,
-            "char_end": 1734,
-            "block_ids": [
-              "B024"
-            ],
-            "sentence_ids": [
-              "B024.3"
-            ],
-            "line_start": 43,
-            "line_end": 43,
-            "page": null,
-            "page_line": null,
-            "paragraph": 18,
-            "table": null,
-            "row": null,
-            "cell": null,
-            "column": null,
-            "extraction": "text"
-          }
-        },
-        {
-          "text": "Если она ниже нового порога, следующее достижение вызывает push независимо от истории предыдущей настройки.",
-          "match": "exact",
-          "score": 100.0,
-          "located": "Если она ниже нового порога, следующее достижение вызывает push независимо от истории предыдущей настройки.",
-          "anchor": {
-            "char_start": 1795,
-            "char_end": 1902,
-            "block_ids": [
-              "B025"
-            ],
-            "sentence_ids": [
-              "B025.3"
-            ],
-            "line_start": 45,
-            "line_end": 45,
-            "page": null,
-            "page_line": null,
-            "paragraph": 19,
-            "table": null,
-            "row": null,
-            "cell": null,
-            "column": null,
-            "extraction": "text"
-          }
-        }
-      ],
-      "question": "2 марта при пороге 50 000 ₸ ушёл push, 10 марта порог подняли до 80 000 ₸, 15 марта расходы достигли 80 000 ₸: отправляется ли второй push за март?",
-      "why": "Ф-3 даёт ноль push, Ф-4 — один. От ответа зависит, сбрасывает ли сохранение порога признак отправки, и число push в тестах смены порога.",
-      "options": [
-        {
-          "label": "A",
-          "text": "Нет, за календарный месяц уходит не больше одного push",
-          "change": "Уточнить Ф-4: смена порога не сбрасывает признак отправки за текущий месяц",
-          "grounded_in": "На карту приходится максимум один такой push за календарный месяц."
-        },
-        {
-          "label": "B",
-          "text": "Да, смена порога сбрасывает признак отправки за месяц",
-          "change": "Уточнить Ф-3: лимит один push действует на одну настройку порога; сохранение порога сбрасывает признак",
-          "grounded_in": "Если она ниже нового порога, следующее достижение вызывает push независимо от истории предыдущей настройки."
-        }
-      ],
-      "if_unanswered": "Разработчик и тестировщик выберут разные правила, и тест смены порога будет падать при любой реализации.",
-      "related_findings": [
-        "F-05"
-      ],
-      "origin": "witness_scenario",
-      "standard": [
-        "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
-        "IEEE 830-1998, п. 4.3.4"
-      ],
-      "review": {
-        "answered": false,
-        "answer": "",
-        "answer_quote": null,
-        "common_sense": false,
-        "obvious_fix": false,
-        "scenario": true,
-        "errors": []
-      }
-    },
-    {
-      "id": "Q-08",
       "priority": "P1",
       "blocks": [
         "testing"
@@ -10598,18 +10516,115 @@
       ],
       "if_unanswered": "Команда вернёт 404 по правилу из текста. Если ждали 403, тест доступа упадёт, а клиент не отличит чужую карту от отсутствующей.",
       "related_findings": [
-        "F-31",
-        "F-32",
-        "F-49"
+        "F-32"
       ],
       "origin": "witness_scenario",
       "standard": [
-        "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Complete)",
-        "IEEE 830-1998, п. 4.3.3",
         "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
-        "IEEE 830-1998, п. 4.3.4",
-        "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Unambiguous)",
-        "IEEE 830-1998, п. 4.3.2"
+        "IEEE 830-1998, п. 4.3.4"
+      ],
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
+    },
+    {
+      "id": "Q-08",
+      "priority": "P1",
+      "blocks": [
+        "testing"
+      ],
+      "addressee": [
+        "architect"
+      ],
+      "topic": "чтение настроек экрана",
+      "quotes": [
+        {
+          "text": "Приложение читает и сохраняет настройки через дочерний документ «Уведомление о расходах по карте — REST API».",
+          "match": "exact",
+          "score": 100.0,
+          "located": "Приложение читает и сохраняет настройки через дочерний документ «Уведомление о расходах по карте — REST API».",
+          "anchor": {
+            "char_start": 2386,
+            "char_end": 2495,
+            "block_ids": [
+              "B033"
+            ],
+            "sentence_ids": [
+              "B033.1"
+            ],
+            "line_start": 61,
+            "line_end": 61,
+            "page": null,
+            "page_line": null,
+            "paragraph": 27,
+            "table": null,
+            "row": null,
+            "cell": null,
+            "column": null,
+            "extraction": "text"
+          }
+        },
+        {
+          "text": "Сохранение порога. Функциональные требования: чтение порога",
+          "match": "exact",
+          "score": 100.0,
+          "located": "Сохранение порога. Функциональные требования: чтение порога",
+          "anchor": {
+            "char_start": 5099,
+            "char_end": 5158,
+            "block_ids": [
+              "B062"
+            ],
+            "sentence_ids": [],
+            "line_start": 108,
+            "line_end": 108,
+            "page": null,
+            "page_line": null,
+            "paragraph": null,
+            "table": 5,
+            "row": 1,
+            "cell": 2,
+            "column": "Значение",
+            "extraction": "table"
+          }
+        }
+      ],
+      "question": "Клиент открывает экран «Уведомления»: откуда приложение берёт порог, положение переключателя и сумму расходов за месяц?",
+      "why": "В части B описано только сохранение, и экран нечем заполнить. Отдельно нужны значения до первой настройки и единица суммы за месяц.",
+      "options": [
+        {
+          "label": "A",
+          "text": "Из отдельного метода чтения, который нужно описать в части B",
+          "change": "Добавить в часть B метод чтения с полями порога, признака включения и суммы текущего месяца; исправить описание метода сохранения",
+          "grounded_in": "Приложение читает и сохраняет настройки через дочерний документ «Уведомление о расходах по карте — REST API»."
+        },
+        {
+          "label": "B",
+          "text": "Из того же метода: вызов без amount и enabled возвращает текущую настройку",
+          "change": "Описать в части B режим чтения метода и сделать amount и enabled необязательными",
+          "grounded_in": "Сохранение порога. Функциональные требования: чтение порога"
+        },
+        {
+          "label": "C",
+          "text": "Из метода другого документа, на который нужно сослаться",
+          "change": "Исправить R-12.1 и описание метода: указать документ с методом чтения",
+          "grounded_in": null
+        }
+      ],
+      "if_unanswered": "Команда придумает свой метод чтения без согласования. Контракт с приложением и тесты экрана разойдутся.",
+      "related_findings": [
+        "F-27"
+      ],
+      "origin": "set_check",
+      "standard": [
+        "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
+        "IEEE 830-1998, п. 4.3.4"
       ],
       "review": {
         "answered": false,
@@ -10623,106 +10638,6 @@
     },
     {
       "id": "Q-09",
-      "priority": "P1",
-      "blocks": [
-        "testing"
-      ],
-      "addressee": [
-        "security"
-      ],
-      "topic": "идентификатор карты",
-      "quotes": [
-        {
-          "text": "Хранить идентификатор карты, месяц, идентификатор операции, сумму покупки в тиынах, признак отправки и порог в тенге.",
-          "match": "exact",
-          "score": 100.0,
-          "located": "Хранить идентификатор карты, месяц, идентификатор операции, сумму покупки в тиынах, признак отправки и порог в тенге.",
-          "anchor": {
-            "char_start": 2242,
-            "char_end": 2359,
-            "block_ids": [
-              "B031"
-            ],
-            "sentence_ids": [
-              "B031.1"
-            ],
-            "line_start": 57,
-            "line_end": 57,
-            "page": null,
-            "page_line": null,
-            "paragraph": 25,
-            "table": null,
-            "row": null,
-            "cell": null,
-            "column": null,
-            "extraction": "text"
-          }
-        },
-        {
-          "text": "Идентификатор карты",
-          "match": "exact",
-          "score": 100.0,
-          "located": "идентификатор карты",
-          "anchor": {
-            "char_start": 2250,
-            "char_end": 2269,
-            "block_ids": [
-              "B031"
-            ],
-            "sentence_ids": [
-              "B031.1"
-            ],
-            "line_start": 57,
-            "line_end": 57,
-            "page": null,
-            "page_line": null,
-            "paragraph": 25,
-            "table": null,
-            "row": null,
-            "cell": null,
-            "column": null,
-            "extraction": "text"
-          }
-        }
-      ],
-      "question": "Идентификатор карты, который приложение передаёт в запросе как cardId и сервис хранит вместе с покупками, — это номер карты или заменитель номера?",
-      "why": "cardId передаётся в строке запроса и попадает в журналы и прокси. От ответа зависят маскирование в журналах и шифрование хранилища; отдельно открыт срок хранения операций.",
-      "options": [
-        {
-          "label": "A",
-          "text": "Непрозрачный токен, не связанный с номером карты",
-          "change": "Указать в требованиях к данным и в параметре cardId, что это токен; маскирование не требуется",
-          "grounded_in": null
-        },
-        {
-          "label": "B",
-          "text": "Номер карты",
-          "change": "Добавить требования к маскированию в журналах, шифрованию в хранилище и передаче cardId вне строки запроса",
-          "grounded_in": null
-        }
-      ],
-      "if_unanswered": "Команда сочтёт cardId токеном и будет писать его в журналы открыто. Если это номер карты, произойдёт утечка платёжных данных.",
-      "related_findings": [
-        "F-23",
-        "F-28"
-      ],
-      "origin": "uncertain_verdict",
-      "standard": [
-        "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Complete)",
-        "IEEE 830-1998, п. 4.3.3"
-      ],
-      "review": {
-        "answered": false,
-        "answer": "",
-        "answer_quote": null,
-        "common_sense": false,
-        "obvious_fix": false,
-        "scenario": false,
-        "errors": []
-      }
-    },
-    {
-      "id": "Q-10",
       "priority": "P1",
       "blocks": [
         "testing"
@@ -10814,12 +10729,12 @@
         "answer_quote": null,
         "common_sense": false,
         "obvious_fix": false,
-        "scenario": true,
+        "scenario": false,
         "errors": []
       }
     },
     {
-      "id": "Q-11",
+      "id": "Q-10",
       "priority": "P1",
       "blocks": [
         "testing"
@@ -10891,6 +10806,105 @@
         "answered": false,
         "answer": "",
         "answer_quote": null,
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
+    },
+    {
+      "id": "Q-11",
+      "priority": "P1",
+      "blocks": [
+        "testing"
+      ],
+      "addressee": [
+        "security"
+      ],
+      "topic": "идентификатор карты",
+      "quotes": [
+        {
+          "text": "Хранить идентификатор карты, месяц, идентификатор операции, сумму покупки в тиынах, признак отправки и порог в тенге.",
+          "match": "exact",
+          "score": 100.0,
+          "located": "Хранить идентификатор карты, месяц, идентификатор операции, сумму покупки в тиынах, признак отправки и порог в тенге.",
+          "anchor": {
+            "char_start": 2242,
+            "char_end": 2359,
+            "block_ids": [
+              "B031"
+            ],
+            "sentence_ids": [
+              "B031.1"
+            ],
+            "line_start": 57,
+            "line_end": 57,
+            "page": null,
+            "page_line": null,
+            "paragraph": 25,
+            "table": null,
+            "row": null,
+            "cell": null,
+            "column": null,
+            "extraction": "text"
+          }
+        },
+        {
+          "text": "Идентификатор карты",
+          "match": "exact",
+          "score": 100.0,
+          "located": "идентификатор карты",
+          "anchor": {
+            "char_start": 2250,
+            "char_end": 2269,
+            "block_ids": [
+              "B031"
+            ],
+            "sentence_ids": [
+              "B031.1"
+            ],
+            "line_start": 57,
+            "line_end": 57,
+            "page": null,
+            "page_line": null,
+            "paragraph": 25,
+            "table": null,
+            "row": null,
+            "cell": null,
+            "column": null,
+            "extraction": "text"
+          }
+        }
+      ],
+      "question": "Идентификатор карты, который приложение передаёт в запросе как cardId и сервис хранит вместе с покупками, — это номер карты или заменитель номера?",
+      "why": "cardId передаётся в строке запроса и попадает в журналы и прокси. От ответа зависят маскирование в журналах и шифрование хранилища; отдельно открыт срок хранения операций.",
+      "options": [
+        {
+          "label": "A",
+          "text": "Непрозрачный токен, не связанный с номером карты",
+          "change": "Указать в требованиях к данным и в параметре cardId, что это токен; маскирование не требуется",
+          "grounded_in": null
+        },
+        {
+          "label": "B",
+          "text": "Номер карты",
+          "change": "Добавить требования к маскированию в журналах, шифрованию в хранилище и передаче cardId вне строки запроса",
+          "grounded_in": null
+        }
+      ],
+      "if_unanswered": "Команда сочтёт cardId токеном и будет писать его в журналы открыто. Если это номер карты, произойдёт утечка платёжных данных.",
+      "related_findings": [
+        "F-23"
+      ],
+      "origin": "uncertain_verdict",
+      "standard": [
+        "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Complete)",
+        "IEEE 830-1998, п. 4.3.3"
+      ],
+      "review": {
+        "answered": false,
+        "answer": "",
+        "answer_quote": null,
         "common_sense": true,
         "obvious_fix": true,
         "scenario": false,
@@ -10911,53 +10925,29 @@
           "testing"
         ],
         "addressee": [
-          "architect"
+          "business"
         ],
-        "topic": "HTTP-метод сохранения",
+        "topic": "push после смены порога",
         "quotes": [
           {
-            "text": "GET",
+            "text": "На карту приходится максимум один такой push за календарный месяц.",
             "match": "exact",
             "score": 100.0,
-            "located": "GET",
+            "located": "На карту приходится максимум один такой push за календарный месяц.",
             "anchor": {
-              "char_start": 5171,
-              "char_end": 5174,
+              "char_start": 1668,
+              "char_end": 1734,
               "block_ids": [
-                "B063"
-              ],
-              "sentence_ids": [],
-              "line_start": 109,
-              "line_end": 109,
-              "page": null,
-              "page_line": null,
-              "paragraph": null,
-              "table": 5,
-              "row": 2,
-              "cell": 2,
-              "column": "Значение",
-              "extraction": "table"
-            }
-          },
-          {
-            "text": "Content-Type: application/json .",
-            "match": "exact",
-            "score": 100.0,
-            "located": "Content-Type: application/json .",
-            "anchor": {
-              "char_start": 6485,
-              "char_end": 6517,
-              "block_ids": [
-                "B094"
+                "B024"
               ],
               "sentence_ids": [
-                "B094.1"
+                "B024.3"
               ],
-              "line_start": 160,
-              "line_end": 160,
+              "line_start": 43,
+              "line_end": 43,
               "page": null,
               "page_line": null,
-              "paragraph": 56,
+              "paragraph": 18,
               "table": null,
               "row": null,
               "cell": null,
@@ -10966,24 +10956,24 @@
             }
           },
           {
-            "text": "Тело не используется.",
+            "text": "Если она ниже нового порога, следующее достижение вызывает push независимо от истории предыдущей настройки.",
             "match": "exact",
             "score": 100.0,
-            "located": "Тело не используется.",
+            "located": "Если она ниже нового порога, следующее достижение вызывает push независимо от истории предыдущей настройки.",
             "anchor": {
-              "char_start": 6521,
-              "char_end": 6542,
+              "char_start": 1795,
+              "char_end": 1902,
               "block_ids": [
-                "B095"
+                "B025"
               ],
               "sentence_ids": [
-                "B095.1"
+                "B025.3"
               ],
-              "line_start": 162,
-              "line_end": 162,
+              "line_start": 45,
+              "line_end": 45,
               "page": null,
               "page_line": null,
-              "paragraph": 57,
+              "paragraph": 19,
               "table": null,
               "row": null,
               "cell": null,
@@ -10992,37 +10982,28 @@
             }
           }
         ],
-        "question": "Приложение сохраняет порог 50 000 ₸ для карты demo-42: каким HTTP-методом и в какой части запроса передаются amount и enabled?",
-        "why": "GET меняет состояние, и кеш или прокси может повторить или закешировать сохранение. От выбора зависит, нужен ли заголовок Content-Type и что отвечать на запрос без него.",
+        "question": "2 марта при пороге 50 000 ₸ ушёл push, 10 марта порог подняли до 80 000 ₸, 15 марта расходы достигли 80 000 ₸: отправляется ли второй push за март?",
+        "why": "Ф-3 даёт ноль push, Ф-4 — один. От ответа зависит, сбрасывает ли сохранение порога признак отправки, и число push в тестах смены порога.",
         "options": [
           {
             "label": "A",
-            "text": "GET с параметрами в строке запроса, без тела и Content-Type",
-            "change": "Убрать заголовок Content-Type из описания запроса",
-            "grounded_in": "GET"
+            "text": "Нет, за календарный месяц уходит не больше одного push",
+            "change": "Уточнить Ф-4: смена порога не сбрасывает признак отправки за текущий месяц",
+            "grounded_in": "На карту приходится максимум один такой push за календарный месяц."
           },
           {
             "label": "B",
-            "text": "PUT или POST с amount и enabled в теле JSON, Content-Type обязателен",
-            "change": "Заменить REST type, перенести параметры в Request body, описать ответ на запрос без Content-Type",
-            "grounded_in": "Content-Type: application/json ."
-          },
-          {
-            "label": "C",
-            "text": "POST с параметрами в строке запроса, без тела и Content-Type",
-            "change": "Заменить REST type на POST и убрать заголовок Content-Type",
-            "grounded_in": "Тело не используется."
+            "text": "Да, смена порога сбрасывает признак отправки за месяц",
+            "change": "Уточнить Ф-3: лимит один push действует на одну настройку порога; сохранение порога сбрасывает признак",
+            "grounded_in": "Если она ниже нового порога, следующее достижение вызывает push независимо от истории предыдущей настройки."
           }
         ],
-        "if_unanswered": "Команда оставит GET как в документе. Возможны повторные и закешированные сохранения, а проверка Content-Type останется неопределённой.",
+        "if_unanswered": "Разработчик и тестировщик выберут разные правила, и тест смены порога будет падать при любой реализации.",
         "related_findings": [
-          "F-06",
-          "F-48"
+          "F-05"
         ],
-        "origin": "set_check",
+        "origin": "witness_scenario",
         "standard": [
-          "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Correct)",
-          "IEEE 830-1998, п. 4.3.1",
           "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
           "IEEE 830-1998, п. 4.3.4"
         ],
@@ -11111,7 +11092,7 @@
     ]
   },
   "metrics": {
-    "duration_s": 0.31,
+    "duration_s": 0.27,
     "calls_total": 8,
     "calls_failed": 0,
     "calls_cached": 0,
@@ -11142,12 +11123,12 @@
       "common_sense": 1,
       "duplicate_pairs": 0,
       "by_priority": {
-        "P0": 6,
-        "P1": 4
+        "P0": 5,
+        "P1": 5
       },
       "by_addressee": {
-        "architect": 4,
-        "business": 5,
+        "architect": 5,
+        "business": 4,
         "security": 2
       }
     },

@@ -29,10 +29,10 @@ from validator.models import (
     QuestionOrigin,
     Quote,
 )
-from validator.questions.candidates import ORIGIN_ORDER, Candidate
+from validator.questions.candidates import ORIGIN_ORDER, Candidate, same_decision
 from validator.questions.editor import EditorCard, EditorOption, normalize_candidate_id
 from validator.questions.quotes import span, verify_quote
-from validator.questions.scoring import blocks, priority, priority_rank, standard_refs, value
+from validator.questions.scoring import blocks, priority, rank_key, standard_refs
 from validator.text import normalize
 
 MAX_QUESTIONS = 15
@@ -89,6 +89,7 @@ class CheckLog:
     options_trimmed: int = 0
     ignored: int = 0
     rescued: int = 0
+    links_removed: int = 0
 
     def problems(self) -> list[str]:
         labels = (
@@ -104,6 +105,7 @@ class CheckLog:
             (self.options_trimmed, f"карточек, где вариантов было больше {MAX_OPTIONS}"),
             (self.ignored, "кандидатов редактор не взял и не отклонил"),
             (self.rescued, "из них блокируют разработку и собраны кодом без редактуры"),
+            (self.links_removed, "связей с находками без общей цитаты или требования убрано"),
         )
         return [f"{text}: {count}" for count, text in labels if count]
 
@@ -265,10 +267,8 @@ class _Ranker:
     def related(self, draft: CardDraft) -> list[Finding]:
         return [self.findings[i] for i in draft.finding_ids if i in self.findings]
 
-    def key(self, draft: CardDraft) -> tuple[int, int, int, str]:
-        related = self.related(draft)
-        rank = priority_rank(priority(related))
-        return rank, -value(related), draft.position, draft.question
+    def key(self, draft: CardDraft) -> tuple[int, int, int, int, str]:
+        return (*rank_key(self.related(draft)), draft.position, draft.question)
 
     def question(self, draft: CardDraft, number: int) -> Question:
         related = sorted(self.related(draft), key=lambda f: _finding_number(f.id))
@@ -290,6 +290,36 @@ class _Ranker:
         )
 
 
+def _touches(f: Finding, quotes: Sequence[Quote]) -> bool:
+    """Цитата находки пересекается с местом документа, о котором вопрос."""
+    places = [p for p in (span(q) for q in quotes) if p is not None]
+    found = [p for p in (span(q) for q in f.quotes if q.verified) if p is not None]
+    return any(s1 < e2 and s2 < e1 for s1, e1 in places for s2, e2 in found)
+
+
+def _linked(draft: CardDraft, findings: Mapping[str, Finding], log: CheckLog) -> CardDraft:
+    """Оставить связи «вопрос → находка», которые ответ действительно закрывает (#122).
+
+    Опора вопроса это находки, чья цитата пересекается с его местами. Остальная находка остаётся, только
+    если у неё с опорой общее требование или то же решение автора (правило склейки кандидатов). Редактор
+    и слияние повторов объединяют кандидатов, и без этой проверки вопрос об одном правиле «закрывал» бы
+    находку о другом месте документа, которое ответ не меняет. Нет опоры (места вопроса не совпали ни
+    с одной находкой): судить не по чему, связи остаются как есть.
+    """
+    related = [findings[i] for i in draft.finding_ids if i in findings]
+    anchors = [f for f in related if _touches(f, draft.quotes)]
+    if not anchors:
+        return draft
+    reqs = {r for f in anchors for r in f.requirement_ids}
+    keep = tuple(
+        f.id
+        for f in related
+        if f in anchors or reqs & set(f.requirement_ids) or any(same_decision(f, a) for a in anchors)
+    )
+    log.links_removed += len(related) - len(keep)
+    return replace(draft, finding_ids=keep) if len(keep) < len(related) else draft
+
+
 def finalize(
     drafts: Sequence[CardDraft],
     findings: Mapping[str, Finding],
@@ -304,7 +334,7 @@ def finalize(
     """
     ranker = _Ranker(findings)
     unique = _merge_duplicates(drafts, log) if merge_similar else list(drafts)
-    ranked = sorted(unique, key=ranker.key)
+    ranked = sorted((_linked(d, findings, log) for d in unique), key=ranker.key)
     kept: list[CardDraft] = []
     claimed: set[str] = set()
     for draft in ranked:

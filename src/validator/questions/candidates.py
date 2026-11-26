@@ -37,11 +37,9 @@ from validator.models import (
 from validator.questions.scoring import (
     draft_gaps,
     is_contradiction,
-    priority,
-    priority_rank,
     proven_witness,
+    rank_key,
     requirement_ids,
-    value,
 )
 
 CLARIFY = re.compile(r"\[\s*уточнить\b\s*:?\s*([^\]]*)\]", re.IGNORECASE)
@@ -236,8 +234,6 @@ def shortlist(
     """
     if len(cands) <= limit:
         return list(cands)
-    ranked = sorted(
-        cands, key=lambda c: (priority_rank(priority(c.findings)), -value(c.findings), c.position)
-    )
+    ranked = sorted(cands, key=lambda c: (*rank_key(c.findings), c.position))
     keep = {c.cid for c in ranked[:limit]}
     return [c for c in cands if c.cid in keep]

@@ -137,12 +137,16 @@ def test_p0_only_when_a_related_finding_is_critical(doc: ParsedDocument) -> None
     """P0 «блокирует разработку» следует за критичной находкой; «мешает тесту» без критичности это P1."""
     critical = finding(doc, "F-01", [TERM], severity=Severity.CRITICAL, blocks_testing=True)
     blocks_test = finding(doc, "F-02", [EXTEND], defect=DefectType.INCOMPLETE, blocks_testing=True)
-    plain = finding(doc, "F-03", [FINE], defect=DefectType.INCOMPLETE, requirements=["R-04"])
+    major = finding(doc, "F-03", [FINE], defect=DefectType.INCOMPLETE)
+    minor = finding(doc, "F-04", [FINE], defect=DefectType.TRACEABILITY, severity=Severity.MINOR)
+    minor_blocks_test = finding(doc, "F-05", [FINE], severity=Severity.MINOR, blocks_testing=True)
 
     assert priority([critical]) is QuestionPriority.P0
     assert priority([blocks_test, critical]) is QuestionPriority.P0
     assert priority([blocks_test]) is QuestionPriority.P1
-    assert priority([plain]) is QuestionPriority.P2
+    assert priority([major]) is QuestionPriority.P1
+    assert priority([minor_blocks_test]) is QuestionPriority.P1
+    assert priority([minor]) is QuestionPriority.P2
 
 
 def test_many_major_findings_that_block_tests_give_no_p0(doc: ParsedDocument, tmp_path: Path) -> None:
@@ -163,6 +167,25 @@ def test_many_major_findings_that_block_tests_give_no_p0(doc: ParsedDocument, tm
     assert outcome.questions
     assert {q.priority for q in outcome.questions} == {QuestionPriority.P1}
     assert all(q.blocks == [WorkStage.TESTING] for q in outcome.questions)
+
+
+def test_question_keeps_only_findings_with_shared_place_or_requirement(
+    doc: ParsedDocument, tmp_path: Path
+) -> None:
+    """#122: вопрос о месте TERM закрывает находку того же требования, но не находку другого места."""
+    term = finding(
+        doc, "F-01", [TERM], severity=Severity.CRITICAL, blocks_testing=True, requirements=["R-03"]
+    )
+    same_req = finding(doc, "F-02", [FINE], blocks_testing=True, requirements=["R-03"])
+    elsewhere = finding(doc, "F-03", [EXTEND], blocks_testing=True, requirements=["R-02"])
+    ver = verification([term, same_req, elsewhere])
+    cids = [c.cid for c in collect_candidates(ver)]
+    reply = editor_text([card(cids, "Книгу вернули на пятнадцатый день: штраф есть?", quotes=[TERM])])
+
+    outcome = build_questions(ver, doc, segmentation(doc), editor_llm(reply), make_cfg(doc, tmp_path))
+
+    assert [q.related_findings for q in outcome.questions] == [["F-01", "F-02"]]
+    assert "связей с находками без общей цитаты или требования убрано: 1" in outcome.diagnostics[0].message
 
 
 def test_question_is_p0_exactly_when_it_closes_a_critical_finding(
@@ -324,10 +347,13 @@ def test_duplicates_merge_and_each_finding_has_one_question(doc: ParsedDocument,
     outcome = run(doc, tmp_path, editor_llm(reply))
 
     related = [q.related_findings for q in outcome.questions]
-    assert related == [["F-01", "F-06"], ["F-02", "F-03"]]
+    # F-06 (штраф) пришёл к вопросам о сроке и о продлении через склейку кандидатов, но с их местами
+    # у него нет ни общей цитаты, ни общего требования: ответ его не закрывает (#122).
+    assert related == [["F-01"], ["F-02", "F-03"]]
     flat = [fid for ids in related for fid in ids]
     assert len(flat) == len(set(flat))
     assert "повторов слито с другими вопросами: 2" in outcome.diagnostics[0].message
+    assert "связей с находками без общей цитаты или требования убрано: 2" in outcome.diagnostics[0].message
 
 
 def test_addressees_are_mapped_and_limited(doc: ParsedDocument, tmp_path: Path) -> None:
