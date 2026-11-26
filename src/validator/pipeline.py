@@ -12,7 +12,7 @@
 | 3 линтер | шаг пропущен, предупреждение |
 | 4 поиск | упал проход: «K−1 из K»; упали все: отчёт по линтеру, код 5 |
 | 5 слияние, 7 верификатор | внутренняя ошибка, код 1, отчёт из того, что есть |
-| 6 доказательства | находки без свидетеля, предупреждение |
+| 6 доказательства | упал свидетель или критик: находки без него, предупреждение |
 | 8 вопросы | редактор упал: вопросы кодом без редактуры; шаг упал: раздел без вопросов; предупреждение |
 | ID блоков в текстах | остаются как есть, предупреждение |
 | 9 отчёт | Markdown пишется всегда, в крайнем случае аварийный; PDF не собрался: INT-002, Markdown остаётся |
@@ -42,7 +42,7 @@ from validator.errors import (
     ValidatorError,
     exit_code,
 )
-from validator.evidence import evidence
+from validator.evidence import gather
 from validator.ingest import guard, parse
 from validator.ingest.quality import review
 from validator.lint import lint
@@ -267,13 +267,16 @@ def _execute(state: _State) -> None:
         level=DiagLevel.ERROR,
     )
     merged = state.merged
-    state.merged = _step(
+    proven = _step(
         state,
         "evidence",
-        lambda: evidence(merged, doc, llm, cfg),
-        lambda: merged,
-        action="Находки идут без примера-свидетеля",
+        lambda: gather(merged, doc, llm, cfg),
+        lambda: None,
+        action="Находки идут без примера-свидетеля и без решения критика",
     )
+    if proven is not None:
+        state.merged = proven.findings
+        state.diagnostics.extend(proven.diagnostics)
     found = state.merged
     state.verification = _step(
         state,

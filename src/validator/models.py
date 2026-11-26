@@ -473,6 +473,24 @@ class CriticAction(StrEnum):
     DOWNGRADE = "downgrade"
     DROP = "drop"
 
+    @property
+    def label(self) -> str:
+        return _CRITIC_LABELS[self]
+
+    @classmethod
+    def from_label(cls, label: str) -> CriticAction | None:
+        """Решение критика из ответа модели: «оставить», «понизить», «снять» (или значение перечисления)."""
+        key = _label_key(label)
+        return _CRITIC_BY_LABEL.get(key) or next((a for a in cls if a.value == key), None)
+
+
+_CRITIC_LABELS = {
+    CriticAction.KEEP: "оставить",
+    CriticAction.DOWNGRADE: "понизить",
+    CriticAction.DROP: "снять",
+}
+_CRITIC_BY_LABEL = {text: action for action, text in _CRITIC_LABELS.items()}
+
 
 class QuestionPriority(StrEnum):
     """Приоритет вопроса автору (исследование 17, п. 3.2): считает код."""
@@ -869,6 +887,10 @@ class PassResult(Contract):
 class WitnessReading(Contract):
     quote: str
     expectation: str
+    reading: str = Field(
+        default="", description="Как прочитано место: толкование для двусмысленности, пусто у противоречия"
+    )
+    located: Quote | None = Field(default=None, description="Цитата после сверки с документом, с местом")
 
 
 class Witness(Contract):
@@ -896,6 +918,11 @@ class CriticDecision(Contract):
     action: CriticAction
     reason: str
     severity: Severity | None = None
+    basis: Quote | None = Field(default=None, description="Цитата-основание решения, сверенная с документом")
+    proposed: CriticAction | None = Field(
+        default=None, description="Что предложила модель, если код принял другое решение"
+    )
+    note: str = Field(default="", description="Почему код не принял решение модели как есть")
 
 
 class MergedFinding(Contract):
@@ -1307,6 +1334,22 @@ class QuestionMetrics(Contract):
     by_addressee: dict[str, int] = Field(default_factory=dict, description="Разброс адресатов")
 
 
+class EvidenceMetrics(Contract):
+    """Шаг 6 в цифрах: примеры-свидетели и решения критика (считает код по находкам после шага)."""
+
+    witness_requested: int = Field(default=0, description="Находок, для которых просили свидетеля")
+    witness_checked: int = Field(default=0, description="Свидетель построен и проверен кодом")
+    witness_rejected: int = Field(default=0, description="Свидетель построен, но код его отклонил")
+    witness_declined: int = Field(default=0, description="Модель не нашла сценария, где места расходятся")
+    critic_reviewed: int = Field(default=0, description="Находок с решением критика")
+    critic_kept: int = 0
+    critic_downgraded: int = 0
+    critic_dropped: int = 0
+    critic_overruled: int = Field(
+        default=0, description="Решений «понизить» или «снять», которые код не принял как есть"
+    )
+
+
 class RunMetrics(Contract):
     duration_s: float | None = None
     calls_total: int = 0
@@ -1322,6 +1365,9 @@ class RunMetrics(Contract):
     quotes_verified: int = 0
     verified_quote_share: float | None = Field(default=None, description="Доля сверенных цитат, 0–1")
     questions: QuestionMetrics | None = Field(default=None, description="Метрики вопросов автору")
+    evidence: EvidenceMetrics | None = Field(
+        default=None, description="Свидетели и критик находок (шаг 6); None, если шаг не вызывал модель"
+    )
 
 
 class Conclusion(Contract):

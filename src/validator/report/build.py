@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Sequence
 
+from validator.evidence_metrics import evidence_metrics
 from validator.models import (
     CallStatus,
     Conclusion,
@@ -108,6 +109,7 @@ def _metrics(ctx: RunContext) -> RunMetrics:
         quotes_verified=verified,
         verified_quote_share=round(verified / quotes_total, 4) if quotes_total else None,
         questions=question_metrics(ctx.questions, ctx.questions_withdrawn) if ver else None,
+        evidence=evidence_metrics(ctx.merged),
     )
 
 

@@ -76,6 +76,7 @@
     "quotes_total": 0,
     "quotes_verified": 0,
     "verified_quote_share": null,
-    "questions": null
+    "questions": null,
+    "evidence": null
   }
 }

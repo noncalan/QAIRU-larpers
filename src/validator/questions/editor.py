@@ -116,7 +116,7 @@ def _finding_line(f: Finding) -> list[str]:
     ]
     if f.suggestion:
         lines.append(f"  Предложенная формулировка: {' '.join(f.suggestion.split())}")
-    if f.witness is not None:
+    if f.witness is not None and f.witness.checked:
         lines.append(f"  Пример-свидетель: {' '.join(f.witness.scenario.split())}")
         lines += [f"  - по «{r.quote}» ожидается: {r.expectation}" for r in f.witness.readings]
     gaps = draft_gaps(f)
