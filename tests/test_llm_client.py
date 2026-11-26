@@ -15,7 +15,7 @@ import pytest
 
 from conftest import FIXTURES_LLM, REQUIREMENTS
 from validator.config import load_config
-from validator.errors import LLMError
+from validator.errors import LLM_LIMIT, LLMError
 from validator.llm import (
     FakeLLM,
     RecordingClient,
@@ -781,3 +781,24 @@ def test_replay_into_the_same_folder_adds_no_duplicates(tmp_path: Path) -> None:
 
     assert again.exit_code is ExitCode.OK
     assert sorted(p.name for p in responses.iterdir()) == before
+
+
+@pytest.mark.parametrize(
+    "message",
+    [
+        "You've hit your 5-hour limit · resets 2:10am (UTC)",
+        "You've hit your weekly limit · resets Fri 9am",
+        "You've hit your limit · resets 3am",
+    ],
+)
+def test_subscription_limit_with_status_429_is_llm_002_and_not_retried(message: str) -> None:
+    """Живой ответ claude -p при исчерпанном лимите: is_error и api_error_status 429; это не перегрузка."""
+    failure = classify_error(message, status=429)
+
+    assert failure.code == LLM_LIMIT
+    assert not failure.retryable
+
+
+def test_transient_429_with_reset_wording_stays_retryable() -> None:
+    """Подписка узнаётся по «hit your … limit», а не по любому «resets at»: обычная 429 повторяется."""
+    assert classify_error("rate limit exceeded, resets at 10:00", status=429).retryable

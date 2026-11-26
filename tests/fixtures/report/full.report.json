@@ -20,6 +20,7 @@
     "backend_used": "cli",
     "profile": "standard",
     "passes": 3,
+    "search_input": "blocks",
     "models": {
       "search": "claude-opus-5-5 · medium",
       "questions": "claude-opus-5-5 · high"
@@ -1242,6 +1243,555 @@
       "critic_dropped": 1,
       "critic_overruled": 1,
       "critic_enabled": true
-    }
+    },
+    "steps": [
+      {
+        "step": "segment",
+        "calls": 1,
+        "failed": 0,
+        "cached": 0,
+        "replayed": 0,
+        "duration_s": 21.4,
+        "tokens": {
+          "input_tokens": 6000,
+          "output_tokens": 2000,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0
+        },
+        "cost_usd": 0.04
+      },
+      {
+        "step": "search",
+        "calls": 3,
+        "failed": 0,
+        "cached": 0,
+        "replayed": 0,
+        "duration_s": 180.2,
+        "tokens": {
+          "input_tokens": 21000,
+          "output_tokens": 8000,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0
+        },
+        "cost_usd": 1.2
+      },
+      {
+        "step": "questions",
+        "calls": 1,
+        "failed": 0,
+        "cached": 1,
+        "replayed": 0,
+        "duration_s": 38.9,
+        "tokens": {
+          "input_tokens": 3000,
+          "output_tokens": 2000,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0
+        },
+        "cost_usd": 0.38
+      }
+    ],
+    "passes_total": 3,
+    "passes_ok": 3,
+    "candidates_passes": 7,
+    "candidates_lint": 2,
+    "discarded_by_reason": {
+      "quote_not_found": 1,
+      "critic_rejected": 1
+    },
+    "critic_reviewed": 0,
+    "critic_downgraded": 0,
+    "critic_dropped": 0,
+    "found_in": [
+      {
+        "found_in": 3,
+        "of": 3,
+        "count": 1
+      },
+      {
+        "found_in": 2,
+        "of": 3,
+        "count": 2
+      },
+      {
+        "found_in": 1,
+        "of": 3,
+        "count": 1
+      },
+      {
+        "found_in": 1,
+        "of": 1,
+        "count": 1
+      }
+    ]
+  },
+  "coverage": {
+    "requirement_properties": [
+      "IND-NEC",
+      "IND-APPR",
+      "IND-UNAMB",
+      "IND-COMPL",
+      "IND-SING",
+      "IND-FEAS",
+      "IND-VERIF",
+      "IND-CORR",
+      "IND-CONF",
+      "IND-TRACE",
+      "IND-RANK"
+    ],
+    "rows": [
+      {
+        "requirement_id": "R-01",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-02",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-03",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "violation",
+            "finding_ids": [
+              "F-02"
+            ]
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-04",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-05",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "unclear",
+            "finding_ids": [
+              "F-03"
+            ]
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-06",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "violation",
+            "finding_ids": [
+              "F-04"
+            ]
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      }
+    ],
+    "set_rows": [
+      {
+        "property": "SET-COMPL",
+        "state": "violation",
+        "finding_ids": [
+          "F-05"
+        ],
+        "refs": [
+          "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Complete)",
+          "IEEE 830-1998, п. 4.3.3"
+        ]
+      },
+      {
+        "property": "SET-CONS",
+        "state": "violation",
+        "finding_ids": [
+          "F-01"
+        ],
+        "refs": [
+          "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
+          "IEEE 830-1998, п. 4.3.4"
+        ]
+      },
+      {
+        "property": "SET-FEAS",
+        "state": "clean",
+        "finding_ids": [],
+        "refs": [
+          "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Feasible)"
+        ]
+      },
+      {
+        "property": "SET-COMPR",
+        "state": "clean",
+        "finding_ids": [],
+        "refs": [
+          "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Comprehensible)"
+        ]
+      },
+      {
+        "property": "SET-VALID",
+        "state": "clean",
+        "finding_ids": [],
+        "refs": [
+          "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Able to be validated)"
+        ]
+      },
+      {
+        "property": "SET-MOD",
+        "state": "clean",
+        "finding_ids": [],
+        "refs": [
+          "IEEE 830-1998, п. 4.3.7"
+        ]
+      },
+      {
+        "property": "SET-TRACE",
+        "state": "clean",
+        "finding_ids": [],
+        "refs": [
+          "IEEE 830-1998, п. 4.3.8"
+        ]
+      },
+      {
+        "property": "SET-RANK",
+        "state": "clean",
+        "finding_ids": [],
+        "refs": [
+          "IEEE 830-1998, п. 4.3.5"
+        ]
+      }
+    ],
+    "extra_finding_ids": [],
+    "unlinked_finding_ids": [],
+    "checked": true
+  },
+  "selfcheck": {
+    "applicable": true,
+    "sections_found": 6,
+    "sections_total": 6,
+    "findings_total": 5,
+    "findings_anchored": 5,
+    "quotes_total": 6,
+    "quotes_verified": 6,
+    "quotes_rechecked": 0,
+    "items": [
+      {
+        "id": "sections",
+        "title": "Разделы ТЗ п. 6 на месте",
+        "passed": true,
+        "integrity": false,
+        "detail": "6 из 6: паспорт, нарезка, проверка требований и набора, сводка, итог",
+        "failures": []
+      },
+      {
+        "id": "anchors",
+        "title": "У каждой находки есть якорь и сверенная цитата",
+        "passed": true,
+        "integrity": true,
+        "detail": "5 из 5",
+        "failures": []
+      },
+      {
+        "id": "quotes",
+        "title": "Цитаты в находках сверены с документом",
+        "passed": true,
+        "integrity": true,
+        "detail": "цитат в находках: 6, все сверены верификатором",
+        "failures": []
+      },
+      {
+        "id": "requirements",
+        "title": "Каждое R-NN есть в проверке требований",
+        "passed": true,
+        "integrity": true,
+        "detail": "6 из 6",
+        "failures": []
+      },
+      {
+        "id": "cards",
+        "title": "Каждая находка F-NN описана карточкой",
+        "passed": true,
+        "integrity": true,
+        "detail": "5 из 5",
+        "failures": []
+      },
+      {
+        "id": "counters",
+        "title": "Счётчики сводки равны числу строк в таблицах",
+        "passed": true,
+        "integrity": true,
+        "detail": "сводка, таблицы и карточки сходятся",
+        "failures": []
+      },
+      {
+        "id": "metrics",
+        "title": "Метрики прогона сходятся со сводкой и воронкой находок",
+        "passed": true,
+        "integrity": false,
+        "detail": "находки, отброшенные, цитаты и «найдено в N из K» сходятся",
+        "failures": []
+      },
+      {
+        "id": "matrix",
+        "title": "Матрица покрытия совпадает с находками",
+        "passed": true,
+        "integrity": true,
+        "detail": "6 требований × 11 свойств (66 ячеек), 8 свойств набора",
+        "failures": []
+      }
+    ],
+    "summary": "ТЗ п. 6: 6 из 6 разделов; у 5 из 5 находок есть якорь; цитат в находках сверено 100 % (цитат модели до фильтра: 100 %); счётчики сводки сходятся с таблицами"
   }
 }

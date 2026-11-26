@@ -13,6 +13,7 @@ from validator.evidence_metrics import evidence_metrics
 from validator.models import (
     CallStatus,
     Conclusion,
+    CoverageMatrix,
     DiagLevel,
     Diagnostic,
     DocumentInfo,
@@ -27,6 +28,13 @@ from validator.models import (
     Verification,
 )
 from validator.questions.metrics import question_metrics
+from validator.report.coverage import build_coverage
+from validator.report.run_metrics import (
+    critic_counts,
+    discarded_by_reason,
+    found_in_distribution,
+    step_metrics,
+)
 
 FIRST_PAGE_ITEMS = 5
 """Сколько исправлений и вопросов на первой странице (решение 1 сессии идеи: 5 и 5)."""
@@ -94,6 +102,8 @@ def _metrics(ctx: RunContext) -> RunMetrics:
     summary = ver.summary if ver else None
     quotes_total = summary.quotes_total if summary else 0
     verified = (summary.quotes_exact + summary.quotes_fuzzy) if summary else 0
+    reviewed, downgraded, dropped = critic_counts(ver)
+    lint = len(ctx.lint_hits)
     return RunMetrics(
         duration_s=ctx.passport.duration_s,
         calls_total=ctx.passport.calls_total,
@@ -101,7 +111,7 @@ def _metrics(ctx: RunContext) -> RunMetrics:
         calls_cached=sum(c.status is CallStatus.CACHED for c in ctx.calls),
         tokens=ctx.passport.tokens,
         cost_usd=ctx.passport.cost_usd,
-        candidates_total=sum(len(p.candidates) for p in ctx.passes) + len(ctx.lint_hits),
+        candidates_total=sum(len(p.candidates) for p in ctx.passes) + lint,
         merged_total=len(ctx.merged),
         findings_total=len(ver.findings) if ver else 0,
         discarded_total=len(ver.discarded) if ver else 0,
@@ -110,6 +120,16 @@ def _metrics(ctx: RunContext) -> RunMetrics:
         verified_quote_share=round(verified / quotes_total, 4) if quotes_total else None,
         questions=question_metrics(ctx.questions, ctx.questions_withdrawn) if ver else None,
         evidence=evidence_metrics(ctx.merged, critic_enabled=ctx.cfg.critic),
+        steps=step_metrics(ctx.calls),
+        passes_total=len(ctx.passes),
+        passes_ok=sum(p.ok for p in ctx.passes),
+        candidates_passes=sum(len(p.candidates) for p in ctx.passes),
+        candidates_lint=lint,
+        discarded_by_reason=discarded_by_reason(ver),
+        critic_reviewed=reviewed,
+        critic_downgraded=downgraded,
+        critic_dropped=dropped,
+        found_in=found_in_distribution(ver.findings) if ver else [],
     )
 
 
@@ -131,6 +151,13 @@ def _document(ctx: RunContext) -> DocumentInfo | None:
         g = ctx.guard
         return DocumentInfo(name=g.name, path=g.path, kind=g.kind, sha256=g.sha256, size_bytes=g.size_bytes)
     return None
+
+
+def _coverage(ctx: RunContext) -> CoverageMatrix | None:
+    """Матрица покрытия: только когда есть и нарезка, и находки (иначе не по чему её строить)."""
+    if ctx.verification is None or ctx.segmentation is None:
+        return None
+    return build_coverage(ctx.verification, ctx.segmentation.requirements, ctx.passes)
 
 
 def build_report(ctx: RunContext) -> Report:
@@ -155,4 +182,5 @@ def build_report(ctx: RunContext) -> Report:
         questions_withdrawn=list(ctx.questions_withdrawn),
         conclusion=_conclusion(ctx, errors),
         metrics=_metrics(ctx),
+        coverage=_coverage(ctx),
     )

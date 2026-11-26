@@ -116,6 +116,43 @@ def test_pdf_has_every_requirement_finding_and_question_id(name: str) -> None:
         assert any(i.startswith("R-") for i in ids) and any(i.startswith("Q-") for i in ids)
 
 
+def test_pdf_shows_selfcheck_matrix_and_run_metrics_like_markdown() -> None:
+    """Блоки #43: строка самопроверки в паспорте, матрица покрытия, воронка и шаги в метриках."""
+    report = load("full")
+    assert report.selfcheck is not None and report.coverage is not None
+
+    text = pdf_text(render_pdf(report))
+
+    assert "Самопроверка отчёта" in text and report.selfcheck.summary.split(";")[0] in text
+    assert "11. Матрица покрытия критериев" in text and "12. Самопроверка отчёта" in text
+    assert "Требования × свойства" in text and "Набор требований × свойства" in text
+    assert "F-03?" in text and "Согласованность" in text
+    for item in report.selfcheck.items:
+        assert item.title.split(":")[0][:30] in text, item.id
+    assert "Вызовы модели по шагам" in text and "Воронка находок" in text
+    assert "Найдено в N из K проходов" in text
+
+
+def test_pdf_marks_failed_selfcheck_items_and_never_hides_them() -> None:
+    report = load("full")
+    assert report.selfcheck is not None
+    broken = report.selfcheck.items[0].model_copy(
+        update={"passed": False, "failures": ["нет раздела «Итог»"]}
+    )
+    selfcheck = report.selfcheck.model_copy(update={"items": [broken, *report.selfcheck.items[1:]]})
+
+    text = pdf_text(render_pdf(report.model_copy(update={"selfcheck": selfcheck})))
+
+    assert "НЕ ПРОЙДЕНА" in text and "нет раздела «Итог»" in text
+
+
+def test_pdf_without_matrix_says_so_and_unread_report_has_no_new_sections() -> None:
+    report = load("full").model_copy(update={"coverage": None})
+
+    assert "Матрица не построена" in pdf_text(render_pdf(report))
+    assert "Матрица покрытия" not in pdf_text(render_pdf(load("unread")))
+
+
 def test_pdf_keeps_cyrillic_quotes_and_places_from_the_report() -> None:
     report = load("full")
     assert report.verification is not None

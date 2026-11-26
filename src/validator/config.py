@@ -22,6 +22,7 @@ from validator.models import (
     PdfBackendName,
     Profile,
     RunConfig,
+    SearchInput,
     StepModel,
 )
 
@@ -53,12 +54,18 @@ class ProfileSpec:
     description: str
 
 
-# Число проходов по умолчанию для standard и submit окончательно задаст D-011 (контрольная точка 26.11).
+# Число проходов по умолчанию задало правило D-011 (контрольная точка 26.11, docs/decisions.md): один проход.
+# Три прохода стабильнее (Жаккар находок 0,62 против 0,51), но правило их не включило; они остаются
+# опцией ``--passes 3``. Профили quick и standard сейчас совпадают: quick оставлен для обратной совместимости.
 PROFILES: dict[Profile, ProfileSpec] = {
     Profile.QUICK: ProfileSpec(1, Effort.MEDIUM, "1 проход, Opus medium: отладка и быстрый прогон"),
-    Profile.STANDARD: ProfileSpec(3, Effort.MEDIUM, "3 прохода, Opus medium: обычный прогон"),
-    Profile.SUBMIT: ProfileSpec(3, Effort.XHIGH, "3 прохода, Opus xhigh: отчёт на сдачу и финал"),
+    Profile.STANDARD: ProfileSpec(1, Effort.MEDIUM, "1 проход, Opus medium: обычный прогон (D-011)"),
+    Profile.SUBMIT: ProfileSpec(1, Effort.XHIGH, "1 проход, Opus xhigh: отчёт на сдачу и финал (D-011)"),
 }
+
+SEARCH_INPUT = SearchInput.BLOCKS
+"""Вход поиска по умолчанию: документ с ID блоков. ``raw`` (текст без ID, блоки по цитате) нужен для
+замера B′ на контрольной точке (#37); что выбрать по умолчанию, решает D-011, п. 2."""
 
 CALL_TIMEOUT_S = 1200
 """Таймаут одного вызова: проход Opus xhigh идёт до 7,5 минуты (исследование 21), берём с запасом."""
@@ -100,6 +107,7 @@ def load_config(
     ask: bool = False,
     max_budget_usd: float | None = None,
     pdf_backend: str | None = None,
+    search_input: SearchInput | None = None,
     env_file: Path | None = None,
     critic: bool = False,
 ) -> RunConfig:
@@ -122,6 +130,7 @@ def load_config(
         critic=critic,
         max_budget_usd=max_budget_usd,
         pdf_backend=cast(PdfBackendName, pdf_engine),
+        search_input=search_input if search_input is not None else SEARCH_INPUT,
         step_models=step_models(profile),
         fake_fixtures=default_fixtures_dir() if backend is Backend.FAKE else None,
         call_timeout_s=CALL_TIMEOUT_S,
@@ -129,4 +138,4 @@ def load_config(
     )
 
 
-__all__ = ["PROFILES", "STEP_MODELS", "RunConfig", "load_config", "step_models"]
+__all__ = ["PROFILES", "SEARCH_INPUT", "STEP_MODELS", "RunConfig", "load_config", "step_models"]

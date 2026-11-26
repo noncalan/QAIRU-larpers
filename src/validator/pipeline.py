@@ -23,7 +23,7 @@ from __future__ import annotations
 import contextlib
 import logging
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -65,6 +65,7 @@ from validator.models import (
     RunContext,
     RunOutcome,
     Segmentation,
+    SelfCheck,
     Verification,
     WithdrawnQuestion,
 )
@@ -72,6 +73,7 @@ from validator.passport import build_passport
 from validator.questions import build_questions, write_questions_yaml
 from validator.refs import humanize
 from validator.report import PdfRenderError, build_report, render_md, render_pdf
+from validator.report.selfcheck import check_report, selfcheck_diagnostics
 from validator.search import search
 from validator.segment import fallback_segmentation, segment
 from validator.verify import light_with_questions, verify
@@ -314,7 +316,9 @@ def _execute(state: _State) -> None:
 # ---------------------------------------------------------------- выходы
 
 
-def _context(state: _State, finished: datetime, code: ExitCode) -> RunContext:
+def _context(
+    state: _State, finished: datetime, code: ExitCode, extra: Sequence[Diagnostic] = ()
+) -> RunContext:
     cfg, doc, g = state.cfg, state.doc, state.guard
     calls = state.client.records if state.client else []
     passport = build_passport(
@@ -344,7 +348,7 @@ def _context(state: _State, finished: datetime, code: ExitCode) -> RunContext:
         verification=state.verification,
         questions=state.questions,
         questions_withdrawn=state.questions_withdrawn,
-        diagnostics=list(state.diagnostics),
+        diagnostics=[*state.diagnostics, *extra],
         calls=list(calls),
         passport=passport,
     )
@@ -373,12 +377,42 @@ def _emergency_md(state: _State, code: ExitCode) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _selfcheck(state: _State, report: Report) -> tuple[SelfCheck | None, list[Diagnostic]]:
+    """Самопроверка отчёта (#43). Её собственный сбой не должен стоить отчёта: предупреждение INT-002."""
+    try:
+        check = check_report(report, render_md(report), state.doc.text if state.doc else None)
+        return check, selfcheck_diagnostics(check)
+    except Exception:  # самопроверка вспомогательна: отчёт важнее, причина идёт в лог
+        logger.exception("Самопроверка отчёта упала")
+        return None, [
+            Diagnostic(
+                code=INT_STEP_DEGRADED,
+                level=DiagLevel.WARNING,
+                message="Самопроверка отчёта не выполнена: внутренняя ошибка",
+                action="Отчёт записан без самопроверки",
+                hint=f"Подробности в {state.cfg.log_path.name}",
+                step="report",
+            )
+        ]
+
+
 def _render(state: _State) -> tuple[ExitCode, Report | None, str]:
     """Код возврата, отчёт и Markdown. Не падает: при любом сбое сборки пишет аварийный Markdown."""
     finished = datetime.now(UTC)
     try:
         ctx = _context(state, finished, exit_code(state.diagnostics))
         report = build_report(ctx)
+        # Самопроверка идёт по отчёту, каким его прочтут, и ничего в нём не правит. Её диагностика входит
+        # в отчёт и в код возврата (INT-003 даёт 1), поэтому отчёт при провале собирается заново.
+        check, extra = _selfcheck(state, report)
+        if extra:
+            ctx = _context(state, finished, exit_code([*state.diagnostics, *extra]), extra)
+            report = build_report(ctx)
+            check = (
+                _selfcheck(state, report)[0] or check
+            )  # итоговый отчёт проверяем ещё раз: диагностика вошла в него
+        if check is not None:
+            report = report.model_copy(update={"selfcheck": check})
         return ctx.exit_code, report, render_md(report)
     except Exception as exc:  # отчёт пишется всегда: при сбое шаблона аварийный Markdown
         logger.exception("Сборка отчёта упала")

@@ -31,7 +31,7 @@ from validator.errors import (
     LLM_QUESTIONS_WITHDRAWN,
     LLMError,
 )
-from validator.ingest.blocks import render_for_model
+from validator.ingest.blocks import defuse_delimiters, render_for_model
 from validator.llm.base import LLMClient
 from validator.models import (
     DiagLevel,
@@ -148,7 +148,7 @@ def render_question(q: Question) -> str:
         lines.append("Места документа, о которых вопрос:")
         for x in q.quotes:
             block = x.anchor.block_ids[0] if x.anchor and x.anchor.block_ids else "?"
-            lines.append(f"- [{block}] «{_one_line(x.located or x.text)}»")
+            lines.append(f"- [{block}] «{defuse_delimiters(_one_line(x.located or x.text))}»")
     if q.options:
         lines.append("Варианты ответа:")
         lines += [f"- {o.label}. {_one_line(o.text)} → {_one_line(o.change)}" for o in q.options]

@@ -96,6 +96,25 @@ uv run python -m evals.questions out/run-1 out/run-2 --name critic   # evals/res
 
 Сценарий и ошибки формулировки отмечает та же модель, что писала вопросы: это оценка, а не независимая разметка.
 
+## Контрольная точка D-011 (#37)
+
+Прогоны и решение по протоколу `docs/plan.md` («Протокол eval и правило D-011»). A (базовая линия) уже посчитана: `results/2026-11-26-baseline.json`.
+
+```bash
+evals/checkpoint.sh                      # B ×3, B′ ×2, C ×3 через подписку, не больше трёх одновременно
+evals/checkpoint.sh /tmp/dry fake        # проверка команд без сети на фикстурах
+uv run python -m evals.eval evals/results/checkpoint/b/run-{1,2,3} --name checkpoint-b
+uv run python -m evals.eval evals/results/checkpoint/b-raw/run-{1,2} --name checkpoint-b-raw
+uv run python -m evals.eval evals/results/checkpoint/c/run-{1,2,3} --name checkpoint-c
+uv run python -m evals.checkpoint --a evals/results/2026-11-26-baseline.json \
+  --b evals/results/<дата>-checkpoint-b.json --b-raw evals/results/<дата>-checkpoint-b-raw.json \
+  --c evals/results/<дата>-checkpoint-c.json     # → results/<дата>-checkpoint.{json,md}
+```
+
+- **Независимые прогоны.** У каждого прогона своя папка и свой кеш ответов (`.cache/` внутри, в git не идёт): общий кеш вернул бы второму прогону ответы первого. Упавший прогон запускают заново той же командой с его именем (`evals/checkpoint.sh evals/results/checkpoint cli c/run-2`), удачные вызовы возьмутся из его кеша.
+- **B′** это `--search-input raw`: поиск видит канонический текст документа без ID блоков, блоки находок код находит по цитатам (`validator.search`). Остальные шаги те же.
+- **Правило кодом** (`checkpoint.py`): пороги переписаны из плана константами, сравнение «0,10 и больше» с допуском на округление. «Доля сверенных цитат» в п. 1 это цитаты модели до фильтра, сверенные точно или нечётко (`quotes_verified`): у итоговых находок она 100 % по построению. Выбранная конфигурация для п. 3: C, если по п. 1 три прохода, иначе B (или B′, если по п. 2 сырой текст).
+
 ## Ручные поправки
 
 `evals/overrides.yaml`: вердикт человека важнее судьи. Поправка видна в результатах (раздел «Поправки») и учитывается во всех метриках.
@@ -130,6 +149,7 @@ findings:
 | `questions.py` | метрики вопросов автору до и после критика, CLI `python -m evals.questions` |
 | `overrides.py`, `overrides.yaml` | ручные поправки |
 | `eval.py`, `report.py` | CLI и результат в Markdown |
+| `checkpoint.py`, `checkpoint.sh` | контрольная точка #37: прогоны B, B′, C, таблица A–C и правило D-011 кодом |
 | `cache/judge/` | вердикты судьи (коммитятся) |
 | `fixtures/llm/judge/` | придуманный ответ судьи для smoke на бэкенде `fake` |
 | `results/` | результаты eval (коммитятся, цифры для PR) |

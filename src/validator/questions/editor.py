@@ -22,7 +22,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 from validator.errors import LLM_BAD_RESPONSE, LLMError
-from validator.ingest.blocks import render_for_model
+from validator.ingest.blocks import defuse_delimiters, render_for_model
 from validator.llm.base import LLMClient
 from validator.models import (
     Finding,
@@ -138,7 +138,7 @@ def render_candidate(c: Candidate, req_types: Mapping[str, RequirementType]) -> 
     ]
     for q in c.quotes:
         block = q.anchor.block_ids[0] if q.anchor and q.anchor.block_ids else "?"
-        lines.append(f"- [{block}] «{' '.join((q.located or q.text).split())}»")
+        lines.append(f"- [{block}] «{defuse_delimiters(' '.join((q.located or q.text).split()))}»")
     if c.placeholders:
         lines.append(f"Что неизвестно: {'; '.join(c.placeholders)}")
     lines.append("Находки:")

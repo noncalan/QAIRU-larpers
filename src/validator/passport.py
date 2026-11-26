@@ -123,6 +123,7 @@ def build_passport(
         backend_used=backend_used,
         profile=cfg.profile,
         passes=cfg.passes,
+        search_input=cfg.search_input,
         models={step.value: model.label for step, model in cfg.step_models.items()},
         models_actual=sorted({c.model_actual for c in calls if c.model_actual}),
         # Повторённая попытка не отдельный вызов: считаем вызовы по их последней попытке.

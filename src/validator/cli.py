@@ -14,7 +14,7 @@ from typing import Annotated, Any
 import typer
 
 from validator.config import load_config
-from validator.models import Backend, CacheMode, ExitCode, Profile
+from validator.models import Backend, CacheMode, ExitCode, Profile, SearchInput
 from validator.passport import agent_version
 from validator.pipeline import run
 
@@ -76,10 +76,12 @@ def main(
     output_path: Annotated[
         Path | None, typer.Argument(metavar="ВЫХОД", help="Файл отчёта: .md (или .pdf)")
     ] = None,
-    profile: Annotated[Profile, typer.Option(help="quick: 1 проход; standard: 3; submit: 3 на xhigh")] = (
+    profile: Annotated[Profile, typer.Option(help="standard и quick: 1 проход; submit: 1 на xhigh")] = (
         Profile.STANDARD
     ),
-    passes: Annotated[int | None, typer.Option(min=1, max=9, help="Число проходов поиска")] = None,
+    passes: Annotated[
+        int | None, typer.Option(min=1, max=9, help="Число проходов поиска (3 стабильнее)")
+    ] = None,
     backend: Annotated[Backend, typer.Option(help="Как вызывать модель")] = Backend.AUTO,
     replay: Annotated[Path | None, typer.Option(help="Папка run/ прошлого прогона для replay")] = None,
     cache: Annotated[CacheMode, typer.Option(help="Кеш ответов модели")] = CacheMode.USE,
@@ -92,6 +94,13 @@ def main(
     pdf_backend: Annotated[
         str | None,
         typer.Option("--pdf-backend", help="Движок PDF: mupdf (по умолчанию) или pdfium (без копилефта)"),
+    ] = None,
+    search_input: Annotated[
+        SearchInput | None,
+        typer.Option(
+            "--search-input",
+            help="Что видит поиск: blocks (документ с ID блоков) или raw (текст без ID, блоки по цитате)",
+        ),
     ] = None,
     version: Annotated[
         bool, typer.Option("--version", callback=_version, is_eager=True, help="Версия агента")
@@ -119,6 +128,7 @@ def main(
             max_budget_usd=max_budget_usd,
             pdf_backend=pdf_backend,
             critic=critic,
+            search_input=search_input,
         )
     except ValueError as exc:
         typer.echo(str(exc), err=True)

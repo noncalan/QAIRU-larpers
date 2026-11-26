@@ -7,10 +7,10 @@
     "document_sha256": "7fd7c1d145b0c4e01ac8a502856b08eaf0cdbddc896069271687f6a2a16022d5",
     "document_size_bytes": 16072,
     "document_pages": null,
-    "started_at": "2026-11-26T02:43:16.385382Z",
-    "finished_at": "2026-11-26T02:43:16.567370Z",
-    "duration_s": 0.18,
-    "agent_version": "af755d2-dirty",
+    "started_at": "2026-11-26T02:47:11.080763Z",
+    "finished_at": "2026-11-26T02:47:11.254545Z",
+    "duration_s": 0.17,
+    "agent_version": "07056a0-dirty",
     "agent_version_source": "git",
     "agent_dirty": true,
     "prompts_sha256": "f99cb3738ad7dbe4aeaaa89b89dd043ed2bac0101cd482144f85017e1785f91b",
@@ -20,6 +20,7 @@
     "backend_used": "replay",
     "profile": "standard",
     "passes": 3,
+    "search_input": "blocks",
     "models": {
       "segment": "claude-sonnet-5-5 · medium",
       "search": "claude-opus-5-5 · medium",
@@ -63,6 +64,15 @@
       "level": "info",
       "message": "Ответы модели взяты из записи прогона tests/fixtures/e2e/docx/run (7 шт.)",
       "action": "Модель не вызывалась, отчёт пересобран из записанных ответов",
+      "hint": "",
+      "location": null,
+      "step": "llm"
+    },
+    {
+      "code": "LLM-005",
+      "level": "info",
+      "message": "Проходов поиска в записи: 3, модель claude-opus-5-5 · medium; в настройках было 1, claude-opus-5-5 · medium",
+      "action": "Число проходов и модель поиска взяты из записи прогона",
       "hint": "",
       "location": null,
       "step": "llm"
@@ -12125,7 +12135,7 @@
     ]
   },
   "metrics": {
-    "duration_s": 0.18,
+    "duration_s": 0.17,
     "calls_total": 7,
     "calls_failed": 0,
     "calls_cached": 0,
@@ -12176,6 +12186,3243 @@
       "critic_dropped": 0,
       "critic_overruled": 0,
       "critic_enabled": false
-    }
+    },
+    "steps": [
+      {
+        "step": "segment",
+        "calls": 1,
+        "failed": 0,
+        "cached": 0,
+        "replayed": 1,
+        "duration_s": 0.0,
+        "tokens": {
+          "input_tokens": 2,
+          "output_tokens": 7210,
+          "cache_creation_input_tokens": 9318,
+          "cache_read_input_tokens": 5101
+        },
+        "cost_usd": 0.1099
+      },
+      {
+        "step": "search",
+        "calls": 3,
+        "failed": 0,
+        "cached": 0,
+        "replayed": 3,
+        "duration_s": 0.0,
+        "tokens": {
+          "input_tokens": 6,
+          "output_tokens": 74839,
+          "cache_creation_input_tokens": 27870,
+          "cache_read_input_tokens": 18894
+        },
+        "cost_usd": 1.7235
+      },
+      {
+        "step": "evidence",
+        "calls": 1,
+        "failed": 0,
+        "cached": 0,
+        "replayed": 1,
+        "duration_s": 0.0,
+        "tokens": {
+          "input_tokens": 2,
+          "output_tokens": 15554,
+          "cache_creation_input_tokens": 14276,
+          "cache_read_input_tokens": 2077
+        },
+        "cost_usd": 0.4257
+      },
+      {
+        "step": "questions",
+        "calls": 1,
+        "failed": 0,
+        "cached": 0,
+        "replayed": 1,
+        "duration_s": 0.0,
+        "tokens": {
+          "input_tokens": 2,
+          "output_tokens": 22601,
+          "cache_creation_input_tokens": 28099,
+          "cache_read_input_tokens": 2946
+        },
+        "cost_usd": 0.6774
+      },
+      {
+        "step": "questions_critic",
+        "calls": 1,
+        "failed": 0,
+        "cached": 0,
+        "replayed": 1,
+        "duration_s": 0.0,
+        "tokens": {
+          "input_tokens": 2,
+          "output_tokens": 5503,
+          "cache_creation_input_tokens": 15114,
+          "cache_read_input_tokens": 1813
+        },
+        "cost_usd": 0.2313
+      }
+    ],
+    "passes_total": 3,
+    "passes_ok": 3,
+    "candidates_passes": 148,
+    "candidates_lint": 1,
+    "discarded_by_reason": {},
+    "critic_reviewed": 0,
+    "critic_downgraded": 0,
+    "critic_dropped": 0,
+    "found_in": [
+      {
+        "found_in": 3,
+        "of": 3,
+        "count": 28
+      },
+      {
+        "found_in": 2,
+        "of": 3,
+        "count": 18
+      },
+      {
+        "found_in": 1,
+        "of": 3,
+        "count": 25
+      },
+      {
+        "found_in": 0,
+        "of": 3,
+        "count": 1
+      }
+    ]
+  },
+  "coverage": {
+    "requirement_properties": [
+      "IND-NEC",
+      "IND-APPR",
+      "IND-UNAMB",
+      "IND-COMPL",
+      "IND-SING",
+      "IND-FEAS",
+      "IND-VERIF",
+      "IND-CORR",
+      "IND-CONF",
+      "IND-TRACE",
+      "IND-RANK"
+    ],
+    "rows": [
+      {
+        "requirement_id": "R-01",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "violation",
+            "finding_ids": [
+              "F-01"
+            ]
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-02.1",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-02.2",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-03.1",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-03.2",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-03.3",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "violation",
+            "finding_ids": [
+              "F-15"
+            ]
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-04",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "violation",
+            "finding_ids": [
+              "F-16"
+            ]
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-05.1",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "violation",
+            "finding_ids": [
+              "F-17"
+            ]
+          },
+          "IND-SING": {
+            "state": "violation",
+            "finding_ids": [
+              "F-57"
+            ]
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-05.2",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "violation",
+            "finding_ids": [
+              "F-02"
+            ]
+          },
+          "IND-SING": {
+            "state": "violation",
+            "finding_ids": [
+              "F-57"
+            ]
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-06.1",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "violation",
+            "finding_ids": [
+              "F-03"
+            ]
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-06.2",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "violation",
+            "finding_ids": [
+              "F-05"
+            ]
+          },
+          "IND-COMPL": {
+            "state": "violation",
+            "finding_ids": [
+              "F-19"
+            ]
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "violation",
+            "finding_ids": [
+              "F-01"
+            ]
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-06.3",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "violation",
+            "finding_ids": [
+              "F-20"
+            ]
+          },
+          "IND-SING": {
+            "state": "violation",
+            "finding_ids": [
+              "F-59"
+            ]
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-06.4",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "violation",
+            "finding_ids": [
+              "F-22"
+            ]
+          },
+          "IND-COMPL": {
+            "state": "violation",
+            "finding_ids": [
+              "F-21"
+            ]
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-07.1",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "violation",
+            "finding_ids": [
+              "F-06"
+            ]
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "violation",
+            "finding_ids": [
+              "F-23"
+            ]
+          },
+          "IND-VERIF": {
+            "state": "violation",
+            "finding_ids": [
+              "F-24"
+            ]
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-07.2",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "violation",
+            "finding_ids": [
+              "F-25"
+            ]
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-08.1",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-08.2",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "violation",
+            "finding_ids": [
+              "F-08"
+            ]
+          },
+          "IND-COMPL": {
+            "state": "violation",
+            "finding_ids": [
+              "F-26"
+            ]
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-09.1",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-09.2",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-09.3",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "violation",
+            "finding_ids": [
+              "F-28"
+            ]
+          },
+          "IND-COMPL": {
+            "state": "violation",
+            "finding_ids": [
+              "F-27"
+            ]
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-10",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "violation",
+            "finding_ids": [
+              "F-29"
+            ]
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "violation",
+            "finding_ids": [
+              "F-64"
+            ]
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-11",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "violation",
+            "finding_ids": [
+              "F-31"
+            ]
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-12.1",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-12.2",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "violation",
+            "finding_ids": [
+              "F-33"
+            ]
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-13",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "violation",
+            "finding_ids": [
+              "F-35"
+            ]
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-14",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "violation",
+            "finding_ids": [
+              "F-36"
+            ]
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-15",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-16",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-17",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "violation",
+            "finding_ids": [
+              "F-38"
+            ]
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-18",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-19",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-20",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-21",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "violation",
+            "finding_ids": [
+              "F-17"
+            ]
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-22",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "violation",
+            "finding_ids": [
+              "F-40"
+            ]
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-23",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-24",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "violation",
+            "finding_ids": [
+              "F-41"
+            ]
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-25",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-26",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-27",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-28",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-29",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-30",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "unclear",
+            "finding_ids": [
+              "F-43"
+            ]
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-31",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-32",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-33",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-34",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-35.1",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "violation",
+            "finding_ids": [
+              "F-47"
+            ]
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "violation",
+            "finding_ids": [
+              "F-46"
+            ]
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-35.2",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "violation",
+            "finding_ids": [
+              "F-47"
+            ]
+          },
+          "IND-COMPL": {
+            "state": "violation",
+            "finding_ids": [
+              "F-48"
+            ]
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-36",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-37",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-38",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-39",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-40",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-41",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-42",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "violation",
+            "finding_ids": [
+              "F-72"
+            ]
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-43",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-44",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      },
+      {
+        "requirement_id": "R-45",
+        "cells": {
+          "IND-NEC": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-APPR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-UNAMB": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-COMPL": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-SING": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-FEAS": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-VERIF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CORR": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-CONF": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-TRACE": {
+            "state": "clean",
+            "finding_ids": []
+          },
+          "IND-RANK": {
+            "state": "clean",
+            "finding_ids": []
+          }
+        }
+      }
+    ],
+    "set_rows": [
+      {
+        "property": "SET-COMPL",
+        "state": "violation",
+        "finding_ids": [
+          "F-09",
+          "F-14",
+          "F-30",
+          "F-34",
+          "F-39",
+          "F-49",
+          "F-51",
+          "F-65",
+          "F-67"
+        ],
+        "refs": [
+          "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Complete)",
+          "IEEE 830-1998, п. 4.3.3"
+        ]
+      },
+      {
+        "property": "SET-CONS",
+        "state": "violation",
+        "finding_ids": [
+          "F-04",
+          "F-07",
+          "F-10",
+          "F-32",
+          "F-37",
+          "F-42",
+          "F-44",
+          "F-45",
+          "F-50"
+        ],
+        "refs": [
+          "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
+          "IEEE 830-1998, п. 4.3.4"
+        ]
+      },
+      {
+        "property": "SET-FEAS",
+        "state": "clean",
+        "finding_ids": [],
+        "refs": [
+          "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Feasible)"
+        ]
+      },
+      {
+        "property": "SET-COMPR",
+        "state": "violation",
+        "finding_ids": [
+          "F-12",
+          "F-52",
+          "F-53",
+          "F-56",
+          "F-58",
+          "F-60",
+          "F-61",
+          "F-11",
+          "F-18",
+          "F-55"
+        ],
+        "refs": [
+          "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Comprehensible)"
+        ]
+      },
+      {
+        "property": "SET-VALID",
+        "state": "violation",
+        "finding_ids": [
+          "F-13"
+        ],
+        "refs": [
+          "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Able to be validated)"
+        ]
+      },
+      {
+        "property": "SET-MOD",
+        "state": "violation",
+        "finding_ids": [
+          "F-62",
+          "F-70",
+          "F-71"
+        ],
+        "refs": [
+          "IEEE 830-1998, п. 4.3.7"
+        ]
+      },
+      {
+        "property": "SET-TRACE",
+        "state": "violation",
+        "finding_ids": [
+          "F-66",
+          "F-68",
+          "F-54"
+        ],
+        "refs": [
+          "IEEE 830-1998, п. 4.3.8"
+        ]
+      },
+      {
+        "property": "SET-RANK",
+        "state": "violation",
+        "finding_ids": [
+          "F-63"
+        ],
+        "refs": [
+          "IEEE 830-1998, п. 4.3.5"
+        ]
+      }
+    ],
+    "extra_finding_ids": [],
+    "unlinked_finding_ids": [
+      "F-69"
+    ],
+    "checked": true
+  },
+  "selfcheck": {
+    "applicable": true,
+    "sections_found": 6,
+    "sections_total": 6,
+    "findings_total": 72,
+    "findings_anchored": 72,
+    "quotes_total": 98,
+    "quotes_verified": 98,
+    "quotes_rechecked": 98,
+    "items": [
+      {
+        "id": "sections",
+        "title": "Разделы ТЗ п. 6 на месте",
+        "passed": true,
+        "integrity": false,
+        "detail": "6 из 6: паспорт, нарезка, проверка требований и набора, сводка, итог",
+        "failures": []
+      },
+      {
+        "id": "anchors",
+        "title": "У каждой находки есть якорь и сверенная цитата",
+        "passed": true,
+        "integrity": true,
+        "detail": "72 из 72",
+        "failures": []
+      },
+      {
+        "id": "quotes",
+        "title": "Цитаты в находках сверены с документом",
+        "passed": true,
+        "integrity": true,
+        "detail": "цитат в находках: 98, все сверены верификатором; заново по тексту документа и якорю: 98",
+        "failures": []
+      },
+      {
+        "id": "requirements",
+        "title": "Каждое R-NN есть в проверке требований",
+        "passed": true,
+        "integrity": true,
+        "detail": "58 из 58",
+        "failures": []
+      },
+      {
+        "id": "cards",
+        "title": "Каждая находка F-NN описана карточкой",
+        "passed": true,
+        "integrity": true,
+        "detail": "72 из 72",
+        "failures": []
+      },
+      {
+        "id": "counters",
+        "title": "Счётчики сводки равны числу строк в таблицах",
+        "passed": true,
+        "integrity": true,
+        "detail": "сводка, таблицы и карточки сходятся",
+        "failures": []
+      },
+      {
+        "id": "metrics",
+        "title": "Метрики прогона сходятся со сводкой и воронкой находок",
+        "passed": true,
+        "integrity": false,
+        "detail": "находки, отброшенные, цитаты и «найдено в N из K» сходятся",
+        "failures": []
+      },
+      {
+        "id": "matrix",
+        "title": "Матрица покрытия совпадает с находками",
+        "passed": true,
+        "integrity": true,
+        "detail": "58 требований × 11 свойств (638 ячеек), 8 свойств набора",
+        "failures": []
+      }
+    ],
+    "summary": "ТЗ п. 6: 6 из 6 разделов; у 72 из 72 находок есть якорь; цитат в находках сверено 100 % (цитат модели до фильтра: 100 %); счётчики сводки сходятся с таблицами"
   }
 }

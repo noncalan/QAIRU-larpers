@@ -1,0 +1,211 @@
+{
+ "schema_version": "1",
+ "name": "checkpoint",
+ "created_at": "2026-11-26T07:27:54.667001+05:00",
+ "sources": {
+  "A": "evals/results/2026-11-26-baseline.json",
+  "B": "evals/results/2026-11-26-checkpoint-b.json",
+  "B′": "evals/results/2026-11-26-checkpoint-b-raw.json",
+  "C": "evals/results/2026-11-26-checkpoint-c.json"
+ },
+ "configs": {
+  "A": {
+   "runs": 3,
+   "recall": 0.9333333333333332,
+   "recall_strict": 0.8444444444444444,
+   "critical_recall": 1.0,
+   "critical_recall_strict": 0.9629629629629629,
+   "findings": 50.0,
+   "noise_share": 0.03083804143126177,
+   "quotes_exact": 0.7596184776705518,
+   "quotes_verified": 0.8465618080795422,
+   "quotes_final_verified": 0.8465618080795422,
+   "wall_s": 135.19966666666667,
+   "cost_usd": 0.30961333333333335,
+   "union_recall": 0.9777777777777777,
+   "union_recall_strict": 0.9777777777777777,
+   "critical_pass_all": 1.0,
+   "critical_pass_any": 1.0,
+   "gold_jaccard": 0.9238900634249472,
+   "key_jaccard": null,
+   "judge_cost_usd": 0.633028,
+   "questions": null
+  },
+  "B": {
+   "runs": 3,
+   "recall": 0.8888888888888888,
+   "recall_strict": 0.7185185185185184,
+   "critical_recall": 1.0,
+   "critical_recall_strict": 0.9629629629629629,
+   "findings": 48.333333333333336,
+   "noise_share": 0.013469387755102041,
+   "quotes_exact": 1.0,
+   "quotes_verified": 1.0,
+   "quotes_final_verified": 1.0,
+   "wall_s": 476.49,
+   "cost_usd": 1.4971283333333334,
+   "union_recall": 0.9555555555555556,
+   "union_recall_strict": 0.8888888888888888,
+   "critical_pass_all": 1.0,
+   "critical_pass_any": 1.0,
+   "gold_jaccard": 0.8903384382681035,
+   "key_jaccard": 0.5061181434599157,
+   "judge_cost_usd": 0.61956,
+   "questions": {
+    "runs": 3,
+    "total_before": 15.0,
+    "total_after": 14.3333,
+    "withdrawn_share": 0.0444,
+    "with_scenario_before": 0.9111,
+    "with_scenario_after": 0.9008,
+    "closed_before": 1.0,
+    "closed_after": 1.0,
+    "without_errors_before": 0.7556,
+    "without_errors_after": 0.7487,
+    "obvious_fix_before": 1.0,
+    "obvious_fix_after": 1.0,
+    "duplicate_pairs_before": 0.3333,
+    "duplicate_pairs_after": 0.0,
+    "place_jaccard": 0.5913
+   }
+  },
+  "B′": {
+   "runs": 2,
+   "recall": 0.8555555555555556,
+   "recall_strict": 0.6555555555555556,
+   "critical_recall": 1.0,
+   "critical_recall_strict": 0.8888888888888888,
+   "findings": 46.5,
+   "noise_share": 0.010869565217391304,
+   "quotes_exact": 1.0,
+   "quotes_verified": 1.0,
+   "quotes_final_verified": 1.0,
+   "wall_s": 50.29,
+   "cost_usd": 1.462087,
+   "union_recall": 0.9111111111111111,
+   "union_recall_strict": 0.7555555555555555,
+   "critical_pass_all": 1.0,
+   "critical_pass_any": 1.0,
+   "gold_jaccard": 0.8780487804878049,
+   "key_jaccard": 0.4177215189873418,
+   "judge_cost_usd": 0.370384,
+   "questions": {
+    "runs": 2,
+    "total_before": 15.0,
+    "total_after": 15.0,
+    "withdrawn_share": 0.0,
+    "with_scenario_before": 0.9334,
+    "with_scenario_after": 0.9334,
+    "closed_before": 1.0,
+    "closed_after": 1.0,
+    "without_errors_before": 0.8334,
+    "without_errors_after": 0.8334,
+    "obvious_fix_before": 2.0,
+    "obvious_fix_after": 2.0,
+    "duplicate_pairs_before": 0.0,
+    "duplicate_pairs_after": 0.0,
+    "place_jaccard": 0.6667
+   }
+  },
+  "C": {
+   "runs": 3,
+   "recall": 0.9259259259259259,
+   "recall_strict": 0.8000000000000002,
+   "critical_recall": 1.0,
+   "critical_recall_strict": 0.9259259259259259,
+   "findings": 79.33333333333333,
+   "noise_share": 0.038002158484086196,
+   "quotes_exact": 0.9941170372674026,
+   "quotes_verified": 0.9941170372674026,
+   "quotes_final_verified": 1.0,
+   "wall_s": 437.50333333333333,
+   "cost_usd": 2.856913666666667,
+   "union_recall": 0.9777777777777777,
+   "union_recall_strict": 0.9333333333333333,
+   "critical_pass_all": 1.0,
+   "critical_pass_any": 1.0,
+   "gold_jaccard": 0.9085623678646934,
+   "key_jaccard": 0.6208106294387572,
+   "judge_cost_usd": 0.7272,
+   "questions": {
+    "runs": 3,
+    "total_before": 15.0,
+    "total_after": 14.6667,
+    "withdrawn_share": 0.0222,
+    "with_scenario_before": 0.8444,
+    "with_scenario_after": 0.8429,
+    "closed_before": 1.0,
+    "closed_after": 1.0,
+    "without_errors_before": 0.9333,
+    "without_errors_after": 0.9301,
+    "obvious_fix_before": 0.3333,
+    "obvious_fix_after": 0.3333,
+    "duplicate_pairs_before": 0.0,
+    "duplicate_pairs_after": 0.0,
+    "place_jaccard": 0.6642
+   }
+  }
+ },
+ "decision": {
+  "passes": 1,
+  "search_input": "blocks",
+  "chosen": "B",
+  "reopen_search_prompt": false,
+  "items": [
+   {
+    "number": 1,
+    "title": "Число проходов по умолчанию (C против B)",
+    "checks": [
+     {
+      "text": "Доля сверенных цитат модели (до фильтра, точно или нечётко) у C не ниже, чем у B: C 99,4 %, B 100,0 %",
+      "met": false
+     },
+     {
+      "text": "Жаккар находок: C 0,621, B 0,506, разница +0,115, нужно ≥ +0,10",
+      "met": true
+     },
+     {
+      "text": "Recall критичных: C 100,0 %, B 100,0 %, разница +0,0 п. п., нужно ≥ +10,0 п. п.",
+      "met": false
+     },
+     {
+      "text": "Recall всего: C 92,6 %, B 88,9 %, разница +3,7 п. п., нужно ≥ +5,0 п. п.",
+      "met": false
+     }
+    ],
+    "met": false,
+    "conclusion": "По умолчанию один проход, `--passes 3` остаётся опцией: доля сверенных цитат у C ниже, чем у B."
+   },
+   {
+    "number": 2,
+    "title": "Разметка блоков (B против B′)",
+    "checks": [
+     {
+      "text": "Recall у B ниже, чем у B′, больше чем на 5,0 п. п.: B 88,9 %, B′ 85,6 %, B′ − B = −3,3 п. п.",
+      "met": false
+     }
+    ],
+    "met": false,
+    "conclusion": "Разметка блоков остаётся (`search_input = blocks`): она не мешает поиску по порогу правила."
+   },
+   {
+    "number": 3,
+    "title": "Агент против базовой линии (B против A)",
+    "checks": [
+     {
+      "text": "Recall выбранной конфигурации B ниже, чем у A, больше чем на 5,0 п. п.: B 88,9 %, A 93,3 %, B − A = −4,4 п. п.",
+      "met": false
+     }
+    ],
+    "met": false,
+    "conclusion": "Доработка промпта поиска до слоя доказательств не нужна: проигрыша A сверх порога нет."
+   }
+  ],
+  "notes": []
+ },
+ "notes": [
+  "Версия агента во всех прогонах dc2a3cc: main 90fd51a плюс эта ветка. Влитые после прогонов #89 (записи e2e) и #90 (самопроверка отчёта) поиск, слияние и верификатор не меняют.",
+  "Лимит подписки: 25.11 в 23:21 UTC прогоны упёрлись в 5-часовой лимит. B ×3 прошли целиком. У B′ ×2 и C run-1 нарезка и все проходы поиска прошли живыми, после сброса окна (26.11, 02:12 UTC) из кеша своего прогона досчитаны только вопросы автору. C run-2 и run-3 прогнаны заново целиком. Поэтому время B′ и C run-1 в таблице не живое: живое время C по run-2 и run-3 равно 535 с, у B 476 с (проходы C идут параллельно). Цена считает и ответы из кеша, она полная.",
+  "П. 1 решила доля сверенных цитат: у B сверены 194 из 194 цитат-кандидатов, у C 335 из 337. Обе несверенные цитаты C повторяют показ таблицы в разметке блоков, а не текст документа: строка целиком в виде «Колонка: значение; …» (run-1) и метка пустой ячейки «(пусто)» (run-3). Верификатор их отбросил, итоговые находки сверены на 100 % во всех конфигурациях агента. Условие прироста по Жаккару при этом выполнено (+0,115)."
+ ]
+}

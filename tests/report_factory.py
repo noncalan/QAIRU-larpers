@@ -30,6 +30,7 @@ from validator.models import (
     FindingSource,
     MergedFinding,
     Passport,
+    PassResult,
     Profile,
     Property,
     Question,
@@ -48,6 +49,7 @@ from validator.models import (
     SegmentationMode,
     Severity,
     SourceKind,
+    StepMetrics,
     TokenUsage,
     TrafficLight,
     Verdict,
@@ -60,6 +62,10 @@ from validator.models import (
 from validator.models import DefectType as D
 from validator.questions.metrics import question_metrics
 from validator.report.build import FIRST_PAGE_ITEMS
+from validator.report.coverage import build_coverage
+from validator.report.render_md import render_md
+from validator.report.run_metrics import discarded_by_reason, found_in_distribution
+from validator.report.selfcheck import check_report
 from validator.verify import summarize
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "report"
@@ -408,6 +414,36 @@ def _metrics(
         verified_quote_share=round(verified / s.quotes_total, 4) if s.quotes_total else None,
         questions=question_metrics(qs, withdrawn),
         evidence=evidence_metrics([*_merged(ver.findings), *(d.finding for d in ver.discarded)]),
+        steps=[
+            StepMetrics(
+                step="segment",
+                calls=1,
+                duration_s=21.4,
+                tokens=TokenUsage(input_tokens=6000, output_tokens=2000),
+                cost_usd=0.04,
+            ),
+            StepMetrics(
+                step="search",
+                calls=3,
+                duration_s=180.2,
+                tokens=TokenUsage(input_tokens=21_000, output_tokens=8000),
+                cost_usd=1.2,
+            ),
+            StepMetrics(
+                step="questions",
+                calls=1,
+                cached=1,
+                duration_s=38.9,
+                tokens=TokenUsage(input_tokens=3000, output_tokens=2000),
+                cost_usd=0.38,
+            ),
+        ],
+        passes_total=3,
+        passes_ok=3,
+        candidates_passes=s.findings_total + s.discarded_total,
+        candidates_lint=2,
+        discarded_by_reason=discarded_by_reason(ver),
+        found_in=found_in_distribution(ver.findings),
     )
 
 
@@ -438,7 +474,7 @@ def _report(
     withdrawn: list[WithdrawnQuestion] | None = None,
 ) -> Report:
     pp = pass_ or passport()
-    return Report(
+    report = Report(
         status=status,
         passport=pp,
         document=DocumentInfo(
@@ -459,7 +495,9 @@ def _report(
         questions_withdrawn=withdrawn or [],
         conclusion=_conclusion(ver, qs),
         metrics=_metrics(ver, pp, qs, withdrawn or []),
+        coverage=build_coverage(ver, reqs, [PassResult(index=1, ok=True)]),
     )
+    return report.model_copy(update={"selfcheck": check_report(report, render_md(report))})
 
 
 def full_report() -> Report:

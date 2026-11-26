@@ -29,6 +29,7 @@ from validator.models import (
     Report,
     ReportStatus,
     RunContext,
+    SearchInput,
     Severity,
     TrafficLight,
     Verdict,
@@ -106,6 +107,16 @@ def test_sections_follow_task_order() -> None:
     positions = [md.index(heading) for heading in SECTION_ORDER]
 
     assert positions == sorted(positions)
+
+
+def test_passport_shows_raw_search_input_only_when_it_is_not_default() -> None:
+    report = load("full")
+    raw = report.model_copy(
+        update={"passport": report.passport.model_copy(update={"search_input": SearchInput.RAW})}
+    )
+
+    assert "без ID блоков" not in render_md(report)
+    assert "проходов поиска: 3, поиск по тексту без ID блоков |" in render_md(raw)
 
 
 def test_first_page_comes_before_passport_and_answers_the_main_question() -> None:

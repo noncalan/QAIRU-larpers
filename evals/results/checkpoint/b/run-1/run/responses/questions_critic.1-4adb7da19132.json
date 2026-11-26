@@ -1,0 +1,231 @@
+{
+ "envelope_version": 1,
+ "key": "4adb7da191328af5de8a2c1a0c508492c8e683a2df11153970573f80420cf9fa",
+ "call_id": "questions_critic.1",
+ "step": "questions_critic",
+ "call_index": 1,
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-25T23:15:09.035276+00:00",
+ "payload": {
+  "duration_api_ms": 36971,
+  "stop_reason": "end_turn",
+  "session_id": "56ae51ad-9c95-4bb9-b3b2-25e0b15da03e",
+  "total_cost_usd": 0.20472259999999998,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 14764,
+   "cache_read_input_tokens": 1813,
+   "output_tokens": 4312,
+   "output_tokens_details": {
+    "thinking_tokens": 2107
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 14764,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 4312,
+     "cache_read_input_tokens": 1813,
+     "cache_creation_input_tokens": 14764,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 14764
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-opus-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 4312,
+    "cacheReadInputTokens": 1813,
+    "cacheCreationInputTokens": 14764,
+    "webSearchRequests": 0,
+    "costUSD": 0.20472259999999998,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2107,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 14764,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n**Q-01.** Ответа нет. По B103 неверные параметры дают 400, а по B079 и B107 отклонённая сумма даёт 200 с `result=ERROR`. Это противоречие и есть предмет вопроса. Сценарий конкретный, формулировка в порядке.\n\n**Q-02.** Ответа нет. Ф-2 (B023) считает месяц по дате совершения, то есть январь, а B039 ждёт рост февральского счётчика. Противоречие. Попутное замечание про часовой пояс входит в оба варианта, ошибку не ставлю.\n\n**Q-03.** Ответа нет. «Проведённые» (B023) не уточнено, авторизация это или клиринг. Цель B013 «в момент покупки» правило не задаёт. Формулировка хорошая.\n\n**Q-04.** Ответа нет. B033 говорит, что настройки читаются через часть B, но в части B есть только метод сохранения. Description в B062 сам противоречив.\n\n**Q-05.** Ответа нет. Метод проверяет только сессию и принадлежность карты (B075–B076), а 403 нигде не привязан к случаю. В «Почему важно» добавлено второе решение: судьба сохранённого порога после блокировки карты (ошибка 2).\n\n**Q-06.** Ответ есть. Часть B прямо задаёт GET, query-параметры (B090–B092) и «Тело не используется» (B095), CURL в B068 тоже передаёт параметры в строке запроса. Лишний Content-Type (B094) — повод для замечания с одной правкой. В вопрос вложены ещё решения о заголовке и о смене метода (ошибка 2).\n\n**Q-07.** Ответа нет. Ф-3 (B024) разрешает один push в месяц, Ф-4 (B025) требует push «независимо от истории». Противоречие, формулировка хорошая.\n\n**Q-08.** Ответа нет. В B090 только «Идентификатор карты», string 1–64, пример `demo-42`. Ситуации нет, вопрос абстрактный.\n\n**Q-09.** Ответа нет. B029 не задаёт долю событий. Расчётная нагрузка — второе решение (ошибка 2).\n\n**Q-10.** Ответа нет. В B027 написано просто «сумму», это может быть и порог, и расходы месяца. Формулировка в порядке.\n\n**Q-11.** Ответ есть. Таблица ответа (B099, B100) даёт string, пример в B105 тоже строковый. Различие типов запроса и ответа не противоречие.\n\n**Q-12.** Ответа нет. Документ не говорит, ведётся ли учёт при выключенном уведомлении. Формулировка хорошая.\n\n**Q-13.** Ответа нет. Непонятно, считается ли оплата связи «покупкой» по B023. В «Почему важно» добавлены комиссии и валютные покупки (ошибка 2).\n\n**Q-14.** Ответа нет. B023 привязывает возврат к месяцу исходной покупки, случай без исходной покупки не описан.\n\n**Q-15.** Ответа нет. Ф-3 задаёт достаточное условие push, а не единственное. Ф-4 описывает только случай, когда сумма ниже нового порога. Прямого правила нет.\n\n## Ответ\n\n```json\n{\n  \"reviews\": [\n    {\"id\": \"Q-01\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-02\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-03\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-04\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-05\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": [2]},\n    {\"id\": \"Q-06\", \"answered\": true, \"answer\": \"GET, параметры в строке запроса, тело не используется\", \"answer_quote\": \"Тело не используется.\", \"common_sense\": false, \"obvious_fix\": true, \"scenario\": true, \"errors\": [2]},\n    {\"id\": \"Q-07\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-08\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": false, \"errors\": []},\n    {\"id\": \"Q-09\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": [2]},\n    {\"id\": \"Q-10\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-11\", \"answered\": true, \"answer\": \"Строками, как в таблице и примере ответа\", \"answer_quote\": \"{\\\"result\\\":\\\"OK\\\",\\\"amount\\\":\\\"50000\\\",\\\"enabled\\\":\\\"1\\\"}\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-12\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-13\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": [2]},\n    {\"id\": \"Q-14\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []},\n    {\"id\": \"Q-15\", \"answered\": false, \"answer\": \"\", \"answer_quote\": \"\", \"common_sense\": false, \"obvious_fix\": false, \"scenario\": true, \"errors\": []}\n  ]\n}\n```",
+  "ttft_ms": 20648,
+  "type": "result",
+  "duration_ms": 40454,
+  "uuid": "021661c5-5f87-453d-8456-3b9dfb1772d2",
+  "ttft_stream_ms": 724,
+  "time_to_request_ms": 57,
+  "time_to_request_phases_ms": {
+   "other": 6,
+   "system_prompt": 2,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 6,
+   "input_hooks": 2,
+   "conversation_append": 1,
+   "tool_pool_refresh": 1,
+   "init_message": 5,
+   "init_frame_send": 3,
+   "engine_pickup": 1,
+   "loop_entry": 3,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "request_announcements": 5,
+   "query_setup": 0,
+   "model_gates": 1,
+   "tool_schema_build": 1,
+   "message_normalization": 2,
+   "client_creation": 6,
+   "request_build": 6
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 7,
+  "time_to_request_cpu_ms": 67,
+  "time_to_request_major_faults": 0,
+  "process_rss_mib_turn_start": 200,
+  "process_anon_mib_turn_start": 123,
+  "process_rss_mib_result": 204,
+  "process_anon_mib_result": 119,
+  "process_peak_rss_mib": 220,
+  "process_cpu_ms_turn": 809,
+  "process_wall_ms_turn": 40454,
+  "tool_pool_build_count": 4,
+  "tool_pool_build_lapsed_count": 0,
+  "tool_pool_moved_at_lapse_count": 0,
+  "tool_pool_limit_ms": 30000,
+  "process_cpu_ms_streaming": 610,
+  "process_wall_ms_streaming": 36294,
+  "main_stream_count": 1,
+  "main_stream_event_count": 351,
+  "main_stream_chunk_count": 345,
+  "process_turn_states": {
+   "main_stream": {
+    "cpu_ms": 610,
+    "wall_ms": 36294,
+    "entries": 1
+   },
+   "first_event_wait": {
+    "cpu_ms": 102,
+    "wall_ms": 666,
+    "entries": 1
+   },
+   "before_first_request": {
+    "cpu_ms": 67,
+    "wall_ms": 57,
+    "entries": 1
+   },
+   "after_last_request": {
+    "cpu_ms": 30,
+    "wall_ms": 3437,
+    "entries": 1
+   }
+  },
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 1,
+   "cpu_ms": 9,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 1,
+   "render_ms": 1,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 2,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 1,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 1,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 1
+  },
+  "first_content_frame_ms": 725,
+  "time_to_request_from_spawn_ms": 551383,
+  "warm_spare_claimed": false,
+  "flag_fetch_kick": "not_asked_warm",
+  "time_origin_ms": 1795648467741.5496,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "process_start_tuning": 0
+ }
+}
