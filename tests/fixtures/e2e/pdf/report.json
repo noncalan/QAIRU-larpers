@@ -7,15 +7,15 @@
     "document_sha256": "827b313b968e08fe35310bff9dc37687099888e4c9d5bc364e3403f4b2cc66db",
     "document_size_bytes": 205814,
     "document_pages": 8,
-    "started_at": "2026-11-26T09:11:01.477744Z",
-    "finished_at": "2026-11-26T09:11:01.907598Z",
-    "duration_s": 0.43,
-    "agent_version": "05c858d-dirty",
+    "started_at": "2026-11-26T11:36:37.038033Z",
+    "finished_at": "2026-11-26T11:36:37.200170Z",
+    "duration_s": 0.16,
+    "agent_version": "9508865-dirty",
     "agent_version_source": "git",
     "agent_dirty": true,
     "prompts_sha256": "7dd96b1cffa406769efc8daf0df90f974ab4ef58757a546a07948210acc7492d",
-    "os": "Linux 6.18.44-fc-v880 (x86_64)",
-    "python": "3.13.18",
+    "os": "Darwin 25.6.0 (arm64)",
+    "python": "3.12.10",
     "backend_requested": "replay",
     "backend_used": "replay",
     "profile": "standard",
@@ -48,11 +48,11 @@
     "calls_failed": 0,
     "tokens": {
       "input_tokens": 16,
-      "output_tokens": 128683,
-      "cache_creation_input_tokens": 132764,
-      "cache_read_input_tokens": 13724
+      "output_tokens": 123939,
+      "cache_creation_input_tokens": 135649,
+      "cache_read_input_tokens": 8965
     },
-    "cost_usd": 2.7748,
+    "cost_usd": 2.702,
     "exit_code": 0,
     "answers_file": null,
     "answers_sha256": null
@@ -101,8 +101,8 @@
     {
       "code": "LLM-053",
       "level": "info",
-      "message": "Самопроверка вопросов: снято вопросов: 0 (ответ есть в документе, цитату-ответ код сверил)",
-      "action": "В отчёте осталось вопросов: 15; ответ критика без сверенной цитаты, вопрос оставлен: 1",
+      "message": "Самопроверка вопросов: снято вопросов: 2 (ответ есть в документе, цитату-ответ код сверил)",
+      "action": "В отчёте осталось вопросов: 13; критик сослался на то самое неясное место, вопрос оставлен: 1",
       "hint": "",
       "location": null,
       "step": "questions"
@@ -3436,7 +3436,7 @@
               "missing": "входит ли авторизация без клиринга в расходы: нет определения «проведённая покупка», перечня учитываемых типов операций (авторизации, отмены авторизации, комиссии, платежи за услуги, переводы между своими счетами) и их статусов",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-05",
+              "question_id": "Q-04",
               "question_withdrawn": false
             }
           ],
@@ -4058,8 +4058,8 @@
               "missing": "HTTP-метод для изменяющей операции: в параметрах метода и в примере вызова указан GET, но операция описана как сохранение порога, а в ячейке функциональных требований написано «чтение порога»; метод, подходящий для сохранения, не определён",
               "part": "шаги",
               "replaced": null,
-              "question_id": "Q-04",
-              "question_withdrawn": false
+              "question_id": "Q-05",
+              "question_withdrawn": true
             }
           ],
           "note": "",
@@ -4259,132 +4259,6 @@
       },
       {
         "id": "F-08",
-        "merged_id": "M-001",
-        "property": "SET-COMPR",
-        "defect_type": "terminology",
-        "verdict": "violation",
-        "scope": "set",
-        "severity": "major",
-        "severity_hint": "major",
-        "severity_basis": "тип «разнобой терминов и единиц», мешает написать тест-кейс: «важно»",
-        "severity_disputed": false,
-        "blocks_testing": true,
-        "quotes": [
-          {
-            "text": "Информирование держателя карты",
-            "match": "exact",
-            "score": 100.0,
-            "located": "Информирование держателя карты",
-            "anchor": {
-              "char_start": 375,
-              "char_end": 405,
-              "block_ids": [
-                "B007"
-              ],
-              "sentence_ids": [],
-              "line_start": 15,
-              "line_end": 15,
-              "page": 1,
-              "page_line": null,
-              "paragraph": null,
-              "table": 1,
-              "row": 3,
-              "cell": 2,
-              "column": "Значение",
-              "extraction": "table"
-            }
-          },
-          {
-            "text": "Bearer, сессия владельца карты",
-            "match": "exact",
-            "score": 100.0,
-            "located": "Bearer, сессия владельца карты",
-            "anchor": {
-              "char_start": 5201,
-              "char_end": 5231,
-              "block_ids": [
-                "B064"
-              ],
-              "sentence_ids": [],
-              "line_start": 133,
-              "line_end": 133,
-              "page": 5,
-              "page_line": null,
-              "paragraph": null,
-              "table": 5,
-              "row": 3,
-              "cell": 2,
-              "column": "Значение",
-              "extraction": "table"
-            }
-          }
-        ],
-        "requirement_ids": [
-          "R-18"
-        ],
-        "section_path": [
-          "Уведомление о расходах по карте",
-          "Часть A. Новый функционал",
-          "Общие сведения"
-        ],
-        "explanation": "«держатель», «клиент» и «владелец» карты различаются для дополнительных карт, и неясно, кто вправе задавать порог.",
-        "suggestion": "Порог задаёт [уточнить: держатель карты / владелец счёта]; использовать один термин",
-        "title": "Клиент называется по-разному",
-        "scenario": null,
-        "test_gap": "неизвестно, может ли держатель дополнительной карты сохранить порог",
-        "found_in": 1,
-        "of": 1,
-        "sources": [
-          {
-            "kind": "pass",
-            "pass_index": 1,
-            "rule_id": null,
-            "call_id": "search.1",
-            "checklist_item": null
-          }
-        ],
-        "witness": null,
-        "test_draft": {
-          "precondition": "У клиента есть дополнительная карта KZT, выпущенная к основной карте другого держателя. Клиент вошёл в приложение под своей сессией.",
-          "action": "Отправить запрос сохранения порога: cardId — дополнительная карта, amount=50000, enabled=1.; Открыть экран «Карты → Расходы → Уведомления» для этой карты и посмотреть сохранённую настройку.",
-          "expected": "Результат сохранения: [?1]. Настройка карты: [?2].",
-          "gaps": [
-            "может ли держатель дополнительной карты сохранить порог и какой ответ API он получает: в документе везде разные термины («держатель», «клиент», «владелец») и только проверка «принадлежности карты клиенту», про дополнительные карты ничего нет",
-            "какая настройка остаётся у карты после этой попытки: зависит от того, вправе ли держатель дополнительной карты задавать порог"
-          ],
-          "complete": false,
-          "steps": [
-            "Отправить запрос сохранения порога: cardId — дополнительная карта, amount=50000, enabled=1.",
-            "Открыть экран «Карты → Расходы → Уведомления» для этой карты и посмотреть сохранённую настройку."
-          ],
-          "values": [],
-          "gap_items": [
-            {
-              "number": 1,
-              "missing": "может ли держатель дополнительной карты сохранить порог и какой ответ API он получает: в документе везде разные термины («держатель», «клиент», «владелец») и только проверка «принадлежности карты клиенту», про дополнительные карты ничего нет",
-              "part": "ожидаемый результат",
-              "replaced": null,
-              "question_id": "Q-13",
-              "question_withdrawn": false
-            },
-            {
-              "number": 2,
-              "missing": "какая настройка остаётся у карты после этой попытки: зависит от того, вправе ли держатель дополнительной карты задавать порог",
-              "part": "ожидаемый результат",
-              "replaced": null,
-              "question_id": "Q-13",
-              "question_withdrawn": false
-            }
-          ],
-          "note": "",
-          "contested": false
-        },
-        "critic": null,
-        "anchor_corrected": false,
-        "notes": []
-      },
-      {
-        "id": "F-09",
         "merged_id": "M-004",
         "property": "IND-CORR",
         "defect_type": "contradiction",
@@ -4589,7 +4463,7 @@
               "missing": "какое именно событие запускает push: авторизация покупки или её проведение. Цель говорит «в момент покупки», Ф-2 считает только «проведённые» покупки; в документе нет определения «проведённая» и нет допустимой задержки между покупкой и push",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-05",
+              "question_id": "Q-04",
               "question_withdrawn": false
             }
           ],
@@ -4601,77 +4475,7 @@
         "notes": []
       },
       {
-        "id": "F-10",
-        "merged_id": "M-006",
-        "property": "SET-VALID",
-        "defect_type": "unverifiable",
-        "verdict": "violation",
-        "scope": "set",
-        "severity": "major",
-        "severity_hint": "minor",
-        "severity_basis": "тип «непроверяемость», не мешает написать тест-кейс: «важно»",
-        "severity_disputed": false,
-        "blocks_testing": false,
-        "quotes": [
-          {
-            "text": "Дать клиенту возможность узнать о достижении личного бюджета в момент покупки.",
-            "match": "exact",
-            "score": 100.0,
-            "located": "Дать клиенту возможность узнать о достижении личного бюджета в\nмомент покупки.",
-            "anchor": {
-              "char_start": 682,
-              "char_end": 760,
-              "block_ids": [
-                "B013"
-              ],
-              "sentence_ids": [
-                "B013.1"
-              ],
-              "line_start": 23,
-              "line_end": 24,
-              "page": 1,
-              "page_line": null,
-              "paragraph": null,
-              "table": null,
-              "row": null,
-              "cell": null,
-              "column": null,
-              "extraction": "text"
-            }
-          }
-        ],
-        "requirement_ids": [
-          "R-01"
-        ],
-        "section_path": [
-          "Уведомление о расходах по карте",
-          "Часть A. Новый функционал",
-          "Цели"
-        ],
-        "explanation": "нельзя показать, что выполнение требований достигает цели.",
-        "suggestion": "Цель: клиент получает push о достижении порога не позднее [уточнить: N мин] после [уточнить: событие]; показатель — [уточнить: доля включивших функцию]",
-        "title": "У цели нет измеримого показателя",
-        "scenario": null,
-        "test_gap": null,
-        "found_in": 1,
-        "of": 1,
-        "sources": [
-          {
-            "kind": "pass",
-            "pass_index": 1,
-            "rule_id": null,
-            "call_id": "search.1",
-            "checklist_item": null
-          }
-        ],
-        "witness": null,
-        "test_draft": null,
-        "critic": null,
-        "anchor_corrected": false,
-        "notes": []
-      },
-      {
-        "id": "F-11",
+        "id": "F-09",
         "merged_id": "M-008",
         "property": "IND-COMPL",
         "defect_type": "incomplete",
@@ -4785,7 +4589,7 @@
         "notes": []
       },
       {
-        "id": "F-12",
+        "id": "F-10",
         "merged_id": "M-009",
         "property": "SET-CONS",
         "defect_type": "incomplete",
@@ -4900,7 +4704,7 @@
         "notes": []
       },
       {
-        "id": "F-13",
+        "id": "F-11",
         "merged_id": "M-010",
         "property": "IND-COMPL",
         "defect_type": "incomplete",
@@ -5033,7 +4837,7 @@
         "notes": []
       },
       {
-        "id": "F-14",
+        "id": "F-12",
         "merged_id": "M-012",
         "property": "IND-UNAMB",
         "defect_type": "ambiguous",
@@ -5224,7 +5028,7 @@
         "notes": []
       },
       {
-        "id": "F-15",
+        "id": "F-13",
         "merged_id": "M-015",
         "property": "IND-COMPL",
         "defect_type": "incomplete",
@@ -5310,8 +5114,8 @@
               "missing": "влияет ли возврат на признак отправки и на повторное достижение порога: уходит ли второй push. Также не описаны частичный возврат, возврат больше учтённой суммы (отрицательные расходы), возврат без найденной исходной покупки и возврат в другом месяце",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-12",
-              "question_withdrawn": false
+              "question_id": "Q-13",
+              "question_withdrawn": true
             }
           ],
           "note": "",
@@ -5322,7 +5126,7 @@
         "notes": []
       },
       {
-        "id": "F-16",
+        "id": "F-14",
         "merged_id": "M-016",
         "property": "IND-VERIF",
         "defect_type": "unverifiable",
@@ -5493,7 +5297,7 @@
         "notes": []
       },
       {
-        "id": "F-17",
+        "id": "F-15",
         "merged_id": "M-017",
         "property": "IND-UNAMB",
         "defect_type": "ambiguous",
@@ -5645,7 +5449,7 @@
               "missing": "к какому месяцу относится push: к месяцу расходов (дате покупки) или к месяцу отправки. От этого зависит, уходит ли второй push 10 февраля",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-10",
+              "question_id": "Q-11",
               "question_withdrawn": false
             }
           ],
@@ -5657,7 +5461,7 @@
         "notes": []
       },
       {
-        "id": "F-18",
+        "id": "F-16",
         "merged_id": "M-019",
         "property": "SET-COMPL",
         "defect_type": "incomplete",
@@ -5787,7 +5591,7 @@
         "notes": []
       },
       {
-        "id": "F-19",
+        "id": "F-17",
         "merged_id": "M-023",
         "property": "SET-COMPL",
         "defect_type": "incomplete",
@@ -5899,7 +5703,7 @@
               "missing": "расходы после возврата, пришедшего раньше покупки: не сказано, гарантирован ли порядок событий процессинга и что делать с таким возвратом (отклонить, отложить, учесть)",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-12",
+              "question_id": null,
               "question_withdrawn": false
             },
             {
@@ -5907,7 +5711,7 @@
               "missing": "итоговые расходы после прихода покупки при обратном порядке событий: правило для этого порядка в документе не задано",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-12",
+              "question_id": null,
               "question_withdrawn": false
             }
           ],
@@ -5919,7 +5723,7 @@
         "notes": []
       },
       {
-        "id": "F-20",
+        "id": "F-18",
         "merged_id": "M-024",
         "property": "SET-COMPL",
         "defect_type": "incomplete",
@@ -6060,7 +5864,7 @@
         "notes": []
       },
       {
-        "id": "F-21",
+        "id": "F-19",
         "merged_id": "M-025",
         "property": "IND-UNAMB",
         "defect_type": "ambiguous",
@@ -6293,7 +6097,7 @@
               "missing": "какая именно «сумма» передаётся: покупка 1 500 ₸, накопленные расходы 50 000 ₸ или порог",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-11",
+              "question_id": "Q-12",
               "question_withdrawn": false
             },
             {
@@ -6301,7 +6105,7 @@
               "missing": "текст шаблона push",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-11",
+              "question_id": "Q-12",
               "question_withdrawn": false
             },
             {
@@ -6309,7 +6113,7 @@
               "missing": "язык push и формат записи суммы (разделители, символ валюты)",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-11",
+              "question_id": "Q-12",
               "question_withdrawn": false
             }
           ],
@@ -6321,7 +6125,7 @@
         "notes": []
       },
       {
-        "id": "F-22",
+        "id": "F-20",
         "merged_id": "M-027",
         "property": "IND-VERIF",
         "defect_type": "unverifiable",
@@ -6477,7 +6281,7 @@
         "notes": []
       },
       {
-        "id": "F-23",
+        "id": "F-21",
         "merged_id": "M-028",
         "property": "IND-COMPL",
         "defect_type": "incomplete",
@@ -6665,162 +6469,7 @@
         "notes": []
       },
       {
-        "id": "F-24",
-        "merged_id": "M-029",
-        "property": "SET-CONS",
-        "defect_type": "terminology",
-        "verdict": "violation",
-        "scope": "set",
-        "severity": "major",
-        "severity_hint": "major",
-        "severity_basis": "тип «разнобой терминов и единиц», мешает написать тест-кейс: «важно»",
-        "severity_disputed": false,
-        "blocks_testing": true,
-        "quotes": [
-          {
-            "text": "Хранить идентификатор карты, месяц, идентификатор операции, сумму покупки в тиынах, признак отправки и порог в тенге.",
-            "match": "exact",
-            "score": 100.0,
-            "located": "Хранить идентификатор карты, месяц, идентификатор операции, сумму\nпокупки в тиынах, признак отправки и порог в тенге.",
-            "anchor": {
-              "char_start": 2242,
-              "char_end": 2359,
-              "block_ids": [
-                "B031"
-              ],
-              "sentence_ids": [
-                "B031.1"
-              ],
-              "line_start": 75,
-              "line_end": 76,
-              "page": 2,
-              "page_line": null,
-              "paragraph": null,
-              "table": null,
-              "row": null,
-              "cell": null,
-              "column": null,
-              "extraction": "text"
-            }
-          }
-        ],
-        "requirement_ids": [
-          "R-11"
-        ],
-        "section_path": [
-          "Уведомление о расходах по карте",
-          "Часть A. Новый функционал",
-          "Требования к данным"
-        ],
-        "explanation": "сравнение суммы покупки с порогом требует пересчёта, а правило пересчёта и округления не задано.",
-        "suggestion": "Все суммы, включая порог, хранятся в тиынах (целое число)",
-        "title": "Суммы хранятся в разных единицах",
-        "scenario": null,
-        "test_gap": "нет единицы для сравнения расходов с порогом",
-        "found_in": 1,
-        "of": 1,
-        "sources": [
-          {
-            "kind": "pass",
-            "pass_index": 1,
-            "rule_id": null,
-            "call_id": "search.1",
-            "checklist_item": "MON-01"
-          }
-        ],
-        "witness": null,
-        "test_draft": {
-          "precondition": "Карта активна, в KZT. Уведомление включено, порог 50 000 ₸, расходы месяца 0 ₸, push в этом месяце не было. Сумма покупки хранится в тиынах, порог в тенге.",
-          "action": "Провести покупку на 500 ₸ (50 000 тиын).; Провести покупку на 49 499,99 ₸, чтобы накопленная сумма стала 49 999,99 ₸ (4 999 999 тиын).",
-          "expected": "После шага 1 получено push: [?1]. После шага 2 получено push: [?2].",
-          "gaps": [
-            "единица, в которой расходы сравниваются с порогом, и правило пересчёта тиынов в тенге: в документе его нет",
-            "правило округления накопленной суммы с дробной частью тенге при сравнении с целым порогом"
-          ],
-          "complete": false,
-          "steps": [
-            "Провести покупку на 500 ₸ (50 000 тиын).",
-            "Провести покупку на 49 499,99 ₸, чтобы накопленная сумма стала 49 999,99 ₸ (4 999 999 тиын)."
-          ],
-          "values": [
-            {
-              "value": "в тиынах",
-              "quote": "Хранить идентификатор карты, месяц, идентификатор операции, сумму покупки в тиынах, признак отправки и порог в тенге.",
-              "verified": true,
-              "anchor": {
-                "char_start": 2242,
-                "char_end": 2359,
-                "block_ids": [
-                  "B031"
-                ],
-                "sentence_ids": [
-                  "B031.1"
-                ],
-                "line_start": 75,
-                "line_end": 76,
-                "page": 2,
-                "page_line": null,
-                "paragraph": null,
-                "table": null,
-                "row": null,
-                "cell": null,
-                "column": null,
-                "extraction": "text"
-              }
-            },
-            {
-              "value": "в тенге",
-              "quote": "Хранить идентификатор карты, месяц, идентификатор операции, сумму покупки в тиынах, признак отправки и порог в тенге.",
-              "verified": true,
-              "anchor": {
-                "char_start": 2242,
-                "char_end": 2359,
-                "block_ids": [
-                  "B031"
-                ],
-                "sentence_ids": [
-                  "B031.1"
-                ],
-                "line_start": 75,
-                "line_end": 76,
-                "page": 2,
-                "page_line": null,
-                "paragraph": null,
-                "table": null,
-                "row": null,
-                "cell": null,
-                "column": null,
-                "extraction": "text"
-              }
-            }
-          ],
-          "gap_items": [
-            {
-              "number": 1,
-              "missing": "единица, в которой расходы сравниваются с порогом, и правило пересчёта тиынов в тенге: в документе его нет",
-              "part": "ожидаемый результат",
-              "replaced": null,
-              "question_id": null,
-              "question_withdrawn": false
-            },
-            {
-              "number": 2,
-              "missing": "правило округления накопленной суммы с дробной частью тенге при сравнении с целым порогом",
-              "part": "ожидаемый результат",
-              "replaced": null,
-              "question_id": null,
-              "question_withdrawn": false
-            }
-          ],
-          "note": "",
-          "contested": false
-        },
-        "critic": null,
-        "anchor_corrected": false,
-        "notes": []
-      },
-      {
-        "id": "F-25",
+        "id": "F-22",
         "merged_id": "M-031",
         "property": "IND-COMPL",
         "defect_type": "incomplete",
@@ -6974,145 +6623,7 @@
         "notes": []
       },
       {
-        "id": "F-26",
-        "merged_id": "M-032",
-        "property": "SET-COMPL",
-        "defect_type": "placeholder",
-        "verdict": "violation",
-        "scope": "set",
-        "severity": "major",
-        "severity_hint": "minor",
-        "severity_basis": "тип «незаполненное место», мешает написать тест-кейс: «важно»",
-        "severity_disputed": false,
-        "blocks_testing": true,
-        "quotes": [
-          {
-            "text": "заполняются тестировщиками",
-            "match": "exact",
-            "score": 100.0,
-            "located": "заполняются тестировщиками",
-            "anchor": {
-              "char_start": 2620,
-              "char_end": 2646,
-              "block_ids": [
-                "B036"
-              ],
-              "sentence_ids": [
-                "B036.1"
-              ],
-              "line_start": 88,
-              "line_end": 88,
-              "page": 2,
-              "page_line": null,
-              "paragraph": null,
-              "table": null,
-              "row": null,
-              "cell": null,
-              "column": null,
-              "extraction": "text"
-            }
-          }
-        ],
-        "requirement_ids": [],
-        "section_path": [
-          "Уведомление о расходах по карте",
-          "Часть A. Новый функционал",
-          "Требования к тестированию",
-          "Тестирование требований"
-        ],
-        "explanation": "требования к тестированию (стенды, данные, эмуляция процессинга и push) отсутствуют.",
-        "suggestion": "Заполнить: тестовые стенды, эмулятор событий процессинга, способ проверки отправки push [уточнить]",
-        "title": "Раздел «Тестирование требований» не заполнен",
-        "scenario": null,
-        "test_gap": "нет условий тестирования интеграций",
-        "found_in": 1,
-        "of": 1,
-        "sources": [
-          {
-            "kind": "pass",
-            "pass_index": 1,
-            "rule_id": null,
-            "call_id": "search.1",
-            "checklist_item": null
-          }
-        ],
-        "witness": null,
-        "test_draft": {
-          "precondition": "Подготовлен [?1]. Карта активна, в KZT, уведомление включено, порог 50 000 ₸, расходы месяца 48 500 ₸.",
-          "action": "Отправить событие покупки на 1 500 ₸ способом [?2].; Проверить, что принял сервис push.",
-          "expected": "Сервис push принял запрос с данными: последние четыре цифры карты и сумму. Приём фиксируется с помощью [?3].",
-          "gaps": [
-            "стенд и тестовые данные для проверки интеграций: раздел «Тестирование требований» не заполнен",
-            "способ эмуляции событий процессинга на стенде",
-            "способ получения и проверки push (эмулятор, журнал, реальное устройство)"
-          ],
-          "complete": false,
-          "steps": [
-            "Отправить событие покупки на 1 500 ₸ способом [?2].",
-            "Проверить, что принял сервис push."
-          ],
-          "values": [
-            {
-              "value": "последние четыре цифры карты и сумму",
-              "quote": "Сервис расходов → push: передать последние четыре цифры карты и сумму при достижении порога.",
-              "verified": true,
-              "anchor": {
-                "char_start": 2022,
-                "char_end": 2114,
-                "block_ids": [
-                  "B027"
-                ],
-                "sentence_ids": [
-                  "B027.3"
-                ],
-                "line_start": 65,
-                "line_end": 66,
-                "page": 2,
-                "page_line": null,
-                "paragraph": null,
-                "table": null,
-                "row": null,
-                "cell": null,
-                "column": null,
-                "extraction": "text"
-              }
-            }
-          ],
-          "gap_items": [
-            {
-              "number": 1,
-              "missing": "стенд и тестовые данные для проверки интеграций: раздел «Тестирование требований» не заполнен",
-              "part": "предусловие",
-              "replaced": null,
-              "question_id": null,
-              "question_withdrawn": false
-            },
-            {
-              "number": 2,
-              "missing": "способ эмуляции событий процессинга на стенде",
-              "part": "шаги",
-              "replaced": null,
-              "question_id": null,
-              "question_withdrawn": false
-            },
-            {
-              "number": 3,
-              "missing": "способ получения и проверки push (эмулятор, журнал, реальное устройство)",
-              "part": "ожидаемый результат",
-              "replaced": null,
-              "question_id": null,
-              "question_withdrawn": false
-            }
-          ],
-          "note": "",
-          "contested": false
-        },
-        "critic": null,
-        "anchor_corrected": false,
-        "notes": []
-      },
-      {
-        "id": "F-27",
+        "id": "F-23",
         "merged_id": "M-033",
         "property": "IND-VERIF",
         "defect_type": "incomplete",
@@ -7254,7 +6765,7 @@
         "notes": []
       },
       {
-        "id": "F-28",
+        "id": "F-24",
         "merged_id": "M-034",
         "property": "SET-COMPL",
         "defect_type": "incomplete",
@@ -7374,7 +6885,7 @@
         "notes": []
       },
       {
-        "id": "F-29",
+        "id": "F-25",
         "merged_id": "M-036",
         "property": "SET-CONS",
         "defect_type": "contradiction",
@@ -7615,109 +7126,7 @@
         "notes": []
       },
       {
-        "id": "F-30",
-        "merged_id": "M-038",
-        "property": "SET-COMPL",
-        "defect_type": "placeholder",
-        "verdict": "violation",
-        "scope": "set",
-        "severity": "major",
-        "severity_hint": "minor",
-        "severity_basis": "тип «незаполненное место», мешает написать тест-кейс: «важно»",
-        "severity_disputed": false,
-        "blocks_testing": true,
-        "quotes": [
-          {
-            "text": "Dev: /alerts/saveLimit. Prod: —",
-            "match": "exact",
-            "score": 100.0,
-            "located": "Dev: /alerts/saveLimit. Prod: —",
-            "anchor": {
-              "char_start": 5298,
-              "char_end": 5329,
-              "block_ids": [
-                "B067"
-              ],
-              "sentence_ids": [],
-              "line_start": 136,
-              "line_end": 136,
-              "page": 5,
-              "page_line": null,
-              "paragraph": null,
-              "table": 5,
-              "row": 6,
-              "cell": 2,
-              "column": "Значение",
-              "extraction": "table"
-            }
-          }
-        ],
-        "requirement_ids": [
-          "R-19"
-        ],
-        "section_path": [
-          "Уведомление о расходах по карте",
-          "Часть B. REST API",
-          "Общие параметры"
-        ],
-        "explanation": "нельзя настроить вызов и проверку контракта в продуктивной среде.",
-        "suggestion": "Prod: [уточнить: URL]; Swagger: [уточнить: ссылка]",
-        "title": "URL для Prod и Swagger не заполнены",
-        "scenario": null,
-        "test_gap": "нет адреса Prod и спецификации Swagger",
-        "found_in": 1,
-        "of": 1,
-        "sources": [
-          {
-            "kind": "pass",
-            "pass_index": 1,
-            "rule_id": null,
-            "call_id": "search.1",
-            "checklist_item": null
-          }
-        ],
-        "witness": null,
-        "test_draft": {
-          "precondition": "Продуктивный контур доступен, есть токен сессии владельца активной карты KZT.",
-          "action": "Отправить запрос сохранения порога (amount=50000, enabled=1) на адрес Prod: [?1].; Сверить формат запроса и ответа со спецификацией Swagger.",
-          "expected": "Запрос принят, ответ соответствует контракту из Swagger: [?2].",
-          "gaps": [
-            "адрес метода в Prod: в документе указан только Dev, для Prod стоит прочерк",
-            "спецификация Swagger: в документе для неё стоит прочерк, сверять ответ не с чем"
-          ],
-          "complete": false,
-          "steps": [
-            "Отправить запрос сохранения порога (amount=50000, enabled=1) на адрес Prod: [?1].",
-            "Сверить формат запроса и ответа со спецификацией Swagger."
-          ],
-          "values": [],
-          "gap_items": [
-            {
-              "number": 1,
-              "missing": "адрес метода в Prod: в документе указан только Dev, для Prod стоит прочерк",
-              "part": "шаги",
-              "replaced": null,
-              "question_id": null,
-              "question_withdrawn": false
-            },
-            {
-              "number": 2,
-              "missing": "спецификация Swagger: в документе для неё стоит прочерк, сверять ответ не с чем",
-              "part": "ожидаемый результат",
-              "replaced": null,
-              "question_id": null,
-              "question_withdrawn": false
-            }
-          ],
-          "note": "",
-          "contested": false
-        },
-        "critic": null,
-        "anchor_corrected": false,
-        "notes": []
-      },
-      {
-        "id": "F-31",
+        "id": "F-26",
         "merged_id": "M-039",
         "property": "IND-COMPL",
         "defect_type": "incomplete",
@@ -7819,7 +7228,7 @@
         ]
       },
       {
-        "id": "F-32",
+        "id": "F-27",
         "merged_id": "M-040",
         "property": "IND-UNAMB",
         "defect_type": "ambiguous",
@@ -8027,136 +7436,7 @@
         "notes": []
       },
       {
-        "id": "F-33",
-        "merged_id": "M-041",
-        "property": "SET-CONS",
-        "defect_type": "contradiction",
-        "verdict": "violation",
-        "scope": "set",
-        "severity": "major",
-        "severity_hint": "minor",
-        "severity_basis": "тип «противоречие», мешает написать тест-кейс: «критично»; подсказка модели «незначительно»: не выше «важно»",
-        "severity_disputed": true,
-        "blocks_testing": true,
-        "quotes": [
-          {
-            "text": "Content-Type: application/json.",
-            "match": "exact",
-            "score": 100.0,
-            "located": "Content-Type: application/json.",
-            "anchor": {
-              "char_start": 6499,
-              "char_end": 6530,
-              "block_ids": [
-                "B094"
-              ],
-              "sentence_ids": [
-                "B094.1"
-              ],
-              "line_start": 185,
-              "line_end": 185,
-              "page": 7,
-              "page_line": null,
-              "paragraph": null,
-              "table": null,
-              "row": null,
-              "cell": null,
-              "column": null,
-              "extraction": "text"
-            }
-          },
-          {
-            "text": "Тело не используется.",
-            "match": "exact",
-            "score": 100.0,
-            "located": "Тело не используется.",
-            "anchor": {
-              "char_start": 6534,
-              "char_end": 6555,
-              "block_ids": [
-                "B095"
-              ],
-              "sentence_ids": [
-                "B095.1"
-              ],
-              "line_start": 187,
-              "line_end": 187,
-              "page": 7,
-              "page_line": null,
-              "paragraph": null,
-              "table": null,
-              "row": null,
-              "cell": null,
-              "column": null,
-              "extraction": "text"
-            }
-          }
-        ],
-        "requirement_ids": [
-          "R-33",
-          "R-34"
-        ],
-        "section_path": [
-          "Уведомление о расходах по карте",
-          "Часть B. REST API",
-          "Параметры запроса",
-          "Request body"
-        ],
-        "explanation": "неясно, обязателен ли заголовок и какой ответ будет без него.",
-        "suggestion": "«Тело запроса — JSON, Content-Type: application/json обязателен» или удалить строку Content-Type",
-        "title": "Content-Type JSON при отсутствии тела",
-        "scenario": "запрос без Content-Type → по R-33 это ошибка → по R-34 тела нет, и заголовок не нужен.",
-        "test_gap": "нет ожидаемого ответа на запрос без Content-Type",
-        "found_in": 1,
-        "of": 1,
-        "sources": [
-          {
-            "kind": "pass",
-            "pass_index": 1,
-            "rule_id": null,
-            "call_id": "search.1",
-            "checklist_item": null
-          }
-        ],
-        "witness": {
-          "scenario": "",
-          "readings": [],
-          "checked": false,
-          "note": "Свидетель не построен: Заголовок Content-Type можно передать и без тела, оба места выполняются одновременно. Реакцию на отсутствие заголовка документ не задаёт, и для сценария пришлось бы её придумать."
-        },
-        "test_draft": {
-          "precondition": "Клиент вошёл, сессия действует, у него есть активная карта KZT.",
-          "action": "Отправить корректный запрос сохранения порога (amount=50000, enabled=1) без заголовка Content-Type.",
-          "expected": "[?1]",
-          "gaps": [
-            "обязателен ли заголовок Content-Type: application/json при запросе без тела и какой код и тело вернутся, если его нет: один пункт требует заголовок, другой говорит, что тело не используется"
-          ],
-          "complete": false,
-          "steps": [
-            "Отправить корректный запрос сохранения порога (amount=50000, enabled=1) без заголовка Content-Type."
-          ],
-          "values": [],
-          "gap_items": [
-            {
-              "number": 1,
-              "missing": "обязателен ли заголовок Content-Type: application/json при запросе без тела и какой код и тело вернутся, если его нет: один пункт требует заголовок, другой говорит, что тело не используется",
-              "part": "ожидаемый результат",
-              "replaced": null,
-              "question_id": "Q-04",
-              "question_withdrawn": false
-            }
-          ],
-          "note": "",
-          "contested": false
-        },
-        "critic": null,
-        "anchor_corrected": false,
-        "notes": [
-          "Модель оценила важность как «незначительно», а таблица кода по типу дефекта и влиянию на тест дала «критично», итог после правил кода «важно»: оценки расходятся больше чем на уровень."
-        ]
-      },
-      {
-        "id": "F-34",
+        "id": "F-28",
         "merged_id": "M-042",
         "property": "SET-CONS",
         "defect_type": "contradiction",
@@ -8320,7 +7600,7 @@
               "missing": "код успешного ответа при первом сохранении: один раздел допускает 200 или 201 и называет ответ «Created», список статусов содержит только 200",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-09",
+              "question_id": "Q-10",
               "question_withdrawn": false
             },
             {
@@ -8328,7 +7608,7 @@
               "missing": "код успешного ответа при повторном сохранении: отличается ли он от первого (200 или 201), документ не говорит",
               "part": "ожидаемый результат",
               "replaced": null,
-              "question_id": "Q-09",
+              "question_id": "Q-10",
               "question_withdrawn": false
             }
           ],
@@ -8340,7 +7620,7 @@
         "notes": []
       },
       {
-        "id": "F-35",
+        "id": "F-29",
         "merged_id": "M-043",
         "property": "SET-COMPL",
         "defect_type": "incomplete",
@@ -8519,120 +7799,7 @@
         "notes": []
       },
       {
-        "id": "F-36",
-        "merged_id": "M-044",
-        "property": "IND-COMPL",
-        "defect_type": "incomplete",
-        "verdict": "violation",
-        "scope": "requirement",
-        "severity": "major",
-        "severity_hint": "minor",
-        "severity_basis": "тип «неполнота», мешает написать тест-кейс: «критично»; подсказка модели «незначительно»: не выше «важно»",
-        "severity_disputed": true,
-        "blocks_testing": true,
-        "quotes": [
-          {
-            "text": "При успехе",
-            "match": "exact",
-            "score": 100.0,
-            "located": "При успехе",
-            "anchor": {
-              "char_start": 6773,
-              "char_end": 6783,
-              "block_ids": [
-                "B099"
-              ],
-              "sentence_ids": [],
-              "line_start": 196,
-              "line_end": 196,
-              "page": 7,
-              "page_line": null,
-              "paragraph": null,
-              "table": 7,
-              "row": 2,
-              "cell": 3,
-              "column": "Logic",
-              "extraction": "table"
-            }
-          }
-        ],
-        "requirement_ids": [
-          "R-37"
-        ],
-        "section_path": [
-          "Уведомление о расходах по карте",
-          "Часть B. REST API",
-          "Ответ"
-        ],
-        "explanation": "для amount условие «При успехе» задано, для enabled нет, а в примере ошибки (фрагмент в разделе «Статусы › 200. Successful — Created» (стр. 7)) enabled отсутствует.",
-        "suggestion": "enabled: возвращается только при result=OK",
-        "title": "Не задано, когда в ответе есть поле enabled",
-        "scenario": null,
-        "test_gap": "неизвестно, ожидать ли enabled в ответе с ошибкой",
-        "found_in": 1,
-        "of": 1,
-        "sources": [
-          {
-            "kind": "pass",
-            "pass_index": 1,
-            "rule_id": null,
-            "call_id": "search.1",
-            "checklist_item": "API-04"
-          }
-        ],
-        "witness": null,
-        "test_draft": {
-          "precondition": "Активная карта KZT клиента, действующая настройка: порог 50000 ₸, уведомление включено.",
-          "action": "Отправить запрос сохранения с amount=999 (вне допустимого диапазона), enabled=1.; Проверить, какие поля пришли в теле ответа.",
-          "expected": "В ответе нет поля amount (оно передаётся «[?1]»), есть поле message с описанием ошибки («[?2]»); поле enabled: [?3].",
-          "gaps": [
-            "значение «При успехе» модель назвала без цитаты из документа, поэтому оно заменено пропуском",
-            "значение «При ошибке» модель назвала без цитаты из документа, поэтому оно заменено пропуском",
-            "присутствует ли enabled в ответе с ошибкой: для enabled условие появления не задано, а в примере ответа с ошибкой этого поля нет"
-          ],
-          "complete": false,
-          "steps": [
-            "Отправить запрос сохранения с amount=999 (вне допустимого диапазона), enabled=1.",
-            "Проверить, какие поля пришли в теле ответа."
-          ],
-          "values": [],
-          "gap_items": [
-            {
-              "number": 1,
-              "missing": "значение «При успехе» модель назвала без цитаты из документа, поэтому оно заменено пропуском",
-              "part": "ожидаемый результат",
-              "replaced": "При успехе",
-              "question_id": "Q-02",
-              "question_withdrawn": false
-            },
-            {
-              "number": 2,
-              "missing": "значение «При ошибке» модель назвала без цитаты из документа, поэтому оно заменено пропуском",
-              "part": "ожидаемый результат",
-              "replaced": "При ошибке",
-              "question_id": "Q-02",
-              "question_withdrawn": false
-            },
-            {
-              "number": 3,
-              "missing": "присутствует ли enabled в ответе с ошибкой: для enabled условие появления не задано, а в примере ответа с ошибкой этого поля нет",
-              "part": "ожидаемый результат",
-              "replaced": null,
-              "question_id": "Q-02",
-              "question_withdrawn": false
-            }
-          ],
-          "note": "",
-          "contested": false
-        },
-        "critic": null,
-        "anchor_corrected": false,
-        "notes": [
-          "Модель оценила важность как «незначительно», а таблица кода по типу дефекта и влиянию на тест дала «критично», итог после правил кода «важно»: оценки расходятся больше чем на уровень."
-        ]
-      },
-      {
-        "id": "F-37",
+        "id": "F-30",
         "merged_id": "M-047",
         "property": "SET-CONS",
         "defect_type": "contradiction",
@@ -8810,6 +7977,132 @@
               "missing": "код и тело ответа для чужой карты: в описании статуса «доступ запрещён» указан 403, а в правиле для чужой карты — 404, как для отсутствующей карты; тело для 403 не задано, а 404 описан под заголовком 403",
               "part": "ожидаемый результат",
               "replaced": null,
+              "question_id": "Q-09",
+              "question_withdrawn": false
+            }
+          ],
+          "note": "",
+          "contested": false
+        },
+        "critic": null,
+        "anchor_corrected": false,
+        "notes": []
+      },
+      {
+        "id": "F-31",
+        "merged_id": "M-001",
+        "property": "SET-COMPR",
+        "defect_type": "terminology",
+        "verdict": "violation",
+        "scope": "set",
+        "severity": "minor",
+        "severity_hint": "major",
+        "severity_basis": "тип «разнобой терминов и единиц», мешает написать тест-кейс: «важно»; дефект формы без правила линтера: не выше «незначительно»",
+        "severity_disputed": false,
+        "blocks_testing": true,
+        "quotes": [
+          {
+            "text": "Информирование держателя карты",
+            "match": "exact",
+            "score": 100.0,
+            "located": "Информирование держателя карты",
+            "anchor": {
+              "char_start": 375,
+              "char_end": 405,
+              "block_ids": [
+                "B007"
+              ],
+              "sentence_ids": [],
+              "line_start": 15,
+              "line_end": 15,
+              "page": 1,
+              "page_line": null,
+              "paragraph": null,
+              "table": 1,
+              "row": 3,
+              "cell": 2,
+              "column": "Значение",
+              "extraction": "table"
+            }
+          },
+          {
+            "text": "Bearer, сессия владельца карты",
+            "match": "exact",
+            "score": 100.0,
+            "located": "Bearer, сессия владельца карты",
+            "anchor": {
+              "char_start": 5201,
+              "char_end": 5231,
+              "block_ids": [
+                "B064"
+              ],
+              "sentence_ids": [],
+              "line_start": 133,
+              "line_end": 133,
+              "page": 5,
+              "page_line": null,
+              "paragraph": null,
+              "table": 5,
+              "row": 3,
+              "cell": 2,
+              "column": "Значение",
+              "extraction": "table"
+            }
+          }
+        ],
+        "requirement_ids": [
+          "R-18"
+        ],
+        "section_path": [
+          "Уведомление о расходах по карте",
+          "Часть A. Новый функционал",
+          "Общие сведения"
+        ],
+        "explanation": "«держатель», «клиент» и «владелец» карты различаются для дополнительных карт, и неясно, кто вправе задавать порог.",
+        "suggestion": "Порог задаёт [уточнить: держатель карты / владелец счёта]; использовать один термин",
+        "title": "Клиент называется по-разному",
+        "scenario": null,
+        "test_gap": "неизвестно, может ли держатель дополнительной карты сохранить порог",
+        "found_in": 1,
+        "of": 1,
+        "sources": [
+          {
+            "kind": "pass",
+            "pass_index": 1,
+            "rule_id": null,
+            "call_id": "search.1",
+            "checklist_item": null
+          }
+        ],
+        "witness": null,
+        "test_draft": {
+          "precondition": "У клиента есть дополнительная карта KZT, выпущенная к основной карте другого держателя. Клиент вошёл в приложение под своей сессией.",
+          "action": "Отправить запрос сохранения порога: cardId — дополнительная карта, amount=50000, enabled=1.; Открыть экран «Карты → Расходы → Уведомления» для этой карты и посмотреть сохранённую настройку.",
+          "expected": "Результат сохранения: [?1]. Настройка карты: [?2].",
+          "gaps": [
+            "может ли держатель дополнительной карты сохранить порог и какой ответ API он получает: в документе везде разные термины («держатель», «клиент», «владелец») и только проверка «принадлежности карты клиенту», про дополнительные карты ничего нет",
+            "какая настройка остаётся у карты после этой попытки: зависит от того, вправе ли держатель дополнительной карты задавать порог"
+          ],
+          "complete": false,
+          "steps": [
+            "Отправить запрос сохранения порога: cardId — дополнительная карта, amount=50000, enabled=1.",
+            "Открыть экран «Карты → Расходы → Уведомления» для этой карты и посмотреть сохранённую настройку."
+          ],
+          "values": [],
+          "gap_items": [
+            {
+              "number": 1,
+              "missing": "может ли держатель дополнительной карты сохранить порог и какой ответ API он получает: в документе везде разные термины («держатель», «клиент», «владелец») и только проверка «принадлежности карты клиенту», про дополнительные карты ничего нет",
+              "part": "ожидаемый результат",
+              "replaced": null,
+              "question_id": null,
+              "question_withdrawn": false
+            },
+            {
+              "number": 2,
+              "missing": "какая настройка остаётся у карты после этой попытки: зависит от того, вправе ли держатель дополнительной карты задавать порог",
+              "part": "ожидаемый результат",
+              "replaced": null,
               "question_id": null,
               "question_withdrawn": false
             }
@@ -8822,7 +8115,7 @@
         "notes": []
       },
       {
-        "id": "F-38",
+        "id": "F-32",
         "merged_id": "M-002",
         "property": "SET-COMPR",
         "defect_type": "terminology",
@@ -8916,7 +8209,7 @@
         "notes": []
       },
       {
-        "id": "F-39",
+        "id": "F-33",
         "merged_id": "M-003",
         "property": "IND-TRACE",
         "defect_type": "traceability",
@@ -9010,7 +8303,7 @@
         ]
       },
       {
-        "id": "F-40",
+        "id": "F-34",
         "merged_id": "M-005",
         "property": "SET-COMPR",
         "defect_type": "terminology",
@@ -9105,7 +8398,77 @@
         "notes": []
       },
       {
-        "id": "F-41",
+        "id": "F-35",
+        "merged_id": "M-006",
+        "property": "SET-VALID",
+        "defect_type": "unverifiable",
+        "verdict": "violation",
+        "scope": "set",
+        "severity": "minor",
+        "severity_hint": "minor",
+        "severity_basis": "тип «непроверяемость», не мешает написать тест-кейс: «важно»; подсказка модели «незначительно»: не выше «незначительно»",
+        "severity_disputed": false,
+        "blocks_testing": false,
+        "quotes": [
+          {
+            "text": "Дать клиенту возможность узнать о достижении личного бюджета в момент покупки.",
+            "match": "exact",
+            "score": 100.0,
+            "located": "Дать клиенту возможность узнать о достижении личного бюджета в\nмомент покупки.",
+            "anchor": {
+              "char_start": 682,
+              "char_end": 760,
+              "block_ids": [
+                "B013"
+              ],
+              "sentence_ids": [
+                "B013.1"
+              ],
+              "line_start": 23,
+              "line_end": 24,
+              "page": 1,
+              "page_line": null,
+              "paragraph": null,
+              "table": null,
+              "row": null,
+              "cell": null,
+              "column": null,
+              "extraction": "text"
+            }
+          }
+        ],
+        "requirement_ids": [
+          "R-01"
+        ],
+        "section_path": [
+          "Уведомление о расходах по карте",
+          "Часть A. Новый функционал",
+          "Цели"
+        ],
+        "explanation": "нельзя показать, что выполнение требований достигает цели.",
+        "suggestion": "Цель: клиент получает push о достижении порога не позднее [уточнить: N мин] после [уточнить: событие]; показатель — [уточнить: доля включивших функцию]",
+        "title": "У цели нет измеримого показателя",
+        "scenario": null,
+        "test_gap": null,
+        "found_in": 1,
+        "of": 1,
+        "sources": [
+          {
+            "kind": "pass",
+            "pass_index": 1,
+            "rule_id": null,
+            "call_id": "search.1",
+            "checklist_item": null
+          }
+        ],
+        "witness": null,
+        "test_draft": null,
+        "critic": null,
+        "anchor_corrected": false,
+        "notes": []
+      },
+      {
+        "id": "F-36",
         "merged_id": "M-007",
         "property": "SET-COMPR",
         "defect_type": "terminology",
@@ -9202,7 +8565,7 @@
         "notes": []
       },
       {
-        "id": "F-42",
+        "id": "F-37",
         "merged_id": "M-011",
         "property": "IND-SING",
         "defect_type": "not_atomic",
@@ -9300,7 +8663,7 @@
         "notes": []
       },
       {
-        "id": "F-43",
+        "id": "F-38",
         "merged_id": "M-020",
         "property": "SET-COMPR",
         "defect_type": "terminology",
@@ -9396,7 +8759,7 @@
         "notes": []
       },
       {
-        "id": "F-44",
+        "id": "F-39",
         "merged_id": "M-021",
         "property": "SET-MOD",
         "defect_type": "redundancy",
@@ -9494,7 +8857,7 @@
         "notes": []
       },
       {
-        "id": "F-45",
+        "id": "F-40",
         "merged_id": "M-026",
         "property": "IND-CONF",
         "defect_type": "traceability",
@@ -9564,7 +8927,300 @@
         "notes": []
       },
       {
-        "id": "F-46",
+        "id": "F-41",
+        "merged_id": "M-029",
+        "property": "SET-CONS",
+        "defect_type": "terminology",
+        "verdict": "violation",
+        "scope": "set",
+        "severity": "minor",
+        "severity_hint": "major",
+        "severity_basis": "тип «разнобой терминов и единиц», мешает написать тест-кейс: «важно»; дефект формы без правила линтера: не выше «незначительно»",
+        "severity_disputed": false,
+        "blocks_testing": true,
+        "quotes": [
+          {
+            "text": "Хранить идентификатор карты, месяц, идентификатор операции, сумму покупки в тиынах, признак отправки и порог в тенге.",
+            "match": "exact",
+            "score": 100.0,
+            "located": "Хранить идентификатор карты, месяц, идентификатор операции, сумму\nпокупки в тиынах, признак отправки и порог в тенге.",
+            "anchor": {
+              "char_start": 2242,
+              "char_end": 2359,
+              "block_ids": [
+                "B031"
+              ],
+              "sentence_ids": [
+                "B031.1"
+              ],
+              "line_start": 75,
+              "line_end": 76,
+              "page": 2,
+              "page_line": null,
+              "paragraph": null,
+              "table": null,
+              "row": null,
+              "cell": null,
+              "column": null,
+              "extraction": "text"
+            }
+          }
+        ],
+        "requirement_ids": [
+          "R-11"
+        ],
+        "section_path": [
+          "Уведомление о расходах по карте",
+          "Часть A. Новый функционал",
+          "Требования к данным"
+        ],
+        "explanation": "сравнение суммы покупки с порогом требует пересчёта, а правило пересчёта и округления не задано.",
+        "suggestion": "Все суммы, включая порог, хранятся в тиынах (целое число)",
+        "title": "Суммы хранятся в разных единицах",
+        "scenario": null,
+        "test_gap": "нет единицы для сравнения расходов с порогом",
+        "found_in": 1,
+        "of": 1,
+        "sources": [
+          {
+            "kind": "pass",
+            "pass_index": 1,
+            "rule_id": null,
+            "call_id": "search.1",
+            "checklist_item": "MON-01"
+          }
+        ],
+        "witness": null,
+        "test_draft": {
+          "precondition": "Карта активна, в KZT. Уведомление включено, порог 50 000 ₸, расходы месяца 0 ₸, push в этом месяце не было. Сумма покупки хранится в тиынах, порог в тенге.",
+          "action": "Провести покупку на 500 ₸ (50 000 тиын).; Провести покупку на 49 499,99 ₸, чтобы накопленная сумма стала 49 999,99 ₸ (4 999 999 тиын).",
+          "expected": "После шага 1 получено push: [?1]. После шага 2 получено push: [?2].",
+          "gaps": [
+            "единица, в которой расходы сравниваются с порогом, и правило пересчёта тиынов в тенге: в документе его нет",
+            "правило округления накопленной суммы с дробной частью тенге при сравнении с целым порогом"
+          ],
+          "complete": false,
+          "steps": [
+            "Провести покупку на 500 ₸ (50 000 тиын).",
+            "Провести покупку на 49 499,99 ₸, чтобы накопленная сумма стала 49 999,99 ₸ (4 999 999 тиын)."
+          ],
+          "values": [
+            {
+              "value": "в тиынах",
+              "quote": "Хранить идентификатор карты, месяц, идентификатор операции, сумму покупки в тиынах, признак отправки и порог в тенге.",
+              "verified": true,
+              "anchor": {
+                "char_start": 2242,
+                "char_end": 2359,
+                "block_ids": [
+                  "B031"
+                ],
+                "sentence_ids": [
+                  "B031.1"
+                ],
+                "line_start": 75,
+                "line_end": 76,
+                "page": 2,
+                "page_line": null,
+                "paragraph": null,
+                "table": null,
+                "row": null,
+                "cell": null,
+                "column": null,
+                "extraction": "text"
+              }
+            },
+            {
+              "value": "в тенге",
+              "quote": "Хранить идентификатор карты, месяц, идентификатор операции, сумму покупки в тиынах, признак отправки и порог в тенге.",
+              "verified": true,
+              "anchor": {
+                "char_start": 2242,
+                "char_end": 2359,
+                "block_ids": [
+                  "B031"
+                ],
+                "sentence_ids": [
+                  "B031.1"
+                ],
+                "line_start": 75,
+                "line_end": 76,
+                "page": 2,
+                "page_line": null,
+                "paragraph": null,
+                "table": null,
+                "row": null,
+                "cell": null,
+                "column": null,
+                "extraction": "text"
+              }
+            }
+          ],
+          "gap_items": [
+            {
+              "number": 1,
+              "missing": "единица, в которой расходы сравниваются с порогом, и правило пересчёта тиынов в тенге: в документе его нет",
+              "part": "ожидаемый результат",
+              "replaced": null,
+              "question_id": null,
+              "question_withdrawn": false
+            },
+            {
+              "number": 2,
+              "missing": "правило округления накопленной суммы с дробной частью тенге при сравнении с целым порогом",
+              "part": "ожидаемый результат",
+              "replaced": null,
+              "question_id": null,
+              "question_withdrawn": false
+            }
+          ],
+          "note": "",
+          "contested": false
+        },
+        "critic": null,
+        "anchor_corrected": false,
+        "notes": []
+      },
+      {
+        "id": "F-42",
+        "merged_id": "M-032",
+        "property": "SET-COMPL",
+        "defect_type": "placeholder",
+        "verdict": "violation",
+        "scope": "set",
+        "severity": "minor",
+        "severity_hint": "minor",
+        "severity_basis": "тип «незаполненное место», мешает написать тест-кейс: «важно»; дефект формы без правила линтера: не выше «незначительно»",
+        "severity_disputed": false,
+        "blocks_testing": true,
+        "quotes": [
+          {
+            "text": "заполняются тестировщиками",
+            "match": "exact",
+            "score": 100.0,
+            "located": "заполняются тестировщиками",
+            "anchor": {
+              "char_start": 2620,
+              "char_end": 2646,
+              "block_ids": [
+                "B036"
+              ],
+              "sentence_ids": [
+                "B036.1"
+              ],
+              "line_start": 88,
+              "line_end": 88,
+              "page": 2,
+              "page_line": null,
+              "paragraph": null,
+              "table": null,
+              "row": null,
+              "cell": null,
+              "column": null,
+              "extraction": "text"
+            }
+          }
+        ],
+        "requirement_ids": [],
+        "section_path": [
+          "Уведомление о расходах по карте",
+          "Часть A. Новый функционал",
+          "Требования к тестированию",
+          "Тестирование требований"
+        ],
+        "explanation": "требования к тестированию (стенды, данные, эмуляция процессинга и push) отсутствуют.",
+        "suggestion": "Заполнить: тестовые стенды, эмулятор событий процессинга, способ проверки отправки push [уточнить]",
+        "title": "Раздел «Тестирование требований» не заполнен",
+        "scenario": null,
+        "test_gap": "нет условий тестирования интеграций",
+        "found_in": 1,
+        "of": 1,
+        "sources": [
+          {
+            "kind": "pass",
+            "pass_index": 1,
+            "rule_id": null,
+            "call_id": "search.1",
+            "checklist_item": null
+          }
+        ],
+        "witness": null,
+        "test_draft": {
+          "precondition": "Подготовлен [?1]. Карта активна, в KZT, уведомление включено, порог 50 000 ₸, расходы месяца 48 500 ₸.",
+          "action": "Отправить событие покупки на 1 500 ₸ способом [?2].; Проверить, что принял сервис push.",
+          "expected": "Сервис push принял запрос с данными: последние четыре цифры карты и сумму. Приём фиксируется с помощью [?3].",
+          "gaps": [
+            "стенд и тестовые данные для проверки интеграций: раздел «Тестирование требований» не заполнен",
+            "способ эмуляции событий процессинга на стенде",
+            "способ получения и проверки push (эмулятор, журнал, реальное устройство)"
+          ],
+          "complete": false,
+          "steps": [
+            "Отправить событие покупки на 1 500 ₸ способом [?2].",
+            "Проверить, что принял сервис push."
+          ],
+          "values": [
+            {
+              "value": "последние четыре цифры карты и сумму",
+              "quote": "Сервис расходов → push: передать последние четыре цифры карты и сумму при достижении порога.",
+              "verified": true,
+              "anchor": {
+                "char_start": 2022,
+                "char_end": 2114,
+                "block_ids": [
+                  "B027"
+                ],
+                "sentence_ids": [
+                  "B027.3"
+                ],
+                "line_start": 65,
+                "line_end": 66,
+                "page": 2,
+                "page_line": null,
+                "paragraph": null,
+                "table": null,
+                "row": null,
+                "cell": null,
+                "column": null,
+                "extraction": "text"
+              }
+            }
+          ],
+          "gap_items": [
+            {
+              "number": 1,
+              "missing": "стенд и тестовые данные для проверки интеграций: раздел «Тестирование требований» не заполнен",
+              "part": "предусловие",
+              "replaced": null,
+              "question_id": null,
+              "question_withdrawn": false
+            },
+            {
+              "number": 2,
+              "missing": "способ эмуляции событий процессинга на стенде",
+              "part": "шаги",
+              "replaced": null,
+              "question_id": null,
+              "question_withdrawn": false
+            },
+            {
+              "number": 3,
+              "missing": "способ получения и проверки push (эмулятор, журнал, реальное устройство)",
+              "part": "ожидаемый результат",
+              "replaced": null,
+              "question_id": null,
+              "question_withdrawn": false
+            }
+          ],
+          "note": "",
+          "contested": false
+        },
+        "critic": null,
+        "anchor_corrected": false,
+        "notes": []
+      },
+      {
+        "id": "F-43",
         "merged_id": "M-035",
         "property": "SET-COMPL",
         "defect_type": "placeholder",
@@ -9654,6 +9310,350 @@
         "critic": null,
         "anchor_corrected": false,
         "notes": []
+      },
+      {
+        "id": "F-44",
+        "merged_id": "M-038",
+        "property": "SET-COMPL",
+        "defect_type": "placeholder",
+        "verdict": "violation",
+        "scope": "set",
+        "severity": "minor",
+        "severity_hint": "minor",
+        "severity_basis": "тип «незаполненное место», мешает написать тест-кейс: «важно»; дефект формы без правила линтера: не выше «незначительно»",
+        "severity_disputed": false,
+        "blocks_testing": true,
+        "quotes": [
+          {
+            "text": "Dev: /alerts/saveLimit. Prod: —",
+            "match": "exact",
+            "score": 100.0,
+            "located": "Dev: /alerts/saveLimit. Prod: —",
+            "anchor": {
+              "char_start": 5298,
+              "char_end": 5329,
+              "block_ids": [
+                "B067"
+              ],
+              "sentence_ids": [],
+              "line_start": 136,
+              "line_end": 136,
+              "page": 5,
+              "page_line": null,
+              "paragraph": null,
+              "table": 5,
+              "row": 6,
+              "cell": 2,
+              "column": "Значение",
+              "extraction": "table"
+            }
+          }
+        ],
+        "requirement_ids": [
+          "R-19"
+        ],
+        "section_path": [
+          "Уведомление о расходах по карте",
+          "Часть B. REST API",
+          "Общие параметры"
+        ],
+        "explanation": "нельзя настроить вызов и проверку контракта в продуктивной среде.",
+        "suggestion": "Prod: [уточнить: URL]; Swagger: [уточнить: ссылка]",
+        "title": "URL для Prod и Swagger не заполнены",
+        "scenario": null,
+        "test_gap": "нет адреса Prod и спецификации Swagger",
+        "found_in": 1,
+        "of": 1,
+        "sources": [
+          {
+            "kind": "pass",
+            "pass_index": 1,
+            "rule_id": null,
+            "call_id": "search.1",
+            "checklist_item": null
+          }
+        ],
+        "witness": null,
+        "test_draft": {
+          "precondition": "Продуктивный контур доступен, есть токен сессии владельца активной карты KZT.",
+          "action": "Отправить запрос сохранения порога (amount=50000, enabled=1) на адрес Prod: [?1].; Сверить формат запроса и ответа со спецификацией Swagger.",
+          "expected": "Запрос принят, ответ соответствует контракту из Swagger: [?2].",
+          "gaps": [
+            "адрес метода в Prod: в документе указан только Dev, для Prod стоит прочерк",
+            "спецификация Swagger: в документе для неё стоит прочерк, сверять ответ не с чем"
+          ],
+          "complete": false,
+          "steps": [
+            "Отправить запрос сохранения порога (amount=50000, enabled=1) на адрес Prod: [?1].",
+            "Сверить формат запроса и ответа со спецификацией Swagger."
+          ],
+          "values": [],
+          "gap_items": [
+            {
+              "number": 1,
+              "missing": "адрес метода в Prod: в документе указан только Dev, для Prod стоит прочерк",
+              "part": "шаги",
+              "replaced": null,
+              "question_id": null,
+              "question_withdrawn": false
+            },
+            {
+              "number": 2,
+              "missing": "спецификация Swagger: в документе для неё стоит прочерк, сверять ответ не с чем",
+              "part": "ожидаемый результат",
+              "replaced": null,
+              "question_id": null,
+              "question_withdrawn": false
+            }
+          ],
+          "note": "",
+          "contested": false
+        },
+        "critic": null,
+        "anchor_corrected": false,
+        "notes": []
+      },
+      {
+        "id": "F-45",
+        "merged_id": "M-041",
+        "property": "SET-CONS",
+        "defect_type": "contradiction",
+        "verdict": "violation",
+        "scope": "set",
+        "severity": "minor",
+        "severity_hint": "minor",
+        "severity_basis": "тип «противоречие», мешает написать тест-кейс: «критично»; подсказка модели «незначительно»: не выше «важно»; подсказка модели «незначительно»: не выше «незначительно»",
+        "severity_disputed": true,
+        "blocks_testing": true,
+        "quotes": [
+          {
+            "text": "Content-Type: application/json.",
+            "match": "exact",
+            "score": 100.0,
+            "located": "Content-Type: application/json.",
+            "anchor": {
+              "char_start": 6499,
+              "char_end": 6530,
+              "block_ids": [
+                "B094"
+              ],
+              "sentence_ids": [
+                "B094.1"
+              ],
+              "line_start": 185,
+              "line_end": 185,
+              "page": 7,
+              "page_line": null,
+              "paragraph": null,
+              "table": null,
+              "row": null,
+              "cell": null,
+              "column": null,
+              "extraction": "text"
+            }
+          },
+          {
+            "text": "Тело не используется.",
+            "match": "exact",
+            "score": 100.0,
+            "located": "Тело не используется.",
+            "anchor": {
+              "char_start": 6534,
+              "char_end": 6555,
+              "block_ids": [
+                "B095"
+              ],
+              "sentence_ids": [
+                "B095.1"
+              ],
+              "line_start": 187,
+              "line_end": 187,
+              "page": 7,
+              "page_line": null,
+              "paragraph": null,
+              "table": null,
+              "row": null,
+              "cell": null,
+              "column": null,
+              "extraction": "text"
+            }
+          }
+        ],
+        "requirement_ids": [
+          "R-33",
+          "R-34"
+        ],
+        "section_path": [
+          "Уведомление о расходах по карте",
+          "Часть B. REST API",
+          "Параметры запроса",
+          "Request body"
+        ],
+        "explanation": "неясно, обязателен ли заголовок и какой ответ будет без него.",
+        "suggestion": "«Тело запроса — JSON, Content-Type: application/json обязателен» или удалить строку Content-Type",
+        "title": "Content-Type JSON при отсутствии тела",
+        "scenario": "запрос без Content-Type → по R-33 это ошибка → по R-34 тела нет, и заголовок не нужен.",
+        "test_gap": "нет ожидаемого ответа на запрос без Content-Type",
+        "found_in": 1,
+        "of": 1,
+        "sources": [
+          {
+            "kind": "pass",
+            "pass_index": 1,
+            "rule_id": null,
+            "call_id": "search.1",
+            "checklist_item": null
+          }
+        ],
+        "witness": {
+          "scenario": "",
+          "readings": [],
+          "checked": false,
+          "note": "Свидетель не построен: Заголовок Content-Type можно передать и без тела, оба места выполняются одновременно. Реакцию на отсутствие заголовка документ не задаёт, и для сценария пришлось бы её придумать."
+        },
+        "test_draft": {
+          "precondition": "Клиент вошёл, сессия действует, у него есть активная карта KZT.",
+          "action": "Отправить корректный запрос сохранения порога (amount=50000, enabled=1) без заголовка Content-Type.",
+          "expected": "[?1]",
+          "gaps": [
+            "обязателен ли заголовок Content-Type: application/json при запросе без тела и какой код и тело вернутся, если его нет: один пункт требует заголовок, другой говорит, что тело не используется"
+          ],
+          "complete": false,
+          "steps": [
+            "Отправить корректный запрос сохранения порога (amount=50000, enabled=1) без заголовка Content-Type."
+          ],
+          "values": [],
+          "gap_items": [
+            {
+              "number": 1,
+              "missing": "обязателен ли заголовок Content-Type: application/json при запросе без тела и какой код и тело вернутся, если его нет: один пункт требует заголовок, другой говорит, что тело не используется",
+              "part": "ожидаемый результат",
+              "replaced": null,
+              "question_id": "Q-05",
+              "question_withdrawn": true
+            }
+          ],
+          "note": "",
+          "contested": false
+        },
+        "critic": null,
+        "anchor_corrected": false,
+        "notes": [
+          "Модель оценила важность как «незначительно», а таблица кода по типу дефекта и влиянию на тест дала «критично», итог после правил кода «незначительно»: оценки расходятся больше чем на уровень."
+        ]
+      },
+      {
+        "id": "F-46",
+        "merged_id": "M-044",
+        "property": "IND-COMPL",
+        "defect_type": "incomplete",
+        "verdict": "violation",
+        "scope": "requirement",
+        "severity": "minor",
+        "severity_hint": "minor",
+        "severity_basis": "тип «неполнота», мешает написать тест-кейс: «критично»; подсказка модели «незначительно»: не выше «важно»; подсказка модели «незначительно»: не выше «незначительно»",
+        "severity_disputed": true,
+        "blocks_testing": true,
+        "quotes": [
+          {
+            "text": "При успехе",
+            "match": "exact",
+            "score": 100.0,
+            "located": "При успехе",
+            "anchor": {
+              "char_start": 6773,
+              "char_end": 6783,
+              "block_ids": [
+                "B099"
+              ],
+              "sentence_ids": [],
+              "line_start": 196,
+              "line_end": 196,
+              "page": 7,
+              "page_line": null,
+              "paragraph": null,
+              "table": 7,
+              "row": 2,
+              "cell": 3,
+              "column": "Logic",
+              "extraction": "table"
+            }
+          }
+        ],
+        "requirement_ids": [
+          "R-37"
+        ],
+        "section_path": [
+          "Уведомление о расходах по карте",
+          "Часть B. REST API",
+          "Ответ"
+        ],
+        "explanation": "для amount условие «При успехе» задано, для enabled нет, а в примере ошибки (фрагмент в разделе «Статусы › 200. Successful — Created» (стр. 7)) enabled отсутствует.",
+        "suggestion": "enabled: возвращается только при result=OK",
+        "title": "Не задано, когда в ответе есть поле enabled",
+        "scenario": null,
+        "test_gap": "неизвестно, ожидать ли enabled в ответе с ошибкой",
+        "found_in": 1,
+        "of": 1,
+        "sources": [
+          {
+            "kind": "pass",
+            "pass_index": 1,
+            "rule_id": null,
+            "call_id": "search.1",
+            "checklist_item": "API-04"
+          }
+        ],
+        "witness": null,
+        "test_draft": {
+          "precondition": "Активная карта KZT клиента, действующая настройка: порог 50000 ₸, уведомление включено.",
+          "action": "Отправить запрос сохранения с amount=999 (вне допустимого диапазона), enabled=1.; Проверить, какие поля пришли в теле ответа.",
+          "expected": "В ответе нет поля amount (оно передаётся «[?1]»), есть поле message с описанием ошибки («[?2]»); поле enabled: [?3].",
+          "gaps": [
+            "значение «При успехе» модель назвала без цитаты из документа, поэтому оно заменено пропуском",
+            "значение «При ошибке» модель назвала без цитаты из документа, поэтому оно заменено пропуском",
+            "присутствует ли enabled в ответе с ошибкой: для enabled условие появления не задано, а в примере ответа с ошибкой этого поля нет"
+          ],
+          "complete": false,
+          "steps": [
+            "Отправить запрос сохранения с amount=999 (вне допустимого диапазона), enabled=1.",
+            "Проверить, какие поля пришли в теле ответа."
+          ],
+          "values": [],
+          "gap_items": [
+            {
+              "number": 1,
+              "missing": "значение «При успехе» модель назвала без цитаты из документа, поэтому оно заменено пропуском",
+              "part": "ожидаемый результат",
+              "replaced": "При успехе",
+              "question_id": "Q-02",
+              "question_withdrawn": false
+            },
+            {
+              "number": 2,
+              "missing": "значение «При ошибке» модель назвала без цитаты из документа, поэтому оно заменено пропуском",
+              "part": "ожидаемый результат",
+              "replaced": "При ошибке",
+              "question_id": "Q-02",
+              "question_withdrawn": false
+            },
+            {
+              "number": 3,
+              "missing": "присутствует ли enabled в ответе с ошибкой: для enabled условие появления не задано, а в примере ответа с ошибкой этого поля нет",
+              "part": "ожидаемый результат",
+              "replaced": null,
+              "question_id": "Q-02",
+              "question_withdrawn": false
+            }
+          ],
+          "note": "",
+          "contested": false
+        },
+        "critic": null,
+        "anchor_corrected": false,
+        "notes": [
+          "Модель оценила важность как «незначительно», а таблица кода по типу дефекта и влиянию на тест дала «критично», итог после правил кода «незначительно»: оценки расходятся больше чем на уровень."
+        ]
       },
       {
         "id": "F-47",
@@ -9784,8 +9784,8 @@
       ],
       "by_severity": {
         "critical": 7,
-        "major": 30,
-        "minor": 10
+        "major": 23,
+        "minor": 17
       },
       "by_property": {
         "IND-UNAMB": 5,
@@ -9827,140 +9827,140 @@
     "traffic_rule": "красный, если есть критичное нарушение, которое мешает написать тест-кейс; жёлтый, если критичных нет, но есть важные нарушения, находки «неясно» или вопросы автору, которые блокируют разработку или тестирование; зелёный, если остались только незначительные нарушения или их нет. Цвет считает код по находкам со сверенными цитатами и по вопросам автору, модель его не выбирает.",
     "requirement_status": {
       "R-01": [
-        "F-09",
-        "F-10",
-        "F-40"
+        "F-08",
+        "F-34",
+        "F-35"
       ],
       "R-02.1": [
-        "F-41"
+        "F-36"
       ],
       "R-02.2": [
-        "F-38"
+        "F-32"
       ],
       "R-03.1": [],
       "R-03.2": [],
       "R-03.3": [
-        "F-11"
+        "F-09"
       ],
       "R-04": [
-        "F-12"
+        "F-10"
       ],
       "R-05.1": [
-        "F-13"
+        "F-11"
       ],
       "R-05.2": [
-        "F-42"
+        "F-37"
       ],
       "R-06.1": [
         "F-01",
-        "F-14"
+        "F-12"
       ],
       "R-06.2": [
         "F-02",
-        "F-09"
+        "F-08"
       ],
       "R-06.3": [
-        "F-15"
+        "F-13"
       ],
       "R-06.4": [
-        "F-42"
+        "F-37"
       ],
       "R-07.1": [
-        "F-16"
+        "F-14"
       ],
       "R-07.2": [
         "F-03",
-        "F-17"
+        "F-15"
       ],
       "R-08.1": [
-        "F-18",
-        "F-43",
-        "F-44"
+        "F-16",
+        "F-38",
+        "F-39"
       ],
       "R-08.2": [
         "F-03",
         "F-04"
       ],
       "R-09.1": [
-        "F-19"
+        "F-17"
       ],
       "R-09.2": [
-        "F-20"
+        "F-18"
       ],
       "R-09.3": [
-        "F-21"
+        "F-19"
       ],
       "R-10": [
-        "F-22",
-        "F-45"
+        "F-20",
+        "F-40"
       ],
       "R-11": [
-        "F-23",
-        "F-24"
+        "F-21",
+        "F-41"
       ],
       "R-12.1": [
         "F-05"
       ],
       "R-12.2": [
-        "F-25"
+        "F-22"
       ],
       "R-13": [
-        "F-27",
-        "F-28"
+        "F-23",
+        "F-24"
       ],
       "R-14": [
         "F-01"
       ],
       "R-15": [
-        "F-43"
+        "F-38"
       ],
       "R-16": [
-        "F-29"
+        "F-25"
       ],
       "R-17": [
         "F-06"
       ],
       "R-18": [
-        "F-08"
+        "F-31"
       ],
       "R-19": [
-        "F-30",
-        "F-40"
+        "F-34",
+        "F-44"
       ],
       "R-20": [],
       "R-21": [],
       "R-22": [],
       "R-23": [],
       "R-24": [
-        "F-32"
+        "F-27"
       ],
       "R-25": [],
       "R-26": [],
       "R-27": [
-        "F-44"
+        "F-39"
       ],
       "R-28": [
-        "F-41"
+        "F-36"
       ],
       "R-29": [],
       "R-30": [],
       "R-31": [],
       "R-32": [],
       "R-33": [
-        "F-33"
+        "F-45"
       ],
       "R-34": [
-        "F-33"
+        "F-45"
       ],
       "R-35.1": [
-        "F-34"
+        "F-28"
       ],
       "R-35.2": [
-        "F-35"
+        "F-29"
       ],
       "R-36": [],
       "R-37": [
-        "F-36"
+        "F-46"
       ],
       "R-38": [],
       "R-39": [],
@@ -9970,11 +9970,11 @@
       ],
       "R-42": [],
       "R-43": [
-        "F-37"
+        "F-30"
       ],
       "R-44": [],
       "R-45": [
-        "F-37"
+        "F-30"
       ]
     },
     "diagnostics": []
@@ -9990,7 +9990,7 @@
       "addressee": [
         "business"
       ],
-      "topic": "выключенное уведомление",
+      "topic": "push после включения",
       "quotes": [
         {
           "text": "По умолчанию уведомление выключено.",
@@ -10045,33 +10045,33 @@
           }
         }
       ],
-      "question": "Уведомление выключено, 10 марта расходы перешли порог 50 000 ₸, 15 марта клиент включил уведомление: когда он получает push?",
-      "why": "Ф-3 не говорит, как на push влияет переключатель, а Ф-4 не описывает новый порог ниже уже накопленной суммы. От ответа зависят ветки BPMN-схемы, признак отправки и критерий приёмки 1, где состояние переключателя не указано.",
+      "question": "При выключенном уведомлении расходы дошли до 52 000 ₸ при пороге 50 000 ₸, 15 марта клиент включил уведомление: приходит ли push в марте?",
+      "why": "Ф-3 не учитывает переключатель. Тот же ответ нужен для снижения порога ниже накопленной суммы; команда считает, что при выключенном уведомлении расходы учитываются, а push не отправляется.",
       "options": [
         {
           "label": "A",
-          "text": "В марте push не приходит: выключенное уведомление подавляет push, а включение его не вызывает",
-          "change": "Добавить в Ф-3 условие «уведомление включено в момент достижения порога»; добавить ветку на схему",
+          "text": "Приходит сразу при включении",
+          "change": "Добавить в Ф-3: при включении или снижении порога, если расходы не ниже порога и push в месяце не было, push отправляется сразу",
           "grounded_in": null
         },
         {
           "label": "B",
-          "text": "Push приходит сразу при включении 15 марта, если расходы уже не ниже порога",
-          "change": "Добавить в Ф-3 правило отправки при включении; так же описать снижение порога ниже накопленной суммы",
+          "text": "Приходит при следующей покупке в марте",
+          "change": "Добавить в Ф-3: push отправляется при первой покупке после включения, если расходы не ниже порога",
           "grounded_in": null
         },
         {
           "label": "C",
-          "text": "Push приходит 10 марта: переключатель на отправку не влияет",
-          "change": "Указать, на что влияет переключатель; критерий приёмки 1 оставить без условия о переключателе",
+          "text": "Не приходит до следующего месяца: перехода снизу вверх уже не будет",
+          "change": "Добавить в Ф-3 условие «уведомление включено в момент перехода» и ветку на BPMN-схему",
           "grounded_in": "Когда расходы переходят от суммы ниже порога к сумме,\nравной порогу или выше, клиент получает push."
         }
       ],
-      "if_unanswered": "Команда подавит push при выключенном уведомлении и не будет отправлять его при включении; клиент, включивший функцию после достижения порога, ничего не узнает.",
+      "if_unanswered": "Команда не отправит push до следующего месяца, а клиент после включения уведомления ждёт его сразу.",
       "related_findings": [
         "F-04",
-        "F-12",
-        "F-27"
+        "F-10",
+        "F-23"
       ],
       "origin": "set_check",
       "standard": [
@@ -10102,7 +10102,7 @@
       "addressee": [
         "architect"
       ],
-      "topic": "ответ на неверную сумму",
+      "topic": "ответ на недопустимую сумму",
       "quotes": [
         {
           "text": "Ответ в случае, если параметры запроса заполнены неверно.",
@@ -10183,33 +10183,33 @@
           }
         }
       ],
-      "question": "При сохранённом пороге 50 000 ₸ владелец отправляет amount=999: какой код и тело ответа получает приложение?",
-      "why": "Статус 400 и пример ERROR под заголовком 200 описывают один случай по-разному. Неясно также, возвращаются ли прежние amount и enabled. Ответы на enabled=2 и на пропуск обязательного параметра не заданы.",
+      "question": "У карты порог 50 000 ₸, владелец сохраняет 999 ₸: какие код и тело ответа получает приложение?",
+      "why": "Документ даёт для этого случая три разных ответа. Выбранный формат применят также к enabled=2 и к пропущенному обязательному параметру; для них код и тело не заданы.",
       "options": [
         {
           "label": "A",
-          "text": "200 с result=ERROR и message «Проверьте сумму», без amount и enabled",
-          "change": "Оставить пример ответа; ограничить статус 400 ошибками формата запроса",
-          "grounded_in": "{\"result\":\"ERROR\",\"message\":\"Проверьте сумму\"}"
+          "text": "400 с телом {\"message\":\"Некорректный запрос\"}",
+          "change": "Удалить пример ERROR из раздела 200; в логике метода указать 400",
+          "grounded_in": "Ответ в случае, если параметры запроса заполнены неверно."
         },
         {
           "label": "B",
-          "text": "400 с телом «Некорректный запрос»",
-          "change": "Убрать пример ERROR из раздела 200; result оставить только для успеха",
-          "grounded_in": "{\"message\":\"Некорректный запрос\"}"
+          "text": "200 с result=ERROR и message, без amount и enabled",
+          "change": "Указать для enabled условие «При успехе»; убрать неверную сумму из описания 400",
+          "grounded_in": "{\"result\":\"ERROR\",\"message\":\"Проверьте сумму\"}"
         },
         {
           "label": "C",
-          "text": "400 с result=ERROR, message и прежними amount и enabled",
-          "change": "Описать тело 400 с прежней настройкой; enabled и amount возвращать и при ошибке",
+          "text": "200 с result=ERROR, message и прежними amount=\"50000\" и enabled",
+          "change": "Изменить условие amount на «всегда»; добавить пример ошибки с прежними значениями",
           "grounded_in": "При отклонении суммы вернуть прежнее состояние и результат\nERROR."
         }
       ],
-      "if_unanswered": "Тест на границу 999 будет иметь два ожидаемых ответа; приложение может принять ошибку за успешное сохранение по коду 200.",
+      "if_unanswered": "Команда вернёт 200 с ERROR по примеру, и тесты по описанию 400 упадут.",
       "related_findings": [
         "F-07",
-        "F-32",
-        "F-36"
+        "F-27",
+        "F-46"
       ],
       "origin": "witness_scenario",
       "standard": [
@@ -10295,26 +10295,26 @@
           }
         }
       ],
-      "question": "10 марта расходы достигли порога 50 000 ₸ и push ушёл, 15 марта порог поднят до 80 000 ₸, 20 марта расходы дошли до 80 000 ₸: уходит ли второй push?",
-      "why": "Ф-3 ограничивает число push одним в месяц, а Ф-4 требует push после смены порога независимо от истории. От ответа зависят сброс признака отправки и ожидаемое число push в тесте.",
+      "question": "10 марта расходы достигли порога 50 000 ₸ и push ушёл, 15 марта клиент поднял порог до 80 000 ₸, 20 марта расходы дошли до 80 000 ₸: приходит ли второй push?",
+      "why": "Ф-3 ограничивает число push одним в месяц, а Ф-4 требует push после смены порога. От ответа зависят сброс признака отправки и ожидаемое число push в тесте.",
       "options": [
         {
           "label": "A",
-          "text": "Нет: на карту не больше одного push за месяц при любых сменах порога",
-          "change": "Удалить из Ф-4 слова «независимо от истории предыдущей настройки»; признак отправки при смене порога не сбрасывается",
+          "text": "Не приходит: не больше одного push на карту за месяц при любых сменах порога",
+          "change": "Уточнить в Ф-4, что push после смены порога отправляется, только если в этом месяце push ещё не было",
           "grounded_in": "На карту приходится\nмаксимум один такой push за календарный месяц."
         },
         {
           "label": "B",
-          "text": "Да: смена порога сбрасывает признак отправки, возможен ещё один push в месяце",
-          "change": "Уточнить Ф-3: лимит — один push на одно значение порога; при смене порога признак отправки сбрасывается",
+          "text": "Приходит: смена порога сбрасывает признак отправки за месяц",
+          "change": "Уточнить в Ф-3, что ограничение действует для одного значения порога; при смене порога сбрасывать признак",
           "grounded_in": "Если\nона ниже нового порога, следующее достижение вызывает push\nнезависимо от истории предыдущей настройки."
         }
       ],
-      "if_unanswered": "У теста смены порога останутся два ожидаемых результата; реализация нарушит либо Ф-3, либо Ф-4.",
+      "if_unanswered": "Команда выберет одно правило наугад, и тест на смену порога получит два ожидаемых результата.",
       "related_findings": [
         "F-03",
-        "F-28"
+        "F-24"
       ],
       "origin": "witness_scenario",
       "standard": [
@@ -10341,144 +10341,9 @@
         "testing"
       ],
       "addressee": [
-        "architect"
-      ],
-      "topic": "метод сохранения",
-      "quotes": [
-        {
-          "text": "GET",
-          "match": "exact",
-          "score": 100.0,
-          "located": "GET",
-          "anchor": {
-            "char_start": 5181,
-            "char_end": 5184,
-            "block_ids": [
-              "B063"
-            ],
-            "sentence_ids": [],
-            "line_start": 132,
-            "line_end": 132,
-            "page": 5,
-            "page_line": null,
-            "paragraph": null,
-            "table": 5,
-            "row": 2,
-            "cell": 2,
-            "column": "Значение",
-            "extraction": "table"
-          }
-        },
-        {
-          "text": "Content-Type: application/json.",
-          "match": "exact",
-          "score": 100.0,
-          "located": "Content-Type: application/json.",
-          "anchor": {
-            "char_start": 6499,
-            "char_end": 6530,
-            "block_ids": [
-              "B094"
-            ],
-            "sentence_ids": [
-              "B094.1"
-            ],
-            "line_start": 185,
-            "line_end": 185,
-            "page": 7,
-            "page_line": null,
-            "paragraph": null,
-            "table": null,
-            "row": null,
-            "cell": null,
-            "column": null,
-            "extraction": "text"
-          }
-        },
-        {
-          "text": "Тело не используется.",
-          "match": "exact",
-          "score": 100.0,
-          "located": "Тело не используется.",
-          "anchor": {
-            "char_start": 6534,
-            "char_end": 6555,
-            "block_ids": [
-              "B095"
-            ],
-            "sentence_ids": [
-              "B095.1"
-            ],
-            "line_start": 187,
-            "line_end": 187,
-            "page": 7,
-            "page_line": null,
-            "paragraph": null,
-            "table": null,
-            "row": null,
-            "cell": null,
-            "column": null,
-            "extraction": "text"
-          }
-        }
-      ],
-      "question": "Приложение сохраняет порог 50 000 ₸ для карты demo-42: каким HTTP-методом и где передаются amount и enabled?",
-      "why": "GET изменяет настройку, а повторы и кеширование на прокси искажают сохранение. Заголовок JSON при этом требуется, хотя тело не используется. От ответа зависят контракт, пример вызова и негативный тест без заголовка.",
-      "options": [
-        {
-          "label": "A",
-          "text": "GET с параметрами в строке запроса, заголовок Content-Type не нужен",
-          "change": "Удалить строку Content-Type; оставить query-параметры",
-          "grounded_in": "GET"
-        },
-        {
-          "label": "B",
-          "text": "PUT с телом JSON, Content-Type: application/json обязателен",
-          "change": "Заменить REST type и CURL; перенести amount и enabled в тело; задать ответ без заголовка",
-          "grounded_in": "Content-Type: application/json."
-        },
-        {
-          "label": "C",
-          "text": "POST с телом JSON, Content-Type: application/json обязателен",
-          "change": "Заменить REST type и CURL; перенести amount и enabled в тело; задать ответ без заголовка",
-          "grounded_in": null
-        }
-      ],
-      "if_unanswered": "Останется GET с побочным эффектом; повтор запроса прокси или кеш могут вернуть старую настройку или не сохранить новую.",
-      "related_findings": [
-        "F-06",
-        "F-33"
-      ],
-      "origin": "set_check",
-      "standard": [
-        "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Correct)",
-        "IEEE 830-1998, п. 4.3.1",
-        "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
-        "IEEE 830-1998, п. 4.3.4"
-      ],
-      "review": {
-        "answered": true,
-        "answer": "Методом GET, amount и enabled передаются query-параметрами, тело не используется",
-        "answer_quote": null,
-        "common_sense": false,
-        "obvious_fix": false,
-        "scenario": false,
-        "errors": [
-          7
-        ]
-      }
-    },
-    {
-      "id": "Q-05",
-      "priority": "P0",
-      "blocks": [
-        "development",
-        "testing"
-      ],
-      "addressee": [
         "business"
       ],
-      "topic": "момент учёта покупки",
+      "topic": "событие учёта покупки",
       "quotes": [
         {
           "text": "Дать клиенту возможность узнать о достижении личного бюджета в момент покупки.",
@@ -10533,32 +10398,26 @@
           }
         }
       ],
-      "question": "Расходы 48 000 ₸, порог 50 000 ₸; 5 марта авторизована покупка на 2 000 ₸, клиринг по ней прошёл 7 марта: когда покупка входит в расходы и приходит push?",
-      "why": "«Проведённая покупка» не определена, а цель требует уведомить «в момент покупки». От ответа зависят событие процессинга, на которое подписывается сервис, и дата push в тестах. Без ответа неясно также, учитываются ли отмены авторизации, комиссии и платежи за услуги.",
+      "question": "Расходы 48 500 ₸, порог 50 000 ₸; покупка на 1 500 ₸ авторизована 10 марта в 14:00, а проведена 12 марта в 09:00: когда клиент получает push?",
+      "why": "«Проведённая» покупка не определена, а цель говорит «в момент покупки». От ответа зависят источник событий и тест; отдельно не решено, учитываются ли отмены авторизации и комиссии.",
       "options": [
         {
           "label": "A",
-          "text": "Покупка учитывается при авторизации, push приходит 5 марта",
-          "change": "Определить в Ф-2 учёт по авторизации и правило для отмены авторизации; подписать сервис на события авторизации",
+          "text": "10 марта: расходы учитываются по авторизации",
+          "change": "Определить «проведённую» покупку как авторизацию; описать учёт отмены авторизации",
           "grounded_in": "Дать клиенту возможность узнать о достижении личного бюджета в\nмомент покупки."
         },
         {
           "label": "B",
-          "text": "Покупка учитывается после клиринга, push приходит 7 марта",
-          "change": "Уточнить в цели, что уведомление приходит после проведения покупки; определить «проведённую покупку» как прошедшую клиринг",
+          "text": "12 марта: расходы учитываются по проведению (клирингу)",
+          "change": "Определить «проведённую» покупку как клиринг; переформулировать цель без «в момент покупки»",
           "grounded_in": "В\nрасходы входят проведённые покупки."
-        },
-        {
-          "label": "C",
-          "text": "Покупка учитывается при авторизации, при клиринге сумма пересчитывается, если изменилась",
-          "change": "Описать в Ф-2 обработку обоих событий и пересчёт расходов по клирингу",
-          "grounded_in": null
         }
       ],
-      "if_unanswered": "Команда будет считать расходы по клирингу; push придёт через дни после покупки, и цель «в момент покупки» не будет достигнута.",
+      "if_unanswered": "Команда будет считать расходы по клирингу, и push придёт через дни после покупки, вопреки цели.",
       "related_findings": [
         "F-02",
-        "F-09"
+        "F-08"
       ],
       "origin": "witness_scenario",
       "standard": [
@@ -10587,7 +10446,7 @@
       "addressee": [
         "architect"
       ],
-      "topic": "чтение настроек",
+      "topic": "чтение настройки и суммы",
       "quotes": [
         {
           "text": "Приложение читает и сохраняет настройки через дочерний документ «Уведомление о расходах по карте — REST API».",
@@ -10640,34 +10499,52 @@
             "column": null,
             "extraction": "text"
           }
+        },
+        {
+          "text": "чтение порога",
+          "match": "exact",
+          "score": 100.0,
+          "located": "чтение порога",
+          "anchor": {
+            "char_start": 5155,
+            "char_end": 5168,
+            "block_ids": [
+              "B062"
+            ],
+            "sentence_ids": [],
+            "line_start": 131,
+            "line_end": 131,
+            "page": 5,
+            "page_line": null,
+            "paragraph": null,
+            "table": 5,
+            "row": 1,
+            "cell": 2,
+            "column": "Значение",
+            "extraction": "table"
+          }
         }
       ],
-      "question": "Клиент открывает экран «Уведомления»: какая операция отдаёт приложению текущий порог, переключатель и сумму расходов за месяц?",
-      "why": "В части B описано только сохранение, а сумму за месяц не возвращает ни одна операция. Тексты ошибок ввода под полем тоже не заданы.",
+      "question": "Клиент открывает экран уведомлений, где сохранены порог 50 000 ₸ и расходы 30 000 ₸: какой операцией приложение получает эти значения?",
+      "why": "В части B описано только сохранение, и нет источника суммы за месяц. Отдельно не заданы тексты ошибок ввода под полем.",
       "options": [
         {
           "label": "A",
-          "text": "Новая операция чтения возвращает порог, переключатель и расходы текущего месяца",
-          "change": "Описать в части B операцию чтения: параметры, поля ответа, месяц по Алматы",
+          "text": "Одна операция чтения в части B возвращает порог, признак включения и расходы текущего месяца",
+          "change": "Добавить в часть B операцию чтения с полями ответа и форматом суммы",
           "grounded_in": "чтение порога"
         },
         {
           "label": "B",
-          "text": "Порог и переключатель отдаёт операция чтения настроек, сумму за месяц — отдельная операция сервиса расходов",
-          "change": "Описать две операции и указать, в каких документах они описаны",
-          "grounded_in": null
-        },
-        {
-          "label": "C",
-          "text": "Сумма за месяц на экране не показывается, читаются только порог и переключатель",
-          "change": "Убрать сумму за месяц из дизайна UI; описать операцию чтения настроек",
+          "text": "Операция чтения в части B возвращает порог и признак, а сумма за месяц приходит из отдельного API сервиса расходов",
+          "change": "Добавить в часть B операцию чтения настройки и сослаться на контракт сервиса расходов",
           "grounded_in": null
         }
       ],
-      "if_unanswered": "Экран нельзя реализовать по документу; команды придумают свой контракт чтения без согласования.",
+      "if_unanswered": "Команда сама придумает операцию чтения, и контракт мобильного банка с сервисом не будет согласован.",
       "related_findings": [
         "F-05",
-        "F-11"
+        "F-09"
       ],
       "origin": "test_draft",
       "standard": [
@@ -10695,7 +10572,7 @@
       "addressee": [
         "business"
       ],
-      "topic": "месяц покупки",
+      "topic": "месяц учёта покупки",
       "quotes": [
         {
           "text": "Месяц определяется по дате совершения покупки в Алматы.",
@@ -10748,23 +10625,23 @@
           }
         }
       ],
-      "question": "Покупка на 4 000 ₸ совершена 31 января в 23:58 и проведена 1 февраля в 00:03 по Алматы: к расходам какого месяца она относится?",
-      "why": "Ф-2 относит покупку к январю, а критерий приёмки 2 — к февралю. От ответа зависят расчёт счётчика месяца и ожидаемый результат критерия.",
+      "question": "Покупка на 4 000 ₸ совершена 31 января в 23:58 по Алматы, а проведена 1 февраля в 00:03: в расходы какого месяца она входит?",
+      "why": "Ф-2 и критерий приёмки 2 дают для одной ситуации разные месяцы. От ответа зависят расчёт счётчика, хранимая дата и ожидаемый результат теста.",
       "options": [
         {
           "label": "A",
-          "text": "К январю, по дате совершения покупки",
-          "change": "Исправить ожидаемый результат критерия приёмки 2 на рост январского счётчика",
+          "text": "В январь: месяц определяется по дате совершения покупки",
+          "change": "Исправить ожидаемый результат критерия 2 на «Январский счётчик вырос на 4 000 ₸»",
           "grounded_in": "Месяц определяется по дате совершения покупки в Алматы."
         },
         {
           "label": "B",
-          "text": "К февралю, по дате проведения покупки",
-          "change": "Переписать Ф-2: месяц определяется по дате проведения покупки по Алматы",
+          "text": "В февраль: месяц определяется по дате проведения покупки",
+          "change": "Переписать Ф-2: месяц определяется по дате проведения в Алматы; хранить дату проведения",
           "grounded_in": "Февральский счётчик вырос на 4 000 ₸"
         }
       ],
-      "if_unanswered": "Разработчик выберет одно правило, тестировщик проверит по другому; критерий 2 или Ф-2 будет нарушен.",
+      "if_unanswered": "Команда возьмёт дату совершения по Ф-2, и критерий приёмки 2 не пройдёт.",
       "related_findings": [
         "F-01"
       ],
@@ -10791,9 +10668,10 @@
         "testing"
       ],
       "addressee": [
+        "business",
         "architect"
       ],
-      "topic": "неактивная или не KZT карта",
+      "topic": "неактивная или не KZT",
       "quotes": [
         {
           "text": "Держатель активной карты KZT задаёт целый порог от 1 000 до 1 000 000 ₸ включительно.",
@@ -10812,6 +10690,32 @@
             "line_start": 46,
             "line_end": 47,
             "page": 2,
+            "page_line": null,
+            "paragraph": null,
+            "table": null,
+            "row": null,
+            "cell": null,
+            "column": null,
+            "extraction": "text"
+          }
+        },
+        {
+          "text": "Проверить принадлежность карты клиенту.",
+          "match": "exact",
+          "score": 100.0,
+          "located": "Проверить принадлежность карты клиенту.",
+          "anchor": {
+            "char_start": 5647,
+            "char_end": 5686,
+            "block_ids": [
+              "B076"
+            ],
+            "sentence_ids": [
+              "B076.1"
+            ],
+            "line_start": 148,
+            "line_end": 148,
+            "page": 6,
             "page_line": null,
             "paragraph": null,
             "table": null,
@@ -10848,38 +10752,32 @@
           }
         }
       ],
-      "question": "Владелец сохраняет порог для заблокированной карты или карты в долларах: что возвращает метод сохранения?",
-      "why": "В логике метода нет проверок активности и валюты, а список кодов открыт оборотом «и далее». Не заданы также условия ответа 500, состояние настройки после него и судьба настройки, если карта стала неактивной позже.",
+      "question": "Клиент сохраняет порог для своей заблокированной карты или карты в долларах: что происходит с запросом?",
+      "why": "В логике метода нет проверки активности и валюты, а список кодов открыт. Отдельно не заданы условия 500 и судьба настройки, если карта станет неактивной позже.",
       "options": [
         {
           "label": "A",
-          "text": "400 с message об ошибке, настройка не меняется",
-          "change": "Добавить шаг проверки в логику метода и случай в статус 400 с текстом message",
-          "grounded_in": "Ответ в случае, если параметры запроса заполнены неверно."
+          "text": "Отказ как при неверных параметрах (400), настройка не меняется",
+          "change": "Добавить в логику метода проверку активности и валюты; задать message для 400",
+          "grounded_in": "Держатель активной карты KZT задаёт целый порог от 1 000 до 1\n000 000 ₸ включительно."
         },
         {
           "label": "B",
-          "text": "200 с result=ERROR и message, настройка не меняется",
-          "change": "Добавить шаг проверки в логику метода и пример ответа с текстом message",
-          "grounded_in": "{\"result\":\"ERROR\",\"message\":\"Проверьте сумму\"}"
+          "text": "Отказ как для отсутствующей карты (404), настройка не меняется",
+          "change": "Добавить проверку в логику метода и в описание 404",
+          "grounded_in": null
         },
         {
           "label": "C",
-          "text": "404 «Карта не найдена», как для отсутствующей карты",
-          "change": "Расширить правило 404 на неактивные карты и карты не в KZT",
-          "grounded_in": "Для чужой карты возвращается 404, как и для отсутствующей карты."
-        },
-        {
-          "label": "D",
-          "text": "Порог сохраняется, а для таких карт не отправляется push",
-          "change": "Убрать ограничение из Ф-1 для сохранения; добавить его в условие отправки push",
+          "text": "Настройка сохраняется, но push не отправляется, пока карта неактивна или не в KZT",
+          "change": "Перенести условие активности и валюты из Ф-1 в Ф-3",
           "grounded_in": null
         }
       ],
-      "if_unanswered": "Метод сохранит порог для любой карты клиента; Ф-1 будет нарушено, а тест на неактивную карту не получит ожидаемого ответа.",
+      "if_unanswered": "Команда сохранит настройку без проверки, и для неподходящих карт появятся настройки, которые Ф-1 запрещает.",
       "related_findings": [
-        "F-13",
-        "F-35"
+        "F-11",
+        "F-29"
       ],
       "origin": "test_draft",
       "standard": [
@@ -10894,13 +10792,137 @@
         "common_sense": false,
         "obvious_fix": false,
         "scenario": true,
-        "errors": [
-          2
-        ]
+        "errors": []
       }
     },
     {
       "id": "Q-09",
+      "priority": "P0",
+      "blocks": [
+        "development",
+        "testing"
+      ],
+      "addressee": [
+        "security",
+        "architect"
+      ],
+      "topic": "ответ для чужой карты",
+      "quotes": [
+        {
+          "text": "Ответ в случае, если на указанный ресурс доступ запрещен.",
+          "match": "exact",
+          "score": 100.0,
+          "located": "Ответ в случае, если на указанный ресурс доступ запрещен.",
+          "anchor": {
+            "char_start": 7255,
+            "char_end": 7312,
+            "block_ids": [
+              "B110"
+            ],
+            "sentence_ids": [
+              "B110.1"
+            ],
+            "line_start": 216,
+            "line_end": 216,
+            "page": 7,
+            "page_line": null,
+            "paragraph": null,
+            "table": null,
+            "row": null,
+            "cell": null,
+            "column": null,
+            "extraction": "text"
+          }
+        },
+        {
+          "text": "Для чужой карты возвращается 404, как и для отсутствующей карты.",
+          "match": "exact",
+          "score": 100.0,
+          "located": "Для чужой карты возвращается 404, как и для отсутствующей карты.",
+          "anchor": {
+            "char_start": 7541,
+            "char_end": 7605,
+            "block_ids": [
+              "B117"
+            ],
+            "sentence_ids": [
+              "B117.1"
+            ],
+            "line_start": 230,
+            "line_end": 230,
+            "page": 7,
+            "page_line": null,
+            "paragraph": null,
+            "table": null,
+            "row": null,
+            "cell": null,
+            "column": null,
+            "extraction": "text"
+          }
+        }
+      ],
+      "question": "Клиент A с действующей сессией сохраняет порог для существующей карты клиента B: какой код ответа он получает?",
+      "why": "Описание 403 и правило для чужой карты дают разные коды. От ответа зависят проверка доступа и тест безопасности.",
+      "options": [
+        {
+          "label": "A",
+          "text": "404 «Карта не найдена», как для отсутствующей карты",
+          "change": "Перенести 404 в отдельный раздел; указать, когда возвращается 403, или удалить его",
+          "grounded_in": "Для чужой карты возвращается 404, как и для отсутствующей карты."
+        },
+        {
+          "label": "B",
+          "text": "403 «доступ запрещён»",
+          "change": "Удалить правило про 404 для чужой карты; задать тело ответа 403",
+          "grounded_in": "Ответ в случае, если на указанный ресурс доступ запрещен."
+        }
+      ],
+      "if_unanswered": "Команда вернёт 404, и тест по описанию 403 упадёт.",
+      "related_findings": [
+        "F-30"
+      ],
+      "origin": "witness_scenario",
+      "standard": [
+        "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
+        "IEEE 830-1998, п. 4.3.4"
+      ],
+      "review": {
+        "answered": true,
+        "answer": "Возвращается 404, как для отсутствующей карты",
+        "answer_quote": {
+          "text": "Для чужой карты возвращается 404, как и для отсутствующей карты.",
+          "match": "exact",
+          "score": 100.0,
+          "located": "Для чужой карты возвращается 404, как и для отсутствующей карты.",
+          "anchor": {
+            "char_start": 7541,
+            "char_end": 7605,
+            "block_ids": [
+              "B117"
+            ],
+            "sentence_ids": [
+              "B117.1"
+            ],
+            "line_start": 230,
+            "line_end": 230,
+            "page": 7,
+            "page_line": null,
+            "paragraph": null,
+            "table": null,
+            "row": null,
+            "cell": null,
+            "column": null,
+            "extraction": "text"
+          }
+        },
+        "common_sense": false,
+        "obvious_fix": false,
+        "scenario": true,
+        "errors": []
+      }
+    },
+    {
+      "id": "Q-10",
       "priority": "P0",
       "blocks": [
         "development",
@@ -10960,27 +10982,53 @@
             "column": null,
             "extraction": "text"
           }
+        },
+        {
+          "text": "Ответ в случае успешного выполнения метода.",
+          "match": "exact",
+          "score": 100.0,
+          "located": "Ответ в случае успешного выполнения метода.",
+          "anchor": {
+            "char_start": 6941,
+            "char_end": 6984,
+            "block_ids": [
+              "B103"
+            ],
+            "sentence_ids": [
+              "B103.1"
+            ],
+            "line_start": 202,
+            "line_end": 202,
+            "page": 7,
+            "page_line": null,
+            "paragraph": null,
+            "table": null,
+            "row": null,
+            "cell": null,
+            "column": null,
+            "extraction": "text"
+          }
         }
       ],
       "question": "Владелец впервые сохраняет порог для карты, а затем меняет его: какой код успешного ответа получает приложение в каждом случае?",
-      "why": "Один раздел допускает 200 или 201 и называет ответ «Created», а в списке статусов есть только 200. От ответа зависят проверка кода в приложении и тест первого и повторного сохранения.",
+      "why": "Документ допускает 200 и 201, а заголовок называет 200 «Created». От ответа зависят обработка в приложении и проверки тестов.",
       "options": [
         {
           "label": "A",
           "text": "200 в обоих случаях",
-          "change": "Удалить 201 из правила успеха; переименовать заголовок в «200. Successful»",
+          "change": "Удалить 201 и «Created» из раздела ответа",
           "grounded_in": "Ответ в случае успешного выполнения метода."
         },
         {
           "label": "B",
-          "text": "201 при первом сохранении, 200 при замене",
-          "change": "Добавить статус 201 в список с условием первого создания настройки",
+          "text": "201 при первом сохранении, 200 при изменении",
+          "change": "Добавить 201 в список статусов с примером; исправить заголовок раздела 200",
           "grounded_in": "Если результат 200 или 201 — успешный."
         }
       ],
-      "if_unanswered": "Команда вернёт 200 всегда; если приложение ждёт 201 при первом сохранении, оно покажет ошибку при успешном сохранении.",
+      "if_unanswered": "Команда вернёт 200 всегда, и тест, который ждёт 201 при создании, упадёт.",
       "related_findings": [
-        "F-34"
+        "F-28"
       ],
       "origin": "set_check",
       "standard": [
@@ -10998,7 +11046,7 @@
       }
     },
     {
-      "id": "Q-10",
+      "id": "Q-11",
       "priority": "P0",
       "blocks": [
         "development",
@@ -11036,25 +11084,25 @@
           }
         }
       ],
-      "question": "Push о достижении порога январскими расходами ушёл 1 февраля в 00:03, а 10 февраля порог достигли февральские расходы: уходит ли push 10 февраля?",
-      "why": "Лимит можно считать по месяцу расходов или по месяцу отправки. От этого зависят ключ признака отправки и результат теста на рубеже месяцев.",
+      "question": "Покупка 31 января в 23:58 довела январские расходы до порога, push ушёл 1 февраля в 00:03; 10 февраля порог достигнут снова: приходит ли push?",
+      "why": "Лимит можно отнести к месяцу расходов или к месяцу отправки. От этого зависят ключ признака отправки и тест на стыке месяцев.",
       "options": [
         {
           "label": "A",
-          "text": "Да: лимит считается по месяцу расходов, к которому относится push",
-          "change": "Уточнить в Ф-3: «один push за месяц расходов, определённый по Ф-2»",
-          "grounded_in": "Месяц определяется по дате совершения покупки в Алматы."
+          "text": "Приходит: лимит считается по месяцу расходов, январский push на февраль не влияет",
+          "change": "Уточнить в Ф-3: один push за месяц расходов по Ф-2",
+          "grounded_in": "На карту приходится\nмаксимум один такой push за календарный месяц."
         },
         {
           "label": "B",
-          "text": "Нет: лимит считается по календарному месяцу отправки push",
-          "change": "Уточнить в Ф-3: «один push за календарный месяц отправки по Алматы»",
-          "grounded_in": null
+          "text": "Не приходит: лимит считается по месяцу отправки, в феврале push уже был",
+          "change": "Уточнить в Ф-3: один push за календарный месяц отправки по Алматы",
+          "grounded_in": "На карту приходится\nмаксимум один такой push за календарный месяц."
         }
       ],
-      "if_unanswered": "Команда привяжет лимит к месяцу расходов; если бизнес ждал лимит по месяцу отправки, клиент получит два push за один календарный месяц.",
+      "if_unanswered": "Команда привяжет лимит к месяцу расходов, и в феврале может прийти два push.",
       "related_findings": [
-        "F-17"
+        "F-15"
       ],
       "origin": "witness_scenario",
       "standard": [
@@ -11072,7 +11120,7 @@
       }
     },
     {
-      "id": "Q-11",
+      "id": "Q-12",
       "priority": "P0",
       "blocks": [
         "development",
@@ -11110,245 +11158,36 @@
           }
         }
       ],
-      "question": "Расходы 48 500 ₸, порог 50 000 ₸, покупка на 3 000 ₸ доводит итог до 51 500 ₸: какую сумму клиент видит в push?",
-      "why": "«Сумма» в push не определена. От неё зависят данные, которые передаются в сервис уведомлений, и проверка текста push. Текст шаблона, язык и формат суммы тоже не заданы.",
+      "question": "Расходы 48 500 ₸, порог 50 000 ₸, покупка на 3 000 ₸ довела итог до 51 500 ₸: какую сумму клиент видит в push?",
+      "why": "«Сумма» не определена, поэтому нельзя проверить содержимое push. Отдельно не заданы текст шаблона, язык и формат суммы.",
       "options": [
         {
           "label": "A",
-          "text": "Сумму покупки — 3 000 ₸",
-          "change": "Уточнить в sequence: передаётся сумма покупки; дать шаблон текста push",
+          "text": "Сумму покупки: 3 000 ₸",
+          "change": "Указать в sequence diagram сумму покупки; добавить шаблон текста",
           "grounded_in": null
         },
         {
           "label": "B",
-          "text": "Расходы за месяц — 51 500 ₸",
-          "change": "Уточнить в sequence: передаётся накопленная сумма месяца; дать шаблон текста push",
+          "text": "Расходы за месяц: 51 500 ₸",
+          "change": "Указать в sequence diagram накопленные расходы; добавить шаблон текста",
           "grounded_in": null
         },
         {
           "label": "C",
-          "text": "Порог — 50 000 ₸",
-          "change": "Уточнить в sequence: передаётся значение порога; дать шаблон текста push",
+          "text": "Порог: 50 000 ₸",
+          "change": "Указать в sequence diagram значение порога; добавить шаблон текста",
           "grounded_in": null
         }
       ],
-      "if_unanswered": "Разработчик передаст сумму покупки; если клиент ждал итог за месяц, push не ответит на вопрос «сколько я потратил».",
+      "if_unanswered": "Команда передаст расходы за месяц, и текст push может разойтись с ожиданием продукта.",
       "related_findings": [
-        "F-21"
+        "F-19"
       ],
       "origin": "witness_scenario",
       "standard": [
         "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Unambiguous)",
         "IEEE 830-1998, п. 4.3.2"
-      ],
-      "review": {
-        "answered": false,
-        "answer": "",
-        "answer_quote": null,
-        "common_sense": false,
-        "obvious_fix": false,
-        "scenario": true,
-        "errors": []
-      }
-    },
-    {
-      "id": "Q-12",
-      "priority": "P1",
-      "blocks": [
-        "testing"
-      ],
-      "addressee": [
-        "business",
-        "architect"
-      ],
-      "topic": "возврат без покупки",
-      "quotes": [
-        {
-          "text": "Возврат уменьшает расходы месяца исходной покупки.",
-          "match": "exact",
-          "score": 100.0,
-          "located": "Возврат уменьшает расходы\nмесяца исходной покупки.",
-          "anchor": {
-            "char_start": 1469,
-            "char_end": 1519,
-            "block_ids": [
-              "B023"
-            ],
-            "sentence_ids": [
-              "B023.4"
-            ],
-            "line_start": 50,
-            "line_end": 51,
-            "page": 2,
-            "page_line": null,
-            "paragraph": null,
-            "table": null,
-            "row": null,
-            "cell": null,
-            "column": null,
-            "extraction": "text"
-          }
-        }
-      ],
-      "question": "Пришёл возврат на 2 000 ₸, а исходная покупка в сервисе расходов не найдена: как меняются расходы?",
-      "why": "Порядок событий процессинга не гарантирован, а месяц исходной покупки для такого возврата неизвестен. Не описаны также частичный возврат и возврат больше учтённой суммы (могут ли расходы стать ниже нуля).",
-      "options": [
-        {
-          "label": "A",
-          "text": "Возврат ждёт прихода исходной покупки, до этого расходы не меняются",
-          "change": "Описать в Ф-2 отложенную обработку возврата и срок ожидания",
-          "grounded_in": null
-        },
-        {
-          "label": "B",
-          "text": "Возврат сразу уменьшает расходы текущего месяца",
-          "change": "Добавить в Ф-2 исключение для возврата без найденной покупки",
-          "grounded_in": null
-        },
-        {
-          "label": "C",
-          "text": "Возврат без найденной покупки не учитывается",
-          "change": "Добавить в Ф-2 правило игнорирования такого возврата",
-          "grounded_in": null
-        }
-      ],
-      "if_unanswered": "Команда отбросит такой возврат; если покупка придёт позже, расходы месяца окажутся завышены, и push может уйти ошибочно.",
-      "related_findings": [
-        "F-15",
-        "F-19"
-      ],
-      "origin": "test_draft",
-      "standard": [
-        "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Complete)",
-        "IEEE 830-1998, п. 4.3.3",
-        "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Complete)"
-      ],
-      "review": {
-        "answered": false,
-        "answer": "",
-        "answer_quote": null,
-        "common_sense": false,
-        "obvious_fix": false,
-        "scenario": true,
-        "errors": []
-      }
-    },
-    {
-      "id": "Q-13",
-      "priority": "P1",
-      "blocks": [
-        "testing"
-      ],
-      "addressee": [
-        "business",
-        "security"
-      ],
-      "topic": "право задать порог",
-      "quotes": [
-        {
-          "text": "Информирование держателя карты",
-          "match": "exact",
-          "score": 100.0,
-          "located": "Информирование держателя карты",
-          "anchor": {
-            "char_start": 375,
-            "char_end": 405,
-            "block_ids": [
-              "B007"
-            ],
-            "sentence_ids": [],
-            "line_start": 15,
-            "line_end": 15,
-            "page": 1,
-            "page_line": null,
-            "paragraph": null,
-            "table": 1,
-            "row": 3,
-            "cell": 2,
-            "column": "Значение",
-            "extraction": "table"
-          }
-        },
-        {
-          "text": "Bearer, сессия владельца карты",
-          "match": "exact",
-          "score": 100.0,
-          "located": "Bearer, сессия владельца карты",
-          "anchor": {
-            "char_start": 5201,
-            "char_end": 5231,
-            "block_ids": [
-              "B064"
-            ],
-            "sentence_ids": [],
-            "line_start": 133,
-            "line_end": 133,
-            "page": 5,
-            "page_line": null,
-            "paragraph": null,
-            "table": 5,
-            "row": 3,
-            "cell": 2,
-            "column": "Значение",
-            "extraction": "table"
-          }
-        },
-        {
-          "text": "Проверить принадлежность карты клиенту.",
-          "match": "exact",
-          "score": 100.0,
-          "located": "Проверить принадлежность карты клиенту.",
-          "anchor": {
-            "char_start": 5647,
-            "char_end": 5686,
-            "block_ids": [
-              "B076"
-            ],
-            "sentence_ids": [
-              "B076.1"
-            ],
-            "line_start": 148,
-            "line_end": 148,
-            "page": 6,
-            "page_line": null,
-            "paragraph": null,
-            "table": null,
-            "row": null,
-            "cell": null,
-            "column": null,
-            "extraction": "text"
-          }
-        }
-      ],
-      "question": "Держатель дополнительной карты, выпущенной к счёту другого клиента, сохраняет порог для своей карты: что происходит?",
-      "why": "«Держатель», «клиент» и «владелец» различаются для дополнительных карт. От ответа зависят проверка доступа в методе и ожидаемый ответ в тесте. Неясно также, кто получает push по дополнительной карте и когда возвращается 403.",
-      "options": [
-        {
-          "label": "A",
-          "text": "Порог сохраняется: настраивать вправе держатель карты",
-          "change": "Использовать везде термин «держатель карты»; проверять, что карта выпущена на клиента сессии",
-          "grounded_in": "Держатель активной карты KZT задаёт целый порог от 1 000 до 1\n000 000 ₸ включительно."
-        },
-        {
-          "label": "B",
-          "text": "Отказ «доступ запрещён»: настраивать вправе только владелец счёта",
-          "change": "Использовать термин «владелец счёта»; описать случай для ответа 403",
-          "grounded_in": "Ответ в случае, если на указанный ресурс доступ запрещен."
-        },
-        {
-          "label": "C",
-          "text": "Отказ «Карта не найдена», как для чужой карты",
-          "change": "Использовать термин «владелец счёта»; отнести дополнительную карту к правилу для чужой карты",
-          "grounded_in": "Для чужой карты возвращается 404, как и для отсутствующей карты."
-        }
-      ],
-      "if_unanswered": "Команда проверит принадлежность по клиенту сессии и разрешит держателю; если право есть только у владельца счёта, держатель будет менять настройки без согласия владельца.",
-      "related_findings": [
-        "F-08"
-      ],
-      "origin": "test_draft",
-      "standard": [
-        "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Comprehensible)"
       ],
       "review": {
         "answered": false,
@@ -11398,21 +11237,21 @@
           }
         },
         {
-          "text": "Сервис передаёт push на отправку в течение минуты после получения события.",
+          "text": "Сервис расходов → настройки: получить порог карты.",
           "match": "exact",
           "score": 100.0,
-          "located": "Сервис передаёт push на отправку в течение минуты после получения\nсобытия.",
+          "located": "Сервис расходов →\nнастройки: получить порог карты.",
           "anchor": {
-            "char_start": 2145,
-            "char_end": 2219,
+            "char_start": 1971,
+            "char_end": 2021,
             "block_ids": [
-              "B029"
+              "B027"
             ],
             "sentence_ids": [
-              "B029.1"
+              "B027.2"
             ],
-            "line_start": 70,
-            "line_end": 71,
+            "line_start": 64,
+            "line_end": 65,
             "page": 2,
             "page_line": null,
             "paragraph": null,
@@ -11424,31 +11263,31 @@
           }
         }
       ],
-      "question": "Покупка довела расходы до порога, а сервис уведомлений недоступен 10 минут: что происходит с push и признаком отправки?",
-      "why": "Поведение при отказе смежных сервисов не описано. От ответа зависят логика повторов, момент установки признака отправки и тест отказа. Не описано также, учитываются ли расходы, если не удалось получить порог из сервиса настроек.",
+      "question": "Покупка довела расходы до порога, но сервис push 10 минут недоступен: что происходит с push и признаком отправки?",
+      "why": "Поведение при отказе смежных сервисов не описано. От ответа зависят повторы, признак отправки и тест на отказ; то же решение нужно для недоступного сервиса настроек.",
       "options": [
         {
           "label": "A",
-          "text": "Передача повторяется до успеха, признак ставится после успешной передачи, push опаздывает",
-          "change": "Добавить число и интервал повторов; уточнить, что требование про минуту при отказе не действует",
+          "text": "Передача повторяется до успеха, признак ставится только после успешной передачи",
+          "change": "Указать число и интервал повторов; добавить ветку ошибки на BPMN-схему",
           "grounded_in": null
         },
         {
           "label": "B",
-          "text": "Одна попытка: push теряется, признак отправки ставится",
-          "change": "Описать, что в этом месяце клиент push не получит; добавить ветку на схему",
+          "text": "Повтора нет, признак не ставится: push уйдёт при следующей покупке в месяце",
+          "change": "Описать в Ф-3 повторную попытку при следующем событии",
           "grounded_in": null
         },
         {
           "label": "C",
-          "text": "Одна попытка: признак не ставится, push уходит при следующей покупке, если расходы не ниже порога",
-          "change": "Изменить в Ф-3 условие отправки для случая неотправленного push; добавить ветку на схему",
+          "text": "Повтора нет, признак ставится, push теряется",
+          "change": "Зафиксировать потерю push как допустимую и указать, где фиксируется ошибка",
           "grounded_in": null
         }
       ],
-      "if_unanswered": "Команда выберет поведение сама; при сбое клиент либо не получит push совсем, либо получит его с непредсказуемой задержкой.",
+      "if_unanswered": "Команда выберет поведение сама, и клиент может не получить push или получить его с большой задержкой.",
       "related_findings": [
-        "F-20"
+        "F-18"
       ],
       "origin": "test_draft",
       "standard": [
@@ -11474,7 +11313,7 @@
       "addressee": [
         "security"
       ],
-      "topic": "идентификатор карты в URL",
+      "topic": "чувствительность cardId",
       "quotes": [
         {
           "text": "--data 'cardId=demo- 42&amount=50000&enabled=1'",
@@ -11499,33 +11338,57 @@
             "column": "Значение",
             "extraction": "table"
           }
+        },
+        {
+          "text": "Bearer, сессия владельца карты",
+          "match": "exact",
+          "score": 100.0,
+          "located": "Bearer, сессия владельца карты",
+          "anchor": {
+            "char_start": 5201,
+            "char_end": 5231,
+            "block_ids": [
+              "B064"
+            ],
+            "sentence_ids": [],
+            "line_start": 133,
+            "line_end": 133,
+            "page": 5,
+            "page_line": null,
+            "paragraph": null,
+            "table": 5,
+            "row": 3,
+            "cell": 2,
+            "column": "Значение",
+            "extraction": "table"
+          }
         }
       ],
-      "question": "Идентификатор карты передаётся в адресе запроса и попадает в журналы прокси и сервера: каким значением является cardId?",
-      "why": "Документ называет cardId только «идентификатором карты» (1–64 символа). От ответа зависят допустимость передачи в URL, маскирование в журналах и тест безопасности.",
+      "question": "cardId передаётся в строке запроса и попадёт в журналы прокси и сервиса: это номер карты или внутренний токен?",
+      "why": "От ответа зависят способ передачи cardId, маскирование в журналах и тест безопасности.",
       "options": [
         {
           "label": "A",
-          "text": "Внутренний токен карты, его передача в URL и хранение в журналах допустимы",
-          "change": "Указать в параметре cardId: внутренний токен, не номер карты",
+          "text": "Внутренний токен, не номер карты: можно передавать в URL и писать в журналы",
+          "change": "Указать в описании cardId, что это токен, а не PAN",
           "grounded_in": null
         },
         {
           "label": "B",
-          "text": "Внутренний токен карты, но в журналах он маскируется",
-          "change": "Указать формат cardId и требование маскирования в журналах",
+          "text": "Внутренний токен, но в журналах маскируется",
+          "change": "Добавить требование маскировать cardId в журналах",
           "grounded_in": null
         },
         {
           "label": "C",
-          "text": "Номер карты: передаётся только в теле запроса и маскируется в журналах",
-          "change": "Перенести cardId в тело; добавить требование маскирования номера карты",
+          "text": "Номер карты: запрещён в URL и журналах",
+          "change": "Перенести cardId в тело запроса и добавить требования к маскированию",
           "grounded_in": null
         }
       ],
-      "if_unanswered": "Если cardId окажется номером карты, он будет храниться в журналах в открытом виде, а это нарушение требований к платёжным данным.",
+      "if_unanswered": "Команда будет считать cardId токеном, и номер карты может попасть в URL и журналы.",
       "related_findings": [
-        "F-31"
+        "F-26"
       ],
       "origin": "uncertain_verdict",
       "standard": [
@@ -11539,13 +11402,320 @@
         "common_sense": false,
         "obvious_fix": false,
         "scenario": false,
-        "errors": [
-          2
-        ]
+        "errors": []
       }
     }
   ],
-  "questions_withdrawn": [],
+  "questions_withdrawn": [
+    {
+      "question": {
+        "id": "Q-05",
+        "priority": "P0",
+        "blocks": [
+          "development",
+          "testing"
+        ],
+        "addressee": [
+          "architect"
+        ],
+        "topic": "метод сохранения порога",
+        "quotes": [
+          {
+            "text": "GET",
+            "match": "exact",
+            "score": 100.0,
+            "located": "GET",
+            "anchor": {
+              "char_start": 5181,
+              "char_end": 5184,
+              "block_ids": [
+                "B063"
+              ],
+              "sentence_ids": [],
+              "line_start": 132,
+              "line_end": 132,
+              "page": 5,
+              "page_line": null,
+              "paragraph": null,
+              "table": 5,
+              "row": 2,
+              "cell": 2,
+              "column": "Значение",
+              "extraction": "table"
+            }
+          },
+          {
+            "text": "Заменить настройку и вернуть результат сохранения.",
+            "match": "exact",
+            "score": 100.0,
+            "located": "Заменить настройку и вернуть результат сохранения.",
+            "anchor": {
+              "char_start": 5728,
+              "char_end": 5778,
+              "block_ids": [
+                "B078"
+              ],
+              "sentence_ids": [
+                "B078.1"
+              ],
+              "line_start": 152,
+              "line_end": 152,
+              "page": 6,
+              "page_line": null,
+              "paragraph": null,
+              "table": null,
+              "row": null,
+              "cell": null,
+              "column": null,
+              "extraction": "text"
+            }
+          },
+          {
+            "text": "Content-Type: application/json.",
+            "match": "exact",
+            "score": 100.0,
+            "located": "Content-Type: application/json.",
+            "anchor": {
+              "char_start": 6499,
+              "char_end": 6530,
+              "block_ids": [
+                "B094"
+              ],
+              "sentence_ids": [
+                "B094.1"
+              ],
+              "line_start": 185,
+              "line_end": 185,
+              "page": 7,
+              "page_line": null,
+              "paragraph": null,
+              "table": null,
+              "row": null,
+              "cell": null,
+              "column": null,
+              "extraction": "text"
+            }
+          }
+        ],
+        "question": "Приложение сохраняет порог 50 000 ₸ для карты demo-42: передавать параметры через GET в строке запроса или через изменяющий метод с JSON-телом?",
+        "why": "GET меняет данные, а раздел тела одновременно требует JSON и говорит, что тело не используется. От ответа зависят контракт, обязательность Content-Type и тесты.",
+        "options": [
+          {
+            "label": "A",
+            "text": "GET с параметрами в строке запроса, без тела",
+            "change": "Удалить строку Content-Type; подтвердить GET в общих параметрах",
+            "grounded_in": "GET"
+          },
+          {
+            "label": "B",
+            "text": "Изменяющий метод (PUT или POST) с JSON-телом, Content-Type обязателен",
+            "change": "Заменить REST type, URL и CURL; перенести параметры в тело; задать ответ без Content-Type",
+            "grounded_in": "Content-Type: application/json."
+          }
+        ],
+        "if_unanswered": "Команда оставит GET, и повторы или кеширование на прокси могут менять или терять настройку.",
+        "related_findings": [
+          "F-06",
+          "F-45"
+        ],
+        "origin": "set_check",
+        "standard": [
+          "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Correct)",
+          "IEEE 830-1998, п. 4.3.1",
+          "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
+          "IEEE 830-1998, п. 4.3.4"
+        ],
+        "review": {
+          "answered": true,
+          "answer": "Через GET с параметрами в строке запроса, тело не используется",
+          "answer_quote": {
+            "text": "Тело не используется.",
+            "match": "exact",
+            "score": 100.0,
+            "located": "Тело не используется.",
+            "anchor": {
+              "char_start": 6534,
+              "char_end": 6555,
+              "block_ids": [
+                "B095"
+              ],
+              "sentence_ids": [
+                "B095.1"
+              ],
+              "line_start": 187,
+              "line_end": 187,
+              "page": 7,
+              "page_line": null,
+              "paragraph": null,
+              "table": null,
+              "row": null,
+              "cell": null,
+              "column": null,
+              "extraction": "text"
+            }
+          },
+          "common_sense": false,
+          "obvious_fix": true,
+          "scenario": true,
+          "errors": []
+        }
+      },
+      "reason": "Через GET с параметрами в строке запроса, тело не используется",
+      "answer": {
+        "text": "Тело не используется.",
+        "match": "exact",
+        "score": 100.0,
+        "located": "Тело не используется.",
+        "anchor": {
+          "char_start": 6534,
+          "char_end": 6555,
+          "block_ids": [
+            "B095"
+          ],
+          "sentence_ids": [
+            "B095.1"
+          ],
+          "line_start": 187,
+          "line_end": 187,
+          "page": 7,
+          "page_line": null,
+          "paragraph": null,
+          "table": null,
+          "row": null,
+          "cell": null,
+          "column": null,
+          "extraction": "text"
+        }
+      }
+    },
+    {
+      "question": {
+        "id": "Q-13",
+        "priority": "P1",
+        "blocks": [
+          "testing"
+        ],
+        "addressee": [
+          "business"
+        ],
+        "topic": "возврат после push",
+        "quotes": [
+          {
+            "text": "Возврат уменьшает расходы месяца исходной покупки.",
+            "match": "exact",
+            "score": 100.0,
+            "located": "Возврат уменьшает расходы\nмесяца исходной покупки.",
+            "anchor": {
+              "char_start": 1469,
+              "char_end": 1519,
+              "block_ids": [
+                "B023"
+              ],
+              "sentence_ids": [
+                "B023.4"
+              ],
+              "line_start": 50,
+              "line_end": 51,
+              "page": 2,
+              "page_line": null,
+              "paragraph": null,
+              "table": null,
+              "row": null,
+              "cell": null,
+              "column": null,
+              "extraction": "text"
+            }
+          }
+        ],
+        "question": "10 марта расходы достигли порога 50 000 ₸ и push ушёл; 12 марта возврат снизил их до 45 000 ₸, 20 марта они снова дошли до 50 000 ₸: приходит ли второй push?",
+        "why": "Не сказано, влияет ли возврат на признак отправки. Отдельно не описаны частичный возврат, отрицательные расходы и возврат без исходной покупки.",
+        "options": [
+          {
+            "label": "A",
+            "text": "Не приходит: признак отправки за месяц возврат не сбрасывает",
+            "change": "Добавить в Ф-2: возврат не меняет признак отправки",
+            "grounded_in": "На карту приходится\nмаксимум один такой push за календарный месяц."
+          },
+          {
+            "label": "B",
+            "text": "Приходит: возврат ниже порога сбрасывает признак отправки",
+            "change": "Добавить в Ф-3 исключение для возврата и критерий приёмки",
+            "grounded_in": null
+          }
+        ],
+        "if_unanswered": "Команда не отправит второй push, а продукт может считать новое достижение порога событием для клиента.",
+        "related_findings": [
+          "F-13"
+        ],
+        "origin": "test_draft",
+        "standard": [
+          "ISO/IEC/IEEE 29148:2018, п. 5.2.5 (Complete)",
+          "IEEE 830-1998, п. 4.3.3"
+        ],
+        "review": {
+          "answered": true,
+          "answer": "Второй push в марте не приходит: на карту не больше одного push за календарный месяц",
+          "answer_quote": {
+            "text": "На карту приходится максимум один такой push за календарный месяц.",
+            "match": "exact",
+            "score": 100.0,
+            "located": "На карту приходится\nмаксимум один такой push за календарный месяц.",
+            "anchor": {
+              "char_start": 1668,
+              "char_end": 1734,
+              "block_ids": [
+                "B024"
+              ],
+              "sentence_ids": [
+                "B024.3"
+              ],
+              "line_start": 55,
+              "line_end": 56,
+              "page": 2,
+              "page_line": null,
+              "paragraph": null,
+              "table": null,
+              "row": null,
+              "cell": null,
+              "column": null,
+              "extraction": "text"
+            }
+          },
+          "common_sense": false,
+          "obvious_fix": false,
+          "scenario": true,
+          "errors": []
+        }
+      },
+      "reason": "Второй push в марте не приходит: на карту не больше одного push за календарный месяц",
+      "answer": {
+        "text": "На карту приходится максимум один такой push за календарный месяц.",
+        "match": "exact",
+        "score": 100.0,
+        "located": "На карту приходится\nмаксимум один такой push за календарный месяц.",
+        "anchor": {
+          "char_start": 1668,
+          "char_end": 1734,
+          "block_ids": [
+            "B024"
+          ],
+          "sentence_ids": [
+            "B024.3"
+          ],
+          "line_start": 55,
+          "line_end": 56,
+          "page": 2,
+          "page_line": null,
+          "paragraph": null,
+          "table": null,
+          "row": null,
+          "cell": null,
+          "column": null,
+          "extraction": "text"
+        }
+      }
+    }
+  ],
   "clarification": null,
   "conclusion": {
     "traffic_light": "red",
@@ -11563,21 +11733,21 @@
       "Q-02",
       "Q-03",
       "Q-04",
-      "Q-05"
+      "Q-06"
     ]
   },
   "metrics": {
-    "duration_s": 0.43,
+    "duration_s": 0.16,
     "calls_total": 8,
     "calls_failed": 0,
     "calls_cached": 0,
     "tokens": {
       "input_tokens": 16,
-      "output_tokens": 128683,
-      "cache_creation_input_tokens": 132764,
-      "cache_read_input_tokens": 13724
+      "output_tokens": 123939,
+      "cache_creation_input_tokens": 135649,
+      "cache_read_input_tokens": 8965
     },
-    "cost_usd": 2.7748,
+    "cost_usd": 2.702,
     "candidates_total": 51,
     "merged_total": 47,
     "findings_total": 47,
@@ -11586,24 +11756,24 @@
     "quotes_verified": 64,
     "verified_quote_share": 1.0,
     "questions": {
-      "total": 15,
+      "total": 13,
       "before_critic": 15,
-      "withdrawn": 0,
-      "withdrawn_share": 0.0,
+      "withdrawn": 2,
+      "withdrawn_share": 0.1333,
       "reviewed": 15,
-      "with_scenario": 0.8667,
+      "with_scenario": 0.9231,
       "closed": 1.0,
-      "without_errors": 0.8,
+      "without_errors": 1.0,
       "obvious_fix": 0,
       "common_sense": 0,
       "duplicate_pairs": 0,
       "by_priority": {
         "P0": 11,
-        "P1": 4
+        "P1": 2
       },
       "by_addressee": {
-        "architect": 7,
-        "business": 8,
+        "architect": 6,
+        "business": 7,
         "security": 2
       }
     },
@@ -11689,11 +11859,11 @@
         "duration_s": 0.0,
         "tokens": {
           "input_tokens": 2,
-          "output_tokens": 23017,
-          "cache_creation_input_tokens": 28992,
-          "cache_read_input_tokens": 2946
+          "output_tokens": 18319,
+          "cache_creation_input_tokens": 31293,
+          "cache_read_input_tokens": 0
         },
-        "cost_usd": 0.6929
+        "cost_usd": 0.6167
       },
       {
         "step": "questions_critic",
@@ -11704,11 +11874,11 @@
         "duration_s": 0.0,
         "tokens": {
           "input_tokens": 2,
-          "output_tokens": 4471,
-          "cache_creation_input_tokens": 16153,
-          "cache_read_input_tokens": 1813
+          "output_tokens": 4425,
+          "cache_creation_input_tokens": 16737,
+          "cache_read_input_tokens": 0
         },
-        "cost_usd": 0.219
+        "cost_usd": 0.2224
       }
     ],
     "passes_total": 1,
@@ -11778,7 +11948,7 @@
           "IND-CORR": {
             "state": "unclear",
             "finding_ids": [
-              "F-09"
+              "F-08"
             ]
           },
           "IND-CONF": {
@@ -12009,7 +12179,7 @@
           "IND-COMPL": {
             "state": "violation",
             "finding_ids": [
-              "F-11"
+              "F-09"
             ]
           },
           "IND-SING": {
@@ -12109,7 +12279,7 @@
           "IND-COMPL": {
             "state": "violation",
             "finding_ids": [
-              "F-13"
+              "F-11"
             ]
           },
           "IND-SING": {
@@ -12164,7 +12334,7 @@
           "IND-SING": {
             "state": "violation",
             "finding_ids": [
-              "F-42"
+              "F-37"
             ]
           },
           "IND-FEAS": {
@@ -12207,7 +12377,7 @@
           "IND-UNAMB": {
             "state": "violation",
             "finding_ids": [
-              "F-14"
+              "F-12"
             ]
           },
           "IND-COMPL": {
@@ -12280,7 +12450,7 @@
           "IND-CORR": {
             "state": "unclear",
             "finding_ids": [
-              "F-09"
+              "F-08"
             ]
           },
           "IND-CONF": {
@@ -12315,7 +12485,7 @@
           "IND-COMPL": {
             "state": "violation",
             "finding_ids": [
-              "F-15"
+              "F-13"
             ]
           },
           "IND-SING": {
@@ -12370,7 +12540,7 @@
           "IND-SING": {
             "state": "violation",
             "finding_ids": [
-              "F-42"
+              "F-37"
             ]
           },
           "IND-FEAS": {
@@ -12429,7 +12599,7 @@
           "IND-VERIF": {
             "state": "violation",
             "finding_ids": [
-              "F-16"
+              "F-14"
             ]
           },
           "IND-CORR": {
@@ -12464,7 +12634,7 @@
           "IND-UNAMB": {
             "state": "violation",
             "finding_ids": [
-              "F-17"
+              "F-15"
             ]
           },
           "IND-COMPL": {
@@ -12713,7 +12883,7 @@
           "IND-UNAMB": {
             "state": "violation",
             "finding_ids": [
-              "F-21"
+              "F-19"
             ]
           },
           "IND-COMPL": {
@@ -12780,7 +12950,7 @@
           "IND-VERIF": {
             "state": "violation",
             "finding_ids": [
-              "F-22"
+              "F-20"
             ]
           },
           "IND-CORR": {
@@ -12790,7 +12960,7 @@
           "IND-CONF": {
             "state": "violation",
             "finding_ids": [
-              "F-45"
+              "F-40"
             ]
           },
           "IND-TRACE": {
@@ -12821,7 +12991,7 @@
           "IND-COMPL": {
             "state": "violation",
             "finding_ids": [
-              "F-23"
+              "F-21"
             ]
           },
           "IND-SING": {
@@ -12921,7 +13091,7 @@
           "IND-COMPL": {
             "state": "violation",
             "finding_ids": [
-              "F-25"
+              "F-22"
             ]
           },
           "IND-SING": {
@@ -12984,7 +13154,7 @@
           "IND-VERIF": {
             "state": "violation",
             "finding_ids": [
-              "F-27"
+              "F-23"
             ]
           },
           "IND-CORR": {
@@ -13511,7 +13681,7 @@
           "IND-UNAMB": {
             "state": "violation",
             "finding_ids": [
-              "F-32"
+              "F-27"
             ]
           },
           "IND-COMPL": {
@@ -14203,7 +14373,7 @@
           "IND-COMPL": {
             "state": "violation",
             "finding_ids": [
-              "F-36"
+              "F-46"
             ]
           },
           "IND-SING": {
@@ -14635,14 +14805,14 @@
         "state": "violation",
         "finding_ids": [
           "F-05",
+          "F-16",
+          "F-17",
           "F-18",
-          "F-19",
-          "F-20",
-          "F-26",
-          "F-28",
-          "F-30",
-          "F-35",
-          "F-46"
+          "F-24",
+          "F-29",
+          "F-42",
+          "F-43",
+          "F-44"
         ],
         "refs": [
           "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Complete)",
@@ -14656,12 +14826,12 @@
           "F-01",
           "F-03",
           "F-07",
-          "F-12",
-          "F-24",
-          "F-29",
-          "F-33",
-          "F-34",
-          "F-37",
+          "F-10",
+          "F-25",
+          "F-28",
+          "F-30",
+          "F-41",
+          "F-45",
           "F-47"
         ],
         "refs": [
@@ -14681,11 +14851,11 @@
         "property": "SET-COMPR",
         "state": "violation",
         "finding_ids": [
-          "F-08",
-          "F-38",
-          "F-40",
-          "F-41",
-          "F-43"
+          "F-31",
+          "F-32",
+          "F-34",
+          "F-36",
+          "F-38"
         ],
         "refs": [
           "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Comprehensible)"
@@ -14695,7 +14865,7 @@
         "property": "SET-VALID",
         "state": "violation",
         "finding_ids": [
-          "F-10"
+          "F-35"
         ],
         "refs": [
           "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Able to be validated)"
@@ -14705,7 +14875,7 @@
         "property": "SET-MOD",
         "state": "violation",
         "finding_ids": [
-          "F-44"
+          "F-39"
         ],
         "refs": [
           "IEEE 830-1998, п. 4.3.7"
@@ -14730,8 +14900,8 @@
     ],
     "extra_finding_ids": [],
     "unlinked_finding_ids": [
-      "F-31",
-      "F-39"
+      "F-26",
+      "F-33"
     ],
     "checked": true
   },
@@ -14830,8 +15000,8 @@
       "used": true,
       "findings": [
         "F-02",
-        "F-23",
-        "F-24"
+        "F-21",
+        "F-41"
       ]
     },
     {
@@ -14851,9 +15021,9 @@
       "used": true,
       "findings": [
         "F-01",
-        "F-14",
-        "F-17",
-        "F-22"
+        "F-12",
+        "F-15",
+        "F-20"
       ]
     },
     {
@@ -14872,9 +15042,9 @@
       "triggered": true,
       "used": true,
       "findings": [
+        "F-11",
         "F-13",
-        "F-15",
-        "F-18"
+        "F-16"
       ]
     },
     {
@@ -14894,8 +15064,8 @@
       "findings": [
         "F-03",
         "F-04",
-        "F-16",
-        "F-21"
+        "F-14",
+        "F-19"
       ]
     },
     {
@@ -14916,12 +15086,12 @@
       "findings": [
         "F-06",
         "F-07",
-        "F-19",
-        "F-20",
-        "F-25",
-        "F-31",
-        "F-35",
-        "F-36",
+        "F-17",
+        "F-18",
+        "F-22",
+        "F-26",
+        "F-29",
+        "F-46",
         "F-47"
       ]
     },
