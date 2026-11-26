@@ -1,0 +1,189 @@
+{
+ "envelope_version": 1,
+ "key": "dfd0897f255811227d9080c1c6812a58bee3bcde576657fb9b16a8c0dfc122fe",
+ "call_id": "test_draft.4",
+ "step": "test_draft",
+ "call_index": 4,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T18:37:53.116366+00:00",
+ "payload": {
+  "duration_api_ms": 5454,
+  "stop_reason": "end_turn",
+  "session_id": "a1a8e5aa-1350-4455-8b14-dd290b1f14b7",
+  "total_cost_usd": 0.043879299999999996,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 8933,
+   "cache_read_input_tokens": 2133,
+   "output_tokens": 793,
+   "output_tokens_details": {
+    "thinking_tokens": 0
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 8933,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 793,
+     "cache_read_input_tokens": 2133,
+     "cache_creation_input_tokens": 8933,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 8933
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 793,
+    "cacheReadInputTokens": 2133,
+    "cacheCreationInputTokens": 8933,
+    "webSearchRequests": 0,
+    "costUSD": 0.043879299999999996,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 8933,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n**M-056.** Тест проверяет ответ на запрос сохранения порога с недопустимым `enabled` (например, 2). Из документа известно: статус 400, `result` = ERROR, настройка не меняется (B103.2). Единственный текст `message` в документе — «Проверьте сумму» для 400, но он дан без привязки к причине. Для недопустимого `enabled` документ отдельного `message` не задаёт, а «Проверьте сумму» по сути не подходит. Поэтому на `message` ставлю пропуск.\n\n## Ответ\n\n```json\n{\n  \"drafts\": [\n    {\n      \"finding\": \"M-056\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователь авторизован как владелец карты demo-42. Для карты сохранён порог 50000 с enabled=1.\",\n      \"steps\": [\n        \"Отправить запрос сохранения порога для карты demo-42 с amount=50000 (допустимое значение) и enabled=2 (недопустимое значение).\",\n        \"Прочитать настройку порога для карты demo-42.\"\n      ],\n      \"expected\": \"Статус ответа 400, result равен «ERROR», message равен [?1]. Ранее сохранённая настройка (порог 50000, enabled=1) не изменилась.\",\n      \"values\": [\n        {\"value\": \"400\", \"quote\": \"**400.** Ответ, если сумма вне 1 000–1 000 000, не целое число или `enabled` не 0 и не 1; настройка при этом не меняется.\"},\n        {\"value\": \"ERROR\", \"quote\": \"{\\\"result\\\":\\\"ERROR\\\",\\\"message\\\":\\\"Проверьте сумму\\\"}\"},\n        {\"value\": \"настройка при этом не меняется\", \"quote\": \"**400.** Ответ, если сумма вне 1 000–1 000 000, не целое число или `enabled` не 0 и не 1; настройка при этом не меняется.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"текст message для 400 при недопустимом enabled: в документе единственный пример message «Проверьте сумму» относится к ошибке суммы, а для ошибки enabled отдельный текст не задан (B103.2 включает enabled в причины 400, B108 даёт один общий message)\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    }\n  ]\n}\n```",
+  "ttft_ms": 5860,
+  "type": "result",
+  "duration_ms": 7048,
+  "uuid": "3cbb5805-f354-4bc8-b625-940a3e10ecfe",
+  "ttft_stream_ms": 1089,
+  "time_to_request_ms": 426,
+  "time_to_request_phases_ms": {
+   "other": 2,
+   "system_prompt": 1,
+   "resume_other": 0,
+   "process_user_input": 2,
+   "input_attachments": 6,
+   "input_hooks": 0,
+   "conversation_append": 0,
+   "tool_pool_refresh": 1,
+   "init_message": 3,
+   "init_frame_send": 2,
+   "engine_pickup": 1,
+   "loop_entry": 1,
+   "message_prep": 1,
+   "model_config_wait": 0,
+   "autocompact": 0,
+   "request_announcements": 3,
+   "query_setup": 0,
+   "model_gates": 394,
+   "tool_schema_build": 3,
+   "message_normalization": 1,
+   "client_creation": 2,
+   "request_build": 3
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 1,
+  "time_to_request_cpu_ms": 124,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "model",
+   "slowest_producer_ms": 3,
+   "cpu_ms": 10,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 2,
+   "ambient_wait_ms": 2,
+   "render_ms": 0,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 3,
+   "placement_ms": 0,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 7,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 0,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 0,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 1090,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "credential_expires_at": "2026-12-24T20:08:56.233Z"
+ }
+}

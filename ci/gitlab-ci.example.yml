@@ -1,0 +1,100 @@
+# Пример конвейера GitLab CI: проверка ТЗ агентом QAIRU validator на каждый merge request.
+#
+# Как работает:
+#   1. requirements-baseline: на целевой ветке (по умолчанию main) после каждого изменения документа
+#      агент проверяет ТЗ, report.json хранится как артефакт: это «было» для будущих merge request.
+#   2. requirements-check: в merge request, где менялся документ, агент проверяет новую версию,
+#      validator-diff сравнивает её с отчётом целевой ветки. Оба отчёта и сравнение лежат артефактами
+#      и видны ссылкой в merge request. Задача падает (failed), если светофор новой версии красный или
+#      правка внесла новые критичные нарушения. Сравнение модель не вызывает.
+#
+# Модель: ключ API в замаскированной и защищённой переменной ANTHROPIC_API_KEY (Settings → CI/CD →
+# Variables), в этом файле ключей нет. Для закрытого контура вместо API ставится локальная модель банка
+# за тем же протоколом клиента (issue #60): тогда меняется только строка --backend.
+# Синтаксис сверен с документацией GitLab: https://docs.gitlab.com/ci/yaml/ (rules:changes,
+# artifacts:expose_as) и https://docs.gitlab.com/api/job_artifacts/ (артефакт по имени ветки).
+
+variables:
+  REQUIREMENTS_DOC: docs/requirements/spec.md # проверяемый документ: .md, .pdf или .docx
+  QAIRU_OUT: qairu # папка отчётов; в artifacts:paths она же записана буквально
+  QAIRU_BUDGET_USD: "5" # стоп по цене одного прогона
+  QAIRU_PROFILE: standard
+
+default:
+  image: python:3.12-slim
+  before_script:
+    - pip install --quiet uv
+    - uv sync --frozen --no-dev
+
+.validator: &validator
+  - uv run validator "$REQUIREMENTS_DOC" "$QAIRU_OUT/report.md" --backend api --profile "$QAIRU_PROFILE"
+    --max-budget-usd "$QAIRU_BUDGET_USD" --cache off
+
+requirements-baseline:
+  stage: test
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes:
+        paths:
+          - $REQUIREMENTS_DOC
+  script:
+    - *validator
+  artifacts:
+    paths:
+      - qairu/
+    expire_in: never # «было» для merge request, пока документ не изменят снова
+
+requirements-check:
+  stage: test
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        paths:
+          - $REQUIREMENTS_DOC
+  script:
+    - *validator
+    # Отчёт целевой ветки из последнего успешного requirements-baseline. Если токена задания мало
+    # (настройки доступа проекта), положите токен с правом read_api в замаскированную QAIRU_API_TOKEN.
+    - |
+      uv run python - <<'PY'
+      import os, pathlib, urllib.error, urllib.request
+      env = os.environ
+      url = (f"{env['CI_API_V4_URL']}/projects/{env['CI_PROJECT_ID']}/jobs/artifacts/"
+             f"{env['CI_MERGE_REQUEST_TARGET_BRANCH_NAME']}/raw/qairu/report.json?job=requirements-baseline")
+      token = env.get("QAIRU_API_TOKEN")
+      header = ("PRIVATE-TOKEN", token) if token else ("JOB-TOKEN", env["CI_JOB_TOKEN"])
+      try:
+          with urllib.request.urlopen(urllib.request.Request(url, headers=dict([header])), timeout=60) as r:
+              pathlib.Path("baseline").mkdir(exist_ok=True)
+              pathlib.Path("baseline/report.json").write_bytes(r.read())
+      except urllib.error.URLError as exc:
+          print(f"Отчёта целевой ветки нет ({exc}): сравнение пропущено, проверена только новая версия")
+      PY
+    - |
+      if [ -s baseline/report.json ]; then
+        # Старая версия документа из целевой ветки: с текстами обеих версий сравнение точнее.
+        OLD_DOC="baseline/old.${REQUIREMENTS_DOC##*.}"
+        git fetch --quiet --depth=1 origin "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+        if git show "FETCH_HEAD:$REQUIREMENTS_DOC" > "$OLD_DOC"; then
+          DOCS="--old-doc $OLD_DOC --new-doc $REQUIREMENTS_DOC"
+        fi
+        uv run validator-diff baseline/report.json "$QAIRU_OUT/report.json" "$QAIRU_OUT/diff.md" \
+          --json "$QAIRU_OUT/diff.json" ${DOCS:-}
+      fi
+    # Светофор как статус задачи: красный или новые критичные на изменённых местах → failed.
+    - |
+      uv run python - <<'PY'
+      import json, os, pathlib, sys
+      out = pathlib.Path(os.environ["QAIRU_OUT"])
+      light = json.loads((out / "report.json").read_text(encoding="utf-8"))["verification"]["traffic_light"]
+      diff = out / "diff.json"
+      regress = json.loads(diff.read_text(encoding="utf-8"))["summary"]["regressions_critical"] if diff.exists() else 0
+      print(f"Светофор: {light}; новых критичных от правок: {regress}")
+      sys.exit(1 if light == "red" or regress else 0)
+      PY
+  artifacts:
+    when: always # отчёты нужны и когда задача упала
+    expose_as: "Проверка ТЗ"
+    paths:
+      - qairu/
+    expire_in: 30 days

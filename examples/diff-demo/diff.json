@@ -1,0 +1,2076 @@
+{
+  "schema_version": "1",
+  "old": {
+    "report": "v1/report.json",
+    "document_name": "requirements.md",
+    "document_sha256": "e7dae55e5453a250d93e335f5ff9c7f775f4457ccddd333f4a67e47b20d74381",
+    "agent_version": "6fa0596",
+    "prompts_sha256": "7dd96b1cffa406769efc8daf0df90f974ab4ef58757a546a07948210acc7492d",
+    "started_at": "2026-11-26T18:13:58.101556Z",
+    "traffic_light": "red",
+    "cost_usd": 3.3729
+  },
+  "new": {
+    "report": "v2/report.json",
+    "document_name": "requirements-v2.md",
+    "document_sha256": "f4d401baa2cf411251426db7e4668cdff62f047df9212a60a39bca652366e931",
+    "agent_version": "6fa0596",
+    "prompts_sha256": "7dd96b1cffa406769efc8daf0df90f974ab4ef58757a546a07948210acc7492d",
+    "started_at": "2026-11-26T18:30:49.431182Z",
+    "traffic_light": "red",
+    "cost_usd": 3.0084
+  },
+  "documents_compared": true,
+  "warnings": [],
+  "summary": {
+    "fixed": 5,
+    "old_findings": 50,
+    "fixed_critical": 2,
+    "old_critical": 4,
+    "remained": 41,
+    "remained_critical": 3,
+    "regressions": 2,
+    "regressions_critical": 0,
+    "vanished_without_edit": 4,
+    "new_on_unchanged_place": 13,
+    "requirements": {
+      "unchanged": 53,
+      "changed": 3,
+      "removed": 4,
+      "added": 2
+    }
+  },
+  "requirements": [
+    {
+      "status": "unchanged",
+      "old_id": "R-01",
+      "new_id": "R-01",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-02.1",
+      "new_id": "R-02.1",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-02.2",
+      "new_id": "R-02.2",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-03.1",
+      "new_id": "R-03.1",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-03.2",
+      "new_id": "R-03.2",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-03.3",
+      "new_id": "R-03.3",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-04",
+      "new_id": "R-05",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-05.1",
+      "new_id": "R-06.1",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-05.2",
+      "new_id": "R-06.2",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "changed",
+      "old_id": "R-06.1",
+      "new_id": "R-07.1",
+      "matched_by": "source_id",
+      "similarity": 74.5
+    },
+    {
+      "status": "changed",
+      "old_id": "R-06.2",
+      "new_id": "R-07.2",
+      "matched_by": "source_id",
+      "similarity": 37.3
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-06.3",
+      "new_id": "R-07.3",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "removed",
+      "old_id": "R-06.4",
+      "new_id": null,
+      "matched_by": "none",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-07.1",
+      "new_id": "R-08.1",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-07.2",
+      "new_id": "R-08.2",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-08.1",
+      "new_id": "R-09.1",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-08.2",
+      "new_id": "R-09.2",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-09.1",
+      "new_id": "R-10.1",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-09.2",
+      "new_id": "R-10.2",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-09.3",
+      "new_id": "R-10.3",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-10",
+      "new_id": "R-11",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-11",
+      "new_id": "R-12",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-12.1",
+      "new_id": "R-13.1",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-12.2",
+      "new_id": "R-13.2",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-13",
+      "new_id": "R-14",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "changed",
+      "old_id": "R-14",
+      "new_id": "R-15",
+      "matched_by": "similarity",
+      "similarity": 85.8
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-15",
+      "new_id": "R-16",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-16",
+      "new_id": "R-17",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-17",
+      "new_id": "R-18",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-18",
+      "new_id": "R-19",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-19",
+      "new_id": "R-20",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-20",
+      "new_id": "R-21",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-21",
+      "new_id": "R-22",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-22",
+      "new_id": "R-23",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-23",
+      "new_id": "R-24",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-24",
+      "new_id": "R-25",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-25",
+      "new_id": "R-26",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-26",
+      "new_id": "R-27",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-27",
+      "new_id": "R-28",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-28",
+      "new_id": "R-29",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-29",
+      "new_id": "R-30",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-30",
+      "new_id": "R-31",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-31",
+      "new_id": "R-32",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-32",
+      "new_id": "R-33",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-33",
+      "new_id": "R-34",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "removed",
+      "old_id": "R-34",
+      "new_id": null,
+      "matched_by": "none",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-35",
+      "new_id": "R-35",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-36.1",
+      "new_id": "R-36.1",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-36.2",
+      "new_id": "R-36.2",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-37",
+      "new_id": "R-37",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-38",
+      "new_id": "R-38",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-39",
+      "new_id": "R-39",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-40",
+      "new_id": "R-40",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-41.1",
+      "new_id": "R-41.1",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "removed",
+      "old_id": "R-41.2",
+      "new_id": null,
+      "matched_by": "none",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-42.1",
+      "new_id": "R-42.1",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-42.2",
+      "new_id": "R-42.2",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-42.3",
+      "new_id": "R-42.3",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "unchanged",
+      "old_id": "R-43.1",
+      "new_id": "R-43",
+      "matched_by": "stable_key",
+      "similarity": null
+    },
+    {
+      "status": "removed",
+      "old_id": "R-43.2",
+      "new_id": null,
+      "matched_by": "none",
+      "similarity": null
+    },
+    {
+      "status": "added",
+      "old_id": null,
+      "new_id": "R-04",
+      "matched_by": "none",
+      "similarity": null
+    },
+    {
+      "status": "added",
+      "old_id": null,
+      "new_id": "R-41.2",
+      "matched_by": "none",
+      "similarity": null
+    }
+  ],
+  "findings": [
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-02",
+        "property": "SET-CONS",
+        "severity": "critical",
+        "title": "Ф-4 противоречит ограничению «один push за месяц» в Ф-3",
+        "quotes": [
+          "На карту приходится максимум один такой push за календарный месяц.",
+          "Если она ниже нового порога, следующее достижение вызывает push независимо от истории предыдущей настройки."
+        ],
+        "requirement_ids": [
+          "R-07.2",
+          "R-08.2"
+        ]
+      },
+      "new": {
+        "id": "F-02",
+        "property": "SET-CONS",
+        "severity": "critical",
+        "title": "Ф-3 и Ф-4 противоречат друг другу после смены порога",
+        "quotes": [
+          "На карту приходится максимум один такой push за календарный месяц.",
+          "Если она ниже нового порога, следующее достижение вызывает push независимо от истории предыдущей настройки."
+        ],
+        "requirement_ids": [
+          "R-08.2",
+          "R-09.2"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-03",
+        "property": "SET-COMPL",
+        "severity": "critical",
+        "title": "Метод чтения настроек и суммы не описан",
+        "quotes": [
+          "Приложение читает и сохраняет настройки через дочерний документ «Уведомление о расходах по карте — REST API»."
+        ],
+        "requirement_ids": [
+          "R-12.1"
+        ]
+      },
+      "new": {
+        "id": "F-03",
+        "property": "SET-COMPL",
+        "severity": "critical",
+        "title": "Нет описания чтения настроек и суммы за месяц",
+        "quotes": [
+          "Приложение читает и сохраняет настройки через дочерний документ «Уведомление о расходах по карте — REST API»."
+        ],
+        "requirement_ids": [
+          "R-13.1"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-07",
+        "property": "IND-UNAMB",
+        "severity": "major",
+        "title": "Не определено, за какой месяц на экране показывается сумма",
+        "quotes": [
+          "На экране видны переключатель, поле «Порог, ₸», сумма за месяц и кнопка «Сохранить»."
+        ],
+        "requirement_ids": [
+          "R-03.2"
+        ]
+      },
+      "new": {
+        "id": "F-07",
+        "property": "IND-UNAMB",
+        "severity": "major",
+        "title": "Не определено, за какой месяц и по каким правилам показывается «сумма за месяц»",
+        "quotes": [
+          "На экране видны переключатель, поле «Порог, ₸», сумма за месяц и кнопка «Сохранить»."
+        ],
+        "requirement_ids": [
+          "R-03.2"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-08",
+        "property": "IND-COMPL",
+        "severity": "major",
+        "title": "Не описаны ошибки ввода порога в UI и тексты сообщений",
+        "quotes": [
+          "При ошибке ввода сообщение появляется под полем."
+        ],
+        "requirement_ids": [
+          "R-03.3"
+        ]
+      },
+      "new": {
+        "id": "F-08",
+        "property": "IND-COMPL",
+        "severity": "major",
+        "title": "Не заданы ошибки ввода на экране и тексты сообщений",
+        "quotes": [
+          "При ошибке ввода сообщение появляется под полем."
+        ],
+        "requirement_ids": [
+          "R-03.3"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-10",
+        "property": "IND-COMPL",
+        "severity": "major",
+        "title": "Не задана реакция для неактивной карты и карты не в KZT",
+        "quotes": [
+          "Держатель активной карты KZT задаёт целый порог от 1 000 до 1 000 000 ₸ включительно."
+        ],
+        "requirement_ids": [
+          "R-05.1"
+        ]
+      },
+      "new": {
+        "id": "F-11",
+        "property": "IND-COMPL",
+        "severity": "major",
+        "title": "Не определено поведение для неактивной карты и карты не в KZT",
+        "quotes": [
+          "Держатель активной карты KZT задаёт целый порог от 1 000 до 1 000 000 ₸ включительно."
+        ],
+        "requirement_ids": [
+          "R-06.1"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-13",
+        "property": "IND-COMPL",
+        "severity": "major",
+        "title": "Правило учёта возвратов неполно",
+        "quotes": [
+          "Возврат уменьшает расходы месяца исходной покупки."
+        ],
+        "requirement_ids": [
+          "R-06.3"
+        ]
+      },
+      "new": {
+        "id": "F-13",
+        "property": "IND-COMPL",
+        "severity": "major",
+        "title": "Правила возврата не покрывают граничные случаи",
+        "quotes": [
+          "Возврат уменьшает расходы месяца исходной покупки."
+        ],
+        "requirement_ids": [
+          "R-07.3"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-15",
+        "property": "IND-UNAMB",
+        "severity": "major",
+        "title": "Неясно, к какому месяцу относится ограничение «один push за календарный месяц»",
+        "quotes": [
+          "На карту приходится максимум один такой push за календарный месяц."
+        ],
+        "requirement_ids": [
+          "R-07.2"
+        ]
+      },
+      "new": {
+        "id": "F-15",
+        "property": "IND-UNAMB",
+        "severity": "major",
+        "title": "Неясно, к какому месяцу относится ограничение «один push в календарный месяц»",
+        "quotes": [
+          "На карту приходится максимум один такой push за календарный месяц."
+        ],
+        "requirement_ids": [
+          "R-08.2"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-16",
+        "property": "IND-COMPL",
+        "severity": "major",
+        "title": "Ф-4 не задаёт результат при новом пороге не выше накопленной суммы и при смене переключателя",
+        "quotes": [
+          "Если она ниже нового порога, следующее достижение вызывает push независимо от истории предыдущей настройки."
+        ],
+        "requirement_ids": [
+          "R-08.2"
+        ]
+      },
+      "new": {
+        "id": "F-16",
+        "property": "IND-COMPL",
+        "severity": "major",
+        "title": "Не определено, что считается переходом через порог, когда расходы уже не ниже порога в момент смены настройки",
+        "quotes": [
+          "Если она ниже нового порога, следующее достижение вызывает push независимо от истории предыдущей настройки."
+        ],
+        "requirement_ids": [
+          "R-09.2"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-17",
+        "property": "SET-CONS",
+        "severity": "major",
+        "title": "Диаграмма последовательности не содержит проверок включённости и отправки, а также веток ошибок",
+        "quotes": [
+          "Сервис расходов → настройки: получить порог карты."
+        ],
+        "requirement_ids": [
+          "R-09.2"
+        ]
+      },
+      "new": {
+        "id": "F-17",
+        "property": "SET-CONS",
+        "severity": "major",
+        "title": "На диаграмме последовательности нет проверок и событий из требований",
+        "quotes": [
+          "Сервис расходов → настройки: получить порог карты."
+        ],
+        "requirement_ids": [
+          "R-10.2"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-18",
+        "property": "IND-COMPL",
+        "severity": "major",
+        "title": "Не задано содержимое push: какая сумма, текст, язык, формат",
+        "quotes": [
+          "Сервис расходов → push: передать последние четыре цифры карты и сумму при достижении порога."
+        ],
+        "requirement_ids": [
+          "R-09.3"
+        ]
+      },
+      "new": {
+        "id": "F-18",
+        "property": "IND-COMPL",
+        "severity": "major",
+        "title": "Не задан текст push",
+        "quotes": [
+          "Сервис расходов → push: передать последние четыре цифры карты и сумму при достижении порога."
+        ],
+        "requirement_ids": [
+          "R-10.3"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-19",
+        "property": "IND-VERIF",
+        "severity": "major",
+        "title": "Нефункциональное требование к сроку непроверяемо",
+        "quotes": [
+          "Сервис передаёт push на отправку в течение минуты после получения события."
+        ],
+        "requirement_ids": [
+          "R-10"
+        ]
+      },
+      "new": {
+        "id": "F-21",
+        "property": "IND-VERIF",
+        "severity": "major",
+        "title": "Срок передачи push не измерим полностью",
+        "quotes": [
+          "Сервис передаёт push на отправку в течение минуты после получения события."
+        ],
+        "requirement_ids": [
+          "R-11"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-20",
+        "property": "IND-COMPL",
+        "severity": "major",
+        "title": "Модель данных не содержит того, что читают и меняют правила",
+        "quotes": [
+          "Хранить идентификатор карты, месяц, идентификатор операции, сумму покупки в тиынах, признак отправки и порог в тенге."
+        ],
+        "requirement_ids": [
+          "R-11"
+        ]
+      },
+      "new": {
+        "id": "F-22",
+        "property": "IND-COMPL",
+        "severity": "major",
+        "title": "В модели данных нет полей, которые нужны правилам",
+        "quotes": [
+          "Хранить идентификатор карты, месяц, идентификатор операции, сумму покупки в тиынах, признак отправки и порог в тенге."
+        ],
+        "requirement_ids": [
+          "R-12"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-21",
+        "property": "IND-COMPL",
+        "severity": "major",
+        "title": "Нет срока хранения и требований к защите данных",
+        "quotes": [
+          "Хранить идентификатор карты, месяц, идентификатор операции, сумму покупки в тиынах, признак отправки и порог в тенге."
+        ],
+        "requirement_ids": [
+          "R-11"
+        ]
+      },
+      "new": {
+        "id": "F-23",
+        "property": "IND-COMPL",
+        "severity": "major",
+        "title": "Не задан срок хранения данных",
+        "quotes": [
+          "Хранить идентификатор карты, месяц, идентификатор операции, сумму покупки в тиынах, признак отправки и порог в тенге."
+        ],
+        "requirement_ids": [
+          "R-12"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-23",
+        "property": "IND-VERIF",
+        "severity": "major",
+        "title": "В критерии приёмки 1 не заданы все исходные условия",
+        "quotes": [
+          "Расходы 48 500 ₸, порог 50 000 ₸"
+        ],
+        "requirement_ids": [
+          "R-13"
+        ]
+      },
+      "new": {
+        "id": "F-25",
+        "property": "IND-VERIF",
+        "severity": "major",
+        "title": "В критериях приёмки неполные исходные условия",
+        "quotes": [
+          "Расходы 48 500 ₸, порог 50 000 ₸",
+          "Покупка 31 января в 23:58 на 4 000 ₸"
+        ],
+        "requirement_ids": [
+          "R-14",
+          "R-15"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "важность важно → критично",
+      "old": {
+        "id": "F-26",
+        "property": "IND-CORR",
+        "severity": "major",
+        "title": "Изменяющая операция описана через GET",
+        "quotes": [
+          "GET",
+          "curl -G \"$BASE/alerts/saveLimit\""
+        ],
+        "requirement_ids": [
+          "R-17"
+        ]
+      },
+      "new": {
+        "id": "F-04",
+        "property": "IND-CORR",
+        "severity": "critical",
+        "title": "Изменяющая операция описана методом GET",
+        "quotes": [
+          "GET",
+          "curl -G \"$BASE/alerts/saveLimit\" -H \"Authorization: Bearer $TOKEN\" --data 'cardId=demo-42&amount=50000&enabled=1'"
+        ],
+        "requirement_ids": [
+          "R-18"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-30",
+        "property": "SET-COMPL",
+        "severity": "major",
+        "title": "Не определён результат одновременных событий",
+        "quotes": [
+          "Повторное сохранение заменяет действующую настройку."
+        ],
+        "requirement_ids": [
+          "R-27"
+        ]
+      },
+      "new": {
+        "id": "F-29",
+        "property": "SET-COMPL",
+        "severity": "major",
+        "title": "Не определён результат одновременных действий",
+        "quotes": [
+          "Повторное сохранение заменяет действующую настройку."
+        ],
+        "requirement_ids": [
+          "R-28"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-31",
+        "property": "IND-COMPL",
+        "severity": "major",
+        "title": "Идентификатор карты передаётся в адресной строке",
+        "quotes": [
+          "Идентификатор карты"
+        ],
+        "requirement_ids": [
+          "R-31"
+        ]
+      },
+      "new": {
+        "id": "F-30",
+        "property": "IND-COMPL",
+        "severity": "major",
+        "title": "Идентификатор карты передаётся в адресной строке",
+        "quotes": [
+          "Идентификатор карты"
+        ],
+        "requirement_ids": [
+          "R-32"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-32",
+        "property": "IND-COMPL",
+        "severity": "major",
+        "title": "Открытый перечень «400, 401 и далее»",
+        "quotes": [
+          "Если результат 400, 401 и далее — неуспешный."
+        ],
+        "requirement_ids": [
+          "R-36.2"
+        ]
+      },
+      "new": {
+        "id": "F-31",
+        "property": "IND-COMPL",
+        "severity": "major",
+        "title": "Открытый перечень «400, 401 и далее»",
+        "quotes": [
+          "Если результат 400, 401 и далее — неуспешный."
+        ],
+        "requirement_ids": [
+          "R-36.2"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-34",
+        "property": "SET-COMPR",
+        "severity": "minor",
+        "title": "Компоненты системы названы по-разному",
+        "quotes": [
+          "Мобильный банк, карточный процессинг, сервис уведомлений",
+          "Карточный процессинг → учёт расходов → сервис push."
+        ],
+        "requirement_ids": [
+          "R-02.2"
+        ]
+      },
+      "new": {
+        "id": "F-36",
+        "property": "SET-COMPR",
+        "severity": "minor",
+        "title": "Сервис push назван по-разному",
+        "quotes": [
+          "Мобильный банк, карточный процессинг, сервис уведомлений",
+          "Карточный процессинг → учёт расходов → сервис push."
+        ],
+        "requirement_ids": [
+          "R-02.2"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-35",
+        "property": "SET-COMPR",
+        "severity": "minor",
+        "title": "Порог назван по-разному",
+        "quotes": [
+          "Дать клиенту возможность узнать о достижении личного бюджета в момент покупки.",
+          "Порог в тенге"
+        ],
+        "requirement_ids": [
+          "R-01",
+          "R-32"
+        ]
+      },
+      "new": {
+        "id": "F-38",
+        "property": "SET-COMPR",
+        "severity": "minor",
+        "title": "Порог назван по-разному",
+        "quotes": [
+          "Дать клиенту возможность узнать о достижении личного бюджета в момент покупки.",
+          "Порог в тенге"
+        ],
+        "requirement_ids": [
+          "R-01",
+          "R-33"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "важность незначительно → важно",
+      "old": {
+        "id": "F-36",
+        "property": "SET-VALID",
+        "severity": "minor",
+        "title": "Цель без измеримого показателя",
+        "quotes": [
+          "Дать клиенту возможность узнать о достижении личного бюджета в момент покупки."
+        ],
+        "requirement_ids": [
+          "R-01"
+        ]
+      },
+      "new": {
+        "id": "F-06",
+        "property": "SET-VALID",
+        "severity": "major",
+        "title": "У цели нет измеримого показателя",
+        "quotes": [
+          "Дать клиенту возможность узнать о достижении личного бюджета в момент покупки."
+        ],
+        "requirement_ids": [
+          "R-01"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-38",
+        "property": "IND-SING",
+        "severity": "minor",
+        "title": "Ф-1 объединяет два обязательства",
+        "quotes": [
+          "По умолчанию уведомление выключено."
+        ],
+        "requirement_ids": [
+          "R-05.2"
+        ]
+      },
+      "new": {
+        "id": "F-42",
+        "property": "IND-SING",
+        "severity": "minor",
+        "title": "Требования Ф-1–Ф-4 и R-13.1, R-13.2 составные",
+        "quotes": [
+          "По умолчанию уведомление выключено."
+        ],
+        "requirement_ids": [
+          "R-06.2"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "требование R-14 изменено, но находка не закрыта",
+      "old": {
+        "id": "F-39",
+        "property": "SET-COMPR",
+        "severity": "minor",
+        "title": "Сумма расходов месяца названа шестью разными именами",
+        "quotes": [
+          "При изменении порога накопленная сумма сохраняется.",
+          "Февральский счётчик вырос на 4 000 ₸"
+        ],
+        "requirement_ids": [
+          "R-08.1",
+          "R-14"
+        ]
+      },
+      "new": {
+        "id": "F-44",
+        "property": "SET-COMPR",
+        "severity": "minor",
+        "title": "Расходы за месяц названы по-разному",
+        "quotes": [
+          "При изменении порога накопленная сумма сохраняется.",
+          "Счётчик показывает 19 900 ₸"
+        ],
+        "requirement_ids": [
+          "R-09.1",
+          "R-16"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-40",
+        "property": "IND-CONF",
+        "severity": "minor",
+        "title": "Требования оформлены неединообразно: ID и модальность только у части",
+        "quotes": [
+          "Сервис передаёт push на отправку в течение минуты после получения события."
+        ],
+        "requirement_ids": [
+          "R-10"
+        ]
+      },
+      "new": {
+        "id": "F-46",
+        "property": "IND-CONF",
+        "severity": "minor",
+        "title": "Нет единой модальности, ID и приоритетов",
+        "quotes": [
+          "Сервис передаёт push на отправку в течение минуты после получения события."
+        ],
+        "requirement_ids": [
+          "R-11"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-41",
+        "property": "SET-CONS",
+        "severity": "minor",
+        "title": "Единицы суммы покупки (тиыны) и порога (тенге) различаются",
+        "quotes": [
+          "Хранить идентификатор карты, месяц, идентификатор операции, сумму покупки в тиынах, признак отправки и порог в тенге.",
+          "Расходы 48 500 ₸, порог 50 000 ₸"
+        ],
+        "requirement_ids": [
+          "R-11",
+          "R-13"
+        ]
+      },
+      "new": {
+        "id": "F-47",
+        "property": "SET-CONS",
+        "severity": "minor",
+        "title": "Сумма покупки и порог хранятся в разных единицах, правило сравнения не задано",
+        "quotes": [
+          "Хранить идентификатор карты, месяц, идентификатор операции, сумму покупки в тиынах, признак отправки и порог в тенге."
+        ],
+        "requirement_ids": [
+          "R-12"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-46",
+        "property": "SET-COMPL",
+        "severity": "minor",
+        "title": "Не заполнены URL для Prod и Swagger",
+        "quotes": [
+          "Prod: —"
+        ],
+        "requirement_ids": [
+          "R-20"
+        ]
+      },
+      "new": {
+        "id": "F-51",
+        "property": "SET-COMPL",
+        "severity": "minor",
+        "title": "Не заполнены адрес Prod и Swagger",
+        "quotes": [
+          "Dev: `/alerts/saveLimit` . Prod: —"
+        ],
+        "requirement_ids": [
+          "R-21"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-47",
+        "property": "SET-MOD",
+        "severity": "minor",
+        "title": "Правила части A повторены в части B без перекрёстной ссылки",
+        "quotes": [
+          "Целое число тенге, обе границы включены.",
+          "Изменение порога сохраняет накопленные расходы."
+        ],
+        "requirement_ids": [
+          "R-26",
+          "R-28"
+        ]
+      },
+      "new": {
+        "id": "F-53",
+        "property": "SET-MOD",
+        "severity": "minor",
+        "title": "Правила части B повторяют Ф-1 и Ф-4 без ссылки",
+        "quotes": [
+          "Целое число тенге, обе границы включены.",
+          "Изменение порога сохраняет накопленные расходы."
+        ],
+        "requirement_ids": [
+          "R-27",
+          "R-29"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-33",
+        "property": "SET-CONS",
+        "severity": "major",
+        "title": "Раздел 403 описывает 404, условие 403 не определено, 404 нет в перечне статусов",
+        "quotes": [
+          "Ответ в случае, если на указанный ресурс доступ запрещен.",
+          "Для чужой карты возвращается 404, как и для отсутствующей карты."
+        ],
+        "requirement_ids": [
+          "R-42.2",
+          "R-43.1"
+        ]
+      },
+      "new": {
+        "id": "F-34",
+        "property": "SET-CONS",
+        "severity": "major",
+        "title": "Для чужой карты указаны и 403, и 404",
+        "quotes": [
+          "Ответ в случае, если на указанный ресурс доступ запрещен.",
+          "Для чужой карты возвращается 404, как и для отсутствующей карты."
+        ],
+        "requirement_ids": [
+          "R-42.2",
+          "R-43"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-48",
+        "property": "SET-CONS",
+        "severity": "minor",
+        "title": "Типы полей `amount` и `enabled` в запросе и ответе различаются",
+        "quotes": [
+          "32 bit",
+          "{\"result\":\"OK\",\"amount\":\"50000\",\"enabled\":\"1\"}"
+        ],
+        "requirement_ids": [
+          "R-32"
+        ]
+      },
+      "new": {
+        "id": "F-54",
+        "property": "SET-CONS",
+        "severity": "minor",
+        "title": "Типы amount и enabled в запросе и ответе различаются",
+        "quotes": [
+          "integer",
+          "{\"result\":\"OK\",\"amount\":\"50000\",\"enabled\":\"1\"}"
+        ],
+        "requirement_ids": [
+          "R-33"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-42",
+        "property": "SET-COMPL",
+        "severity": "minor",
+        "title": "Раздел тестирования требований не заполнен",
+        "quotes": [
+          "заполняются тестировщиками"
+        ],
+        "requirement_ids": []
+      },
+      "new": {
+        "id": "F-48",
+        "property": "SET-COMPL",
+        "severity": "minor",
+        "title": "Раздел тестирования требований не заполнен",
+        "quotes": [
+          "заполняются тестировщиками"
+        ],
+        "requirement_ids": []
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-44",
+        "property": "SET-COMPL",
+        "severity": "minor",
+        "title": "Чек-лист ревью оставлен незаполненным",
+        "quotes": [
+          "Пункты чек-листа приведены как в шаблоне, отметки не проставлены."
+        ],
+        "requirement_ids": []
+      },
+      "new": {
+        "id": "F-49",
+        "property": "SET-COMPL",
+        "severity": "minor",
+        "title": "Чек-лист ревью не заполнен",
+        "quotes": [
+          "Пункты чек-листа приведены как в шаблоне, отметки не проставлены."
+        ],
+        "requirement_ids": []
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "требование R-06.2 изменено, но находка не закрыта",
+      "old": {
+        "id": "F-12",
+        "property": "IND-COMPL",
+        "severity": "major",
+        "title": "Не задан пересчёт покупок в иностранной валюте по карте KZT",
+        "quotes": [
+          "В расходы входят проведённые покупки."
+        ],
+        "requirement_ids": [
+          "R-06.2"
+        ]
+      },
+      "new": {
+        "id": "F-12",
+        "property": "IND-COMPL",
+        "severity": "major",
+        "title": "Не определено, как учитывается покупка в другой валюте по карте KZT",
+        "quotes": [
+          "В расходы входят только операции типа «покупка» в статусе «проведена»; переводы, снятие наличных, комиссии и пополнения в расходы не входят."
+        ],
+        "requirement_ids": [
+          "R-07.2"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-24",
+        "property": "SET-COMPL",
+        "severity": "major",
+        "title": "Критерии приёмки не покрывают ключевые и негативные сценарии",
+        "quotes": [
+          "Расходы 48 500 ₸, порог 50 000 ₸"
+        ],
+        "requirement_ids": [
+          "R-13"
+        ]
+      },
+      "new": {
+        "id": "F-26",
+        "property": "SET-COMPL",
+        "severity": "major",
+        "title": "Критерии приёмки не покрывают ключевые требования",
+        "quotes": [
+          "Итог 50 000 ₸ и один push"
+        ],
+        "requirement_ids": [
+          "R-14"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "",
+      "old": {
+        "id": "F-43",
+        "property": "IND-TRACE",
+        "severity": "minor",
+        "title": "Версия и дата документа не заполнены",
+        "quotes": [
+          "Документ (версия/дата) в источнике не заполнен."
+        ],
+        "requirement_ids": []
+      },
+      "new": {
+        "id": "F-37",
+        "property": "IND-TRACE",
+        "severity": "minor",
+        "title": "У документа нет версии, даты, ссылки на задачу и названных владельцев",
+        "quotes": [
+          "Практикум без Jira-задачи",
+          "Документ (версия/дата) в источнике не заполнен."
+        ],
+        "requirement_ids": []
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "та же цитата, модель сменила свойство: SET-CONS → SET-COMPL",
+      "old": {
+        "id": "F-09",
+        "property": "SET-CONS",
+        "severity": "major",
+        "title": "BPMN-схема не содержит развилок, заданных в тексте",
+        "quotes": [
+          "Проведение покупки → пересчёт расходов → проверка порога → при достижении отправка push → завершение."
+        ],
+        "requirement_ids": [
+          "R-04"
+        ]
+      },
+      "new": {
+        "id": "F-10",
+        "property": "SET-COMPL",
+        "severity": "major",
+        "title": "На BPMN-схеме нет развилок, которые следуют из текста требований",
+        "quotes": [
+          "Проведение покупки → пересчёт расходов → проверка порога → при достижении отправка push → завершение."
+        ],
+        "requirement_ids": [
+          "R-05"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "та же цитата, модель сменила свойство: SET-CONS → IND-CORR",
+      "old": {
+        "id": "F-25",
+        "property": "SET-CONS",
+        "severity": "major",
+        "title": "Описание метода противоречит само себе: сохранение или чтение",
+        "quotes": [
+          "Сохранение порога. Функциональные требования: чтение порога"
+        ],
+        "requirement_ids": [
+          "R-16"
+        ]
+      },
+      "new": {
+        "id": "F-27",
+        "property": "IND-CORR",
+        "severity": "major",
+        "title": "Описание метода противоречит само себе: сохранение или чтение",
+        "quotes": [
+          "Сохранение порога. Функциональные требования: чтение порога"
+        ],
+        "requirement_ids": [
+          "R-17"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "та же цитата, модель сменила свойство: SET-TRACE → IND-TRACE",
+      "old": {
+        "id": "F-45",
+        "property": "SET-TRACE",
+        "severity": "minor",
+        "title": "Блок согласующих пуст",
+        "quotes": [
+          "Блок согласующих"
+        ],
+        "requirement_ids": []
+      },
+      "new": {
+        "id": "F-50",
+        "property": "IND-TRACE",
+        "severity": "minor",
+        "title": "Блок согласующих пуст",
+        "quotes": [
+          "Блок согласующих"
+        ],
+        "requirement_ids": []
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "требование R-06.2 изменено, но находка не закрыта; та же цитата, модель сменила свойство: SET-FEAS → SET-CONS",
+      "old": {
+        "id": "F-06",
+        "property": "SET-FEAS",
+        "severity": "major",
+        "title": "Цель «в момент покупки» несовместима с учётом только проведённых покупок и сроком в минуту",
+        "quotes": [
+          "Дать клиенту возможность узнать о достижении личного бюджета в момент покупки.",
+          "В расходы входят проведённые покупки."
+        ],
+        "requirement_ids": [
+          "R-01",
+          "R-06.2"
+        ]
+      },
+      "new": {
+        "id": "F-05",
+        "property": "SET-CONS",
+        "severity": "major",
+        "title": "Цель «в момент покупки» не согласуется с учётом только проведённых покупок",
+        "quotes": [
+          "Дать клиенту возможность узнать о достижении личного бюджета в момент покупки.",
+          "В расходы входят только операции типа «покупка» в статусе «проведена»; переводы, снятие наличных, комиссии и пополнения в расходы не входят."
+        ],
+        "requirement_ids": [
+          "R-01",
+          "R-07.2"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "та же цитата, модель сменила свойство: IND-COMPL → IND-UNAMB",
+      "old": {
+        "id": "F-22",
+        "property": "IND-COMPL",
+        "severity": "major",
+        "title": "Правило повторной доставки и порядка событий неполно",
+        "quotes": [
+          "Повторная доставка одного события процессинга сохраняет исходный итог."
+        ],
+        "requirement_ids": [
+          "R-12.2"
+        ]
+      },
+      "new": {
+        "id": "F-24",
+        "property": "IND-UNAMB",
+        "severity": "major",
+        "title": "Правило повторной доставки события неоднозначно и неполно",
+        "quotes": [
+          "Повторная доставка одного события процессинга сохраняет исходный итог."
+        ],
+        "requirement_ids": [
+          "R-13.2"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "та же цитата, модель сменила свойство: IND-UNAMB → SET-CONS",
+      "old": {
+        "id": "F-29",
+        "property": "IND-UNAMB",
+        "severity": "major",
+        "title": "«Вернуть прежнее состояние» допускает два толкования",
+        "quotes": [
+          "При отклонении суммы вернуть прежнее состояние и результат ERROR."
+        ],
+        "requirement_ids": [
+          "R-25"
+        ]
+      },
+      "new": {
+        "id": "F-28",
+        "property": "SET-CONS",
+        "severity": "major",
+        "title": "«Вернуть прежнее состояние» при отклонении противоречит составу ответа",
+        "quotes": [
+          "При отклонении суммы вернуть прежнее состояние и результат ERROR.",
+          "При успехе"
+        ],
+        "requirement_ids": [
+          "R-26",
+          "R-38"
+        ]
+      }
+    },
+    {
+      "class": "remained",
+      "reason": "та же цитата, модель сменила свойство: IND-CORR → IND-UNAMB",
+      "old": {
+        "id": "F-50",
+        "property": "IND-CORR",
+        "severity": "minor",
+        "title": "Коды успеха 200 и 201 перепутаны, перечень ошибок открыт",
+        "quotes": [
+          "Если результат 200 или 201 — успешный.",
+          "200. Successful — Created"
+        ],
+        "requirement_ids": [
+          "R-36.1"
+        ]
+      },
+      "new": {
+        "id": "F-52",
+        "property": "IND-UNAMB",
+        "severity": "minor",
+        "title": "Слово «результат» обозначает и HTTP-код, и поле result",
+        "quotes": [
+          "Заменить настройку и вернуть результат сохранения.",
+          "Если результат 200 или 201 — успешный."
+        ],
+        "requirement_ids": [
+          "R-25",
+          "R-36.1"
+        ]
+      }
+    },
+    {
+      "class": "fixed",
+      "reason": "место цитаты изменено: «Месяц определяется по дате совершения покупки в Алматы.»",
+      "old": {
+        "id": "F-01",
+        "property": "SET-CONS",
+        "severity": "critical",
+        "title": "Отнесение покупки к месяцу в Ф-2 противоречит критерию приёмки 2",
+        "quotes": [
+          "Месяц определяется по дате совершения покупки в Алматы.",
+          "Февральский счётчик вырос на 4 000 ₸"
+        ],
+        "requirement_ids": [
+          "R-06.1",
+          "R-14"
+        ]
+      },
+      "new": null
+    },
+    {
+      "class": "fixed",
+      "reason": "место цитаты изменено: «Ответ в случае, если параметры запроса заполнены неверно.»",
+      "old": {
+        "id": "F-04",
+        "property": "SET-CONS",
+        "severity": "critical",
+        "title": "Ошибка суммы возвращается с кодом 200, хотя для неверных параметров задан 400",
+        "quotes": [
+          "Ответ в случае, если параметры запроса заполнены неверно.",
+          "{\"result\":\"ERROR\",\"message\":\"Проверьте сумму\"}"
+        ],
+        "requirement_ids": [
+          "R-41.2"
+        ]
+      },
+      "new": null
+    },
+    {
+      "class": "vanished_without_edit",
+      "reason": "цитата дословно осталась в новой версии, а находки нет",
+      "old": {
+        "id": "F-05",
+        "property": "SET-COMPL",
+        "severity": "major",
+        "title": "Не описано поведение при отказе смежных систем и недоставке push",
+        "quotes": [
+          "Мобильный банк, карточный процессинг, сервис уведомлений"
+        ],
+        "requirement_ids": []
+      },
+      "new": null
+    },
+    {
+      "class": "fixed",
+      "reason": "место цитаты изменено: «Месяц определяется по дате совершения покупки в Алматы.»",
+      "old": {
+        "id": "F-11",
+        "property": "IND-UNAMB",
+        "severity": "major",
+        "title": "Часовой пояс задан названием города, а не смещением или идентификатором",
+        "quotes": [
+          "Месяц определяется по дате совершения покупки в Алматы."
+        ],
+        "requirement_ids": [
+          "R-06.1"
+        ]
+      },
+      "new": null
+    },
+    {
+      "class": "fixed",
+      "reason": "место цитаты изменено: «Переводы и снятие наличных исключаются.»",
+      "old": {
+        "id": "F-14",
+        "property": "IND-UNAMB",
+        "severity": "major",
+        "title": "Открытый перечень исключаемых операций",
+        "quotes": [
+          "Переводы и снятие наличных исключаются."
+        ],
+        "requirement_ids": [
+          "R-06.4"
+        ]
+      },
+      "new": null
+    },
+    {
+      "class": "vanished_without_edit",
+      "reason": "цитата дословно осталась в новой версии, а находки нет",
+      "old": {
+        "id": "F-27",
+        "property": "IND-UNAMB",
+        "severity": "major",
+        "title": "Держатель, владелец карты и клиент не разграничены",
+        "quotes": [
+          "Bearer, сессия владельца карты",
+          "Проверить принадлежность карты клиенту."
+        ],
+        "requirement_ids": [
+          "R-18",
+          "R-22"
+        ]
+      },
+      "new": null
+    },
+    {
+      "class": "vanished_without_edit",
+      "reason": "цитата дословно осталась в новой версии, а находки нет",
+      "old": {
+        "id": "F-28",
+        "property": "IND-COMPL",
+        "severity": "major",
+        "title": "Не заданы проверки параметров и ответы на каждую ошибку",
+        "quotes": [
+          "Проверить сумму и переключатель."
+        ],
+        "requirement_ids": [
+          "R-23"
+        ]
+      },
+      "new": null
+    },
+    {
+      "class": "vanished_without_edit",
+      "reason": "цитата дословно осталась в новой версии, а находки нет",
+      "old": {
+        "id": "F-37",
+        "property": "SET-RANK",
+        "severity": "minor",
+        "title": "У требований нет приоритета",
+        "quotes": [
+          "Функциональные требования"
+        ],
+        "requirement_ids": []
+      },
+      "new": null
+    },
+    {
+      "class": "fixed",
+      "reason": "место цитаты изменено: «application/json»",
+      "old": {
+        "id": "F-49",
+        "property": "SET-CONS",
+        "severity": "minor",
+        "title": "Задан Content-Type JSON при отсутствии тела",
+        "quotes": [
+          "application/json",
+          "Тело не используется."
+        ],
+        "requirement_ids": [
+          "R-34",
+          "R-35"
+        ]
+      },
+      "new": null
+    },
+    {
+      "class": "new_on_unchanged_place",
+      "reason": "место не менялось: в старой версии модель это не отметила",
+      "old": null,
+      "new": {
+        "id": "F-01",
+        "property": "IND-COMPL",
+        "severity": "critical",
+        "title": "Push не связан с переключателем уведомлений",
+        "quotes": [
+          "По умолчанию уведомление выключено.",
+          "Когда расходы переходят от суммы ниже порога к сумме, равной порогу или выше, клиент получает push."
+        ],
+        "requirement_ids": [
+          "R-06.2",
+          "R-08.1"
+        ]
+      }
+    },
+    {
+      "class": "new_on_changed_place",
+      "reason": "цитата из правки: «Экран уведомлений открывается быстро и без заметных задержек.»",
+      "old": null,
+      "new": {
+        "id": "F-09",
+        "property": "IND-VERIF",
+        "severity": "major",
+        "title": "Скорость открытия экрана не проверяется",
+        "quotes": [
+          "Экран уведомлений открывается быстро и без заметных задержек."
+        ],
+        "requirement_ids": [
+          "R-04"
+        ]
+      }
+    },
+    {
+      "class": "new_on_unchanged_place",
+      "reason": "место не менялось: в старой версии модель это не отметила",
+      "old": null,
+      "new": {
+        "id": "F-14",
+        "property": "IND-VERIF",
+        "severity": "major",
+        "title": "Получение push клиентом вне контроля системы",
+        "quotes": [
+          "Когда расходы переходят от суммы ниже порога к сумме, равной порогу или выше, клиент получает push."
+        ],
+        "requirement_ids": [
+          "R-08.1"
+        ]
+      }
+    },
+    {
+      "class": "new_on_unchanged_place",
+      "reason": "место не менялось: в старой версии модель это не отметила",
+      "old": null,
+      "new": {
+        "id": "F-19",
+        "property": "IND-UNAMB",
+        "severity": "major",
+        "title": "Неясно, какая «сумма» передаётся в push",
+        "quotes": [
+          "Сервис расходов → push: передать последние четыре цифры карты и сумму при достижении порога."
+        ],
+        "requirement_ids": [
+          "R-10.3"
+        ]
+      }
+    },
+    {
+      "class": "new_on_unchanged_place",
+      "reason": "место не менялось: в старой версии модель это не отметила",
+      "old": null,
+      "new": {
+        "id": "F-20",
+        "property": "SET-COMPL",
+        "severity": "major",
+        "title": "Не описано поведение при отказе сервиса push и сервиса настроек",
+        "quotes": [
+          "Сервис расходов → push: передать последние четыре цифры карты и сумму при достижении порога."
+        ],
+        "requirement_ids": [
+          "R-10.3"
+        ]
+      }
+    },
+    {
+      "class": "new_on_unchanged_place",
+      "reason": "место не менялось: в старой версии модель это не отметила",
+      "old": null,
+      "new": {
+        "id": "F-32",
+        "property": "SET-CONS",
+        "severity": "major",
+        "title": "Поле result отсутствует в ответах 401, 404 и 500",
+        "quotes": [
+          "OK / ERROR",
+          "{\"message\":\"Требуется вход\"}"
+        ],
+        "requirement_ids": [
+          "R-37"
+        ]
+      }
+    },
+    {
+      "class": "new_on_changed_place",
+      "reason": "цитата из правки: «Ответ, если сумма вне 1 000–1 000 000, не целое число или `enabled` не 0 и не 1…»",
+      "old": null,
+      "new": {
+        "id": "F-33",
+        "property": "SET-COMPL",
+        "severity": "major",
+        "title": "Не описаны ответы на часть недопустимых запросов",
+        "quotes": [
+          "Ответ, если сумма вне 1 000–1 000 000, не целое число или `enabled` не 0 и не 1; настройка при этом не меняется."
+        ],
+        "requirement_ids": [
+          "R-41.2"
+        ]
+      }
+    },
+    {
+      "class": "new_on_unchanged_place",
+      "reason": "место не менялось: в старой версии модель это не отметила",
+      "old": null,
+      "new": {
+        "id": "F-35",
+        "property": "SET-COMPR",
+        "severity": "minor",
+        "title": "Приложение названо по-разному",
+        "quotes": [
+          "Мобильный банк, учебный кейс",
+          "Мобильное приложение → сервис настроек."
+        ],
+        "requirement_ids": [
+          "R-02.1"
+        ]
+      }
+    },
+    {
+      "class": "new_on_unchanged_place",
+      "reason": "место не менялось: в старой версии модель это не отметила",
+      "old": null,
+      "new": {
+        "id": "F-39",
+        "property": "SET-COMPR",
+        "severity": "minor",
+        "title": "Сервис настроек назван по-разному",
+        "quotes": [
+          "Мобильное приложение → сервис настроек.",
+          "Приложение → AlertsController → хранилище настроек → AlertsController → приложение."
+        ],
+        "requirement_ids": [
+          "R-02.1",
+          "R-30"
+        ]
+      }
+    },
+    {
+      "class": "new_on_unchanged_place",
+      "reason": "место не менялось: в старой версии модель это не отметила",
+      "old": null,
+      "new": {
+        "id": "F-40",
+        "property": "SET-COMPR",
+        "severity": "minor",
+        "title": "Сервис учёта расходов назван по-разному",
+        "quotes": [
+          "Карточный процессинг → учёт расходов → сервис push.",
+          "Сервис передаёт push на отправку в течение минуты после получения события."
+        ],
+        "requirement_ids": [
+          "R-02.2",
+          "R-11"
+        ]
+      }
+    },
+    {
+      "class": "new_on_unchanged_place",
+      "reason": "место не менялось: в старой версии модель это не отметила",
+      "old": null,
+      "new": {
+        "id": "F-41",
+        "property": "SET-COMPR",
+        "severity": "minor",
+        "title": "Клиент назван по-разному",
+        "quotes": [
+          "Держатель активной карты KZT задаёт целый порог от 1 000 до 1 000 000 ₸ включительно.",
+          "Bearer, сессия владельца карты"
+        ],
+        "requirement_ids": [
+          "R-06.1",
+          "R-19"
+        ]
+      }
+    },
+    {
+      "class": "new_on_unchanged_place",
+      "reason": "место не менялось: в старой версии модель это не отметила",
+      "old": null,
+      "new": {
+        "id": "F-43",
+        "property": "SET-COMPR",
+        "severity": "minor",
+        "title": "Переключатель уведомления назван по-разному",
+        "quotes": [
+          "По умолчанию уведомление выключено.",
+          "Признак включения"
+        ],
+        "requirement_ids": [
+          "R-06.2",
+          "R-34"
+        ]
+      }
+    },
+    {
+      "class": "new_on_unchanged_place",
+      "reason": "место не менялось: в старой версии модель это не отметила",
+      "old": null,
+      "new": {
+        "id": "F-45",
+        "property": "SET-COMPR",
+        "severity": "minor",
+        "title": "Процессинг назван по-разному",
+        "quotes": [
+          "Процессинг → сервис расходов: проведена покупка."
+        ],
+        "requirement_ids": [
+          "R-10.1"
+        ]
+      }
+    },
+    {
+      "class": "new_on_unchanged_place",
+      "reason": "место не менялось: в старой версии модель это не отметила",
+      "old": null,
+      "new": {
+        "id": "F-55",
+        "property": "SET-CONS",
+        "severity": "minor",
+        "title": "Классификация кодов ответа не совпадает с перечнем статусов",
+        "quotes": [
+          "Если результат 200 или 201 — успешный.",
+          "Если результат 400, 401 и далее — неуспешный."
+        ],
+        "requirement_ids": [
+          "R-36.1",
+          "R-36.2"
+        ]
+      }
+    },
+    {
+      "class": "new_on_unchanged_place",
+      "reason": "место не менялось: в старой версии модель это не отметила",
+      "old": null,
+      "new": {
+        "id": "F-56",
+        "property": "IND-COMPL",
+        "severity": "minor",
+        "title": "Одно сообщение «Проверьте сумму» для разных причин ошибки 400",
+        "quotes": [
+          "{\"result\":\"ERROR\",\"message\":\"Проверьте сумму\"}"
+        ],
+        "requirement_ids": []
+      }
+    }
+  ]
+}

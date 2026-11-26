@@ -25,6 +25,10 @@ REQ_SIMILARITY = 70.0
 """Похожесть текста (rapidfuzz ratio, 0–100), с которой требование новой версии считаем правкой
 старого, а не новым требованием. Если меньше: «удалено» и «добавлено»."""
 
+SAME_SOURCE_SIMILARITY = 30.0
+"""Мягкая граница похожести для частей одного пункта документа (общий номер и раздел): пункт тот же,
+поэтому переписанную фразу считаем правкой, а не новой."""
+
 QUOTE_OVERLAP = 90.0
 """Похожесть цитат (partial_ratio) двух находок, с которой это одно и то же место документа."""
 
@@ -70,19 +74,22 @@ def _pair_by_key(
     return [r for r in old if r.id not in used_old], [r for r in new if r.id not in used_new]
 
 
-def _pair_by_similarity(old: list[ReqView], new: list[ReqView], out: list[ReqPair]) -> None:
+def _pair_greedy(
+    old: list[ReqView], new: list[ReqView], minimum: float, how: MatchHow, out: list[ReqPair]
+) -> tuple[list[ReqView], list[ReqView]]:
+    """Пары по похожести текста не ниже ``minimum``, от самых похожих; остаток возвращаем."""
     scored = sorted(
         (
             (fuzz.ratio(_norm(o.quote), _norm(n.quote)), i, j)
             for i, o in enumerate(old)
             for j, n in enumerate(new)
         ),
-        reverse=True,
+        key=lambda t: (-t[0], t[1], t[2]),
     )
     used_old: set[int] = set()
     used_new: set[int] = set()
     for score, i, j in scored:
-        if score < REQ_SIMILARITY:
+        if score < minimum:
             break
         if i in used_old or j in used_new:
             continue
@@ -91,9 +98,30 @@ def _pair_by_similarity(old: list[ReqView], new: list[ReqView], out: list[ReqPai
         o, n = old[i], new[j]
         same = _norm(o.quote) == _norm(n.quote)
         status = ReqStatus.UNCHANGED if same else ReqStatus.CHANGED
-        out.append(ReqPair(status, o, n, MatchHow.SIMILARITY, round(score, 1)))
-    out.extend(ReqPair(ReqStatus.REMOVED, o, None) for i, o in enumerate(old) if i not in used_old)
-    out.extend(ReqPair(ReqStatus.ADDED, None, n) for j, n in enumerate(new) if j not in used_new)
+        out.append(ReqPair(status, o, n, how, round(score, 1)))
+    rest_old = [o for i, o in enumerate(old) if i not in used_old]
+    rest_new = [n for j, n in enumerate(new) if j not in used_new]
+    return rest_old, rest_new
+
+
+def _pair_within_source(
+    old: list[ReqView], new: list[ReqView], out: list[ReqPair]
+) -> tuple[list[ReqView], list[ReqView]]:
+    """Части одного пункта документа (общий номер и раздел): пары по похожести с мягкой границей."""
+    groups: dict[tuple[str, tuple[str, ...]], tuple[list[ReqView], list[ReqView]]] = {}
+    for side, items in enumerate((old, new)):
+        for r in items:
+            if r.source_id:
+                groups.setdefault((r.source_id, r.section_path), ([], []))[side].append(r)
+    paired: set[tuple[int, str]] = set()
+    for left, right in groups.values():
+        before = len(out)
+        _pair_greedy(left, right, SAME_SOURCE_SIMILARITY, MatchHow.SOURCE_ID, out)
+        for pair in out[before:]:
+            assert pair.old is not None and pair.new is not None  # noqa: S101
+            paired.add((0, pair.old.id))
+            paired.add((1, pair.new.id))
+    return [r for r in old if (0, r.id) not in paired], [r for r in new if (1, r.id) not in paired]
 
 
 def match_requirements(old: Sequence[ReqView], new: Sequence[ReqView]) -> list[ReqPair]:
@@ -101,7 +129,10 @@ def match_requirements(old: Sequence[ReqView], new: Sequence[ReqView]) -> list[R
     out: list[ReqPair] = []
     rest_old, rest_new = _pair_by_key(list(old), list(new), "stable_key", MatchHow.STABLE_KEY, out)
     rest_old, rest_new = _pair_by_key(rest_old, rest_new, "source_id", MatchHow.SOURCE_ID, out)
-    _pair_by_similarity(rest_old, rest_new, out)
+    rest_old, rest_new = _pair_within_source(rest_old, rest_new, out)
+    rest_old, rest_new = _pair_greedy(rest_old, rest_new, REQ_SIMILARITY, MatchHow.SIMILARITY, out)
+    out.extend(ReqPair(ReqStatus.REMOVED, o, None) for o in rest_old)
+    out.extend(ReqPair(ReqStatus.ADDED, None, n) for n in rest_new)
     old_order = {r.id: i for i, r in enumerate(old)}
     new_order = {r.id: i for i, r in enumerate(new)}
 
@@ -182,23 +213,49 @@ def _score(o: FindingView, n: FindingView, req_map: dict[str, str]) -> int:
     return score
 
 
-def _pair_findings(
-    old: Sequence[FindingView], new: Sequence[FindingView], req_map: dict[str, str]
-) -> list[tuple[int, int]]:
-    scored = sorted(
-        ((s, i, j) for i, o in enumerate(old) for j, n in enumerate(new) if (s := _score(o, n, req_map))),
-        key=lambda t: (-t[0], t[1], t[2]),
-    )
+def _score_other_property(o: FindingView, n: FindingView) -> int:
+    """Второй круг: та же цитата и важность, но модель назвала другое свойство стандарта.
+
+    Модель нередко относит один и тот же дефект то к одному свойству, то к другому. Без этого круга
+    такая пара попала бы сразу в «пропало без правки» и в «новое на неизменённом месте». Важность
+    должна совпасть, чтобы новая критичная находка не спряталась за старой мелкой на том же месте.
+    """
+    if o.property == n.property or o.severity != n.severity or not _quotes_overlap(o, n):
+        return 0
+    return _SCORE_QUOTE + _SCORE_TYPE * (o.defect_type == n.defect_type)
+
+
+def _greedy_pairs(scored: list[tuple[int, int, int]]) -> list[tuple[int, int]]:
     pairs: list[tuple[int, int]] = []
     used_old: set[int] = set()
     used_new: set[int] = set()
-    for _, i, j in scored:
+    for _, i, j in sorted(scored, key=lambda t: (-t[0], t[1], t[2])):
         if i in used_old or j in used_new:
             continue
         used_old.add(i)
         used_new.add(j)
         pairs.append((i, j))
     return pairs
+
+
+def _pair_findings(
+    old: Sequence[FindingView], new: Sequence[FindingView], req_map: dict[str, str]
+) -> list[tuple[int, int]]:
+    first = _greedy_pairs(
+        [(s, i, j) for i, o in enumerate(old) for j, n in enumerate(new) if (s := _score(o, n, req_map))]
+    )
+    used_old = {i for i, _ in first}
+    used_new = {j for _, j in first}
+    second = _greedy_pairs(
+        [
+            (s, i, j)
+            for i, o in enumerate(old)
+            if i not in used_old
+            for j, n in enumerate(new)
+            if j not in used_new and (s := _score_other_property(o, n))
+        ]
+    )
+    return first + second
 
 
 def _short(text: str, limit: int = 80) -> str:
@@ -249,6 +306,8 @@ def _remained(o: FindingView, n: FindingView, req_status: dict[str, ReqStatus]) 
     edited = [r for r in o.requirement_ids if req_status.get(r) is ReqStatus.CHANGED]
     if edited:
         notes.append(f"требование {', '.join(edited)} изменено, но находка не закрыта")
+    if o.property != n.property:
+        notes.append(f"та же цитата, модель сменила свойство: {o.property} → {n.property}")
     if o.severity != n.severity:
         notes.append(
             f"важность {_SEVERITY.get(o.severity, o.severity)} → {_SEVERITY.get(n.severity, n.severity)}"

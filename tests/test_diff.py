@@ -19,6 +19,7 @@ from validator.diff import (
     ReportReadError,
     ReqStatus,
     compare,
+    load_document_text,
     load_report,
     render_json,
     render_markdown,
@@ -197,7 +198,7 @@ def _two_versions() -> tuple[dict[str, Any], dict[str, Any]]:
         [
             finding("F-01", LOGIN, ["R-01"], prop="IND-COMPL"),
             finding("F-02", "как можно скорее", ["R-04"], prop="IND-VERIF", severity="critical"),
-            finding("F-03", "в журнал аудита", ["R-03"], prop="IND-NEC"),
+            finding("F-03", "в журнал аудита", ["R-03"], prop="IND-NEC", severity="minor"),
         ],
         sha="bbb",
         light="yellow",
@@ -251,15 +252,6 @@ def test_quote_match_ignores_case_quotes_and_line_breaks(tmp_path: Path) -> None
 
     assert d.cls is FindingClass.REMAINED
     assert (d.old.id, d.new.id) == ("F-01", "F-07")  # type: ignore[union-attr]
-
-
-def test_same_place_different_property_is_not_the_same_finding(tmp_path: Path) -> None:
-    old = report([req("R-01", AUDIT)], [finding("F-01", AUDIT, ["R-01"], prop="IND-VERIF")])
-    new = report([req("R-01", AUDIT)], [finding("F-01", AUDIT, ["R-01"], prop="IND-NEC")], sha="bbb")
-
-    got = classes(diff(tmp_path, old, new))
-
-    assert got == {"F-01_old": FindingClass.VANISHED, "F-01_new": FindingClass.NEW_UNCHANGED}
 
 
 def test_remained_on_edited_requirement_says_edit_did_not_help(tmp_path: Path) -> None:
@@ -464,3 +456,68 @@ def test_unknown_quote_falls_back_to_requirement_status(tmp_path: Path) -> None:
 
     assert d.cls is FindingClass.FIXED
     assert "R-01 изменено" in d.reason
+
+
+def test_parts_of_one_numbered_item_match_with_soft_similarity(tmp_path: Path) -> None:
+    rewritten = "Отчёт в формате CSV формируется не дольше 5 секунд для 10 000 строк."
+    old = report([req("R-01.1", NOTIFY, "REQ-7"), req("R-01.2", EXPORT, "REQ-7")], [])
+    new = report([req("R-01.1", NOTIFY_NEW, "REQ-7"), req("R-01.2", rewritten, "REQ-7")], [], sha="bbb")
+
+    pairs = {p.old.id: p for p in diff(tmp_path, old, new).requirements if p.old}
+
+    assert (pairs["R-01.2"].status, pairs["R-01.2"].how.value) == (ReqStatus.CHANGED, "source_id")
+    assert pairs["R-01.2"].score is not None and pairs["R-01.2"].score < REQ_SIMILARITY
+
+
+def test_same_quote_and_severity_with_other_property_is_the_same_finding(tmp_path: Path) -> None:
+    old = report([req("R-01", AUDIT)], [finding("F-01", AUDIT, ["R-01"], prop="SET-CONS")])
+    new = report([req("R-01", AUDIT)], [finding("F-05", AUDIT, ["R-01"], prop="SET-COMPL")], sha="bbb")
+
+    (d,) = diff(tmp_path, old, new).findings
+
+    assert d.cls is FindingClass.REMAINED
+    assert "SET-CONS → SET-COMPL" in d.reason
+
+
+def test_new_critical_does_not_hide_behind_old_minor_on_same_quote(tmp_path: Path) -> None:
+    old = report([req("R-01", AUDIT)], [finding("F-01", AUDIT, ["R-01"], prop="SET-COMPR", severity="minor")])
+    new = report(
+        [req("R-01", AUDIT)],
+        [finding("F-01", AUDIT, ["R-01"], prop="IND-COMPL", severity="critical")],
+        sha="b",
+    )
+
+    got = classes(diff(tmp_path, old, new))
+
+    assert got == {"F-01_old": FindingClass.VANISHED, "F-01_new": FindingClass.NEW_UNCHANGED}
+
+
+# --- демо «было → стало» ------------------------------------------------------------------------
+
+DEMO = ROOT / "examples" / "diff-demo"
+
+
+def test_demo_diff_is_reproducible_from_committed_reports() -> None:
+    """``examples/diff-demo/diff.json`` получается из лежащих рядом отчётов и документов: демо не врёт."""
+    old, new = load_report(DEMO / "v1" / "report.json"), load_report(DEMO / "v2" / "report.json")
+    old_text = load_document_text(ROOT / "data" / "input" / "requirements.md")
+    new_text = load_document_text(DEMO / "requirements-v2.md")
+
+    result = compare(old, new, old_text, new_text)
+
+    committed = json.loads((DEMO / "diff.json").read_text(encoding="utf-8"))
+    assert render_json(result)["summary"] == committed["summary"]
+    assert result.warnings == ()  # один код агента, тексты переданы
+    assert totals(result).fixed_critical >= 2 and totals(result).regressions >= 1
+
+
+def test_demo_planted_regression_is_reported_on_changed_place() -> None:
+    old, new = load_report(DEMO / "v1" / "report.json"), load_report(DEMO / "v2" / "report.json")
+    old_text = load_document_text(ROOT / "data" / "input" / "requirements.md")
+    new_text = load_document_text(DEMO / "requirements-v2.md")
+    added = [p.new.quote for p in compare(old, new, old_text, new_text).reqs(ReqStatus.ADDED) if p.new]
+
+    regressions = compare(old, new, old_text, new_text).of(FindingClass.NEW_CHANGED)
+
+    quotes = {q.text for d in regressions for q in d.main.quotes}
+    assert quotes & set(added)  # находка стоит на требовании, которого не было в старой версии
