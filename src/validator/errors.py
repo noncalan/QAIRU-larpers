@@ -81,6 +81,8 @@ CFG_NOT_IMPLEMENTED = "CFG-010"
 # Внутренние ошибки агента.
 INT_STEP_FAILED = "INT-001"
 INT_STEP_DEGRADED = "INT-002"
+INT_SELFCHECK_FAILED = "INT-003"  # самопроверка отчёта: нарушена целостность (находка без якоря, счётчики)
+INT_SELFCHECK_WARNING = "INT-004"  # самопроверка отчёта: не хватает раздела ТЗ п. 6, содержимое верно
 
 # Запись отчёта.
 OUT_WRITE_FAILED = "OUT-001"
