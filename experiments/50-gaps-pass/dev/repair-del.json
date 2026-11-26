@@ -1,0 +1,58 @@
+{
+ "copy": "repair-del",
+ "source": "repair_webapp_tz.md",
+ "mutations": [
+  {
+   "id": "repair-del-01",
+   "operator": "unit",
+   "original": "- Загрузка 1–5 фотографий.",
+   "replacement": "- Загрузка 1–5.",
+   "match_spans": [
+    [
+     1580,
+     1595
+    ]
+   ]
+  },
+  {
+   "id": "repair-del-02",
+   "operator": "actor",
+   "original": "Пользователь нажимает кнопку “Начать”.",
+   "replacement": "Нажимается кнопка “Начать”.",
+   "match_spans": [
+    [
+     479,
+     506
+    ]
+   ]
+  },
+  {
+   "id": "repair-del-03",
+   "operator": "branch",
+   "original": "  - При отсутствии API — статичный прайс (JSON или таблица).\n",
+   "replacement": "",
+   "match_spans": [
+    [
+     1703,
+     1748
+    ],
+    [
+     1678,
+     1697
+    ]
+   ]
+  },
+  {
+   "id": "repair-del-04",
+   "operator": "branch",
+   "original": "Принять / отказаться от заявки.",
+   "replacement": "Принять заявку.",
+   "match_spans": [
+    [
+     3577,
+     3592
+    ]
+   ]
+  }
+ ]
+}

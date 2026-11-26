@@ -464,6 +464,7 @@ class SourceKind(StrEnum):
     LINT = "lint"  # правило линтера (шаг 3)
     CHECKLIST = "checklist"  # доменный чек-лист
     SET_CHECK = "set_check"  # сверка требований между частями длинного документа (#38)
+    GAPS = "gaps"  # проход на пропуски (шаг 4г, опция --gaps)
     ANSWER = "answer"  # сверка находок с ответами автора (--answers, #42)
 
 
@@ -628,6 +629,8 @@ class LLMStep(StrEnum):
     SET_CHECK = "set_check"
     # Сверка находок с ответами автора (--answers, #42): вызывается, только если ответы есть.
     CLARIFY = "clarify"
+    # Проход на пропуски (шаг 4г): вызывается только с --gaps.
+    GAPS = "gaps"
     # Судья eval (#24): его вызывает только eval через тот же клиент модели, отдельно от агента.
     # Конвейер агента этот шаг не вызывает, модели для него в STEP_MODELS нет.
     JUDGE = "judge"
@@ -892,6 +895,8 @@ class FindingSource(Contract):
             return f"линтер, правило {self.rule_id}"
         if self.kind is SourceKind.SET_CHECK:
             return "сверка требований между частями документа"
+        if self.kind is SourceKind.GAPS:
+            return "проход на пропуски"
         if self.kind is SourceKind.ANSWER:
             return f"сверка с ответом автора {self.rule_id}"
         return f"чек-лист, пункт {self.rule_id}"
@@ -1458,6 +1463,10 @@ class RunConfig(Contract):
         description="Критик находок (шаг 6б, #39). По eval пока выключен, включается флагом --critic",
     )
     ocr: bool = Field(default=True, description="Распознавать сканы, если есть Tesseract с русским (#38)")
+    gaps: bool = Field(
+        default=False,
+        description="Проход на пропуски (шаг 4г): граница, единица, исполнитель, ветка ошибки. Флаг --gaps",
+    )
 
     @property
     def out_dir(self) -> Path:

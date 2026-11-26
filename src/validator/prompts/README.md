@@ -21,9 +21,10 @@
 | `questions_critic_system.md`, `questions_critic_user.md` | 8г, критик-самоответ (#41) | Opus 5.5 | рассуждение, затем ```json со списком `reviews` (`questions/critic.py`); снимает вопрос код по сверенной цитате-ответу |
 | `test_draft_system.md`, `test_draft_user.md` | 6в, попытка теста (#40) | Sonnet 5.5 | рассуждение, затем ```json со списком `drafts` (`evidence_testdraft.py`); значение без цитаты код заменяет пропуском `[?N]` (`evidence_testdraft_check.py`) |
 | `set_check_system.md`, `set_check_user.md` | 4в, сверка требований между частями длинного документа (#38) | Opus 5.5, effort как у поиска | рассуждение, затем ```json со списком `issues` (`set_check.py`); цитаты подставляет код из требований |
+| `gaps_system.md`, `gaps_user.md` | 4г, проход на пропуски (только с `--gaps`) | Opus 5.5, effort как у поиска | свободный текст в формате поиска, его разбирает тот же код (`search_parse.py`); вызов видит находки поиска и линтера и не повторяет их; находку не о пропуске отбрасывает код (`gaps.py`) |
 | `part_note.md` | 2 и 4, только для длинного документа (#38) | — | служебная пометка перед блоками части: номер части, её разделы, оглавление (`parts.py`); документ целиком идёт без неё |
 | `clarify_system.md`, `clarify_user.md` | 8е, сверка с ответами автора (#42), только с `--answers` | Opus 5.5 | рассуждение, затем ```json со списками `effects` и `new_findings` (`clarify/model.py`); закрытие и новые находки проверяет код (`clarify/apply.py`) |
 
-Слоты в пользовательских промптах (`{document}`, `{findings}`, `{titles}`, `{checklists}`) подставляет `prompting.fill` за один проход, поэтому фигурные скобки в тексте документа не ломают шаблон.
+Слоты в пользовательских промптах (`{document}`, `{findings}`, `{found}`, `{titles}`, `{checklists}`) подставляет `prompting.fill` за один проход, поэтому фигурные скобки в тексте документа не ломают шаблон.
 
 `tests/test_prompt_leak.py` проверяет эту папку, `checklists/` и `lint/`.

@@ -117,6 +117,9 @@ FILTERS = {
 }
 
 
+_OWN_CALL_SOURCES = frozenset({SourceKind.SET_CHECK, SourceKind.GAPS})
+"""Источники со своим вызовом модели: про них не пишем «проходы модели этого не отметили»."""
+
 ChecklistItems = Mapping[str, tuple[str, str]]
 """Пункт доменного чек-листа: ID (MON-05) → (название чек-листа, вопрос пункта)."""
 
@@ -127,6 +130,8 @@ def _source_text(s: FindingSource, items: ChecklistItems, rules: Mapping[str, st
         return f"правилом «{name}»" if name else f"правилом {s.rule_id}"
     if s.kind is SourceKind.SET_CHECK:
         return "сверкой требований между частями документа"
+    if s.kind is SourceKind.GAPS:
+        return "отдельным проходом на пропуски"
     if s.kind is SourceKind.ANSWER:
         return f"сверкой с ответом автора {s.rule_id}"
     item = s.checklist_item if s.kind is SourceKind.PASS else s.rule_id
@@ -150,7 +155,7 @@ def found_text(
     model = any(s.kind is SourceKind.PASS for s in f.sources)
     if f.of > 1 and model:
         how.insert(0, f"в {f.found_in} из {f.of} проходов поиска")
-    elif f.of > 1 and not f.found_in and not all(s.kind is SourceKind.SET_CHECK for s in f.sources):
+    elif f.of > 1 and not f.found_in and not all(s.kind in _OWN_CALL_SOURCES for s in f.sources):
         how.append(f"проходы модели этого не отметили (0 из {f.of})")
     if f.sources and all(s.kind is SourceKind.SET_CHECK for s in f.sources):
         how.append("проходы поиска видят по одной части и такие пары не сравнивают")

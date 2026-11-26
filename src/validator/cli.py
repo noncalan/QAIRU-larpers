@@ -123,6 +123,14 @@ def main(
     critic: Annotated[
         bool, typer.Option("--critic", help="Включить критика находок (шаг 6б, по eval пока выключен)")
     ] = False,
+    gaps: Annotated[
+        bool | None,
+        typer.Option(
+            "--gaps/--no-gaps",
+            help="Отдельный проход на пропуски: граница, единица, исполнитель, ветка ошибки (шаг 4г)",
+            show_default="по умолчанию выключен",
+        ),
+    ] = None,
     pdf_backend: Annotated[
         str | None,
         typer.Option("--pdf-backend", help="Движок PDF: mupdf (по умолчанию) или pdfium (без копилефта)"),
@@ -177,6 +185,7 @@ def main(
             max_budget_usd=max_budget_usd,
             pdf_backend=pdf_backend,
             critic=critic,
+            gaps=gaps,
             search_input=search_input,
             checklists=checklists,
             ocr=ocr,

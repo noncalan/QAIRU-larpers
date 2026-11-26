@@ -56,8 +56,9 @@ def locate_findings(found: Sequence[MergedFinding], doc: ParsedDocument) -> dict
 
 
 def from_model(m: MergedFinding) -> bool:
-    """Находку дала модель (проход поиска), а не только правило линтера: её есть что перепроверять."""
-    return any(s.kind is SourceKind.PASS for s in m.sources) or m.found_in > 0
+    """Находку дала модель (проход поиска или проход на пропуски), а не только правило линтера: её есть что
+    перепроверять."""
+    return any(s.kind in (SourceKind.PASS, SourceKind.GAPS) for s in m.sources) or m.found_in > 0
 
 
 def top_blocks(quotes: Sequence[Quote]) -> list[str]:

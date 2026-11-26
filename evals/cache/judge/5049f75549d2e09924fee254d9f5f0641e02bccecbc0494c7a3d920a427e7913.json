@@ -1,0 +1,982 @@
+{
+ "key": "5049f75549d2e09924fee254d9f5f0641e02bccecbc0494c7a3d920a427e7913",
+ "created_at": "2026-11-26T21:22:09+00:00",
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "prompt_chars": 36871,
+ "meta": {
+  "run": "experiments/50-gaps-pass/runs/gold/gaps/v3-run-2",
+  "source": "agent",
+  "items": 60,
+  "format": "uniform"
+ },
+ "response": {
+  "call_id": "judge.1",
+  "text": "{\"gold\":[{\"id\":1,\"status\":\"found\",\"finding_ids\":[2]},{\"id\":2,\"status\":\"found\",\"finding_ids\":[4]},{\"id\":3,\"status\":\"found\",\"finding_ids\":[1]},{\"id\":4,\"status\":\"found\",\"finding_ids\":[47,48]},{\"id\":5,\"status\":\"partial\",\"finding_ids\":[5]},{\"id\":6,\"status\":\"found\",\"finding_ids\":[28,56]},{\"id\":7,\"status\":\"found\",\"finding_ids\":[27]},{\"id\":8,\"status\":\"found\",\"finding_ids\":[34]},{\"id\":9,\"status\":\"found\",\"finding_ids\":[35,33]},{\"id\":10,\"status\":\"found\",\"finding_ids\":[60,33]},{\"id\":11,\"status\":\"found\",\"finding_ids\":[57,59]},{\"id\":12,\"status\":\"found\",\"finding_ids\":[54]},{\"id\":13,\"status\":\"partial\",\"finding_ids\":[10]},{\"id\":14,\"status\":\"found\",\"finding_ids\":[3,12]},{\"id\":15,\"status\":\"found\",\"finding_ids\":[13,14,15,16]},{\"id\":16,\"status\":\"found\",\"finding_ids\":[14]},{\"id\":17,\"status\":\"found\",\"finding_ids\":[19,11]},{\"id\":18,\"status\":\"found\",\"finding_ids\":[10,53]},{\"id\":19,\"status\":\"found\",\"finding_ids\":[20]},{\"id\":20,\"status\":\"found\",\"finding_ids\":[40,1]},{\"id\":21,\"status\":\"partial\",\"finding_ids\":[38]},{\"id\":22,\"status\":\"found\",\"finding_ids\":[21,8,23]},{\"id\":23,\"status\":\"found\",\"finding_ids\":[22,23]},{\"id\":24,\"status\":\"found\",\"finding_ids\":[15,8,24]},{\"id\":25,\"status\":\"found\",\"finding_ids\":[26]},{\"id\":26,\"status\":\"found\",\"finding_ids\":[25]},{\"id\":27,\"status\":\"found\",\"finding_ids\":[49]},{\"id\":28,\"status\":\"found\",\"finding_ids\":[51,52]},{\"id\":29,\"status\":\"found\",\"finding_ids\":[9]},{\"id\":30,\"status\":\"found\",\"finding_ids\":[7]},{\"id\":31,\"status\":\"found\",\"finding_ids\":[56]},{\"id\":32,\"status\":\"found\",\"finding_ids\":[55]},{\"id\":33,\"status\":\"found\",\"finding_ids\":[37]},{\"id\":34,\"status\":\"found\",\"finding_ids\":[5,3]},{\"id\":35,\"status\":\"found\",\"finding_ids\":[17]},{\"id\":36,\"status\":\"found\",\"finding_ids\":[12]},{\"id\":37,\"status\":\"found\",\"finding_ids\":[31,30]},{\"id\":38,\"status\":\"missed\",\"finding_ids\":[]},{\"id\":39,\"status\":\"found\",\"finding_ids\":[38]},{\"id\":40,\"status\":\"found\",\"finding_ids\":[53]},{\"id\":41,\"status\":\"partial\",\"finding_ids\":[21]},{\"id\":42,\"status\":\"partial\",\"finding_ids\":[43]},{\"id\":43,\"status\":\"partial\",\"finding_ids\":[11]},{\"id\":44,\"status\":\"partial\",\"finding_ids\":[43,41]},{\"id\":45,\"status\":\"partial\",\"finding_ids\":[33]}],\"extra\":[{\"finding_id\":6,\"verdict\":\"real\"},{\"finding_id\":18,\"verdict\":\"real\"},{\"finding_id\":29,\"verdict\":\"real\"},{\"finding_id\":32,\"verdict\":\"noise\"},{\"finding_id\":36,\"verdict\":\"real\"},{\"finding_id\":39,\"verdict\":\"real\"},{\"finding_id\":42,\"verdict\":\"noise\"},{\"finding_id\":44,\"verdict\":\"real\"},{\"finding_id\":45,\"verdict\":\"real\"},{\"finding_id\":46,\"verdict\":\"real\"},{\"finding_id\":50,\"verdict\":\"real\"},{\"finding_id\":58,\"verdict\":\"noise\"}]}",
+  "structured": {
+   "gold": [
+    {
+     "id": 1,
+     "status": "found",
+     "finding_ids": [
+      2
+     ]
+    },
+    {
+     "id": 2,
+     "status": "found",
+     "finding_ids": [
+      4
+     ]
+    },
+    {
+     "id": 3,
+     "status": "found",
+     "finding_ids": [
+      1
+     ]
+    },
+    {
+     "id": 4,
+     "status": "found",
+     "finding_ids": [
+      47,
+      48
+     ]
+    },
+    {
+     "id": 5,
+     "status": "partial",
+     "finding_ids": [
+      5
+     ]
+    },
+    {
+     "id": 6,
+     "status": "found",
+     "finding_ids": [
+      28,
+      56
+     ]
+    },
+    {
+     "id": 7,
+     "status": "found",
+     "finding_ids": [
+      27
+     ]
+    },
+    {
+     "id": 8,
+     "status": "found",
+     "finding_ids": [
+      34
+     ]
+    },
+    {
+     "id": 9,
+     "status": "found",
+     "finding_ids": [
+      35,
+      33
+     ]
+    },
+    {
+     "id": 10,
+     "status": "found",
+     "finding_ids": [
+      60,
+      33
+     ]
+    },
+    {
+     "id": 11,
+     "status": "found",
+     "finding_ids": [
+      57,
+      59
+     ]
+    },
+    {
+     "id": 12,
+     "status": "found",
+     "finding_ids": [
+      54
+     ]
+    },
+    {
+     "id": 13,
+     "status": "partial",
+     "finding_ids": [
+      10
+     ]
+    },
+    {
+     "id": 14,
+     "status": "found",
+     "finding_ids": [
+      3,
+      12
+     ]
+    },
+    {
+     "id": 15,
+     "status": "found",
+     "finding_ids": [
+      13,
+      14,
+      15,
+      16
+     ]
+    },
+    {
+     "id": 16,
+     "status": "found",
+     "finding_ids": [
+      14
+     ]
+    },
+    {
+     "id": 17,
+     "status": "found",
+     "finding_ids": [
+      19,
+      11
+     ]
+    },
+    {
+     "id": 18,
+     "status": "found",
+     "finding_ids": [
+      10,
+      53
+     ]
+    },
+    {
+     "id": 19,
+     "status": "found",
+     "finding_ids": [
+      20
+     ]
+    },
+    {
+     "id": 20,
+     "status": "found",
+     "finding_ids": [
+      40,
+      1
+     ]
+    },
+    {
+     "id": 21,
+     "status": "partial",
+     "finding_ids": [
+      38
+     ]
+    },
+    {
+     "id": 22,
+     "status": "found",
+     "finding_ids": [
+      21,
+      8,
+      23
+     ]
+    },
+    {
+     "id": 23,
+     "status": "found",
+     "finding_ids": [
+      22,
+      23
+     ]
+    },
+    {
+     "id": 24,
+     "status": "found",
+     "finding_ids": [
+      15,
+      8,
+      24
+     ]
+    },
+    {
+     "id": 25,
+     "status": "found",
+     "finding_ids": [
+      26
+     ]
+    },
+    {
+     "id": 26,
+     "status": "found",
+     "finding_ids": [
+      25
+     ]
+    },
+    {
+     "id": 27,
+     "status": "found",
+     "finding_ids": [
+      49
+     ]
+    },
+    {
+     "id": 28,
+     "status": "found",
+     "finding_ids": [
+      51,
+      52
+     ]
+    },
+    {
+     "id": 29,
+     "status": "found",
+     "finding_ids": [
+      9
+     ]
+    },
+    {
+     "id": 30,
+     "status": "found",
+     "finding_ids": [
+      7
+     ]
+    },
+    {
+     "id": 31,
+     "status": "found",
+     "finding_ids": [
+      56
+     ]
+    },
+    {
+     "id": 32,
+     "status": "found",
+     "finding_ids": [
+      55
+     ]
+    },
+    {
+     "id": 33,
+     "status": "found",
+     "finding_ids": [
+      37
+     ]
+    },
+    {
+     "id": 34,
+     "status": "found",
+     "finding_ids": [
+      5,
+      3
+     ]
+    },
+    {
+     "id": 35,
+     "status": "found",
+     "finding_ids": [
+      17
+     ]
+    },
+    {
+     "id": 36,
+     "status": "found",
+     "finding_ids": [
+      12
+     ]
+    },
+    {
+     "id": 37,
+     "status": "found",
+     "finding_ids": [
+      31,
+      30
+     ]
+    },
+    {
+     "id": 38,
+     "status": "missed",
+     "finding_ids": []
+    },
+    {
+     "id": 39,
+     "status": "found",
+     "finding_ids": [
+      38
+     ]
+    },
+    {
+     "id": 40,
+     "status": "found",
+     "finding_ids": [
+      53
+     ]
+    },
+    {
+     "id": 41,
+     "status": "partial",
+     "finding_ids": [
+      21
+     ]
+    },
+    {
+     "id": 42,
+     "status": "partial",
+     "finding_ids": [
+      43
+     ]
+    },
+    {
+     "id": 43,
+     "status": "partial",
+     "finding_ids": [
+      11
+     ]
+    },
+    {
+     "id": 44,
+     "status": "partial",
+     "finding_ids": [
+      43,
+      41
+     ]
+    },
+    {
+     "id": 45,
+     "status": "partial",
+     "finding_ids": [
+      33
+     ]
+    }
+   ],
+   "extra": [
+    {
+     "finding_id": 6,
+     "verdict": "real"
+    },
+    {
+     "finding_id": 18,
+     "verdict": "real"
+    },
+    {
+     "finding_id": 29,
+     "verdict": "real"
+    },
+    {
+     "finding_id": 32,
+     "verdict": "noise"
+    },
+    {
+     "finding_id": 36,
+     "verdict": "real"
+    },
+    {
+     "finding_id": 39,
+     "verdict": "real"
+    },
+    {
+     "finding_id": 42,
+     "verdict": "noise"
+    },
+    {
+     "finding_id": 44,
+     "verdict": "real"
+    },
+    {
+     "finding_id": 45,
+     "verdict": "real"
+    },
+    {
+     "finding_id": 46,
+     "verdict": "real"
+    },
+    {
+     "finding_id": 50,
+     "verdict": "real"
+    },
+    {
+     "finding_id": 58,
+     "verdict": "noise"
+    }
+   ]
+  },
+  "model": "claude-opus-5-5",
+  "usage": {
+   "input_tokens": 2,
+   "output_tokens": 5112,
+   "cache_creation_input_tokens": 17824,
+   "cache_read_input_tokens": 0
+  },
+  "cost_usd": 0.24484,
+  "duration_ms": 49731,
+  "backend": "cli",
+  "cached": false,
+  "raw": {
+   "duration_api_ms": 45494,
+   "stop_reason": "tool_use",
+   "session_id": "62b2457b-e5ce-457f-9b49-d8a171bbaeac",
+   "total_cost_usd": 0.24484,
+   "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 17824,
+    "cache_read_input_tokens": 0,
+    "output_tokens": 5112,
+    "output_tokens_details": {
+     "thinking_tokens": 2740
+    },
+    "server_tool_use": {
+     "web_search_requests": 0,
+     "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+     "ephemeral_1h_input_tokens": 17824,
+     "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [
+     {
+      "input_tokens": 2,
+      "output_tokens": 5112,
+      "cache_read_input_tokens": 0,
+      "cache_creation_input_tokens": 17824,
+      "cache_creation": {
+       "ephemeral_5m_input_tokens": 0,
+       "ephemeral_1h_input_tokens": 17824
+      },
+      "type": "message"
+     }
+    ],
+    "speed": "standard",
+    "fallback_credit": null
+   },
+   "modelUsage": {
+    "claude-opus-5-5": {
+     "inputTokens": 2,
+     "outputTokens": 5112,
+     "cacheReadInputTokens": 0,
+     "cacheCreationInputTokens": 17824,
+     "webSearchRequests": 0,
+     "costUSD": 0.24484,
+     "contextWindow": 1000000,
+     "maxOutputTokens": 128000,
+     "thinkingTokens": 2740,
+     "cacheCreationEphemeral5mInputTokens": 0,
+     "cacheCreationEphemeral1hInputTokens": 17824,
+     "canonicalModel": "claude-opus-5-5",
+     "provider": "firstParty",
+     "costBasis": "list"
+    }
+   },
+   "permission_denials": [],
+   "terminal_reason": "completed",
+   "fast_mode_state": "off",
+   "fast_mode_disabled_reason": "sdk_opt_in_required",
+   "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+     "background": 0,
+     "foreground": 0,
+     "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+     "parent": 0,
+     "user": 0,
+     "system": 0
+    },
+    "refused": {
+     "depth_limit": 0,
+     "concurrency_limit": 0,
+     "budget": 0
+    },
+    "by_type": {}
+   },
+   "safety_stops": 0,
+   "is_error": false,
+   "num_turns": 2,
+   "subtype": "success",
+   "api_error_status": null,
+   "result": "{\"gold\":[{\"id\":1,\"status\":\"found\",\"finding_ids\":[2]},{\"id\":2,\"status\":\"found\",\"finding_ids\":[4]},{\"id\":3,\"status\":\"found\",\"finding_ids\":[1]},{\"id\":4,\"status\":\"found\",\"finding_ids\":[47,48]},{\"id\":5,\"status\":\"partial\",\"finding_ids\":[5]},{\"id\":6,\"status\":\"found\",\"finding_ids\":[28,56]},{\"id\":7,\"status\":\"found\",\"finding_ids\":[27]},{\"id\":8,\"status\":\"found\",\"finding_ids\":[34]},{\"id\":9,\"status\":\"found\",\"finding_ids\":[35,33]},{\"id\":10,\"status\":\"found\",\"finding_ids\":[60,33]},{\"id\":11,\"status\":\"found\",\"finding_ids\":[57,59]},{\"id\":12,\"status\":\"found\",\"finding_ids\":[54]},{\"id\":13,\"status\":\"partial\",\"finding_ids\":[10]},{\"id\":14,\"status\":\"found\",\"finding_ids\":[3,12]},{\"id\":15,\"status\":\"found\",\"finding_ids\":[13,14,15,16]},{\"id\":16,\"status\":\"found\",\"finding_ids\":[14]},{\"id\":17,\"status\":\"found\",\"finding_ids\":[19,11]},{\"id\":18,\"status\":\"found\",\"finding_ids\":[10,53]},{\"id\":19,\"status\":\"found\",\"finding_ids\":[20]},{\"id\":20,\"status\":\"found\",\"finding_ids\":[40,1]},{\"id\":21,\"status\":\"partial\",\"finding_ids\":[38]},{\"id\":22,\"status\":\"found\",\"finding_ids\":[21,8,23]},{\"id\":23,\"status\":\"found\",\"finding_ids\":[22,23]},{\"id\":24,\"status\":\"found\",\"finding_ids\":[15,8,24]},{\"id\":25,\"status\":\"found\",\"finding_ids\":[26]},{\"id\":26,\"status\":\"found\",\"finding_ids\":[25]},{\"id\":27,\"status\":\"found\",\"finding_ids\":[49]},{\"id\":28,\"status\":\"found\",\"finding_ids\":[51,52]},{\"id\":29,\"status\":\"found\",\"finding_ids\":[9]},{\"id\":30,\"status\":\"found\",\"finding_ids\":[7]},{\"id\":31,\"status\":\"found\",\"finding_ids\":[56]},{\"id\":32,\"status\":\"found\",\"finding_ids\":[55]},{\"id\":33,\"status\":\"found\",\"finding_ids\":[37]},{\"id\":34,\"status\":\"found\",\"finding_ids\":[5,3]},{\"id\":35,\"status\":\"found\",\"finding_ids\":[17]},{\"id\":36,\"status\":\"found\",\"finding_ids\":[12]},{\"id\":37,\"status\":\"found\",\"finding_ids\":[31,30]},{\"id\":38,\"status\":\"missed\",\"finding_ids\":[]},{\"id\":39,\"status\":\"found\",\"finding_ids\":[38]},{\"id\":40,\"status\":\"found\",\"finding_ids\":[53]},{\"id\":41,\"status\":\"partial\",\"finding_ids\":[21]},{\"id\":42,\"status\":\"partial\",\"finding_ids\":[43]},{\"id\":43,\"status\":\"partial\",\"finding_ids\":[11]},{\"id\":44,\"status\":\"partial\",\"finding_ids\":[43,41]},{\"id\":45,\"status\":\"partial\",\"finding_ids\":[33]}],\"extra\":[{\"finding_id\":6,\"verdict\":\"real\"},{\"finding_id\":18,\"verdict\":\"real\"},{\"finding_id\":29,\"verdict\":\"real\"},{\"finding_id\":32,\"verdict\":\"noise\"},{\"finding_id\":36,\"verdict\":\"real\"},{\"finding_id\":39,\"verdict\":\"real\"},{\"finding_id\":42,\"verdict\":\"noise\"},{\"finding_id\":44,\"verdict\":\"real\"},{\"finding_id\":45,\"verdict\":\"real\"},{\"finding_id\":46,\"verdict\":\"real\"},{\"finding_id\":50,\"verdict\":\"real\"},{\"finding_id\":58,\"verdict\":\"noise\"}]}",
+   "structured_output": {
+    "gold": [
+     {
+      "id": 1,
+      "status": "found",
+      "finding_ids": [
+       2
+      ]
+     },
+     {
+      "id": 2,
+      "status": "found",
+      "finding_ids": [
+       4
+      ]
+     },
+     {
+      "id": 3,
+      "status": "found",
+      "finding_ids": [
+       1
+      ]
+     },
+     {
+      "id": 4,
+      "status": "found",
+      "finding_ids": [
+       47,
+       48
+      ]
+     },
+     {
+      "id": 5,
+      "status": "partial",
+      "finding_ids": [
+       5
+      ]
+     },
+     {
+      "id": 6,
+      "status": "found",
+      "finding_ids": [
+       28,
+       56
+      ]
+     },
+     {
+      "id": 7,
+      "status": "found",
+      "finding_ids": [
+       27
+      ]
+     },
+     {
+      "id": 8,
+      "status": "found",
+      "finding_ids": [
+       34
+      ]
+     },
+     {
+      "id": 9,
+      "status": "found",
+      "finding_ids": [
+       35,
+       33
+      ]
+     },
+     {
+      "id": 10,
+      "status": "found",
+      "finding_ids": [
+       60,
+       33
+      ]
+     },
+     {
+      "id": 11,
+      "status": "found",
+      "finding_ids": [
+       57,
+       59
+      ]
+     },
+     {
+      "id": 12,
+      "status": "found",
+      "finding_ids": [
+       54
+      ]
+     },
+     {
+      "id": 13,
+      "status": "partial",
+      "finding_ids": [
+       10
+      ]
+     },
+     {
+      "id": 14,
+      "status": "found",
+      "finding_ids": [
+       3,
+       12
+      ]
+     },
+     {
+      "id": 15,
+      "status": "found",
+      "finding_ids": [
+       13,
+       14,
+       15,
+       16
+      ]
+     },
+     {
+      "id": 16,
+      "status": "found",
+      "finding_ids": [
+       14
+      ]
+     },
+     {
+      "id": 17,
+      "status": "found",
+      "finding_ids": [
+       19,
+       11
+      ]
+     },
+     {
+      "id": 18,
+      "status": "found",
+      "finding_ids": [
+       10,
+       53
+      ]
+     },
+     {
+      "id": 19,
+      "status": "found",
+      "finding_ids": [
+       20
+      ]
+     },
+     {
+      "id": 20,
+      "status": "found",
+      "finding_ids": [
+       40,
+       1
+      ]
+     },
+     {
+      "id": 21,
+      "status": "partial",
+      "finding_ids": [
+       38
+      ]
+     },
+     {
+      "id": 22,
+      "status": "found",
+      "finding_ids": [
+       21,
+       8,
+       23
+      ]
+     },
+     {
+      "id": 23,
+      "status": "found",
+      "finding_ids": [
+       22,
+       23
+      ]
+     },
+     {
+      "id": 24,
+      "status": "found",
+      "finding_ids": [
+       15,
+       8,
+       24
+      ]
+     },
+     {
+      "id": 25,
+      "status": "found",
+      "finding_ids": [
+       26
+      ]
+     },
+     {
+      "id": 26,
+      "status": "found",
+      "finding_ids": [
+       25
+      ]
+     },
+     {
+      "id": 27,
+      "status": "found",
+      "finding_ids": [
+       49
+      ]
+     },
+     {
+      "id": 28,
+      "status": "found",
+      "finding_ids": [
+       51,
+       52
+      ]
+     },
+     {
+      "id": 29,
+      "status": "found",
+      "finding_ids": [
+       9
+      ]
+     },
+     {
+      "id": 30,
+      "status": "found",
+      "finding_ids": [
+       7
+      ]
+     },
+     {
+      "id": 31,
+      "status": "found",
+      "finding_ids": [
+       56
+      ]
+     },
+     {
+      "id": 32,
+      "status": "found",
+      "finding_ids": [
+       55
+      ]
+     },
+     {
+      "id": 33,
+      "status": "found",
+      "finding_ids": [
+       37
+      ]
+     },
+     {
+      "id": 34,
+      "status": "found",
+      "finding_ids": [
+       5,
+       3
+      ]
+     },
+     {
+      "id": 35,
+      "status": "found",
+      "finding_ids": [
+       17
+      ]
+     },
+     {
+      "id": 36,
+      "status": "found",
+      "finding_ids": [
+       12
+      ]
+     },
+     {
+      "id": 37,
+      "status": "found",
+      "finding_ids": [
+       31,
+       30
+      ]
+     },
+     {
+      "id": 38,
+      "status": "missed",
+      "finding_ids": []
+     },
+     {
+      "id": 39,
+      "status": "found",
+      "finding_ids": [
+       38
+      ]
+     },
+     {
+      "id": 40,
+      "status": "found",
+      "finding_ids": [
+       53
+      ]
+     },
+     {
+      "id": 41,
+      "status": "partial",
+      "finding_ids": [
+       21
+      ]
+     },
+     {
+      "id": 42,
+      "status": "partial",
+      "finding_ids": [
+       43
+      ]
+     },
+     {
+      "id": 43,
+      "status": "partial",
+      "finding_ids": [
+       11
+      ]
+     },
+     {
+      "id": 44,
+      "status": "partial",
+      "finding_ids": [
+       43,
+       41
+      ]
+     },
+     {
+      "id": 45,
+      "status": "partial",
+      "finding_ids": [
+       33
+      ]
+     }
+    ],
+    "extra": [
+     {
+      "finding_id": 6,
+      "verdict": "real"
+     },
+     {
+      "finding_id": 18,
+      "verdict": "real"
+     },
+     {
+      "finding_id": 29,
+      "verdict": "real"
+     },
+     {
+      "finding_id": 32,
+      "verdict": "noise"
+     },
+     {
+      "finding_id": 36,
+      "verdict": "real"
+     },
+     {
+      "finding_id": 39,
+      "verdict": "real"
+     },
+     {
+      "finding_id": 42,
+      "verdict": "noise"
+     },
+     {
+      "finding_id": 44,
+      "verdict": "real"
+     },
+     {
+      "finding_id": 45,
+      "verdict": "real"
+     },
+     {
+      "finding_id": 46,
+      "verdict": "real"
+     },
+     {
+      "finding_id": 50,
+      "verdict": "real"
+     },
+     {
+      "finding_id": 58,
+      "verdict": "noise"
+     }
+    ]
+   },
+   "ttft_ms": 28282,
+   "type": "result",
+   "duration_ms": 49731,
+   "uuid": "a5ab885c-00df-4273-a0b3-c69eec4f2443",
+   "ttft_stream_ms": 2811,
+   "time_to_request_ms": 477,
+   "time_to_request_phases_ms": {
+    "other": 2,
+    "system_prompt": 1,
+    "resume_other": 0,
+    "process_user_input": 1,
+    "input_attachments": 4,
+    "input_hooks": 1,
+    "conversation_append": 0,
+    "tool_pool_refresh": 1,
+    "init_message": 2,
+    "init_frame_send": 1,
+    "engine_pickup": 1,
+    "loop_entry": 1,
+    "message_prep": 1,
+    "model_config_wait": 0,
+    "autocompact": 0,
+    "request_announcements": 2,
+    "query_setup": 0,
+    "model_gates": 440,
+    "tool_schema_build": 6,
+    "message_normalization": 3,
+    "client_creation": 2,
+    "request_build": 8
+   },
+   "turn_start_resume_kind": "none",
+   "process_turn_index": 0,
+   "time_to_request_loop_lag_ms": 13,
+   "time_to_request_cpu_ms": 131,
+   "time_to_request_major_faults": 2,
+   "input_attachments_detail": {
+    "slowest_producer": "model",
+    "slowest_producer_ms": 2,
+    "cpu_ms": 7,
+    "major_faults": 1,
+    "setup_ms": 0,
+    "prompt_producers_ms": 0,
+    "ambient_start_ms": 1,
+    "ambient_wait_ms": 1,
+    "render_ms": 0,
+    "producers": 44,
+    "token_counts": 0
+   },
+   "tool_schema_build_detail": {
+    "betas_ms": 1,
+    "waits_ms": 2,
+    "placement_ms": 1,
+    "render_ms": 1,
+    "after_ms": 0,
+    "other_ms": 1,
+    "tools": 1,
+    "new_schemas": 1
+   },
+   "message_normalization_detail": {
+    "before_ms": 0,
+    "normalize_ms": 2,
+    "images_ms": 0,
+    "post_process_ms": 1,
+    "after_ms": 0,
+    "other_ms": 0,
+    "messages": 7,
+    "wire_messages": 2
+   },
+   "request_build_detail": {
+    "records_ms": 0,
+    "system_ms": 2,
+    "headers_ms": 1,
+    "cache_break_record_ms": 1,
+    "plans_ms": 1,
+    "retry_setup_ms": 0,
+    "sent_build_ms": 2,
+    "record_attempt_ms": 1,
+    "other_ms": 0,
+    "sent_build_safety_context_ms": 0,
+    "sent_build_cache_breakpoints_ms": 1,
+    "sent_build_surrogate_scan_ms": 0
+   },
+   "first_content_frame_ms": 2811,
+   "queued_turn_count": 0,
+   "result_index": 0,
+   "credential_expires_at": "2026-12-24T20:08:55.712Z"
+  }
+ }
+}

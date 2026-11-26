@@ -1,0 +1,54 @@
+{
+ "copy": "task-del",
+ "source": "task.md",
+ "mutations": [
+  {
+   "id": "task-del-01",
+   "operator": "branch",
+   "original": " Если в документе номеров не было, агент присваивает свои и сохраняет цитату.",
+   "replacement": "",
+   "match_spans": [
+    [
+     2486,
+     2508
+    ]
+   ]
+  },
+  {
+   "id": "task-del-02",
+   "operator": "actor",
+   "original": "5. Агент записывает отчёт в файл.",
+   "replacement": "5. Отчёт записывается в файл.",
+   "match_spans": [
+    [
+     1628,
+     1657
+    ]
+   ]
+  },
+  {
+   "id": "task-del-03",
+   "operator": "actor",
+   "original": "3. Агент выделяет отдельные требования и проверяет их.",
+   "replacement": "3. Выделяются и проверяются отдельные требования.",
+   "match_spans": [
+    [
+     1533,
+     1582
+    ]
+   ]
+  },
+  {
+   "id": "task-del-04",
+   "operator": "unit",
+   "original": "версия агента (коммит или тег).",
+   "replacement": "версия агента.",
+   "match_spans": [
+    [
+     2373,
+     2387
+    ]
+   ]
+  }
+ ]
+}
