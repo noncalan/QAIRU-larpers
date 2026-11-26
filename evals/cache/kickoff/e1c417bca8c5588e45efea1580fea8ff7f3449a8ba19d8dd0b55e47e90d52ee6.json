@@ -1,0 +1,446 @@
+{
+ "key": "e1c417bca8c5588e45efea1580fea8ff7f3449a8ba19d8dd0b55e47e90d52ee6",
+ "created_at": "2026-11-26T17:32:38+00:00",
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "prompt_chars": 17319,
+ "meta": {
+  "labeler": "opus",
+  "kickoff": 13,
+  "agent": 15
+ },
+ "response": {
+  "call_id": "judge.1",
+  "text": "{\"matches\":[{\"id\":\"K-01\",\"label\":\"none\",\"b_ids\":[],\"reason\":\"В B нет вопросов о допустимости готовых open source harness или компонентов при построении агента.\"},{\"id\":\"K-02\",\"label\":\"partial\",\"b_ids\":[\"Q-12\"],\"reason\":\"Q-12 касается только ограничений по модели (платный ключ); язык и фреймворки в B не затронуты.\"},{\"id\":\"K-03\",\"label\":\"partial\",\"b_ids\":[\"Q-12\"],\"reason\":\"Q-12 затрагивает, чей ключ используется при повторе прогона жюри, но не вопрос размещения ключа в репозитории.\"},{\"id\":\"K-04\",\"label\":\"partial\",\"b_ids\":[\"Q-01\"],\"reason\":\"Q-01 упоминает реакцию на неподдерживаемый формат (сообщение, код завершения), но не повреждённые файлы и файлы без текста.\"},{\"id\":\"K-05\",\"label\":\"match\",\"b_ids\":[\"Q-13\"],\"reason\":\"Q-13 прямо спрашивает, какие форматы файла отчёта допустимы (Markdown, PDF, DOCX).\"},{\"id\":\"K-06\",\"label\":\"none\",\"b_ids\":[],\"reason\":\"В B нет вопроса о том, будут ли кроме выданного документа другие документы для проверки.\"},{\"id\":\"K-07\",\"label\":\"partial\",\"b_ids\":[\"Q-06\",\"Q-10\"],\"reason\":\"Q-06 и Q-10 касаются присвоения ID, цитат и правила нарезки, но не выбора между моделью и гибридным подходом.\"},{\"id\":\"K-08\",\"label\":\"partial\",\"b_ids\":[\"Q-01\"],\"reason\":\"Q-01 касается обязательности PDF на входе, но не обработки таблиц, диаграмм и списков внутри PDF.\"},{\"id\":\"K-09\",\"label\":\"partial\",\"b_ids\":[\"Q-03\"],\"reason\":\"Q-03 уточняет, какие критерии из 29148/830 обязательны, но не как перенести их в промпт.\"},{\"id\":\"K-10\",\"label\":\"none\",\"b_ids\":[],\"reason\":\"В B нет вопросов об интерфейсе (сайт или консоль) и языке описания в репозитории.\"},{\"id\":\"K-11\",\"label\":\"none\",\"b_ids\":[],\"reason\":\"В B нет вопросов о структуре репозитория, файле зависимостей и конфликтах окружения.\"},{\"id\":\"K-12\",\"label\":\"none\",\"b_ids\":[],\"reason\":\"В B нет вопросов о числе агентов или субагентов в решении.\"},{\"id\":\"K-13\",\"label\":\"none\",\"b_ids\":[],\"reason\":\"В B нет вопроса о том, должен ли агент обрабатывать любой документ или только выданный.\"}]}",
+  "structured": {
+   "matches": [
+    {
+     "id": "K-01",
+     "label": "none",
+     "b_ids": [],
+     "reason": "В B нет вопросов о допустимости готовых open source harness или компонентов при построении агента."
+    },
+    {
+     "id": "K-02",
+     "label": "partial",
+     "b_ids": [
+      "Q-12"
+     ],
+     "reason": "Q-12 касается только ограничений по модели (платный ключ); язык и фреймворки в B не затронуты."
+    },
+    {
+     "id": "K-03",
+     "label": "partial",
+     "b_ids": [
+      "Q-12"
+     ],
+     "reason": "Q-12 затрагивает, чей ключ используется при повторе прогона жюри, но не вопрос размещения ключа в репозитории."
+    },
+    {
+     "id": "K-04",
+     "label": "partial",
+     "b_ids": [
+      "Q-01"
+     ],
+     "reason": "Q-01 упоминает реакцию на неподдерживаемый формат (сообщение, код завершения), но не повреждённые файлы и файлы без текста."
+    },
+    {
+     "id": "K-05",
+     "label": "match",
+     "b_ids": [
+      "Q-13"
+     ],
+     "reason": "Q-13 прямо спрашивает, какие форматы файла отчёта допустимы (Markdown, PDF, DOCX)."
+    },
+    {
+     "id": "K-06",
+     "label": "none",
+     "b_ids": [],
+     "reason": "В B нет вопроса о том, будут ли кроме выданного документа другие документы для проверки."
+    },
+    {
+     "id": "K-07",
+     "label": "partial",
+     "b_ids": [
+      "Q-06",
+      "Q-10"
+     ],
+     "reason": "Q-06 и Q-10 касаются присвоения ID, цитат и правила нарезки, но не выбора между моделью и гибридным подходом."
+    },
+    {
+     "id": "K-08",
+     "label": "partial",
+     "b_ids": [
+      "Q-01"
+     ],
+     "reason": "Q-01 касается обязательности PDF на входе, но не обработки таблиц, диаграмм и списков внутри PDF."
+    },
+    {
+     "id": "K-09",
+     "label": "partial",
+     "b_ids": [
+      "Q-03"
+     ],
+     "reason": "Q-03 уточняет, какие критерии из 29148/830 обязательны, но не как перенести их в промпт."
+    },
+    {
+     "id": "K-10",
+     "label": "none",
+     "b_ids": [],
+     "reason": "В B нет вопросов об интерфейсе (сайт или консоль) и языке описания в репозитории."
+    },
+    {
+     "id": "K-11",
+     "label": "none",
+     "b_ids": [],
+     "reason": "В B нет вопросов о структуре репозитория, файле зависимостей и конфликтах окружения."
+    },
+    {
+     "id": "K-12",
+     "label": "none",
+     "b_ids": [],
+     "reason": "В B нет вопросов о числе агентов или субагентов в решении."
+    },
+    {
+     "id": "K-13",
+     "label": "none",
+     "b_ids": [],
+     "reason": "В B нет вопроса о том, должен ли агент обрабатывать любой документ или только выданный."
+    }
+   ]
+  },
+  "model": "claude-opus-5-5",
+  "usage": {
+   "input_tokens": 4,
+   "output_tokens": 2990,
+   "cache_creation_input_tokens": 15177,
+   "cache_read_input_tokens": 9606
+  },
+  "cost_usd": 0.18315320000000002,
+  "duration_ms": 26853,
+  "backend": "cli",
+  "cached": false,
+  "raw": {
+   "duration_api_ms": 24861,
+   "stop_reason": "tool_use",
+   "session_id": "2d2c01de-7ed4-4125-b179-f7bb52d20cee",
+   "total_cost_usd": 0.18315320000000002,
+   "usage": {
+    "input_tokens": 4,
+    "cache_creation_input_tokens": 15177,
+    "cache_read_input_tokens": 9606,
+    "output_tokens": 2990,
+    "output_tokens_details": {
+     "thinking_tokens": 879
+    },
+    "server_tool_use": {
+     "web_search_requests": 0,
+     "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+     "ephemeral_1h_input_tokens": 15177,
+     "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [
+     {
+      "input_tokens": 2,
+      "output_tokens": 999,
+      "cache_read_input_tokens": 9606,
+      "cache_creation_input_tokens": 5571,
+      "cache_creation": {
+       "ephemeral_5m_input_tokens": 0,
+       "ephemeral_1h_input_tokens": 5571
+      },
+      "type": "message"
+     }
+    ],
+    "speed": "standard",
+    "fallback_credit": null
+   },
+   "modelUsage": {
+    "claude-opus-5-5": {
+     "inputTokens": 4,
+     "outputTokens": 2990,
+     "cacheReadInputTokens": 9606,
+     "cacheCreationInputTokens": 15177,
+     "webSearchRequests": 0,
+     "costUSD": 0.18315320000000002,
+     "contextWindow": 1000000,
+     "maxOutputTokens": 128000,
+     "thinkingTokens": 879,
+     "cacheCreationEphemeral5mInputTokens": 0,
+     "cacheCreationEphemeral1hInputTokens": 15177,
+     "canonicalModel": "claude-opus-5-5",
+     "provider": "firstParty",
+     "costBasis": "list"
+    }
+   },
+   "permission_denials": [],
+   "terminal_reason": "completed",
+   "fast_mode_state": "off",
+   "fast_mode_disabled_reason": "sdk_opt_in_required",
+   "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+     "background": 0,
+     "foreground": 0,
+     "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+     "parent": 0,
+     "user": 0,
+     "system": 0
+    },
+    "refused": {
+     "depth_limit": 0,
+     "concurrency_limit": 0,
+     "budget": 0
+    },
+    "by_type": {}
+   },
+   "safety_stops": 0,
+   "is_error": false,
+   "num_turns": 3,
+   "subtype": "success",
+   "api_error_status": null,
+   "result": "{\"matches\":[{\"id\":\"K-01\",\"label\":\"none\",\"b_ids\":[],\"reason\":\"В B нет вопросов о допустимости готовых open source harness или компонентов при построении агента.\"},{\"id\":\"K-02\",\"label\":\"partial\",\"b_ids\":[\"Q-12\"],\"reason\":\"Q-12 касается только ограничений по модели (платный ключ); язык и фреймворки в B не затронуты.\"},{\"id\":\"K-03\",\"label\":\"partial\",\"b_ids\":[\"Q-12\"],\"reason\":\"Q-12 затрагивает, чей ключ используется при повторе прогона жюри, но не вопрос размещения ключа в репозитории.\"},{\"id\":\"K-04\",\"label\":\"partial\",\"b_ids\":[\"Q-01\"],\"reason\":\"Q-01 упоминает реакцию на неподдерживаемый формат (сообщение, код завершения), но не повреждённые файлы и файлы без текста.\"},{\"id\":\"K-05\",\"label\":\"match\",\"b_ids\":[\"Q-13\"],\"reason\":\"Q-13 прямо спрашивает, какие форматы файла отчёта допустимы (Markdown, PDF, DOCX).\"},{\"id\":\"K-06\",\"label\":\"none\",\"b_ids\":[],\"reason\":\"В B нет вопроса о том, будут ли кроме выданного документа другие документы для проверки.\"},{\"id\":\"K-07\",\"label\":\"partial\",\"b_ids\":[\"Q-06\",\"Q-10\"],\"reason\":\"Q-06 и Q-10 касаются присвоения ID, цитат и правила нарезки, но не выбора между моделью и гибридным подходом.\"},{\"id\":\"K-08\",\"label\":\"partial\",\"b_ids\":[\"Q-01\"],\"reason\":\"Q-01 касается обязательности PDF на входе, но не обработки таблиц, диаграмм и списков внутри PDF.\"},{\"id\":\"K-09\",\"label\":\"partial\",\"b_ids\":[\"Q-03\"],\"reason\":\"Q-03 уточняет, какие критерии из 29148/830 обязательны, но не как перенести их в промпт.\"},{\"id\":\"K-10\",\"label\":\"none\",\"b_ids\":[],\"reason\":\"В B нет вопросов об интерфейсе (сайт или консоль) и языке описания в репозитории.\"},{\"id\":\"K-11\",\"label\":\"none\",\"b_ids\":[],\"reason\":\"В B нет вопросов о структуре репозитория, файле зависимостей и конфликтах окружения.\"},{\"id\":\"K-12\",\"label\":\"none\",\"b_ids\":[],\"reason\":\"В B нет вопросов о числе агентов или субагентов в решении.\"},{\"id\":\"K-13\",\"label\":\"none\",\"b_ids\":[],\"reason\":\"В B нет вопроса о том, должен ли агент обрабатывать любой документ или только выданный.\"}]}",
+   "structured_output": {
+    "matches": [
+     {
+      "id": "K-01",
+      "label": "none",
+      "b_ids": [],
+      "reason": "В B нет вопросов о допустимости готовых open source harness или компонентов при построении агента."
+     },
+     {
+      "id": "K-02",
+      "label": "partial",
+      "b_ids": [
+       "Q-12"
+      ],
+      "reason": "Q-12 касается только ограничений по модели (платный ключ); язык и фреймворки в B не затронуты."
+     },
+     {
+      "id": "K-03",
+      "label": "partial",
+      "b_ids": [
+       "Q-12"
+      ],
+      "reason": "Q-12 затрагивает, чей ключ используется при повторе прогона жюри, но не вопрос размещения ключа в репозитории."
+     },
+     {
+      "id": "K-04",
+      "label": "partial",
+      "b_ids": [
+       "Q-01"
+      ],
+      "reason": "Q-01 упоминает реакцию на неподдерживаемый формат (сообщение, код завершения), но не повреждённые файлы и файлы без текста."
+     },
+     {
+      "id": "K-05",
+      "label": "match",
+      "b_ids": [
+       "Q-13"
+      ],
+      "reason": "Q-13 прямо спрашивает, какие форматы файла отчёта допустимы (Markdown, PDF, DOCX)."
+     },
+     {
+      "id": "K-06",
+      "label": "none",
+      "b_ids": [],
+      "reason": "В B нет вопроса о том, будут ли кроме выданного документа другие документы для проверки."
+     },
+     {
+      "id": "K-07",
+      "label": "partial",
+      "b_ids": [
+       "Q-06",
+       "Q-10"
+      ],
+      "reason": "Q-06 и Q-10 касаются присвоения ID, цитат и правила нарезки, но не выбора между моделью и гибридным подходом."
+     },
+     {
+      "id": "K-08",
+      "label": "partial",
+      "b_ids": [
+       "Q-01"
+      ],
+      "reason": "Q-01 касается обязательности PDF на входе, но не обработки таблиц, диаграмм и списков внутри PDF."
+     },
+     {
+      "id": "K-09",
+      "label": "partial",
+      "b_ids": [
+       "Q-03"
+      ],
+      "reason": "Q-03 уточняет, какие критерии из 29148/830 обязательны, но не как перенести их в промпт."
+     },
+     {
+      "id": "K-10",
+      "label": "none",
+      "b_ids": [],
+      "reason": "В B нет вопросов об интерфейсе (сайт или консоль) и языке описания в репозитории."
+     },
+     {
+      "id": "K-11",
+      "label": "none",
+      "b_ids": [],
+      "reason": "В B нет вопросов о структуре репозитория, файле зависимостей и конфликтах окружения."
+     },
+     {
+      "id": "K-12",
+      "label": "none",
+      "b_ids": [],
+      "reason": "В B нет вопросов о числе агентов или субагентов в решении."
+     },
+     {
+      "id": "K-13",
+      "label": "none",
+      "b_ids": [],
+      "reason": "В B нет вопроса о том, должен ли агент обрабатывать любой документ или только выданный."
+     }
+    ]
+   },
+   "ttft_ms": 8860,
+   "type": "result",
+   "duration_ms": 26853,
+   "uuid": "3c9e2d72-b6aa-4f00-b020-86cfb6afb480",
+   "ttft_stream_ms": 686,
+   "time_to_request_ms": 83,
+   "time_to_request_phases_ms": {
+    "other": 9,
+    "system_prompt": 2,
+    "resume_other": 1,
+    "process_user_input": 4,
+    "input_attachments": 10,
+    "input_hooks": 4,
+    "conversation_append": 1,
+    "tool_pool_refresh": 2,
+    "init_message": 7,
+    "init_frame_send": 5,
+    "engine_pickup": 1,
+    "loop_entry": 5,
+    "message_prep": 2,
+    "model_config_wait": 0,
+    "autocompact": 2,
+    "request_announcements": 7,
+    "query_setup": 0,
+    "model_gates": 1,
+    "tool_schema_build": 3,
+    "message_normalization": 3,
+    "client_creation": 6,
+    "request_build": 8
+   },
+   "turn_start_resume_kind": "none",
+   "process_turn_index": 0,
+   "time_to_request_loop_lag_ms": 32,
+   "time_to_request_cpu_ms": 89,
+   "time_to_request_major_faults": 0,
+   "process_rss_mib_turn_start": 202,
+   "process_anon_mib_turn_start": 123,
+   "process_rss_mib_result": 210,
+   "process_anon_mib_result": 122,
+   "process_peak_rss_mib": 221,
+   "process_cpu_ms_turn": 894,
+   "process_wall_ms_turn": 26853,
+   "tool_pool_build_count": 3,
+   "tool_pool_build_lapsed_count": 0,
+   "tool_pool_moved_at_lapse_count": 0,
+   "tool_pool_limit_ms": 30000,
+   "process_cpu_ms_streaming": 558,
+   "process_wall_ms_streaming": 23422,
+   "main_stream_count": 2,
+   "main_stream_event_count": 323,
+   "main_stream_chunk_count": 304,
+   "process_turn_states": {
+    "main_stream": {
+     "cpu_ms": 558,
+     "wall_ms": 23422,
+     "entries": 2
+    },
+    "first_event_wait": {
+     "cpu_ms": 175,
+     "wall_ms": 1420,
+     "entries": 2
+    },
+    "before_first_request": {
+     "cpu_ms": 89,
+     "wall_ms": 83,
+     "entries": 1
+    },
+    "between_requests": {
+     "cpu_ms": 34,
+     "wall_ms": 32,
+     "entries": 1
+    },
+    "after_last_request": {
+     "cpu_ms": 38,
+     "wall_ms": 1896,
+     "entries": 1
+    }
+   },
+   "input_attachments_detail": {
+    "slowest_producer": "deferred_tools_delta",
+    "slowest_producer_ms": 3,
+    "cpu_ms": 11,
+    "major_faults": 0,
+    "setup_ms": 0,
+    "prompt_producers_ms": 0,
+    "ambient_start_ms": 4,
+    "ambient_wait_ms": 2,
+    "render_ms": 1,
+    "producers": 44,
+    "token_counts": 0
+   },
+   "tool_schema_build_detail": {
+    "betas_ms": 0,
+    "waits_ms": 1,
+    "placement_ms": 1,
+    "render_ms": 1,
+    "after_ms": 0,
+    "other_ms": 0,
+    "tools": 1,
+    "new_schemas": 1
+   },
+   "message_normalization_detail": {
+    "before_ms": 0,
+    "normalize_ms": 2,
+    "images_ms": 0,
+    "post_process_ms": 1,
+    "after_ms": 0,
+    "other_ms": 0,
+    "messages": 8,
+    "wire_messages": 2
+   },
+   "request_build_detail": {
+    "records_ms": 0,
+    "system_ms": 2,
+    "headers_ms": 1,
+    "cache_break_record_ms": 1,
+    "plans_ms": 2,
+    "retry_setup_ms": 0,
+    "sent_build_ms": 2,
+    "record_attempt_ms": 0,
+    "other_ms": 0,
+    "sent_build_safety_context_ms": 0,
+    "sent_build_cache_breakpoints_ms": 1,
+    "sent_build_surrogate_scan_ms": 0
+   },
+   "first_content_frame_ms": 686,
+   "time_to_request_from_spawn_ms": 8552,
+   "warm_spare_claimed": false,
+   "flag_fetch_kick": "not_asked_warm",
+   "time_origin_ms": 1795714330219.9111,
+   "queued_turn_count": 0,
+   "result_index": 0,
+   "process_start_tuning": 0
+  }
+ }
+}

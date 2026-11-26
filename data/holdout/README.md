@@ -11,6 +11,8 @@
 | `repair-webapp/repair_webapp_tz.md` | ТЗ на модуль «Ремонт» для Telegram WebApp: путь клиента, оплата, личный кабинет, распределение заявок. Markdown со схемами Mermaid, 150 строк | [alxbychkov/repair_webapp_q](https://github.com/alxbychkov/repair_webapp_q), файл `README.md` | `7d7a9ce8c9e9067da4a077017d6bd2b576b64a0f` | MIT, © 2025 Alexander Bychkov, текст в [`repair-webapp/LICENSE`](repair-webapp/LICENSE) | `89feb0ab9a3811e3a64813e03e9ebdc0bf31ab4c9667b01428cca0c2987d60ee` |
 | `finuchet/FINUCHET.001-01-TZ.pdf` | ТЗ по ГОСТ 19.201-78 на программу учёта личных финансов «ФинУчёт». PDF, 18 страниц: десять функциональных требований с критериями проверки, нефункциональные требования, порядок приёмки | [n1k1tal0x/hub_docs_kt3](https://github.com/n1k1tal0x/hub_docs_kt3), файл `docs/tz/FINUCHET.001-01-TZ.pdf` | `bd5bac486177d346e4be263e5d28fbfdf8d3d135` | MIT, © 2026 Петровский Никита Андреевич, текст в [`finuchet/LICENSE`](finuchet/LICENSE) | `96e36b878634b3e8929dc05156b5de79fb8809c7003c9583f92d5ce5f65ab027` |
 
+Состояние на ночь 26.11.2026: агент прогнан на `c4` и `task`. На `finuchet` и `repair-webapp` прогонов ещё нет, они записаны в [`evals/holdout/README.md`](../../evals/holdout/README.md), раздел «Что осталось».
+
 ## Почему эти четыре
 
 - `c4` выбран в исследовании [20](../../docs/research/20-holdout-documents.md) (кандидат H4): документ с API, который можно законно положить в публичный репозиторий. Лицензия MIT в репозитории источника проверена 26.11.2026.

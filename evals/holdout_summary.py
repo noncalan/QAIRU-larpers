@@ -192,6 +192,8 @@ PRECISION_HEAD = (
 def render_summary() -> str:
     runs = {doc.name: _try_run(doc) for doc in DOCS}
     labels = {doc.name: load_precision(doc) for doc in DOCS}
+    done = [doc for doc in DOCS if runs[doc.name] is not None]
+    waiting = ", ".join(f"`{doc.name}`" for doc in DOCS if runs[doc.name] is None)
     return "\n".join(
         [
             "# Чужие документы: сводка",
@@ -200,19 +202,20 @@ def render_summary() -> str:
             "прогонов, из разметки `<документ>/*-precision-holdout-<документ>.json` и из `kickoff.json`.",
             "Пояснения и оговорки: `README.md` рядом.",
             "",
+            *([f"Документы без прогона (в таблицах их нет): {waiting}.", ""] if waiting else []),
             "## Что нашёл агент",
             "",
             "| Документ | Что это | Формат и объём | Требований | Находок | Критично / важно / незначительно "
             "| Отброшено верификатором | Цитаты сверены кодом | Вопросов автору | Светофор |",
             "|---|---|---|---:|---:|---|---:|---|---:|---|",
-            *(_found_row(doc, runs[doc.name]) for doc in DOCS),
+            *(_found_row(doc, runs[doc.name]) for doc in done),
             "",
             "## Как прошёл прогон",
             "",
             "| Документ | Версия агента | Профиль | Вызовов модели | Время | Цена по тарифу API "
             "| Код возврата | Чек-листы |",
             "|---|---|---|---|---:|---:|---:|---|",
-            *(_ran_row(doc, runs[doc.name]) for doc in DOCS),
+            *(_ran_row(doc, runs[doc.name]) for doc in done),
             "",
             "## Precision: слепая разметка двумя моделями",
             "",
@@ -221,13 +224,13 @@ def render_summary() -> str:
             "",
             "| Документ | Находок | " + PRECISION_HEAD,
             "|---|---:|---:|---:|---:|---|---:|",
-            *(_precision_row(doc, labels[doc.name]) for doc in DOCS),
+            *(_precision_row(doc, labels[doc.name]) for doc in done),
             "",
             "### По важности",
             "",
             "| Документ | Важность | Находок | " + PRECISION_HEAD,
             "|---|---|---:|---:|---:|---:|---|---:|",
-            *(row for doc in DOCS for row in _severity_rows(doc, labels[doc.name])),
+            *(row for doc in done for row in _severity_rows(doc, labels[doc.name])),
             "",
             "## Контрольные ложные находки",
             "",
@@ -235,7 +238,7 @@ def render_summary() -> str:
             "",
             "| Документ | Подмешано | " + " | ".join(lab.display for lab in Labeler) + " |",
             "|---|---:|---|---|",
-            *(_control_row(doc, labels[doc.name]) for doc in DOCS),
+            *(_control_row(doc, labels[doc.name]) for doc in done),
             "",
             "## Вопросы агента к ТЗ кейса и вопросы участников kick-off",
             "",
