@@ -1,0 +1,872 @@
+{
+ "envelope_version": 1,
+ "key": "a0d9c3ded2e5f8ecb8ee975d3af982e5b96e8c3c812a107ae8f7580917ffb16e",
+ "call_id": "segment.1",
+ "step": "segment",
+ "call_index": 1,
+ "model": "claude-sonnet-5-5",
+ "effort": "medium",
+ "backend": "cli",
+ "saved_at": "2026-11-26T02:59:56.937994+00:00",
+ "payload": {
+  "duration_api_ms": 18369,
+  "stop_reason": "tool_use",
+  "session_id": "a5b87d20-1c05-43d4-a269-cc3cd72bc8e3",
+  "total_cost_usd": 0.0597881,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 4856,
+   "cache_read_input_tokens": 5101,
+   "output_tokens": 3985,
+   "output_tokens_details": {
+    "thinking_tokens": 0
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 4856,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 3985,
+     "cache_read_input_tokens": 5101,
+     "cache_creation_input_tokens": 4856,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 4856
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 3985,
+    "cacheReadInputTokens": 5101,
+    "cacheCreationInputTokens": 4856,
+    "webSearchRequests": 0,
+    "costUSD": 0.0597881,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 0,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 4856,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 2,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "{\"requirements\":[{\"refs\":[\"B006\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"goal\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"ИИ-агент статически проверяет готовый документ требований, оценивает каждое требование и набор, выпускает отчёт\",\"entities\":[{\"kind\":\"system\",\"value\":\"ИИ-агент\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B007.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Проверяемый документ не придумывают, не дописывают и не кладут в репозиторий как результат\",\"entities\":[],\"links\":[],\"depends_on\":\"B007.1\"},{\"refs\":[\"B007.4\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Агент читает документ на входе и прогоняет проверку\",\"entities\":[{\"kind\":\"system\",\"value\":\"агент\"}],\"links\":[],\"depends_on\":\"B007.1\"},{\"refs\":[\"B008.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Проверка — ревью требований до разработки, а не запуск тестов программы\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B008.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Агент ищет дефекты формулировок: двусмысленность, непроверяемость, противоречия, пропуски, лишние решения\",\"entities\":[{\"kind\":\"system\",\"value\":\"агент\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B010.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"other\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Сдать репозиторий с агентом: исходный код, инструкция запуска, зависимости\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B010.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"acceptance\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"По инструкции другой человек поднимает агента и повторяет прогон\",\"entities\":[],\"links\":[],\"depends_on\":\"B010.1\"},{\"refs\":[\"B011.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"other\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Сдать файл отчёта, сформированный этим агентом по выданному документу\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B011.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Отчёт, написанный вручную вместо прогона, не принимается\",\"entities\":[],\"links\":[],\"depends_on\":\"B011.1\"},{\"refs\":[\"B012.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Документ требований и отчёт сдаются рядом со ссылкой на репозиторий, не вместо него\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B015\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Агент принимает документ на входе: PDF и по возможности другие форматы\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"PDF\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B016\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"process\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Агент выделяет отдельные требования и проверяет их\",\"entities\":[{\"kind\":\"system\",\"value\":\"агент\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B017\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"process\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Агент проверяет набор требований целиком\",\"entities\":[{\"kind\":\"system\",\"value\":\"агент\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B018\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"process\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Агент записывает отчёт в файл\",\"entities\":[{\"kind\":\"system\",\"value\":\"агент\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B020.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Агент подключается к любой LLM модели\",\"entities\":[{\"kind\":\"system\",\"value\":\"LLM\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B020.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Команда выбирает модель сама и указывает её в инструкции\",\"entities\":[{\"kind\":\"actor\",\"value\":\"команда\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B021.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Платный ключ для сдачи не требуется\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B023.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"integration\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Критерии проверки можно взять из ISO/IEC/IEEE 29148:2018 и IEEE 830-1998\",\"entities\":[{\"kind\":\"system\",\"value\":\"ISO/IEC/IEEE 29148:2018\"},{\"kind\":\"system\",\"value\":\"IEEE Std 830-1998\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B025\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"data\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Отчёт на русском языке в виде файла\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B026\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"data\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Отчёт содержит паспорт прогона: документ, дата, модель, версия агента\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"название документа\"},{\"kind\":\"data_field\",\"value\":\"дата\"},{\"kind\":\"data_field\",\"value\":\"модель\"},{\"kind\":\"data_field\",\"value\":\"версия агента\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B027.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"data\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Отчёт содержит таблицу нарезки: ID в отчёте, ID в документе, краткая формулировка\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B027.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Если номеров в документе нет, агент присваивает свои и сохраняет цитату\",\"entities\":[{\"kind\":\"system\",\"value\":\"агент\"}],\"links\":[],\"depends_on\":\"B027.1\"},{\"refs\":[\"B028\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"data\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Отчёт содержит проверку каждого требования\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B029\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"data\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Отчёт содержит проверку всего набора требований\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B030\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"data\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Отчёт содержит сводку: число требований, нарушений, список критичных дефектов\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B031\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"data\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Отчёт содержит итог: можно ли начинать разработку и что исправить первым\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B032.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"В отчёте нет общих фраз без привязки к тексту документа\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B032.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Каждое нарушение ссылается на конкретное место\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B034\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Репозиторий содержит код агента и файл зависимостей\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B035\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"README описывает получение ключа LLM, его размещение, команду запуска, место отчёта\",\"entities\":[{\"kind\":\"data_field\",\"value\":\"README\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B036\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Запуск одной командой: агент принимает путь к файлу требований и путь к файлу отчёта\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B037.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"nfr\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Секреты в репозиторий не попадают\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B037.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"В корне репозитория есть пример конфига без ключа .env.example\",\"entities\":[{\"kind\":\"data_field\",\"value\":\".env.example\"}],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B038.1\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Язык и каркас агента команда выбирает сама\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B038.2\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"functional\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Обязательны чтение документа, обращение к модели и запись отчёта\",\"entities\":[],\"links\":[],\"depends_on\":\"\"},{\"refs\":[\"B038.3\"],\"part_start\":\"\",\"part_end\":\"\",\"type\":\"constraint\",\"subtype\":\"\",\"source_id\":\"\",\"summary\":\"Жёсткий каркас из нескольких агентов не требуется\",\"entities\":[],\"links\":[],\"depends_on\":\"\"}],\"excluded\":[{\"block\":\"B001\",\"label\":\"metadata\",\"reason\":\"сведения об источнике и версии копии\"},{\"block\":\"B004\",\"label\":\"metadata\",\"reason\":\"название хакатона и ссылка на документ\"},{\"block\":\"B007.1\",\"label\":\"context\",\"reason\":\"пояснение об источнике документа\"},{\"block\":\"B007.2\",\"label\":\"context\",\"reason\":\"описание проверяемого документа\"},{\"block\":\"B012.1\",\"label\":\"context\",\"reason\":\"пояснение о содержимом репозитория\"},{\"block\":\"B014\",\"label\":\"context\",\"reason\":\"действие участника, описание прогона\"},{\"block\":\"B020.2\",\"label\":\"context\",\"reason\":\"пояснение о тарифе\"},{\"block\":\"B021.1\",\"label\":\"context\",\"reason\":\"допущение о выборе модели\"},{\"block\":\"B023.2\",\"label\":\"context\",\"reason\":\"пояснение о критериях\"}]}",
+  "structured_output": {
+   "requirements": [
+    {
+     "refs": [
+      "B006"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "goal",
+     "subtype": "",
+     "source_id": "",
+     "summary": "ИИ-агент статически проверяет готовый документ требований, оценивает каждое требование и набор, выпускает отчёт",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "ИИ-агент"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B007.3"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Проверяемый документ не придумывают, не дописывают и не кладут в репозиторий как результат",
+     "entities": [],
+     "links": [],
+     "depends_on": "B007.1"
+    },
+    {
+     "refs": [
+      "B007.4"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Агент читает документ на входе и прогоняет проверку",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "агент"
+      }
+     ],
+     "links": [],
+     "depends_on": "B007.1"
+    },
+    {
+     "refs": [
+      "B008.1"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Проверка — ревью требований до разработки, а не запуск тестов программы",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B008.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Агент ищет дефекты формулировок: двусмысленность, непроверяемость, противоречия, пропуски, лишние решения",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "агент"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B010.1"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "other",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Сдать репозиторий с агентом: исходный код, инструкция запуска, зависимости",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B010.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "acceptance",
+     "subtype": "",
+     "source_id": "",
+     "summary": "По инструкции другой человек поднимает агента и повторяет прогон",
+     "entities": [],
+     "links": [],
+     "depends_on": "B010.1"
+    },
+    {
+     "refs": [
+      "B011.1"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "other",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Сдать файл отчёта, сформированный этим агентом по выданному документу",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B011.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Отчёт, написанный вручную вместо прогона, не принимается",
+     "entities": [],
+     "links": [],
+     "depends_on": "B011.1"
+    },
+    {
+     "refs": [
+      "B012.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Документ требований и отчёт сдаются рядом со ссылкой на репозиторий, не вместо него",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B015"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Агент принимает документ на входе: PDF и по возможности другие форматы",
+     "entities": [
+      {
+       "kind": "data_field",
+       "value": "PDF"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B016"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "process",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Агент выделяет отдельные требования и проверяет их",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "агент"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B017"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "process",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Агент проверяет набор требований целиком",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "агент"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B018"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "process",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Агент записывает отчёт в файл",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "агент"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B020.1"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Агент подключается к любой LLM модели",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "LLM"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B020.3"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Команда выбирает модель сама и указывает её в инструкции",
+     "entities": [
+      {
+       "kind": "actor",
+       "value": "команда"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B021.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Платный ключ для сдачи не требуется",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B023.1"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "integration",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Критерии проверки можно взять из ISO/IEC/IEEE 29148:2018 и IEEE 830-1998",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "ISO/IEC/IEEE 29148:2018"
+      },
+      {
+       "kind": "system",
+       "value": "IEEE Std 830-1998"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B025"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "data",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Отчёт на русском языке в виде файла",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B026"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "data",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Отчёт содержит паспорт прогона: документ, дата, модель, версия агента",
+     "entities": [
+      {
+       "kind": "data_field",
+       "value": "название документа"
+      },
+      {
+       "kind": "data_field",
+       "value": "дата"
+      },
+      {
+       "kind": "data_field",
+       "value": "модель"
+      },
+      {
+       "kind": "data_field",
+       "value": "версия агента"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B027.1"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "data",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Отчёт содержит таблицу нарезки: ID в отчёте, ID в документе, краткая формулировка",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B027.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Если номеров в документе нет, агент присваивает свои и сохраняет цитату",
+     "entities": [
+      {
+       "kind": "system",
+       "value": "агент"
+      }
+     ],
+     "links": [],
+     "depends_on": "B027.1"
+    },
+    {
+     "refs": [
+      "B028"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "data",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Отчёт содержит проверку каждого требования",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B029"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "data",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Отчёт содержит проверку всего набора требований",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B030"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "data",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Отчёт содержит сводку: число требований, нарушений, список критичных дефектов",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B031"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "data",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Отчёт содержит итог: можно ли начинать разработку и что исправить первым",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B032.1"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "",
+     "summary": "В отчёте нет общих фраз без привязки к тексту документа",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B032.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Каждое нарушение ссылается на конкретное место",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B034"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Репозиторий содержит код агента и файл зависимостей",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B035"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "",
+     "summary": "README описывает получение ключа LLM, его размещение, команду запуска, место отчёта",
+     "entities": [
+      {
+       "kind": "data_field",
+       "value": "README"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B036"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Запуск одной командой: агент принимает путь к файлу требований и путь к файлу отчёта",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B037.1"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "nfr",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Секреты в репозиторий не попадают",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B037.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "",
+     "summary": "В корне репозитория есть пример конфига без ключа .env.example",
+     "entities": [
+      {
+       "kind": "data_field",
+       "value": ".env.example"
+      }
+     ],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B038.1"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Язык и каркас агента команда выбирает сама",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B038.2"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "functional",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Обязательны чтение документа, обращение к модели и запись отчёта",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    },
+    {
+     "refs": [
+      "B038.3"
+     ],
+     "part_start": "",
+     "part_end": "",
+     "type": "constraint",
+     "subtype": "",
+     "source_id": "",
+     "summary": "Жёсткий каркас из нескольких агентов не требуется",
+     "entities": [],
+     "links": [],
+     "depends_on": ""
+    }
+   ],
+   "excluded": [
+    {
+     "block": "B001",
+     "label": "metadata",
+     "reason": "сведения об источнике и версии копии"
+    },
+    {
+     "block": "B004",
+     "label": "metadata",
+     "reason": "название хакатона и ссылка на документ"
+    },
+    {
+     "block": "B007.1",
+     "label": "context",
+     "reason": "пояснение об источнике документа"
+    },
+    {
+     "block": "B007.2",
+     "label": "context",
+     "reason": "описание проверяемого документа"
+    },
+    {
+     "block": "B012.1",
+     "label": "context",
+     "reason": "пояснение о содержимом репозитория"
+    },
+    {
+     "block": "B014",
+     "label": "context",
+     "reason": "действие участника, описание прогона"
+    },
+    {
+     "block": "B020.2",
+     "label": "context",
+     "reason": "пояснение о тарифе"
+    },
+    {
+     "block": "B021.1",
+     "label": "context",
+     "reason": "допущение о выборе модели"
+    },
+    {
+     "block": "B023.2",
+     "label": "context",
+     "reason": "пояснение о критериях"
+    }
+   ]
+  },
+  "ttft_ms": 18444,
+  "type": "result",
+  "duration_ms": 18484,
+  "uuid": "5ae3f208-ffeb-4cc5-98e4-1ce6be6d6881",
+  "ttft_stream_ms": 845,
+  "time_to_request_ms": 105,
+  "time_to_request_phases_ms": {
+   "other": 7,
+   "system_prompt": 2,
+   "resume_other": 0,
+   "process_user_input": 3,
+   "input_attachments": 8,
+   "input_hooks": 2,
+   "conversation_append": 1,
+   "tool_pool_refresh": 1,
+   "init_message": 6,
+   "init_frame_send": 3,
+   "engine_pickup": 2,
+   "loop_entry": 3,
+   "message_prep": 2,
+   "model_config_wait": 40,
+   "autocompact": 1,
+   "request_announcements": 5,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 3,
+   "message_normalization": 3,
+   "client_creation": 5,
+   "request_build": 7
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 55,
+  "time_to_request_cpu_ms": 78,
+  "time_to_request_major_faults": 0,
+  "process_rss_mib_turn_start": 207,
+  "process_anon_mib_turn_start": 129,
+  "process_rss_mib_result": 209,
+  "process_anon_mib_result": 123,
+  "process_peak_rss_mib": 226,
+  "process_cpu_ms_turn": 813,
+  "process_wall_ms_turn": 18484,
+  "tool_pool_build_count": 3,
+  "tool_pool_build_lapsed_count": 0,
+  "tool_pool_moved_at_lapse_count": 0,
+  "tool_pool_limit_ms": 30000,
+  "process_cpu_ms_streaming": 594,
+  "process_wall_ms_streaming": 17621,
+  "main_stream_count": 1,
+  "main_stream_event_count": 529,
+  "main_stream_chunk_count": 521,
+  "process_turn_states": {
+   "main_stream": {
+    "cpu_ms": 594,
+    "wall_ms": 17621,
+    "entries": 1
+   },
+   "first_event_wait": {
+    "cpu_ms": 121,
+    "wall_ms": 738,
+    "entries": 1
+   },
+   "before_first_request": {
+    "cpu_ms": 78,
+    "wall_ms": 105,
+    "entries": 1
+   },
+   "after_last_request": {
+    "cpu_ms": 20,
+    "wall_ms": 20,
+    "entries": 1
+   }
+  },
+  "input_attachments_detail": {
+   "slowest_producer": "deferred_tools_delta",
+   "slowest_producer_ms": 2,
+   "cpu_ms": 8,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 3,
+   "ambient_wait_ms": 1,
+   "render_ms": 1,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 1,
+   "render_ms": 0,
+   "after_ms": 1,
+   "other_ms": 0,
+   "tools": 1,
+   "new_schemas": 1
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 3,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 8,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 2,
+   "headers_ms": 0,
+   "cache_break_record_ms": 2,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 2,
+   "record_attempt_ms": 0,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 1
+  },
+  "first_content_frame_ms": 845,
+  "time_to_request_from_spawn_ms": 890216,
+  "warm_spare_claimed": false,
+  "flag_fetch_kick": "not_asked_warm",
+  "time_origin_ms": 1795661977521.414,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "process_start_tuning": 0
+ }
+}

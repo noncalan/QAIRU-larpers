@@ -7,13 +7,13 @@
     "document_sha256": "7fd7c1d145b0c4e01ac8a502856b08eaf0cdbddc896069271687f6a2a16022d5",
     "document_size_bytes": 16072,
     "document_pages": null,
-    "started_at": "2026-11-26T07:41:14.743985Z",
-    "finished_at": "2026-11-26T07:41:15.024624Z",
-    "duration_s": 0.28,
-    "agent_version": "0315117-dirty",
+    "started_at": "2026-11-26T07:52:02.772866Z",
+    "finished_at": "2026-11-26T07:52:03.149298Z",
+    "duration_s": 0.38,
+    "agent_version": "8672637-dirty",
     "agent_version_source": "git",
     "agent_dirty": true,
-    "prompts_sha256": "bee3b58610c9dfc15fb414005931f01456018f41c1de1352abcd1b35f1cbf5f5",
+    "prompts_sha256": "3df476631d65bfb31356100de1ee12ce14c4c6ae52a96aee442c33fd0b078418",
     "os": "Linux 6.18.44-fc-v880 (x86_64)",
     "python": "3.13.18",
     "backend_requested": "replay",
@@ -21,6 +21,8 @@
     "profile": "standard",
     "passes": 3,
     "search_input": "blocks",
+    "checklists_enabled": false,
+    "checklists": [],
     "models": {
       "segment": "claude-sonnet-5-5 · medium",
       "search": "claude-opus-5-5 · medium",
@@ -80,6 +82,15 @@
       "hint": "",
       "location": null,
       "step": "llm"
+    },
+    {
+      "code": "LLM-005",
+      "level": "info",
+      "message": "Проход поиска в записи сделан без доменных чек-листов",
+      "action": "Replay идёт без чек-листов, как в записи",
+      "hint": "",
+      "location": null,
+      "step": "checklists"
     },
     {
       "code": "LLM-041",
@@ -3166,13 +3177,15 @@
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": {
@@ -3386,13 +3399,15 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": {
@@ -3528,13 +3543,15 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           }
         ],
         "witness": {
@@ -3669,19 +3686,22 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": {
@@ -3866,13 +3886,15 @@
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": {
@@ -4055,7 +4077,8 @@
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -4222,19 +4245,22 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": {
@@ -4399,7 +4425,8 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           }
         ],
         "witness": {
@@ -4598,19 +4625,22 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -4788,19 +4818,22 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": {
@@ -4981,7 +5014,8 @@
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -5084,13 +5118,15 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -5236,7 +5272,8 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -5381,25 +5418,29 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -5538,7 +5579,8 @@
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -5635,19 +5677,22 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -5786,7 +5831,8 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -5881,7 +5927,8 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -6002,19 +6049,22 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -6129,7 +6179,8 @@
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -6243,7 +6294,8 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           }
         ],
         "witness": {
@@ -6418,7 +6470,8 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -6564,13 +6617,15 @@
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -6665,19 +6720,22 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": {
@@ -6850,13 +6908,15 @@
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -6961,7 +7021,8 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -7090,13 +7151,15 @@
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": {
@@ -7324,19 +7387,22 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -7485,7 +7551,8 @@
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -7615,19 +7682,22 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -7750,19 +7820,22 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -7865,19 +7938,22 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": {
@@ -8026,19 +8102,22 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -8349,19 +8428,22 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": {
@@ -8537,7 +8619,8 @@
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -8664,19 +8747,22 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": {
@@ -8858,19 +8944,22 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -8997,19 +9086,22 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -9112,13 +9204,15 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -9222,13 +9316,15 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           }
         ],
         "witness": {
@@ -9462,7 +9558,8 @@
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": {
@@ -9670,7 +9767,8 @@
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -9763,19 +9861,22 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": {
@@ -9926,19 +10027,22 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": {
@@ -10072,19 +10176,22 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -10265,19 +10372,22 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": {
@@ -10426,7 +10536,8 @@
             "kind": "lint",
             "pass_index": null,
             "rule_id": "L-03",
-            "call_id": null
+            "call_id": null,
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -10496,7 +10607,8 @@
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -10746,19 +10858,22 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": {
@@ -10920,7 +11035,8 @@
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -11075,7 +11191,8 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -11168,19 +11285,22 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -11245,7 +11365,8 @@
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -11341,25 +11462,29 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -11492,13 +11617,15 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -11594,13 +11721,15 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -11697,7 +11826,8 @@
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -11767,7 +11897,8 @@
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -11837,13 +11968,15 @@
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -11940,7 +12073,8 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -12035,13 +12169,15 @@
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -12138,13 +12274,15 @@
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -12209,25 +12347,29 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -12296,19 +12438,22 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -12376,19 +12521,22 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -12481,19 +12629,22 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -12560,13 +12711,15 @@
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -12631,7 +12784,8 @@
             "kind": "pass",
             "pass_index": 3,
             "rule_id": null,
-            "call_id": "search.3"
+            "call_id": "search.3",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -12696,13 +12850,15 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -12801,7 +12957,8 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -12897,7 +13054,8 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -12967,13 +13125,15 @@
             "kind": "pass",
             "pass_index": 1,
             "rule_id": null,
-            "call_id": "search.1"
+            "call_id": "search.1",
+            "checklist_item": null
           },
           {
             "kind": "pass",
             "pass_index": 2,
             "rule_id": null,
-            "call_id": "search.2"
+            "call_id": "search.2",
+            "checklist_item": null
           }
         ],
         "witness": null,
@@ -14840,7 +15000,7 @@
     ]
   },
   "metrics": {
-    "duration_s": 0.28,
+    "duration_s": 0.38,
     "calls_total": 11,
     "calls_failed": 0,
     "calls_cached": 0,
@@ -14988,6 +15148,8 @@
     "passes_ok": 3,
     "candidates_passes": 148,
     "candidates_lint": 1,
+    "candidates_checklist": 0,
+    "findings_checklist": 0,
     "discarded_by_reason": {},
     "critic_reviewed": 0,
     "critic_downgraded": 0,
@@ -18144,5 +18306,102 @@
       }
     ],
     "summary": "ТЗ п. 6: 6 из 6 разделов; у 72 из 72 находок есть якорь; цитат в находках сверено 100 % (цитат модели до фильтра: 100 %); счётчики сводки сходятся с таблицами"
-  }
+  },
+  "checklists": [
+    {
+      "id": "MON",
+      "title": "Деньги и суммы",
+      "items": 6,
+      "min_blocks": 2,
+      "matched_blocks": 17,
+      "triggers": [
+        "₸",
+        "сумма",
+        "kzt",
+        "суммы",
+        "сумме"
+      ],
+      "triggered": true,
+      "used": false,
+      "findings": []
+    },
+    {
+      "id": "DT",
+      "title": "Даты, время и периоды",
+      "items": 6,
+      "min_blocks": 2,
+      "matched_blocks": 6,
+      "triggers": [
+        "месяц",
+        "дате",
+        "месяца",
+        "календарный",
+        "минуты"
+      ],
+      "triggered": true,
+      "used": false,
+      "findings": []
+    },
+    {
+      "id": "LC",
+      "title": "Статусы и жизненный цикл",
+      "items": 5,
+      "min_blocks": 2,
+      "matched_blocks": 5,
+      "triggers": [
+        "проведение",
+        "проведённые",
+        "возврат",
+        "проведена",
+        "состояние"
+      ],
+      "triggered": true,
+      "used": false,
+      "findings": []
+    },
+    {
+      "id": "NT",
+      "title": "Уведомления",
+      "items": 5,
+      "min_blocks": 2,
+      "matched_blocks": 13,
+      "triggers": [
+        "уведомление",
+        "уведомлений",
+        "push",
+        "уведомления"
+      ],
+      "triggered": true,
+      "used": false,
+      "findings": []
+    },
+    {
+      "id": "API",
+      "title": "API и интеграции",
+      "items": 8,
+      "min_blocks": 2,
+      "matched_blocks": 7,
+      "triggers": [
+        "интеграции",
+        "rest",
+        "api",
+        "интеграционный",
+        "интеграционного"
+      ],
+      "triggered": true,
+      "used": false,
+      "findings": []
+    },
+    {
+      "id": "PD",
+      "title": "Персональные данные и безопасность",
+      "items": 6,
+      "min_blocks": 2,
+      "matched_blocks": 0,
+      "triggers": [],
+      "triggered": false,
+      "used": false,
+      "findings": []
+    }
+  ]
 }

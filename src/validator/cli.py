@@ -125,6 +125,14 @@ def main(
             help="Что видит поиск: blocks (документ с ID блоков) или raw (текст без ID, блоки по цитате)",
         ),
     ] = None,
+    checklists: Annotated[
+        bool | None,
+        typer.Option(
+            "--checklists/--no-checklists",
+            help="Доменные чек-листы (деньги, даты, API…) в поиске, если их слова есть в документе",
+            show_default="по умолчанию включены",
+        ),
+    ] = None,
     ocr: Annotated[
         bool | None,
         typer.Option(
@@ -160,6 +168,7 @@ def main(
             pdf_backend=pdf_backend,
             critic=critic,
             search_input=search_input,
+            checklists=checklists,
             ocr=ocr,
         )
     except ValueError as exc:

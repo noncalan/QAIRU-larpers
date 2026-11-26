@@ -330,6 +330,7 @@ def _passport_section(report: Report, ctx: dict[str, Any]) -> Json:
         ("Модели по шагам", "; ".join(f"{k}: {v}" for k, v in p.models.items()) or "—"),
         ("Фактические модели", ", ".join(p.models_actual) or "—"),
         ("Профиль", f"{p.profile.value}, проходов поиска: {p.passes}{_search_input(p)}"),
+        ("Доменные чек-листы", plain(ctx["checklists_passport"])),
         ("Вызовов модели", f"{p.calls_total} (с ошибкой: {p.calls_failed})"),
         (
             "Токены",
@@ -484,10 +485,34 @@ def _set_section(report: Report, ctx: dict[str, Any]) -> Json:
             "blocks": [_para("Проверка набора не выполнена, смотрите диагностику прогона.")],
         }
     cards = [_finding_card(f, ctx) for f in ctx["set_findings"]]
-    return {
-        "title": title,
-        "blocks": cards or [_para("Нарушений уровня набора (29148 п. 5.2.6, IEEE 830 п. 4.3) не найдено.")],
-    }
+    blocks = cards or [_para("Нарушений уровня набора (29148 п. 5.2.6, IEEE 830 п. 4.3) не найдено.")]
+    return {"title": title, "blocks": blocks + _checklist_blocks(report, ctx)}
+
+
+def _checklist_blocks(report: Report, ctx: dict[str, Any]) -> list[Json]:
+    """Доменные чек-листы (#35): включённые и нет, почему, находки с пунктом чек-листа. Как в Markdown."""
+    if not report.checklists:
+        return []
+    enabled = report.passport.checklists_enabled
+    note = ctx["checklists_note"] + (
+        "" if enabled else " В этом прогоне чек-листы выключены (--no-checklists)."
+    )
+    rows = [
+        [
+            f"{u.title} ({u.id})",
+            ctx["checklist_state"](u, enabled),
+            plain(ctx["checklist_reason"](u)),
+            str(u.items),
+            ", ".join(u.findings) or "—",
+        ]
+        for u in report.checklists
+    ]
+    head = ["Чек-лист", "Статус", "Почему", "Пунктов", "Находки с пунктом чек-листа"]
+    return [
+        {"t": "h2", "text": "Доменные чек-листы"},
+        _para(note),
+        _table(head, rows, [0.2, 0.14, 0.38, 0.08, 0.2], mono=(4,), hyph=(1,)),
+    ]
 
 
 def _withdrawn_blocks(report: Report, ctx: dict[str, Any]) -> list[Json]:
@@ -754,6 +779,16 @@ def _funnel_blocks(report: Report) -> list[Json]:
             f"{m.candidates_passes} (проходов отработало {m.passes_ok} из {m.passes_total})",
         ],
         ["Кандидаты от правил линтера", str(m.candidates_lint)],
+        *(
+            [
+                [
+                    "Из них с пунктом доменного чек-листа",
+                    f"{m.candidates_checklist} (в отчёте находок с пунктом: {m.findings_checklist})",
+                ]
+            ]
+            if m.candidates_checklist
+            else []
+        ),
         ["После слияния", str(m.merged_total)],
         *([f"Отброшено: {reason.label}", str(n)] for reason, n in m.discarded_by_reason.items()),
     ]

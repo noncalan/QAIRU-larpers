@@ -12,11 +12,13 @@ from collections.abc import Iterable, Sequence
 from validator.evidence_metrics import evidence_metrics
 from validator.models import (
     CallStatus,
+    ChecklistUse,
     Conclusion,
     CoverageMatrix,
     DiagLevel,
     Diagnostic,
     DocumentInfo,
+    Finding,
     Question,
     QuestionPriority,
     Report,
@@ -97,6 +99,21 @@ def _conclusion(ctx: RunContext, errors: Sequence[Diagnostic]) -> Conclusion:
     )
 
 
+def checklist_items(f: Finding) -> list[str]:
+    """Пункты доменных чек-листов, которыми проходы отметили находку (#35), по порядку и без повторов."""
+    return list(dict.fromkeys(s.checklist_item for s in f.sources if s.checklist_item))
+
+
+def _checklists(ctx: RunContext) -> list[ChecklistUse]:
+    """Выбор чек-листов прогона и F-NN находок по каждому: чек-лист это префикс ID пункта (MON-02 → MON)."""
+    findings = ctx.verification.findings if ctx.verification else []
+    by_list: dict[str, list[str]] = {}
+    for f in findings:
+        for list_id in dict.fromkeys(item.split("-", 1)[0] for item in checklist_items(f)):
+            by_list.setdefault(list_id, []).append(f.id)
+    return [u.model_copy(update={"findings": by_list.get(u.id, [])}) for u in ctx.checklists]
+
+
 def _metrics(ctx: RunContext) -> RunMetrics:
     ver = ctx.verification
     summary = ver.summary if ver else None
@@ -125,6 +142,8 @@ def _metrics(ctx: RunContext) -> RunMetrics:
         passes_ok=sum(p.ok for p in ctx.passes),
         candidates_passes=sum(len(p.candidates) for p in ctx.passes),
         candidates_lint=lint,
+        candidates_checklist=sum(bool(c.source.checklist_item) for p in ctx.passes for c in p.candidates),
+        findings_checklist=sum(bool(checklist_items(f)) for f in ver.findings) if ver else 0,
         discarded_by_reason=discarded_by_reason(ver),
         critic_reviewed=reviewed,
         critic_downgraded=downgraded,
@@ -185,4 +204,5 @@ def build_report(ctx: RunContext) -> Report:
         conclusion=_conclusion(ctx, errors),
         metrics=_metrics(ctx),
         coverage=_coverage(ctx),
+        checklists=_checklists(ctx),
     )
