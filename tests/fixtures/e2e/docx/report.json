@@ -7,16 +7,16 @@
     "document_sha256": "7fd7c1d145b0c4e01ac8a502856b08eaf0cdbddc896069271687f6a2a16022d5",
     "document_size_bytes": 16072,
     "document_pages": null,
-    "started_at": "2026-11-26T17:32:27.033157Z",
-    "finished_at": "2026-11-26T17:32:27.373189Z",
-    "duration_s": 0.34,
-    "agent_version": "e8ef344-dirty",
+    "started_at": "2026-11-26T19:43:33.604455Z",
+    "finished_at": "2026-11-26T19:43:33.735286Z",
+    "duration_s": 0.13,
+    "agent_version": "cb0cc5c-dirty",
     "agent_version_source": "git",
     "agent_dirty": true,
-    "agent_commit": "e8ef344",
+    "agent_commit": "cb0cc5c",
     "prompts_sha256": "7dd96b1cffa406769efc8daf0df90f974ab4ef58757a546a07948210acc7492d",
-    "os": "Linux 6.18.44-fc-v880 (x86_64)",
-    "python": "3.13.18",
+    "os": "Darwin 25.6.0 (arm64)",
+    "python": "3.12.10",
     "backend_requested": "replay",
     "backend_used": "replay",
     "profile": "standard",
@@ -9901,8 +9901,8 @@
       {
         "id": "F-38",
         "merged_id": "M-057",
-        "property": "SET-CONS",
-        "defect_type": "contradiction",
+        "property": "SET-COMPL",
+        "defect_type": "incomplete",
         "verdict": "violation",
         "scope": "set",
         "severity": "major",
@@ -10006,7 +10006,7 @@
           "scenario": "",
           "readings": [],
           "checked": false,
-          "note": "Свидетель не построен: R-45 прямо задаёт 404 для чужой карты как частное правило. Общее описание 403 ему не противоречит, а то, когда возвращается 403, просто не определено."
+          "note": "Свидетель не построен: R-45 прямо задаёт 404 для чужой карты как частное правило. Общее описание 403 ему не противоречит, а то, когда возвращается 403, просто не определено. Тип изменён: «противоречие» → «неполнота», потому что места документа в одном сценарии не расходятся."
         },
         "test_draft": {
           "precondition": "Клиент вошёл в сессию с действительным токеном. Известен идентификатор карты, которая принадлежит другому клиенту.",
@@ -11812,8 +11812,8 @@
       {
         "id": "F-56",
         "merged_id": "M-052",
-        "property": "SET-CONS",
-        "defect_type": "contradiction",
+        "property": "SET-COMPL",
+        "defect_type": "incomplete",
         "verdict": "violation",
         "scope": "set",
         "severity": "minor",
@@ -11917,7 +11917,7 @@
           "scenario": "",
           "readings": [],
           "checked": false,
-          "note": "Свидетель не построен: Оба места выполнимы одновременно: заголовок передан, тело пустое. Правила об отклонении запроса без Content-Type в документе нет."
+          "note": "Свидетель не построен: Оба места выполнимы одновременно: заголовок передан, тело пустое. Правила об отклонении запроса без Content-Type в документе нет. Тип изменён: «противоречие» → «неполнота», потому что места документа в одном сценарии не расходятся."
         },
         "test_draft": {
           "precondition": "Владелец карты вошёл. Параметры запроса корректны: cardId своей карты, amount=50000, enabled=1.",
@@ -12108,17 +12108,17 @@
         "IND-CORR": 3,
         "IND-CONF": 1,
         "IND-TRACE": 1,
-        "SET-COMPL": 10,
-        "SET-CONS": 8,
+        "SET-COMPL": 12,
+        "SET-CONS": 6,
         "SET-COMPR": 7,
         "SET-VALID": 1,
         "SET-MOD": 1,
         "SET-TRACE": 1
       },
       "by_defect_type": {
-        "contradiction": 5,
+        "contradiction": 3,
         "ambiguous": 9,
-        "incomplete": 20,
+        "incomplete": 22,
         "unverifiable": 3,
         "incorrect": 3,
         "terminology": 9,
@@ -14027,7 +14027,7 @@
     ]
   },
   "metrics": {
-    "duration_s": 0.34,
+    "duration_s": 0.13,
     "calls_total": 9,
     "calls_failed": 0,
     "calls_cached": 0,
@@ -17468,9 +17468,11 @@
           "F-28",
           "F-35",
           "F-37",
+          "F-38",
           "F-48",
           "F-50",
           "F-53",
+          "F-56",
           "F-32"
         ],
         "refs": [
@@ -17486,9 +17488,7 @@
           "F-04",
           "F-06",
           "F-22",
-          "F-38",
           "F-47",
-          "F-56",
           "F-55"
         ],
         "refs": [

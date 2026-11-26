@@ -7,16 +7,16 @@
     "document_sha256": "827b313b968e08fe35310bff9dc37687099888e4c9d5bc364e3403f4b2cc66db",
     "document_size_bytes": 205814,
     "document_pages": 8,
-    "started_at": "2026-11-26T17:32:24.145032Z",
-    "finished_at": "2026-11-26T17:32:24.613080Z",
-    "duration_s": 0.47,
-    "agent_version": "e8ef344-dirty",
+    "started_at": "2026-11-26T19:43:31.464883Z",
+    "finished_at": "2026-11-26T19:43:31.656005Z",
+    "duration_s": 0.19,
+    "agent_version": "cb0cc5c-dirty",
     "agent_version_source": "git",
     "agent_dirty": true,
-    "agent_commit": "e8ef344",
+    "agent_commit": "cb0cc5c",
     "prompts_sha256": "7dd96b1cffa406769efc8daf0df90f974ab4ef58757a546a07948210acc7492d",
-    "os": "Linux 6.18.44-fc-v880 (x86_64)",
-    "python": "3.13.18",
+    "os": "Darwin 25.6.0 (arm64)",
+    "python": "3.12.10",
     "backend_requested": "replay",
     "backend_used": "replay",
     "profile": "standard",
@@ -8371,8 +8371,8 @@
       {
         "id": "F-29",
         "merged_id": "M-044",
-        "property": "SET-CONS",
-        "defect_type": "contradiction",
+        "property": "SET-COMPL",
+        "defect_type": "incomplete",
         "verdict": "violation",
         "scope": "set",
         "severity": "major",
@@ -8471,7 +8471,7 @@
           "scenario": "",
           "readings": [],
           "checked": false,
-          "note": "Свидетель не построен: Ни одно место не предписывает код 201 ни в одном сценарии: R-35.1 только относит 200 и 201 к успешным, а R-40 и номер в раздел «200. Successful — Created» дают 200. Это неполнота, а не расхождение."
+          "note": "Свидетель не построен: Ни одно место не предписывает код 201 ни в одном сценарии: R-35.1 только относит 200 и 201 к успешным, а R-40 и номер в раздел «200. Successful — Created» дают 200. Это неполнота, а не расхождение. Тип изменён: «противоречие» → «неполнота», потому что места документа в одном сценарии не расходятся."
         },
         "test_draft": {
           "precondition": "Клиент вошёл в сессию, у активной карты настройка порога ещё не сохранялась.",
@@ -8959,8 +8959,8 @@
       {
         "id": "F-32",
         "merged_id": "M-048",
-        "property": "SET-CONS",
-        "defect_type": "contradiction",
+        "property": "SET-COMPL",
+        "defect_type": "incomplete",
         "verdict": "violation",
         "scope": "set",
         "severity": "major",
@@ -9064,7 +9064,7 @@
           "scenario": "",
           "readings": [],
           "checked": false,
-          "note": "Свидетель не построен: R-45 прямо задаёт 404 для чужой карты и уточняет общее описание 403 в R-43. В сценарии с чужой картой предписан один результат. То, что для 403 не задано условие, — неполнота."
+          "note": "Свидетель не построен: R-45 прямо задаёт 404 для чужой карты и уточняет общее описание 403 в R-43. В сценарии с чужой картой предписан один результат. То, что для 403 не задано условие, — неполнота. Тип изменён: «противоречие» → «неполнота», потому что места документа в одном сценарии не расходятся."
         },
         "test_draft": {
           "precondition": "Клиент А вошёл в сессию; карта принадлежит клиенту Б.",
@@ -10687,8 +10687,8 @@
       {
         "id": "F-48",
         "merged_id": "M-043",
-        "property": "SET-CONS",
-        "defect_type": "contradiction",
+        "property": "SET-COMPL",
+        "defect_type": "incomplete",
         "verdict": "violation",
         "scope": "set",
         "severity": "minor",
@@ -10792,7 +10792,7 @@
           "scenario": "",
           "readings": [],
           "checked": false,
-          "note": "Свидетель не построен: Заголовок Content-Type и отсутствие тела совместимы в одном запросе. Правила об отклонении запроса без заголовка в документе нет, его пришлось бы придумать."
+          "note": "Свидетель не построен: Заголовок Content-Type и отсутствие тела совместимы в одном запросе. Правила об отклонении запроса без заголовка в документе нет, его пришлось бы придумать. Тип изменён: «противоречие» → «неполнота», потому что места документа в одном сценарии не расходятся."
         },
         "test_draft": {
           "precondition": "Клиент вошёл в сессию, у него есть активная карта.",
@@ -10909,8 +10909,8 @@
         "IND-CORR": 1,
         "IND-CONF": 1,
         "IND-TRACE": 1,
-        "SET-COMPL": 10,
-        "SET-CONS": 11,
+        "SET-COMPL": 13,
+        "SET-CONS": 8,
         "SET-FEAS": 1,
         "SET-COMPR": 3,
         "SET-VALID": 1,
@@ -10918,9 +10918,9 @@
         "SET-RANK": 1
       },
       "by_defect_type": {
-        "contradiction": 7,
+        "contradiction": 4,
         "ambiguous": 6,
-        "incomplete": 18,
+        "incomplete": 21,
         "unverifiable": 2,
         "infeasible": 1,
         "incorrect": 1,
@@ -12782,7 +12782,7 @@
     ]
   },
   "metrics": {
-    "duration_s": 0.47,
+    "duration_s": 0.19,
     "calls_total": 8,
     "calls_failed": 0,
     "calls_cached": 0,
@@ -16211,11 +16211,14 @@
           "F-16",
           "F-19",
           "F-23",
+          "F-29",
           "F-31",
+          "F-32",
           "F-42",
           "F-44",
           "F-45",
           "F-46",
+          "F-48",
           "F-27"
         ],
         "refs": [
@@ -16232,12 +16235,9 @@
           "F-06",
           "F-09",
           "F-25",
-          "F-29",
-          "F-32",
           "F-40",
           "F-41",
-          "F-47",
-          "F-48"
+          "F-47"
         ],
         "refs": [
           "ISO/IEC/IEEE 29148:2018, п. 5.2.6 (Consistent)",
