@@ -3,9 +3,15 @@
 Ключ кеша это ``LLMRequest.key``: sha256 от шага, номера вызова, модели, effort, системного промпта,
 промпта и схемы. Любая правка промпта, документа или модели даёт новый ключ, поэтому устаревший ответ
 не подхватится; номер вызова в ключе не даёт проходам поиска с одним промптом получить один ответ.
-Файл ``.cache/validator/<первые 2 знака ключа>/<ключ>.json`` это «конверт»: метаданные вызова и ответ
-бэкенда целиком в формате ``claude -p --output-format json`` (``payload``). В кеш попадают только
+Файл ``.cache/validator/<бэкенд>/<первые 2 знака ключа>/<ключ>.json`` это «конверт»: метаданные вызова и
+ответ бэкенда целиком в формате ``claude -p --output-format json`` (``payload``). В кеш попадают только
 успешные ответы живого бэкенда; битый файл кеша считается промахом, а не ошибкой прогона.
+
+Кеш у каждого бэкенда свой (ревью Fable, 26.11). Ключ запроса бэкенда не содержит, и раньше прогон
+``--backend api`` в папке после прогонов через подписку брал все ответы из кеша подписки: ни одного запроса
+в API, а отчёт писал «Claude API». Теперь ``api`` и ``cli`` не видят ответов друг друга. Ключ запроса
+не менялся: по нему же ищет replay, и записи e2e и eval остаются в силе. Файлы старой раскладки без папки
+бэкенда (``<2 знака>/<ключ>.json``) читаются, только если в конверте тот же бэкенд.
 
 Режимы ``--cache``: ``use`` читает и пишет, ``refresh`` только пишет (перезапросить всё заново),
 ``off`` не трогает кеш.
@@ -74,27 +80,45 @@ def read_envelope(path: Path) -> dict[str, Any] | None:
 
 
 class ResponseCache:
-    """Кеш ответов в папке ``root`` с режимом ``use``, ``refresh`` или ``off``."""
+    """Кеш ответов в папке ``root`` с режимом ``use``, ``refresh`` или ``off``.
 
-    def __init__(self, root: Path, mode: CacheMode) -> None:
+    ``backend``: чей это кеш. Ответы лежат в ``root/<бэкенд>/`` и чужому бэкенду не отдаются. ``None``
+    это раскладка без папки бэкенда (тесты и старые записи).
+    """
+
+    def __init__(self, root: Path, mode: CacheMode, backend: Backend | None = None) -> None:
         self.root = root
         self.mode = mode
+        self.backend = backend
 
     def path_for(self, key: str) -> Path:
-        return self.root / key[:2] / f"{key}.json"
+        base = self.root / self.backend.value if self.backend is not None else self.root
+        return base / key[:2] / f"{key}.json"
+
+    def _legacy_path(self, key: str) -> Path | None:
+        return self.root / key[:2] / f"{key}.json" if self.backend is not None else None
 
     def get(self, req: LLMRequest) -> dict[str, Any] | None:
         """Ответ из кеша (``payload``) или None. В режимах ``refresh`` и ``off`` всегда None."""
         if self.mode is not CacheMode.USE:
             return None
-        path = self.path_for(req.key)
-        if not path.is_file():
-            return None
-        envelope = read_envelope(path)
-        if envelope is None or envelope.get("key") != req.key:
+        envelope = self._read(self.path_for(req.key), req.key)
+        legacy = self._legacy_path(req.key)
+        if envelope is None and legacy is not None and self.backend is not None:
+            old = self._read(legacy, req.key)
+            # Старая раскладка общая для всех бэкендов: берём только ответ, полученный этим же бэкендом.
+            envelope = old if old is not None and old.get("backend") == self.backend.value else None
+        if envelope is None:
             return None
         payload: dict[str, Any] = envelope["payload"]
         return payload
+
+    @staticmethod
+    def _read(path: Path, key: str) -> dict[str, Any] | None:
+        if not path.is_file():
+            return None
+        envelope = read_envelope(path)
+        return envelope if envelope is not None and envelope.get("key") == key else None
 
     def put(self, req: LLMRequest, payload: dict[str, Any], backend: Backend) -> Path | None:
         """Сохранить успешный ответ. Ошибка записи кеша не роняет прогон: только строка в лог."""

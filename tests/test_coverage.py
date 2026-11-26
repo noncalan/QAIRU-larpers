@@ -466,8 +466,12 @@ def test_rc1_replay_shows_set_level_findings_in_rows_of_their_requirements(tmp_p
     """Критерий #118 на записи RC1 (``reports/v0.9-rc1/run``, без модели): у R-14, R-41 и R-12.1 в матрице
     видны их критичные находки уровня набора, «Прослеживаемость набора» не «нарушений нет», у каждого
     требования матрица и раздел 4 называют одни и те же находки, самопроверка пройдена."""
-    cfg = load_config(
-        REQUIREMENTS[DocKind.PDF], tmp_path / "report.md", backend=Backend.REPLAY, replay_dir=RC1_RUN
+    cfg = load_config(  # запись RC1 старше текущего кода: ответы только по номеру вызова (#132)
+        REQUIREMENTS[DocKind.PDF],
+        tmp_path / "report.md",
+        backend=Backend.REPLAY,
+        replay_dir=RC1_RUN,
+        replay_by_position=True,
     )
 
     outcome = pipeline.run(cfg)

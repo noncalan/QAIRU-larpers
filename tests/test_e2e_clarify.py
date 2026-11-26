@@ -42,6 +42,7 @@ def replayed(tmp_path_factory: pytest.TempPathFactory) -> tuple[Path, int]:
         _rel(E2E / "md" / "run"),
         "--answers",
         _rel(ANSWERS),
+        *(["--replay-by-position"] if DocKind.MD in STALE_RECORDINGS else []),
     ]
     result = subprocess.run(
         [sys.executable, "-m", "validator", *args],

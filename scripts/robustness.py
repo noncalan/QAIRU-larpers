@@ -189,6 +189,9 @@ def run_case(case: Case, work: Path, *, record: bool = False) -> Result:
         profile=case.profile,
         backend=_backend(case, record),
         replay_dir=(FIXTURES / case.slug / "run").relative_to(ROOT) if case.recorded and not record else None,
+        # Записи injection, english и mixed-language сделаны до правок промптов (в отчётах LLM-016): пока их
+        # не перезаписали, они проигрываются по шагу и номеру вызова, как раньше (#132, флаг разработки).
+        replay_by_position=case.recorded and not record,
         cache=CacheMode.USE if record else CacheMode.OFF,
         # Без распознавания сканов (#38): отчёты не зависят от того, стоит ли на машине Tesseract.
         ocr=False,

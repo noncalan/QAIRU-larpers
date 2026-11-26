@@ -7,13 +7,13 @@
     "document_sha256": "827b313b968e08fe35310bff9dc37687099888e4c9d5bc364e3403f4b2cc66db",
     "document_size_bytes": 205814,
     "document_pages": 8,
-    "started_at": "2026-11-26T13:04:14.483776Z",
-    "finished_at": "2026-11-26T13:04:15.030179Z",
-    "duration_s": 0.55,
-    "agent_version": "81ac60c-dirty",
+    "started_at": "2026-11-26T13:13:12.313880Z",
+    "finished_at": "2026-11-26T13:13:12.667287Z",
+    "duration_s": 0.35,
+    "agent_version": "59dc1c7-dirty",
     "agent_version_source": "git",
     "agent_dirty": true,
-    "agent_commit": "81ac60c",
+    "agent_commit": "59dc1c7",
     "prompts_sha256": "7dd96b1cffa406769efc8daf0df90f974ab4ef58757a546a07948210acc7492d",
     "os": "Linux 6.18.44-fc-v880 (x86_64)",
     "python": "3.13.18",
@@ -47,6 +47,7 @@
     ],
     "calls_total": 8,
     "calls_failed": 0,
+    "calls_cached": 0,
     "tokens": {
       "input_tokens": 16,
       "output_tokens": 123939,
@@ -121,8 +122,8 @@
     {
       "code": "LLM-016",
       "level": "warning",
-      "message": "Записанные ответы не совпали с запросами по ключу у 8 вызовов (segment.1, search.1, evidence.1, test_draft.1, test_draft.2, test_draft.3, questions.1, questions_critic.1): поменялся документ, промпт или модель",
-      "action": "Ответы взяты по шагу и номеру вызова; цитаты всё равно сверены с документом",
+      "message": "Записанные ответы не совпали с запросами по ключу у 8 вызовов (segment.1, search.1, evidence.1, test_draft.1, test_draft.2, test_draft.3, questions.1, questions_critic.1): поменялся документ, ответы автора, промпт или модель",
+      "action": "Ответы взяты по шагу и номеру вызова (--replay-by-position, только для разработки); цитаты всё равно сверены с документом",
       "hint": "Для точного воспроизведения возьмите ту же версию агента и тот же документ",
       "location": null,
       "step": "llm"
@@ -12769,7 +12770,7 @@
     ]
   },
   "metrics": {
-    "duration_s": 0.55,
+    "duration_s": 0.35,
     "calls_total": 8,
     "calls_failed": 0,
     "calls_cached": 0,

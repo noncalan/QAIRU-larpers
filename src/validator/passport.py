@@ -162,6 +162,7 @@ def build_passport(
         # Повторённая попытка не отдельный вызов: считаем вызовы по их последней попытке.
         calls_total=sum(c.status is not CallStatus.RETRIED for c in calls),
         calls_failed=sum(c.status is CallStatus.ERROR for c in calls),
+        calls_cached=sum(c.status is CallStatus.CACHED for c in calls),
         tokens=tokens,
         cost_usd=_cost(calls),
         exit_code=exit_code,

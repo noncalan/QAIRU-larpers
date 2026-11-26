@@ -132,6 +132,8 @@ def run_replay(kind: DocKind, out_dir: Path) -> subprocess.CompletedProcess[str]
         "replay",
         "--replay",
         _rel(E2E / kind.value / "run"),
+        # Отставшая запись проигрывается по шагу и номеру вызова, иначе replay честно откажет (#132).
+        *(["--replay-by-position"] if kind in STALE_RECORDINGS else []),
     ]
     return subprocess.run(
         [sys.executable, "-m", "validator", *args],
