@@ -76,6 +76,28 @@ def test_invalid_file_gives_clear_russian_error(tmp_path: Path, payload: object,
     assert caught.value.hint
 
 
+@pytest.mark.parametrize("answer", ["10:30", "yes", "2026-12-01", "1_000", "0x1F"])
+def test_yaml_scalars_stay_text_as_author_wrote_them(tmp_path: Path, answer: str) -> None:
+    # Обычный YAML 1.1 сделал бы из «10:30» число 630, из «yes» True, из даты date.
+    path = _write(tmp_path, f"schema_version: 1\nquestions:\n  - id: Q-01\n    answer: {answer}\n")
+
+    loaded = load_answers(path)
+
+    assert loaded.answers[0].answer == answer
+
+
+def test_unreadable_file_is_error_not_traceback(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    path = _write(tmp_path, {"schema_version": 1, "questions": [_entry()]})
+
+    def deny(_self: Path) -> bytes:
+        raise PermissionError("denied")
+
+    monkeypatch.setattr(Path, "read_bytes", deny)
+
+    with pytest.raises(AnswersError, match="файл не читается"):
+        load_answers(path)
+
+
 def test_missing_file_is_error(tmp_path: Path) -> None:
     with pytest.raises(AnswersError, match="файл не найден"):
         load_answers(tmp_path / "nope.yaml")
@@ -96,6 +118,7 @@ def test_not_utf8_file_is_error(tmp_path: Path) -> None:
         ("b.", AnswerKind.OPTION, "B"),
         ("А", AnswerKind.OPTION, "A"),  # кириллическая «А»
         ("пропустить", AnswerKind.SKIPPED, None),
+        ("Пропустить.", AnswerKind.SKIPPED, None),
         ("", AnswerKind.NONE, None),
         ("Считаем по дате проведения", AnswerKind.TEXT, None),
     ],

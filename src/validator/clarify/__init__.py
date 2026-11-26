@@ -49,6 +49,7 @@ from validator.models import (
     Verification,
 )
 from validator.questions.quotes import verify_quote
+from validator.refs import RefNamer, humanize_question
 from validator.text import MIN_FUZZY_CHARS, normalize
 from validator.verify import BLOCKING_PRIORITIES, light_with_questions
 
@@ -73,16 +74,18 @@ def _norm(text: str) -> str:
     return " ".join(normalize(text)[0].lower().split())
 
 
-def _match(raw: RawAnswer, questions: Sequence[Question]) -> Question | None:
+def _match(raw: RawAnswer, questions: Sequence[Question], namer: RefNamer) -> Question | None:
     """Вопрос этого прогона, на который отвечает автор: тот же текст, иначе тот же номер и те же места.
 
-    Если в файле нет ни текста вопроса, ни мест (автор написал только ``id`` и ``answer``), хватает номера.
+    В ``questions.yaml`` текст вопроса уже с человеческими ссылками («требование R-3»), а вопросы этого
+    прогона ещё с ID блоков, поэтому текст сравниваем в обоих видах. Если в файле нет ни текста вопроса,
+    ни мест (автор написал только ``id`` и ``answer``), хватает номера.
     """
     text = _norm(raw.question)
     if text:
-        same_text = next((q for q in questions if _norm(q.question) == text), None)
-        if same_text is not None:
-            return same_text
+        for q in questions:
+            if text in {_norm(q.question), _norm(humanize_question(q, namer).question)}:
+                return q
     same_id = next((q for q in questions if q.id == raw.question_id), None)
     if same_id is None:
         return None
@@ -116,23 +119,56 @@ class _Matched:
     warnings: list[str] = field(default_factory=list)
 
 
-def _match_all(file: AnswersFile, questions: Sequence[Question], doc: ParsedDocument) -> _Matched:
+def _bind(answer: AuthorAnswer, question: Question | None) -> AuthorAnswer:
+    """Ответ на вопрос этого прогона берёт номер, места и находки вопроса, а не устаревшие из файла.
+
+    Ответ на вопрос, которого в этом прогоне нет, теряет ``related_findings``: номера ``F-NN`` другого
+    прогона указывают на другие находки и только сбили бы сверку.
+    """
+    if question is None:
+        return answer.model_copy(update={"related_findings": []})
+    return answer.model_copy(
+        update={
+            "question_id": question.id,
+            "asked_again": True,
+            "question": answer.question or question.question,
+            "where": [x.located or x.text for x in question.quotes],
+            "related_findings": list(question.related_findings),
+        }
+    )
+
+
+def _match_all(
+    file: AnswersFile, questions: Sequence[Question], doc: ParsedDocument, namer: RefNamer
+) -> _Matched:
+    """Ответы файла, привязанные к вопросам этого прогона.
+
+    Сначала сопоставляем все ответы, потом раскладываем: вопрос этого прогона получает не больше одного
+    ответа, а ответ на прошлый вопрос, чей номер занят вопросом этого прогона, не учитывается (иначе два
+    разных вопроса слились бы под одним ``Q-NN``).
+    """
     out = _Matched()
-    for raw in file.answers:
-        question = _match(raw, questions)
+    pairs = [(raw, _match(raw, questions, namer)) for raw in file.answers]
+    taken = {q.id for _, q in pairs if q is not None}
+    bound: set[str] = set()
+    for raw, question in pairs:
+        if question is not None and question.id in bound:
+            out.warnings.append(f"{raw.question_id}: на вопрос {question.id} уже есть ответ, этот не учтён")
+            continue
+        if question is None and raw.question_id in taken:
+            out.warnings.append(
+                f"{raw.question_id}: вопроса с таким текстом в этом прогоне нет, а номер занят другим "
+                "вопросом; ответ не учтён"
+            )
+            continue
         options = {o.label.upper(): (o.text, o.change) for o in question.options} if question else None
         answer, warning = resolve_answer(raw, options)
-        if question is not None:
-            answer = answer.model_copy(
-                update={
-                    "question_id": question.id,
-                    "asked_again": True,
-                    "question": answer.question or question.question,
-                }
-            )
+        answer = _bind(answer, question)
         if warning:
             out.warnings.append(warning)
         out.answers.append(answer)
+        if question is not None:
+            bound.add(question.id)
         if answer.kind.answered:
             out.contexts[answer.question_id] = _context(answer, question, doc)
             if question is not None:
@@ -206,7 +242,7 @@ def snapshot(ver: Verification, questions: Sequence[Question]) -> ClarifySnapsho
 
 def clarify(
     ver: Verification,
-    questions: Sequence[Question],
+    questions: Sequence[Question] | None,
     file: AnswersFile,
     doc: ParsedDocument,
     seg: Segmentation,
@@ -216,10 +252,13 @@ def clarify(
     """Проверка после ответов автора. Модель вызывается один раз и только если есть хоть один ответ.
 
     ``ver`` и ``questions``: результат этого прогона до ответов (светофор уже с учётом вопросов).
+    ``questions`` равно None, если шаг вопросов упал: тогда и после ответов зелёный свет не ставится,
+    потому что не проверено, есть ли блокирующие вопросы.
     """
-    before = snapshot(ver, questions)
-    matched = _match_all(file, questions, doc)
-    open_questions = [q for q in questions if q.id not in matched.closed_questions]
+    asked = list(questions or [])
+    before = snapshot(ver, asked)
+    matched = _match_all(file, asked, doc, RefNamer(doc, seg))
+    open_questions = [q for q in asked if q.id not in matched.closed_questions]
     diagnostics = _mismatch(file, doc, matched)
     result, effects, reviewed = recount(ver, ver.findings, seg), [], False
     if matched.contexts:
@@ -238,7 +277,7 @@ def clarify(
                     f"внутренняя ошибка: {type(exc).__name__}", "Подробности в report.log; сообщите команде"
                 )
             )
-    final = light_with_questions(result, open_questions)
+    final = light_with_questions(result, open_questions if questions is not None else None)
     clarification = Clarification(
         answers_file=file.path.name,
         answers_sha256=file.sha256,

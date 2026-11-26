@@ -160,7 +160,11 @@ def _combine(old: ClarifiedFinding | None, new: ClarifiedFinding) -> ClarifiedFi
         else (old, new)
     )
     qids = list(dict.fromkeys([*main.question_ids, *other.question_ids]))
-    return main.model_copy(update={"question_ids": qids})
+    texts = {
+        name: " ".join(dict.fromkeys(t for t in (getattr(main, name), getattr(other, name)) if t))
+        for name in ("reason", "fix", "remaining")
+    }
+    return main.model_copy(update={"question_ids": qids, **texts})
 
 
 def _refined_note(e: ClarifiedFinding) -> str:
@@ -238,11 +242,10 @@ def _new_findings(
         if _duplicate(checked, [*ver.findings, *(f for f, _ in kept)]):
             log.new_duplicate += 1
             continue
-        if len(kept) >= MAX_NEW_FINDINGS:
-            log.new_over_limit += 1
-            continue
         kept.append((checked, qids))
     ordered = sorted(kept, key=lambda item: (item[0].severity.rank, _position(item[0]), item[0].merged_id))
+    log.new_over_limit += max(0, len(ordered) - MAX_NEW_FINDINGS)
+    ordered = ordered[:MAX_NEW_FINDINGS]  # лимит после сортировки: отбрасываем наименее серьёзные
     start = _next_number(ver.findings)
     for i, (f, qids) in enumerate(ordered):
         fid = f"F-{start + i:02d}"

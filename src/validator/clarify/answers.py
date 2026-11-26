@@ -37,10 +37,25 @@ MAX_QUESTIONS = 200
 SKIP_WORDS = frozenset({"skip", "пропустить", "пропуск", "отложить", "-", "—"})
 """Ответ «пропустить»: автор видел вопрос и отложил его, вопрос остаётся открытым."""
 
+_SKIP_PUNCT = " .,;:!?«»\"'"
 _QUESTION_ID = re.compile(r"Q\s*-?\s*0*(\d+)", re.IGNORECASE)
 _OPTION_LETTER = re.compile(r"([A-Za-zА-Яа-яЁё])\s*[.)]?")
 _LOOKALIKES = str.maketrans("АВСЕавсе", "ABCEABCE")
 """Кириллические буквы, неотличимые от латинских: автор мог набрать вариант «А» в русской раскладке."""
+
+
+class _StringLoader(yaml.SafeLoader):
+    """YAML, где все скаляры строки (кроме ``null``).
+
+    Обычный YAML 1.1 читает ответ ``10:30`` как число 630, ``yes`` как True, ``2026-12-01`` как дату.
+    Автор пишет ответы как текст, поэтому неявные типы, кроме ``null``, отключены.
+    """
+
+
+_StringLoader.yaml_implicit_resolvers = {
+    first: [(tag, rx) for tag, rx in resolvers if tag == "tag:yaml.org,2002:null"]
+    for first, resolvers in yaml.SafeLoader.yaml_implicit_resolvers.items()
+}
 
 
 class AnswersError(ConfigError):
@@ -87,7 +102,10 @@ def _read(path: Path) -> tuple[bytes, Any]:
         raise _fail(
             path, "файл не найден", "Укажите путь к answers.yaml, например out/questions.yaml с ответами"
         )
-    data = path.read_bytes()
+    try:
+        data = path.read_bytes()
+    except OSError as exc:
+        raise _fail(path, "файл не читается", "Проверьте права доступа к файлу") from exc
     if len(data) > MAX_FILE_BYTES:
         raise _fail(path, f"слишком большой ({len(data)} байт, допустимо до {MAX_FILE_BYTES})")
     try:
@@ -95,7 +113,7 @@ def _read(path: Path) -> tuple[bytes, Any]:
     except UnicodeDecodeError as exc:
         raise _fail(path, "файл не в кодировке UTF-8", "Сохраните файл в UTF-8") from exc
     try:
-        return data, yaml.safe_load(text)
+        return data, yaml.load(text, Loader=_StringLoader)  # noqa: S506 (наследник SafeLoader)
     except yaml.YAMLError as exc:
         mark = getattr(exc, "problem_mark", None)
         where = f" (строка {mark.line + 1})" if mark is not None else ""
@@ -195,7 +213,7 @@ def resolve_answer(
     }
     if raw.empty:
         return AuthorAnswer(kind=AnswerKind.NONE, **base), None
-    if raw.answer.lower() in SKIP_WORDS:
+    if raw.answer.lower().strip(_SKIP_PUNCT) in SKIP_WORDS:
         return AuthorAnswer(kind=AnswerKind.SKIPPED, **base), None
     letter = _option_letter(raw.answer)
     if letter is None:
@@ -213,8 +231,8 @@ def _entries(payload: object, path: Path) -> list[Mapping[str, Any]]:
     if not isinstance(payload, Mapping):
         raise _fail(path, "в начале файла ожидаются поля schema_version, document_sha256 и questions")
     version = payload.get("schema_version", SCHEMA_VERSION)
-    if version != SCHEMA_VERSION:
-        raise _fail(path, f"версия схемы {version!r} не поддерживается, ожидается {SCHEMA_VERSION}")
+    if str(version).strip() != str(SCHEMA_VERSION):
+        raise _fail(path, f"версия схемы {version} не поддерживается, ожидается {SCHEMA_VERSION}")
     entries = payload.get("questions")
     if not isinstance(entries, list):
         raise _fail(path, "нет списка questions с вопросами и ответами")

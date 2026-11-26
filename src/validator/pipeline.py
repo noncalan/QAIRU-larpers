@@ -230,12 +230,17 @@ def _load_answers(state: _State) -> AnswersFile | None:
         return None
 
 
-def _clarify(state: _State, answers: AnswersFile, doc: ParsedDocument, llm: RecordingClient) -> None:
-    """Шаг 8е: ответы автора → закрытые, уточнённые и новые находки, открытые вопросы, новый светофор."""
+def _clarify(
+    state: _State, answers: AnswersFile, doc: ParsedDocument, llm: RecordingClient, asked: bool
+) -> None:
+    """Шаг 8е: ответы автора → закрытые, уточнённые и новые находки, открытые вопросы, новый светофор.
+
+    ``asked``: шаг вопросов отработал; если нет, светофор и после ответов не становится зелёным.
+    """
     ver, seg = state.verification, state.segmentation
     if ver is None or seg is None:
         return
-    questions, cfg = state.questions, state.cfg
+    questions, cfg = (state.questions if asked else None), state.cfg
     outcome = _step(
         state,
         "clarify",
@@ -333,7 +338,7 @@ def _execute(state: _State) -> None:
             state.diagnostics.extend(asked.diagnostics)
         state.verification = light_with_questions(ver, state.questions if asked is not None else None)
         if answers is not None:
-            _clarify(state, answers, doc, llm)
+            _clarify(state, answers, doc, llm, asked is not None)
     before = (state.verification, state.questions, state.questions_withdrawn)
     state.verification, state.questions, state.questions_withdrawn = _step(
         state,
