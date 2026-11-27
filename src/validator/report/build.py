@@ -171,6 +171,7 @@ def _metrics(ctx: RunContext) -> RunMetrics:
         calls_total=ctx.passport.calls_total,
         calls_failed=ctx.passport.calls_failed,
         calls_cached=sum(c.status is CallStatus.CACHED for c in ctx.calls),
+        calls_replayed=sum(c.status is CallStatus.REPLAYED for c in ctx.calls),
         tokens=ctx.passport.tokens,
         cost_usd=ctx.passport.cost_usd,
         candidates_total=sum(len(p.candidates) for p in ctx.passes) + lint + len(ctx.set_check),

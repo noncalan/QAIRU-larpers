@@ -1634,7 +1634,10 @@ class RunMetrics(Contract):
     duration_s: float | None = None
     calls_total: int = 0
     calls_failed: int = 0
-    calls_cached: int = 0
+    calls_cached: int = Field(default=0, description="Ответы из кеша этого же бэкенда")
+    calls_replayed: int = Field(
+        default=0, description="Ответы из записи прошлого прогона (--backend replay): это не кеш"
+    )
     tokens: TokenUsage = Field(default_factory=TokenUsage)
     cost_usd: float | None = None
     candidates_total: int = 0

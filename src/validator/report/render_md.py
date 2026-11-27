@@ -65,9 +65,12 @@ from validator.report.first_page import (
 from validator.report.fmt import FILTERS, ChecklistItems, found_text, plain, where
 from validator.report.passport_view import (
     backend_line,
+    calls_text,
     document_line,
     models_line,
     replay_line,
+    reuse_cell,
+    reuse_header,
     tokens_in,
     tokens_text,
     version_line,
@@ -508,6 +511,9 @@ def report_context(report: Report) -> dict[str, Any]:
         "passport_replay": replay_line(report),
         "passport_models": models_line(report),
         "tokens_text": tokens_text,
+        "calls_text": calls_text,
+        "reuse_header": reuse_header,
+        "reuse_cell": reuse_cell,
         "tokens_in": tokens_in,
         "parts_note": PARTS_NOTE,
         "no_violations": NO_VIOLATIONS,

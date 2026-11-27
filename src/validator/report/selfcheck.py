@@ -860,6 +860,7 @@ def _check_passport(report: Report) -> SelfCheckItem:
         ("вызовов модели", pp.calls_total, metrics.calls_total, sum(s.calls for s in steps)),
         ("вызовов с ошибкой", pp.calls_failed, metrics.calls_failed, sum(s.failed for s in steps)),
         ("ответов из кеша", pp.calls_cached, metrics.calls_cached, sum(s.cached for s in steps)),
+        ("ответов из записи", pp.calls_replayed, metrics.calls_replayed, sum(s.replayed for s in steps)),
     ):
         _equal(failures, f"{label} в паспорте", passport_n, logged, "в журнале вызовов по шагам")
         _equal(failures, f"{label} в метриках", metrics_n, logged, "в журнале вызовов по шагам")

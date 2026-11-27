@@ -51,7 +51,15 @@ from validator.report.coverage import (
 )
 from validator.report.first_page import FixItem
 from validator.report.fmt import money, pct, plain, quote_plain, status_label, when, where
-from validator.report.passport_view import backend_line, replay_line, tokens_in, tokens_text
+from validator.report.passport_view import (
+    backend_line,
+    calls_text,
+    replay_line,
+    reuse_cell,
+    reuse_header,
+    tokens_in,
+    tokens_text,
+)
 from validator.report.render_md import PARTS_NOTE, SEGMENTATION_NOTE, report_context
 from validator.report.run_metrics import step_label
 from validator.report.testdraft_view import LABEL, DraftView
@@ -746,7 +754,7 @@ def _metrics_section(report: Report, ctx: dict[str, Any]) -> Json:
         ("Отброшено верификатором", str(m.discarded_total)),
         (
             "Вызовов модели",
-            f"{m.calls_total} (с ошибкой {m.calls_failed}, из кеша {m.calls_cached})",
+            calls_text(m),
         ),
         ("Токены", tokens_text(m.tokens)),
         ("Время прогона", f"{m.duration_s if m.duration_s is not None else '—'} с"),
@@ -781,7 +789,7 @@ def _step_blocks(report: Report) -> list[Json]:
             plain(report.passport.models.get(st.step, "—")),
             str(st.calls),
             str(st.failed),
-            str(st.cached + st.replayed),
+            reuse_cell(st, m.steps),
             str(st.duration_s),
             f"{tokens_in(st.tokens)} / {st.tokens.output_tokens}",
             money(st.cost_usd),
@@ -789,7 +797,16 @@ def _step_blocks(report: Report) -> list[Json]:
         for st in m.steps
     ]
     table = _table(
-        ["Шаг", "Модель", "Вызовов", "С ошибкой", "Из кеша", "Время, с", "Токены: вход / выход", "Цена"],
+        [
+            "Шаг",
+            "Модель",
+            "Вызовов",
+            "С ошибкой",
+            reuse_header(m.steps),
+            "Время, с",
+            "Токены: вход / выход",
+            "Цена",
+        ],
         rows,
         [0.17, 0.2, 0.08, 0.09, 0.08, 0.1, 0.15, 0.13],
         hyph=[0, 1],

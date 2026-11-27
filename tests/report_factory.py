@@ -411,6 +411,7 @@ def _metrics(
         calls_total=pp.calls_total,
         calls_failed=pp.calls_failed,
         calls_cached=pp.calls_cached,
+        calls_replayed=pp.calls_replayed,
         tokens=pp.tokens,
         cost_usd=pp.cost_usd,
         candidates_total=s.findings_total + s.discarded_total + 2,
