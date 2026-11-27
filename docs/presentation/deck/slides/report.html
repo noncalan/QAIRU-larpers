@@ -2,17 +2,20 @@
 <p class="eyebrow">Результат</p>
 <h2 class="title">Одна команда даёт отчёт с ответом, можно ли начинать</h2>
 <div class="body">
+<div class="terminal">
+<p class="quote cmd">uv run validator requirements.pdf out/report.md</p>
+</div>
 <div class="row">
 <div class="col">
-<p class="quote">uv run validator requirements.pdf out/report.md</p>
 <p class="txt">На входе PDF, DOCX или Markdown. На выходе отчёт в Markdown или PDF, тот же отчёт в JSON и файл с вопросами автору.</p>
 <p class="txt">В отчёте шесть разделов из ТЗ: паспорт прогона, нарезка требований, проверка каждого, проверка набора, сводка и итог. Агент сам сверяет готовый отчёт с этим списком.</p>
-<p class="strong">Самопроверка: 6 из 6 разделов, у 48 из 48 находок (46 нарушений и 2 «неясно») есть место в документе, 67 из 67 цитат сверены.</p>
+<p class="strong check-note">Самопроверка: 6 из 6 разделов, у 48 из 48 находок (46 нарушений и 2 «неясно») есть место в документе, 67 из 67 цитат сверены.</p>
 </div>
 <div class="col-wide">
 <p class="label">Первая страница отчёта</p>
+<div class="report-sheet">
 <div class="verdict">
-<x-shape kind="ellipse" style="width:56px; height:56px; background:#B3261E"></x-shape>
+<div class="signal"></div>
 <div class="verdict-col">
 <p class="card-title">Красный: начинать разработку и тестирование нельзя</p>
 <p class="txt">6 критичных нарушений мешают написать тест-кейсы</p>
@@ -21,14 +24,15 @@
 <div class="tiles">
 <div class="tile"><p class="tile-num">58</p><p class="txt">требований</p></div>
 <div class="tile"><p class="tile-num">46</p><p class="txt">нарушений</p></div>
-<div class="tile"><p class="tile-num">6</p><p class="txt">критичных</p></div>
+<div class="tile tile-crit"><p class="tile-num">6</p><p class="txt">критичных</p></div>
 <div class="tile"><p class="tile-num">14</p><p class="txt">вопросов автору</p></div>
 </div>
 <p class="txt">Ниже, на первых двух страницах: все критичные нарушения, которые нужно исправить первыми, и пять главных вопросов автору.</p>
 </div>
 </div>
 </div>
-<div class="foot"><p class="src">Запись живого прогона 26.11 (12,5 мин, $2,75), отчёт пересобран кодом v1.0 по записи · reports/v1.0/</p><div class="pg"></div></div>
+</div>
+<div class="foot"><p class="src">Запись живого прогона 26.11 (12,5 мин, $2,75), отчёт пересобран кодом v1.0 по записи · reports/v1.0/</p><div class="foot-end"><div class="rail"><div class="rail-fill" style="width:26.7%"></div></div><div class="pg"></div></div></div>
 <aside>Агент запускается одной командой. Первая страница отчёта сделана для того, кто принимает решение: светофор «можно ли начинать разработку и тестирование», что исправить первым и что спросить у автора. Цвет считает код по записанному правилу: красный, если есть критичное нарушение, которое мешает написать тест-кейс. Модель цвет не выбирает. В конце отчёт проверяет сам себя по пункту 6 ТЗ.
 
 Источник цифр: reports/v1.0/report.json (PDF-версия документа кейса, один проход поиска, тег v1.0, коммит c662f62, собран из записи живого прогона 26.11.2026; находки те же, что в кандидате RC2): 58 требований, 48 находок (46 нарушений и 2 «неясно»), 6 критичных, 14 вопросов (6 блокируют разработку, 8 блокируют тестирование); самопроверка: 12 проверок пройдены, 6 из 6 разделов ТЗ. Команда и выходные файлы: README.md, раздел «Быстрый старт».

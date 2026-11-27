@@ -1,32 +1,99 @@
-/* QAIRU larpers. Палитра: тёмный #0F1B2D, светлый #F6F4EE, модель (оранжевый) #A94E0E, код (синий) #1D4F91. */
+/* QAIRU larpers: дизайн-система слайдов.
+   Чернила #0A1628, бумага #F4F1EA. Цвет несёт смысл и одинаков на всех слайдах:
+   янтарь = модель (#A8490A текст, #F0902F заливка), кобальт = код (#1E4FC0 / #7FA8F5),
+   красный = критично (#B42318). Шрифты: Inter Tight (заголовки, числа), Inter (текст),
+   JetBrains Mono (код, метки). Кегли: 24 / 27 / 32 / 64 / 88–132. */
 
 section {
+  --ink: #0A1628;
+  --ink-2: #18263D;
+  --body: #33405A;
+  --muted: #5C687D;
+  --paper: #F4F1EA;
+  --paper-2: #EBE6DA;
+  --card: #FFFEFA;
+  --line: #DDD6C8;
+  --line-2: #C9C0AE;
+  --model: #A8490A;
+  --model-hi: #F0902F;
+  --model-soft: #FCEBD7;
+  --model-line: #EDB98A;
+  --code: #1E4FC0;
+  --code-hi: #7FA8F5;
+  --code-soft: #E5EDFC;
+  --code-line: #AFC5F0;
+  --crit: #B42318;
+  --crit-soft: #FBE7E4;
+  --navy: #0A1628;
+  --navy-2: #0F1F38;
+  --navy-3: #16294A;
+  --navy-line: #283D63;
+  --on-navy: #EEF2F8;
+  --on-navy-2: #AEBBD0;
+  --shadow: 0 1px 2px rgba(10, 22, 40, 0.06), 0 22px 44px -28px rgba(10, 22, 40, 0.32);
+  --display: 'Inter Tight', 'Inter', Arial, sans-serif;
+  --text: 'Inter', Arial, sans-serif;
+  --mono: 'JetBrains Mono', 'Courier New', monospace;
   counter-increment: page;
-  padding: 128px 128px 160px;
-  background: #F6F4EE;
-  color: #1B2A41;
-  font-family: 'Inter', Arial, sans-serif;
+  position: relative;
+  isolation: isolate;
+  padding: 100px 120px 150px;
+  background: var(--paper);
+  color: var(--ink-2);
+  font-family: var(--text);
   display: flex;
   flex-direction: column;
 }
 
-/* ---------- общий каркас слайда ---------- */
+/* Тонкая «чертёжная» сетка в правом верхнем углу: мотив архитектуры. */
+section::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  right: 0;
+  width: 900px;
+  height: 560px;
+  background-image:
+    linear-gradient(rgba(10, 22, 40, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(10, 22, 40, 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: right -1px top -1px;
+  -webkit-mask-image: radial-gradient(ellipse 100% 100% at 100% 0%, #000 0%, rgba(0, 0, 0, 0.35) 45%, transparent 72%);
+  mask-image: radial-gradient(ellipse 100% 100% at 100% 0%, #000 0%, rgba(0, 0, 0, 0.35) 45%, transparent 72%);
+}
+
+/* ---------- каркас слайда ---------- */
 .eyebrow {
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-family: var(--mono);
   font-size: 24px;
   font-weight: 600;
-  letter-spacing: 3px;
+  line-height: 1.2;
+  letter-spacing: 2.5px;
   text-transform: uppercase;
-  color: #A94E0E;
+  color: var(--code);
+}
+.eyebrow::before {
+  content: "";
+  flex: none;
+  width: 36px;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--model-hi) 0 50%, var(--code) 50% 100%);
 }
 .title {
-  font-family: 'Manrope', Arial, sans-serif;
-  font-size: 60px;
+  font-family: var(--display);
+  font-size: 64px;
   font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: -1px;
-  color: #0F1B2D;
-  margin-top: 16px;
+  line-height: 1.08;
+  letter-spacing: -1.8px;
+  color: var(--ink);
+  margin-top: 22px;
+  max-width: 1680px;
+  text-wrap: balance;
 }
 .body {
   margin-top: 44px;
@@ -34,7 +101,12 @@ section {
   flex-direction: column;
   gap: 28px;
   flex: 1;
+  min-height: 0;
 }
+/* Всё внутри .body позиционировано: браузер рисует (и пишет в PDF) текст в порядке
+   разметки, поэтому текст нового PDF идёт в том же порядке, что и в старом. */
+.body, .body * { position: relative; }
+.body span { position: static; }
 .row {
   display: flex;
   gap: 32px;
@@ -44,179 +116,280 @@ section {
   flex-direction: column;
   gap: 20px;
   flex: 1;
+  min-width: 0;
 }
 .col-wide {
   display: flex;
   flex-direction: column;
   gap: 20px;
   flex: 1.25;
+  min-width: 0;
 }
 .spacer { flex: 1; }
+.nb { white-space: nowrap; }
+
 .lead {
   font-size: 32px;
-  line-height: 1.4;
-  color: #4B5870;
+  line-height: 1.38;
+  color: var(--body);
+}
+.body > .lead {
+  font-weight: 500;
+  color: var(--ink);
+  padding: 4px 0 4px 30px;
+  border-left: 5px solid var(--model-hi);
+  max-width: 1500px;
 }
 .txt {
-  font-size: 28px;
-  line-height: 1.4;
-  color: #4B5870;
+  font-size: 27px;
+  line-height: 1.42;
+  color: var(--body);
 }
 .strong {
-  font-size: 28px;
-  line-height: 1.4;
+  font-size: 27px;
+  line-height: 1.42;
   font-weight: 600;
-  color: #0F1B2D;
+  color: var(--ink);
 }
+
+/* ---------- подвал: источник, прогресс, номер ---------- */
 .foot {
   position: absolute;
-  left: 128px;
-  right: 128px;
-  bottom: 64px;
+  left: 120px;
+  right: 120px;
+  bottom: 52px;
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  gap: 32px;
+  gap: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
 }
-.src {
+.foot .src {
   font-size: 24px;
-  line-height: 1.2;
-  color: #5B667A;
+  line-height: 1.3;
+  color: var(--muted);
+}
+.foot-end {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex: none;
+}
+.rail {
+  width: 168px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--paper-2);
+  overflow: hidden;
+}
+.rail-fill {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--model-hi), var(--code));
 }
 .pg {
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-family: var(--mono);
   font-size: 24px;
+  font-weight: 600;
   line-height: 1.2;
-  color: #5B667A;
+  color: var(--ink);
+  min-width: 34px;
+  text-align: right;
 }
 .pg::after { content: counter(page); }
 
-/* ---------- карточки и числа ---------- */
+/* ---------- карточки, числа, метки ---------- */
 .card {
-  background: #FFFDF8;
-  border: 1px solid #D8D2C4;
-  border-radius: 16px;
-  padding: 28px 32px;
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 32px 36px;
   display: flex;
   flex-direction: column;
   gap: 12px;
   flex: 1;
+  box-shadow: var(--shadow);
 }
+.card.fit { flex: none; }
 .card-title {
-  font-family: 'Manrope', Arial, sans-serif;
+  font-family: var(--display);
   font-size: 32px;
   font-weight: 700;
-  line-height: 1.25;
-  color: #0F1B2D;
-}
-.big {
-  font-family: 'Manrope', Arial, sans-serif;
-  font-size: 72px;
-  font-weight: 800;
-  line-height: 1.05;
-  letter-spacing: -2px;
-  color: #0F1B2D;
-}
-.big-code { color: #1D4F91; }
-.big-model { color: #A94E0E; }
-.label {
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
-  font-size: 24px;
-  font-weight: 600;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: #1D4F91;
-}
-.label-model { color: #A94E0E; }
-.quote {
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
-  font-size: 24px;
-  line-height: 1.45;
-  color: #0F1B2D;
-  background: #ECE7DB;
-  border-radius: 8px;
-  padding: 16px 20px;
-}
-.pill {
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
-  font-size: 24px;
-  font-weight: 600;
   line-height: 1.2;
-  color: #0F1B2D;
-  background: #ECE7DB;
-  border-radius: 8px;
-  padding: 10px 16px;
+  letter-spacing: -0.5px;
+  color: var(--ink);
 }
-.pill-red {
-  color: #FFFDF8;
-  background: #B3261E;
+.card .txt { font-size: 26px; }
+.big {
+  font-family: var(--display);
+  font-size: 96px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -3px;
+  color: var(--ink);
+  white-space: nowrap;
 }
+.big-code { color: var(--code); }
+.big-model { color: var(--model); }
+.label {
+  font-family: var(--mono);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--code);
+}
+.label-model { color: var(--model); }
 .pills {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
 }
-
-/* ---------- конвейер ---------- */
-.steps {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 24px 16px;
+.pill {
+  font-family: var(--mono);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--ink-2);
+  background: var(--paper-2);
+  border-radius: 999px;
+  padding: 9px 20px;
 }
-.step {
-  border-radius: 12px;
-  padding: 24px;
+.pill-red {
+  color: #FFF7F5;
+  background: var(--crit);
+}
+
+/* Цитата из документа: выписка с кобальтовой кромкой «сверено кодом». */
+.quote {
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--ink);
+  background: var(--code-soft);
+  border-left: 5px solid var(--code);
+  border-radius: 4px 14px 14px 4px;
+  padding: 16px 24px;
+}
+
+/* ---------- три числа (слайды 2 и 13) ---------- */
+.stats .card { padding: 34px 38px 30px; gap: 14px; }
+.stat::before {
+  content: "";
+  width: 64px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--crit);
+  margin-bottom: 14px;
+}
+.stat-code::before { background: var(--code); }
+.stats .big { font-size: 88px; margin-bottom: 6px; }
+.stats .card .src {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-size: 24px;
+  line-height: 1.3;
+  color: var(--muted);
+}
+
+/* ---------- слайд 3: находка ---------- */
+.evidence { padding: 42px 48px 46px; gap: 22px; }
+.evidence::after {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: 36px;
+  bottom: 36px;
+  width: 6px;
+  border-radius: 0 4px 4px 0;
+  background: var(--crit);
+}
+.evidence .card-title { font-size: 44px; letter-spacing: -1px; }
+.evidence .txt { font-size: 30px; }
+.evidence .quote { font-size: 32px; padding: 18px 26px; }
+.evidence-grid { gap: 0; margin-top: 14px; }
+.evidence-grid > .col { gap: 20px; }
+.evidence-grid > .col + .col {
+  padding-left: 44px;
+  margin-left: 44px;
+  border-left: 1px solid var(--line);
+}
+.cite { display: flex; flex-direction: column; gap: 8px; }
+.cite-ref {
+  font-family: var(--mono);
+  color: var(--muted);
+}
+.evidence .cite-ref { font-size: 24px; }
+.evidence .step-block { display: flex; flex-direction: column; gap: 10px; }
+.evidence .step-block + .step-block { margin-top: 14px; }
+
+/* ---------- слайд 4: отчёт ---------- */
+.terminal {
+  background: var(--navy);
+  border-radius: 16px;
+  padding: 26px 32px 26px 112px;
+  position: relative;
+  box-shadow: var(--shadow);
+}
+.terminal::before {
+  content: "";
+  position: absolute;
+  left: 30px;
+  top: 50%;
+  margin-top: -7px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #F2665C;
+  box-shadow: 22px 0 0 #F5B940, 44px 0 0 #3FBF6A;
+}
+.terminal .cmd {
+  font-family: var(--mono);
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--on-navy);
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+}
+.check-note {
+  background: var(--code-soft);
+  border-left: 5px solid var(--code);
+  border-radius: 4px 14px 14px 4px;
+  padding: 16px 22px;
+}
+.report-sheet {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 26px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 18px;
+  box-shadow: var(--shadow);
 }
-.step-code {
-  background: #DCE8F8;
-  border: 1px solid #2F62A8;
-}
-.step-model {
-  background: #FBE6D2;
-  border: 1px solid #D9772B;
-}
-.step-name {
-  font-family: 'Manrope', Arial, sans-serif;
-  font-size: 34px;
-  font-weight: 700;
-  line-height: 1.2;
-  color: #0F1B2D;
-}
-.step-txt {
-  font-size: 24px;
-  line-height: 1.35;
-  color: #1B2A41;
-}
-
-/* ---------- сетка карточек 3×2 ---------- */
-.grid3 {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-}
-
-/* ---------- таблицы ---------- */
-.tbl {
-  width: 100%;
-  font-family: 'Inter', Arial, sans-serif;
-  font-size: 28px;
-  color: #1B2A41;
-}
-.tbl-head { background: #ECE7DB; }
-.tbl-accent { background: #DCE8F8; }
-.better { color: #1D4F91; }
-.worse { color: #A94E0E; }
-
-/* ---------- светофор отчёта ---------- */
 .verdict {
-  background: #F8E1DD;
-  border: 1px solid #B3261E;
-  border-radius: 12px;
+  background: var(--crit-soft);
+  border: 1px solid #E9B3AC;
+  border-radius: 16px;
   padding: 20px 24px;
   display: flex;
-  gap: 20px;
+  gap: 22px;
   align-items: center;
+}
+.signal {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #E4554A, var(--crit) 70%);
+  box-shadow: 0 0 0 8px rgba(180, 35, 24, 0.14);
 }
 .verdict-col {
   display: flex;
@@ -224,105 +397,555 @@ section {
   gap: 4px;
   flex: 1;
 }
+.verdict .card-title { font-size: 29px; color: #7A160E; text-wrap: balance; }
+.verdict .txt { font-size: 26px; color: #6B2A24; }
 .tiles {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  gap: 14px;
 }
 .tile {
-  background: #FFFDF8;
-  border: 1px solid #D8D2C4;
-  border-radius: 12px;
-  padding: 16px 20px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 20px 16px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 .tile-num {
-  font-family: 'Manrope', Arial, sans-serif;
-  font-size: 60px;
+  font-family: var(--display);
+  font-size: 64px;
   font-weight: 800;
   line-height: 1.05;
-  color: #0F1B2D;
+  letter-spacing: -2px;
+  color: var(--ink);
+}
+.tile .txt { font-size: 24px; line-height: 1.3; }
+.tile-crit { background: var(--crit-soft); border-color: #E9B3AC; }
+.tile-crit .tile-num { color: var(--crit); }
+.report-sheet > .txt { font-size: 25px; }
+
+/* ---------- слайд 5: конвейер ---------- */
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: var(--navy);
+  border-radius: 18px;
+  padding: 20px 30px;
+  box-shadow: var(--shadow);
+}
+.banner svg { flex: none; }
+.banner .card-title { color: var(--on-navy); font-size: 31px; }
+.fid {
+  font-family: var(--mono);
+  font-weight: 700;
+  color: var(--code-hi);
+}
+.steps {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 52px 40px;
+}
+.step {
+  position: relative;
+  border-radius: 16px;
+  padding: 18px 22px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.step::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -33px;
+  width: 26px;
+  height: 16px;
+  margin-top: -8px;
+  background: var(--line-2);
+  clip-path: polygon(0 40%, 62% 40%, 62% 0, 100% 50%, 62% 100%, 62% 60%, 0 60%);
+}
+.step:nth-child(5n)::after { display: none; }
+.step-code {
+  background: var(--card);
+  border: 1px solid var(--code-line);
+  border-top: 6px solid var(--code);
+}
+.step-model {
+  background: var(--model-soft);
+  border: 1px solid var(--model-line);
+  border-top: 6px solid var(--model-hi);
+}
+.step-focus { box-shadow: 0 0 0 4px rgba(30, 79, 192, 0.22), var(--shadow); }
+.step-model.step-focus { box-shadow: 0 0 0 4px rgba(240, 144, 47, 0.32), var(--shadow); }
+.step-name {
+  font-family: var(--display);
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+  color: var(--ink);
+}
+.step-txt {
+  font-size: 24px;
+  line-height: 1.32;
+  color: var(--ink-2);
+}
+.steps .label { font-size: 24px; }
+/* Перенос строки конвейера: от шага 4 вниз и влево к шагу 5. */
+.steps-return {
+  position: absolute;
+  left: calc((100% - 160px) / 10);
+  right: calc((100% - 160px) / 10);
+  top: 50%;
+  height: 0;
+  border-top: 2px dashed var(--line-2);
+}
+.steps-return::before {
+  content: "";
+  position: absolute;
+  right: -1px;
+  bottom: 0;
+  height: 26px;
+  border-right: 2px dashed var(--line-2);
+}
+.steps-return::after {
+  content: "";
+  position: absolute;
+  left: -9px;
+  top: 6px;
+  width: 18px;
+  height: 18px;
+  background: var(--line-2);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+.reason {
+  padding-left: 30px;
+  border-left: 5px solid var(--model-hi);
+  color: var(--ink-2);
+}
+
+/* ---------- слайд 6: гарантии ---------- */
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.g-card { gap: 14px; padding: 28px 32px 30px; }
+.g-head { display: flex; align-items: center; gap: 18px; }
+.g-icon {
+  flex: none;
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  background: var(--code-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.g-card .card-title { font-size: 30px; }
+.boundary {
+  background: var(--model-soft);
+  border-left: 5px solid var(--model-hi);
+  border-radius: 4px 14px 14px 4px;
+  padding: 16px 24px;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* ---------- таблицы ---------- */
+.tbl-wrap {
+  flex: none;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  background: var(--card);
+}
+.tbl {
+  width: 100%;
+  font-family: var(--text);
+  font-size: 27px;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.tbl th {
+  background: var(--navy);
+  color: var(--on-navy);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.25;
+  padding: 16px 22px;
+  vertical-align: bottom;
+}
+.tbl td {
+  padding: 12px 22px;
+  line-height: 1.28;
+  border-top: 1px solid var(--line);
+  vertical-align: middle;
+}
+.tbl tr:nth-child(2) td { border-top: none; }
+.tbl td:first-child { color: var(--ink); font-weight: 500; }
+.tbl-accent td {
+  background: var(--code-soft);
+  font-weight: 700;
+  color: var(--ink);
+}
+.tbl-accent td:first-child { box-shadow: inset 6px 0 0 var(--code); font-weight: 700; }
+.tbl-compare td { padding-top: 10px; padding-bottom: 10px; }
+.tbl-compare td:nth-child(3) { background: #F0F4FD; font-weight: 600; color: var(--ink); }
+.tag {
+  display: inline-block;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.3;
+  padding: 5px 16px;
+  border-radius: 999px;
+  background: var(--paper-2);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.tag-better { background: var(--code); color: #F4F7FE; }
+.tag-worse { background: var(--model-soft); color: var(--model); box-shadow: inset 0 0 0 1.5px var(--model-line); }
+.tag-only { background: var(--code-soft); color: var(--code); box-shadow: inset 0 0 0 1.5px var(--code-line); }
+.note { font-size: 24px; line-height: 1.4; color: var(--muted); }
+.tbl-holdout td:last-child { font-weight: 700; color: var(--ink); }
+
+/* Три вывода под таблицей: цветная кромка сверху. */
+.mini-card { padding: 26px 32px 28px; gap: 10px; }
+.mini-card::before {
+  content: "";
+  width: 48px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--ink);
+  margin-bottom: 6px;
+}
+.mini-code::before { background: var(--code); }
+.mini-model::before { background: var(--model-hi); }
+.mini-crit::before { background: var(--crit); }
+
+/* ---------- слайд 9: решения ---------- */
+.adr { padding: 30px 34px 30px; gap: 14px; }
+.adr .card-title { font-size: 34px; }
+.adr .txt { font-size: 28px; }
+.decision {
+  margin-top: auto;
+  position: relative;
+  background: var(--code-soft);
+  border-radius: 14px;
+  padding: 16px 20px 16px 66px;
+  font-size: 27px;
+  line-height: 1.35;
+}
+.decision::before {
+  content: "";
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--code);
+}
+.decision::after {
+  content: "";
+  position: absolute;
+  left: 28px;
+  top: 24px;
+  width: 8px;
+  height: 14px;
+  border-right: 3px solid #FFFFFF;
+  border-bottom: 3px solid #FFFFFF;
+  transform: rotate(45deg);
+}
+
+/* ---------- слайд 10: уточнение ---------- */
+.q-card { padding: 32px 36px; gap: 16px; }
+.q-card .card-title { font-size: 33px; line-height: 1.22; }
+.option {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 20px;
+}
+.risk {
+  margin-top: 4px;
+  padding-left: 22px;
+  border-left: 5px solid var(--crit);
+  font-size: 26px;
+}
+.timeline {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 11px;
+  top: 16px;
+  bottom: 16px;
+  width: 2px;
+  background: var(--code-line);
+}
+.t-step { position: relative; padding-left: 46px; }
+.t-step::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 10px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 4px solid var(--code);
+}
+.result {
+  margin-top: 8px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.result .big { font-size: 96px; }
+.kickoff {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 24px;
+  color: var(--ink-2);
+}
+
+/* ---------- слайд 11: устойчивость ---------- */
+.huge { font-size: 132px; letter-spacing: -5px; }
+.meter {
+  height: 22px;
+  width: 712px;
+  max-width: 100%;
+  background: repeating-linear-gradient(90deg, var(--code) 0 22px, transparent 22px 30px);
+  border-radius: 3px;
+  margin: 4px 0 6px;
+}
+.tbl-codes td:first-child { width: 14%; }
+.code-badge {
+  display: inline-block;
+  min-width: 46px;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.3;
+  padding: 4px 12px;
+  border-radius: 10px;
+  color: #FFFFFF;
+  background: var(--code);
+}
+.code-warn { background: var(--paper-2); color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line-2); }
+.code-stop { background: var(--crit); }
+.code-model { background: var(--model-hi); color: var(--ink); }
+.term {
+  font-family: var(--mono);
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--on-navy);
+  background: var(--navy);
+  border: none;
+  border-radius: 14px;
+  padding: 20px 26px;
+  box-shadow: var(--shadow);
+}
+
+/* ---------- слайд 14: цена по шагам ---------- */
+.bars { display: flex; flex-direction: column; gap: 16px; }
+.bar-row {
+  display: grid;
+  grid-template-columns: 330px 1fr 250px;
+  align-items: center;
+  gap: 22px;
+}
+.bar-name { font-size: 26px; font-weight: 600; line-height: 1.2; color: var(--ink); }
+.bar-track { height: 34px; background: var(--paper-2); border-radius: 8px; }
+.bar-fill {
+  height: 34px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #F5B070, var(--model-hi) 60%, #D9711C);
+}
+.bar-val {
+  font-family: var(--mono);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.chart {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 28px 32px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  flex: 1;
+  box-shadow: var(--shadow);
+}
+.chart > .txt { margin-top: auto; }
+.chart .bars { flex: 1; justify-content: space-between; }
+.kpi {
+  display: block;
+  font-size: 88px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -3px;
+  color: var(--model);
+  margin-bottom: 8px;
 }
 
 /* ---------- тёмные слайды ---------- */
 .dark {
-  background: #0F1B2D;
-  color: #F3EFE6;
+  background:
+    radial-gradient(1100px 760px at 92% 4%, rgba(47, 100, 221, 0.30), transparent 62%),
+    radial-gradient(900px 620px at 4% 104%, rgba(240, 144, 47, 0.17), transparent 60%),
+    var(--navy);
+  color: var(--on-navy);
 }
-.dark .eyebrow { color: #F2A65A; }
-.dark .title { color: #F3EFE6; }
-.dark .lead { color: #B9C4D6; }
-.dark .txt { color: #B9C4D6; }
-.dark .src { color: #B9C4D6; }
-.dark .pg { color: #B9C4D6; }
-.dark .card-title { color: #F3EFE6; }
-.dark-list {
-  font-size: 30px;
-  line-height: 1.4;
-  color: #F3EFE6;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.dark::before {
+  width: 1920px;
+  height: 1080px;
+  background-image:
+    linear-gradient(rgba(174, 187, 208, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(174, 187, 208, 0.07) 1px, transparent 1px);
+  -webkit-mask-image: radial-gradient(ellipse 80% 90% at 80% 30%, #000 0%, transparent 75%);
+  mask-image: radial-gradient(ellipse 80% 90% at 80% 30%, #000 0%, transparent 75%);
 }
-.cover { padding: 128px; }
+.dark .eyebrow { color: var(--model-hi); }
+.dark .eyebrow::before { background: linear-gradient(90deg, var(--model-hi) 0 50%, var(--code-hi) 50% 100%); }
+.dark .title { color: var(--on-navy); }
+.dark .lead { color: var(--on-navy-2); }
+.dark .txt { color: var(--on-navy-2); }
+.dark .card-title { color: var(--on-navy); }
+.dark .foot { border-top-color: var(--navy-line); }
+.dark .foot .src { color: var(--on-navy-2); }
+.dark .rail { background: var(--navy-line); }
+.dark .rail-fill { background: linear-gradient(90deg, var(--model-hi), var(--code-hi)); }
+.dark .pg { color: var(--on-navy); }
+
+/* Обложка */
+.cover { padding: 100px 120px 92px; }
+.cover-art {
+  position: absolute;
+  right: 96px;
+  top: 168px;
+  width: 640px;
+  height: 700px;
+}
 .cover-title {
-  font-family: 'Manrope', Arial, sans-serif;
+  font-family: var(--display);
   font-size: 112px;
   font-weight: 800;
-  line-height: 1.05;
-  letter-spacing: -3px;
-  color: #F3EFE6;
-  margin-top: 32px;
+  line-height: 1;
+  letter-spacing: -4px;
+  color: var(--on-navy);
+  margin-top: 84px;
+  max-width: 1100px;
 }
 .cover-lead {
-  font-size: 30px;
-  line-height: 1.4;
-  color: #B9C4D6;
-  width: 1100px;
-  margin-top: 32px;
+  font-size: 32px;
+  line-height: 1.42;
+  color: var(--on-navy-2);
+  width: 940px;
+  margin-top: 40px;
 }
 .motto {
   display: flex;
-  gap: 20px;
+  gap: 18px;
   align-items: center;
 }
 .chip {
-  font-family: 'Manrope', Arial, sans-serif;
+  font-family: var(--display);
   font-size: 30px;
   font-weight: 700;
   line-height: 1.2;
-  padding: 14px 28px;
-  border-radius: 40px;
+  padding: 16px 30px;
+  border-radius: 999px;
 }
-.chip-model {
-  background: #F2A65A;
-  color: #0F1B2D;
+.chip-model { background: var(--model-hi); color: var(--navy); }
+.chip-code { background: var(--code-hi); color: var(--navy); }
+.chip-human { box-shadow: inset 0 0 0 2px var(--on-navy-2); color: var(--on-navy); }
+.link-arrow {
+  position: relative;
+  flex: none;
+  width: 56px;
+  height: 2px;
+  background: var(--on-navy-2);
 }
-.chip-code {
-  background: #8DB8F0;
-  color: #0F1B2D;
-}
-.chip-human {
-  border: 1px solid #B9C4D6;
-  color: #F3EFE6;
+.link-arrow::after {
+  content: "";
+  position: absolute;
+  right: -2px;
+  top: -7px;
+  width: 14px;
+  height: 16px;
+  background: var(--on-navy-2);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
 }
 .cover-team {
   font-size: 24px;
   line-height: 1.4;
-  color: #B9C4D6;
+  color: var(--on-navy-2);
   margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--navy-line);
 }
 
-/* Имена участников: вписать один раз здесь, они появятся на слайдах 1 и 15 */
+/* Последний слайд: две колонки-панели */
+.next-row { gap: 32px; flex: 1; }
+.panel {
+  background: rgba(15, 31, 56, 0.82);
+  border: 1px solid var(--navy-line);
+  border-radius: 22px;
+  padding: 30px 36px 18px;
+  gap: 0;
+}
+.panel .card-title {
+  font-size: 32px;
+  padding-bottom: 16px;
+  margin-bottom: 4px;
+  border-bottom: 3px solid var(--model-hi);
+  align-self: flex-start;
+}
+.panel-plan .card-title { border-bottom-color: var(--code-hi); }
+.panel .lead {
+  position: relative;
+  font-size: 27px;
+  line-height: 1.4;
+  color: var(--on-navy);
+  padding: 13px 0 13px 40px;
+}
+.panel .lead + .lead { border-top: 1px solid var(--navy-line); }
+.panel .lead::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 25px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 3px var(--model-hi);
+}
+.panel-plan .lead::before {
+  border-radius: 4px;
+  box-shadow: none;
+  background: var(--code-hi);
+}
+
+/* Имена участников: вписать один раз здесь, они появятся на слайде 1 */
 .team-names::after { content: "Айдынулы Алихан, Габдулгумаров Рамазан, Бейсенбек Нурдаулет"; }
-
-.fit { flex: none; }
-
-.bars { display: flex; flex-direction: column; gap: 14px; }
-.bar-row { display: grid; grid-template-columns: 340px 1fr 250px; align-items: center; gap: 20px; }
-.bar-name { font-size: 26px; font-weight: 600; color: #0F1B2D; }
-.bar-track { height: 36px; background: #ECE7DB; border-radius: 8px; }
-.bar-fill { height: 36px; background: #D9772B; border-radius: 8px; }
-.bar-val { font-family: 'JetBrains Mono', monospace; font-size: 24px; color: #4B5870; }

@@ -68,7 +68,7 @@ def main() -> int:
     ok = len(old_pages) == len(new_pages)
     print(f"Страниц: {len(old_pages)} и {len(new_pages)}")
     print("Стр. | слов было | слов стало | порядок слов | набор слов")
-    for number, (old, new) in enumerate(zip(old_pages, new_pages), 1):
+    for number, (old, new) in enumerate(zip(old_pages, new_pages, strict=False), 1):
         same_sequence, same_multiset, diff = compare_page(old, new)
         ok = ok and same_sequence and same_multiset
         print(
