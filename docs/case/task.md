@@ -1,4 +1,4 @@
-> Копия ТЗ кейса из https://github.com/BCC-HUB/ai-requirements-validator-task (README.md, коммит 928c1aa, 25.11.2026). Оригинал главнее этой копии.
+> Копия ТЗ кейса из https://github.com/BCC-HUB/ai-requirements-validator-task (README.md, коммит 928c1aa, 25.11.2026). Оригинал главнее этой копии. Ссылки `docs/requirements.md` ниже ведут внутри репозитория кейса; у нас этот документ лежит в [`data/input/requirements.md`](../../data/input/requirements.md).
 
 # Техническое задание хакатона
 ## Агент проверки требований

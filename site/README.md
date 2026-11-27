@@ -1,6 +1,6 @@
 # Лендинг QAIRU validator
 
-React + Vite, собирается в статику для GitHub Pages. Код агента не затрагивает.
+Сайт: [qairu-validator.vercel.app](https://qairu-validator.vercel.app/). React + Vite, собирается в статику. Код агента не затрагивает. Цифры взяты из README и отчёта на сдачу [`reports/v1.0/`](../reports/v1.0/README.md); если они расходятся, верен README.
 
 ```bash
 cd site
