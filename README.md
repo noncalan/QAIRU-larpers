@@ -4,7 +4,9 @@
 
 Главный принцип: **модель предлагает, код проверяет.** Каждая цитата в отчёте сверена кодом с исходным документом, важность и все счётчики считает код, а любой сбой (битый файл, нет модели, лимит) превращается в понятную диагностику в отчёте, а не в падение.
 
-Команда **QAIRU larpers**, отбор **BCC-HUB x MNU AI Agent Challenge 2026**, кейс [AI Requirements Validator](https://github.com/BCC-HUB/ai-requirements-validator-task) (копия ТЗ: [`docs/case/task.md`](docs/case/task.md)).
+Команда **QAIRU larpers** (Айдынулы Алихан, Габдулгумаров Рамазан, Бейсенбек Нурдаулет), отбор **BCC-HUB x MNU AI Agent Challenge 2026**, кейс [AI Requirements Validator](https://github.com/BCC-HUB/ai-requirements-validator-task) (копия ТЗ: [`docs/case/task.md`](docs/case/task.md)).
+
+Сайт проекта: [qairu-validator.vercel.app](https://qairu-validator.vercel.app/).
 
 ![Демо: проверка PDF одной командой, первая страница отчёта, битый файл, вопросы автору и повторная проверка с ответами](docs/demo/demo.gif)
 
@@ -15,6 +17,7 @@
 | Что | Где |
 |---|---|
 | Запустить агента за 5 минут (в том числе без ключа и без подписки) | [Быстрый старт](#быстрый-старт) |
+| Сайт проекта: коротко об агенте, цифры, демо и запуск | [qairu-validator.vercel.app](https://qairu-validator.vercel.app/) |
 | Демо: запись терминала и сценарий видео | [`docs/demo/`](docs/demo/README.md), [`docs/demo.md`](docs/demo.md) |
 | Отчёт на сдачу, который сделал этот агент по `requirements.pdf` | [`reports/v1.0/report.pdf`](reports/v1.0/report.pdf): 🔴 начинать нельзя, 6 критичных. Там же Markdown, JSON, вопросы автору, запись вызовов модели и [как получен](reports/v1.0/README.md): модель работала вживую 26.11 (752 с), код после модели v1.0. Отчёты по MD и DOCX и [согласие форматов](reports/v0.9-rc2/formats.md) в [`reports/v0.9-rc2/`](reports/v0.9-rc2/README.md) |
 | Живой прогон через ключ API на коде 27.11 | [`reports/api-live-2026-11-27/`](reports/api-live-2026-11-27/README.md): тот же вывод (красный, начинать нельзя), все 6 критичных нашлись снова и ещё одна, $2,40 |
