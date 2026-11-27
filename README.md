@@ -350,7 +350,7 @@ uv run validator ВХОД ВЫХОД [опции]
 | `--critic` | Критик находок (шаг 6б). Выключен: по eval он не снизил шум и снимал настоящие находки |
 | `--no-checklists` | Выключить доменные чек-листы |
 | `--no-ocr` | Не распознавать сканы (то же `VALIDATOR_OCR=off`) |
-| `--pdf-backend mupdf\|pdfium` | Движок PDF: `mupdf` (PyMuPDF, AGPL) по умолчанию, `pdfium` без копилефта |
+| `--pdf-backend mupdf\|pdfium` | Движок извлечения текста из PDF: `mupdf` (PyMuPDF, AGPL) по умолчанию, `pdfium` без копилефта (PyMuPDF всё равно остаётся зависимостью, см. [Лицензии](#лицензии)) |
 | `--search-input blocks\|raw` | Что видит поиск: документ с ID блоков (по умолчанию) или чистый текст (для замера) |
 | `--version` | Версия агента |
 
@@ -380,7 +380,7 @@ uv run ruff check && uv run mypy src evals
 
 Код агента распространяется под лицензией **MIT** (файл `LICENSE` в корне). Он зависит от библиотек с открытыми лицензиями (версии в [`uv.lock`](uv.lock)): MIT (typer, pydantic, pdfplumber, python-docx, razdel, rapidfuzz, charset-normalizer, filetype, msoffcrypto-tool, PyYAML), BSD (python-dotenv, httpx2, jinja2, lxml, olefile, pypdfium2), Apache-2.0 (anthropic, typst), MPL-2.0 (pikepdf). Шрифты отчёта Liberation (SIL OFL) и запасной DejaVu Sans (лицензия Bitstream Vera, для знаков ₸ и ₽) лежат в `src/validator/report/fonts/`.
 
-**Исключение: PyMuPDF под AGPL-3.0** (или коммерческой лицензией Artifex). Это движок PDF по умолчанию. Чтобы работать без AGPL, например внутри банка, достаточно флага `--pdf-backend pdfium` (pypdfium2, BSD и Apache-2.0): оба движка дают один и тот же текст, это сравнивают тесты. Почему так устроено: [ADR-0006](docs/adr/0006-pdf-engine-behind-interface.md).
+**Исключение: PyMuPDF под AGPL-3.0** (или коммерческой лицензией Artifex). Это движок PDF по умолчанию. Флаг `--pdf-backend pdfium` (pypdfium2, BSD и Apache-2.0) переключает на другой движок извлечение текста: оба движка дают один и тот же текст, это сравнивают тесты. Но PyMuPDF пока остаётся обязательной зависимостью: через него идут проверка и починка PDF-файла, картинки и OCR. Чтобы убрать AGPL полностью, например внутри банка, эти места нужно перевести на pypdfium2 и pikepdf; это план к финалу. Почему так устроено: [ADR-0006](docs/adr/0006-pdf-engine-behind-interface.md).
 
 ---
 
