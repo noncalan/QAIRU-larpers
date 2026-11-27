@@ -10,9 +10,9 @@ import nurdauletImg from "./assets/team/nurdaulet.jpg";
 import { LOGO_N, logoSvgRects } from "./logo.js";
 
 const TEAM = [
-  ["Айдынулы Алихан", alikhanImg, "50% 35%"],
-  ["Габдулгумаров Рамазан", ramazanImg, "50% 40%"],
-  ["Бейсенбек Нурдаулет", nurdauletImg, "50% 50%"],
+  ["Aidynuly Alikhan", alikhanImg, "50% 35%"],
+  ["Gabdulgumarov Ramazan", ramazanImg, "50% 40%"],
+  ["Beisenbek Nurdaulet", nurdauletImg, "50% 50%"],
 ];
 
 const LOGO_RECTS = logoSvgRects();
