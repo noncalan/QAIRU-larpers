@@ -10,9 +10,9 @@
 
 Сайт проекта: [qairu-validator.vercel.app](https://qairu-validator.vercel.app/).
 
-![Демо: одна покупка на границе месяца, две цитаты в ТЗ, находка F-02 и вопрос автору, ответ автора и новый отчёт](docs/demo/demo.gif)
+[![Демо: одна покупка на границе месяца, две цитаты в ТЗ, находка F-02 и вопрос автору, ответ автора и новый отчёт](docs/demo/demo.gif)](https://youtu.be/A_ai5kBbCtc)
 
-*Видео на сдачу, 2 мин 36 с: [`docs/demo/demo.mp4`](docs/demo/demo.mp4) (по минутам: [`docs/demo/README.md`](docs/demo/README.md)). Модель в нём не вызывается: ответы берутся из записи живого прогона (запись это каждый запрос к модели и её ответ целиком; `--backend replay` пересобирает по ней отчёт без модели). Битый файл показан в записи терминала [`docs/demo/terminal.mp4`](docs/demo/terminal.mp4), повторить её у себя: `bash docs/demo/demo.sh`.*
+*Видео на сдачу, 2 мин 36 с: [смотреть на YouTube](https://youtu.be/A_ai5kBbCtc) или файл [`docs/demo/demo.mp4`](docs/demo/demo.mp4) (по минутам: [`docs/demo/README.md`](docs/demo/README.md)). Модель в нём не вызывается: ответы берутся из записи живого прогона (запись это каждый запрос к модели и её ответ целиком; `--backend replay` пересобирает по ней отчёт без модели). Битый файл показан в записи терминала [`docs/demo/terminal.mp4`](docs/demo/terminal.mp4), повторить её у себя: `bash docs/demo/demo.sh`.*
 
 ## Для жюри: где что
 
@@ -20,7 +20,7 @@
 |---|---|
 | Запустить агента за 5 минут (в том числе без ключа и без подписки) | [Быстрый старт](#быстрый-старт) |
 | Сайт проекта: коротко об агенте, цифры, демо и запуск | [qairu-validator.vercel.app](https://qairu-validator.vercel.app/) |
-| Демо: видео на сдачу, запись терминала, сценарий показа | [`docs/demo/demo.mp4`](docs/demo/demo.mp4), [`docs/demo/`](docs/demo/README.md), [`docs/demo.md`](docs/demo.md) |
+| Демо: видео на сдачу, запись терминала, сценарий показа | [YouTube](https://youtu.be/A_ai5kBbCtc), [`docs/demo/demo.mp4`](docs/demo/demo.mp4), [`docs/demo/`](docs/demo/README.md), [`docs/demo.md`](docs/demo.md) |
 | Презентация, 15 слайдов | [`docs/presentation/qairu-larpers-slides.pdf`](docs/presentation/qairu-larpers-slides.pdf) |
 | Какая версия кода сдаётся | Тег и релиз [`v1.0`](https://github.com/noncalan/QAIRU-larpers/releases/tag/v1.0) на коммите `c662f62`. После него в `main` менялись только документы, слайды и видео, код агента (`src/`, тесты, зависимости) тот же |
 | Отчёт на сдачу, который сделал этот агент по `requirements.pdf` | [`reports/v1.0/report.pdf`](reports/v1.0/report.pdf): 🔴 начинать нельзя, 6 критичных. Там же Markdown, JSON, вопросы автору, запись вызовов модели и [как получен](reports/v1.0/README.md): модель работала вживую 26.11 (752 с), код после модели v1.0. Отчёты по MD и DOCX и [согласие форматов](reports/v0.9-rc2/formats.md) в [`reports/v0.9-rc2/`](reports/v0.9-rc2/README.md) |
