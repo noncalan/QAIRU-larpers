@@ -8,3 +8,5 @@
 *.doc binary
 *.png binary
 *.jpg binary
+*.gif binary
+*.mp4 binary

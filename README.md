@@ -10,9 +10,9 @@
 
 Сайт проекта: [qairu-validator.vercel.app](https://qairu-validator.vercel.app/).
 
-![Демо: проверка PDF одной командой, первая страница отчёта, битый файл, вопросы автору и повторная проверка с ответами](docs/demo/demo.gif)
+![Демо: одна покупка на границе месяца, две цитаты в ТЗ, находка F-02 и вопрос автору, ответ автора и новый отчёт](docs/demo/demo.gif)
 
-*Запись терминала, 93 с: модель не вызывается, ответы берутся из записи живого прогона (запись это каждый запрос к модели и её ответ целиком; `--backend replay` пересобирает по ней отчёт без модели). Видео [`docs/demo/demo.mp4`](docs/demo/demo.mp4), сценарий [`docs/demo.md`](docs/demo.md), повторить у себя: `bash docs/demo/demo.sh`.*
+*Видео на сдачу, 2 мин 36 с: [`docs/demo/demo.mp4`](docs/demo/demo.mp4) (по минутам: [`docs/demo/README.md`](docs/demo/README.md)). Модель в нём не вызывается: ответы берутся из записи живого прогона (запись это каждый запрос к модели и её ответ целиком; `--backend replay` пересобирает по ней отчёт без модели). Битый файл показан в записи терминала [`docs/demo/terminal.mp4`](docs/demo/terminal.mp4), повторить её у себя: `bash docs/demo/demo.sh`.*
 
 ## Для жюри: где что
 
@@ -20,7 +20,7 @@
 |---|---|
 | Запустить агента за 5 минут (в том числе без ключа и без подписки) | [Быстрый старт](#быстрый-старт) |
 | Сайт проекта: коротко об агенте, цифры, демо и запуск | [qairu-validator.vercel.app](https://qairu-validator.vercel.app/) |
-| Демо: запись терминала и сценарий видео | [`docs/demo/`](docs/demo/README.md), [`docs/demo.md`](docs/demo.md) |
+| Демо: видео на сдачу, запись терминала, сценарий показа | [`docs/demo/demo.mp4`](docs/demo/demo.mp4), [`docs/demo/`](docs/demo/README.md), [`docs/demo.md`](docs/demo.md) |
 | Отчёт на сдачу, который сделал этот агент по `requirements.pdf` | [`reports/v1.0/report.pdf`](reports/v1.0/report.pdf): 🔴 начинать нельзя, 6 критичных. Там же Markdown, JSON, вопросы автору, запись вызовов модели и [как получен](reports/v1.0/README.md): модель работала вживую 26.11 (752 с), код после модели v1.0. Отчёты по MD и DOCX и [согласие форматов](reports/v0.9-rc2/formats.md) в [`reports/v0.9-rc2/`](reports/v0.9-rc2/README.md) |
 | Живой прогон через ключ API на коде 27.11 | [`reports/api-live-2026-11-27/`](reports/api-live-2026-11-27/README.md): тот же вывод (красный, начинать нельзя), все 6 критичных нашлись снова и ещё одна, $2,40 |
 | Сравнить две версии ТЗ: что закрыто, что осталось, что нового | [`docs/version-diff.md`](docs/version-diff.md), команда `validator-diff` |
