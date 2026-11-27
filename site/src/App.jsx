@@ -487,36 +487,42 @@ function Report() {
 }
 
 function Demo() {
+  const videoRef = useRef(null);
+  const seek = (t) => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.currentTime = t;
+    v.play().catch(() => {});
+  };
   return (
     <section id="demo">
       <div className="wrap">
-        <SectionHead idx={6} eyebrow="Демо" title="93 секунды работы агента в терминале">
-          Одна команда на PDF, первая страница отчёта, битый файл, вопросы автору и повторная проверка с ответами.
-          Модель в записи не вызывается: ответы взяты из записи живого прогона.
+        <SectionHead idx={6} eyebrow="Демо" title="Видео на сдачу: одна покупка на границе месяца, 2:36">
+          Покупку совершили 31 января в 23:58, а провели 1 февраля в 00:03. Видно, как агент находит это противоречие,
+          о чём спрашивает автора и что меняется после ответа. Модель в видео не вызывается: ответы взяты из записей живых прогонов.
         </SectionHead>
         <div className="demo-grid">
           <figure className="window" data-reveal>
             <div className="term-bar">
               <span className="lights" aria-hidden="true"><i /><i /><i /></span>
-              <span>docs/demo/demo.gif</span>
+              <span>docs/demo/demo.mp4 · 2:36</span>
             </div>
-            <img src={media("demo.gif")} alt="Запись терминала: запуск агента на requirements.pdf, первая страница отчёта, PDF под паролем, вопросы автору и повтор с ответами" loading="lazy" />
+            <video ref={videoRef} src={`${media("demo.mp4")}#t=1`} controls preload="metadata" playsInline aria-label="Видео на сдачу: цитаты в ТЗ, находка F-02, вопрос автору, ответ автора и новый отчёт" />
           </figure>
           <div className="chapters" data-reveal>
-            <span className="eyebrow">Что в записи</span>
+            <span className="eyebrow">Главы видео</span>
             <ol>
-              {DEMO_CHAPTERS.map(([t, s]) => (
-                <li key={t}><code>{t}</code><span>{s}</span></li>
+              {DEMO_CHAPTERS.map(([sec, t, s]) => (
+                <li key={t}>
+                  <button type="button" onClick={() => seek(sec)} aria-label={`Перейти к ${t}: ${s}`}><code>{t}</code><span>{s}</span></button>
+                </li>
               ))}
             </ol>
+            <p className="note">Битого файла в этом видео нет. Он есть в записи терминала: PDF под паролем с 0:24.</p>
             <div className="demo-links">
-              <a href={media("demo.mp4")}>Видео mp4</a>
-              <a href={gh("docs/demo.md")}>Сценарий</a>
-              <a href={gh("docs/demo/README.md")}>Как перезаписать</a>
-            </div>
-            <div className="cmdline sm">
-              <span className="ps">$</span><code>bash docs/demo/demo.sh</code>
-              <CopyButton text="bash docs/demo/demo.sh" small label="Копировать команду" />
+              <a href={media("terminal.mp4")}>Запись терминала, 93 с</a>
+              <a href={media("slides.pdf")}>Слайды</a>
+              <a href={gh("docs/demo/README.md")}>О видео</a>
             </div>
           </div>
         </div>
@@ -692,7 +698,8 @@ function Footer() {
           <a href={REPO}>README</a>
           <a href={gh("docs/architecture.md")}>Архитектура</a>
           <a href={gh("docs/value.md")}>Ценность</a>
-          <a href={gh("docs/demo.md")}>Демо</a>
+          <a href={media("slides.pdf")}>Слайды</a>
+          <a href={gh("docs/presentation/defense.md")}>Ответы на вопросы</a>
           <a href={gh("LICENSE")}>MIT</a>
         </nav>
       </div>

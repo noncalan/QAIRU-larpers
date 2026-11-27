@@ -320,9 +320,12 @@ blockquote cite { display: block; font-style: normal; font-family: var(--mono); 
 /* ---------- demo ---------- */
 .demo-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; align-items: start; }
 .window { margin: 0; border: 1px solid var(--line-2); border-radius: var(--r); overflow: hidden; background: #0c0e0c; box-shadow: 0 40px 100px -40px rgba(184,243,90,.25); }
-.window img { width: 100%; height: auto; }
+.window img, .window video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: #000; }
 .chapters ol { list-style: none; padding: 0; margin: 14px 0 22px; }
-.chapters li { display: flex; gap: 14px; padding: 11px 0; border-bottom: 1px solid var(--line); color: var(--muted); }
+.chapters li { border-bottom: 1px solid var(--line); }
+.chapters li button { display: flex; gap: 14px; width: 100%; padding: 10px 6px; background: none; border: 0; font: inherit; color: var(--muted); text-align: left; cursor: pointer; border-radius: 6px; transition: color .2s, background .2s; }
+.chapters li button:hover { color: var(--text); background: var(--acc-soft); }
+.chapters .note { color: var(--dim); font-size: 14px; margin: 0 0 14px; }
 .chapters li code { color: var(--acc); font-size: 13px; min-width: 38px; padding-top: 2px; }
 .demo-links { display: flex; flex-wrap: wrap; gap: 8px; }
 .demo-links a { font-size: 14px; text-decoration: none; padding: 7px 12px; border: 1px solid var(--line-2); border-radius: 8px; transition: border-color .2s, color .2s; }

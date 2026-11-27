@@ -11,10 +11,12 @@ mkdirSync(out, { recursive: true });
 const files = {
   "docs/demo/demo.gif": "demo.gif",
   "docs/demo/demo.mp4": "demo.mp4",
+  "docs/demo/terminal.mp4": "terminal.mp4",
+  "docs/presentation/qairu-larpers-slides.pdf": "slides.pdf",
   "docs/img/pipeline.svg": "pipeline.svg",
   "reports/v1.0/report.pdf": "report.pdf",
 };
 for (const [from, to] of Object.entries(files)) {
   cpSync(resolve(repo, from), resolve(out, to));
 }
-console.log(`media: ${Object.keys(files).length} файла скопированы в public/media`);
+console.log(`media: ${Object.keys(files).length} файлов скопировано в public/media`);
