@@ -14,6 +14,7 @@ PDF не получается из Markdown (pandoc и LaTeX у жюри не с
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Iterable, Sequence
 from pathlib import Path
 from typing import Any
@@ -1016,10 +1017,28 @@ def _anchors(sections: Sequence[Json]) -> list[str]:
 # ---------------------------------------------------------------- сборка PDF
 
 
+_PERCENT_SPACE = re.compile(r"(?<=\d) %")
+NBSP = "\u00a0"
+
+
+def keep_percent(value: Any) -> Any:
+    """Неразрывный пробел перед «%» во всех строках вида: в PDF «100» и «%» не разъезжаются по строкам.
+
+    Только для PDF: Markdown переносит строки в просмотрщике сам, и его снапшоты не меняются.
+    """
+    if isinstance(value, str):
+        return _PERCENT_SPACE.sub(NBSP + "%", value)
+    if isinstance(value, list):
+        return [keep_percent(v) for v in value]
+    if isinstance(value, dict):
+        return {k: keep_percent(v) for k, v in value.items()}
+    return value
+
+
 def render_pdf(report: Report) -> bytes:
     """PDF отчёта. Одинаков на любой ОС: шрифты из репозитория, дата создания из паспорта прогона."""
     try:
-        view = json.dumps(build_view(report), ensure_ascii=False)
+        view = json.dumps(keep_percent(build_view(report)), ensure_ascii=False)
         data = typst.compile(
             input=str(TEMPLATE_PATH),
             font_paths=[str(FONTS_DIR)],
