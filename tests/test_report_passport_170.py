@@ -14,6 +14,8 @@ import shutil
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
+import pymupdf
+
 from conftest import REQUIREMENTS, ROOT
 from validator.config import load_config
 from validator.models import Backend, DocKind, ReplaySource, Report, Severity
@@ -21,6 +23,7 @@ from validator.pipeline import run
 from validator.report.fmt import digits, money, seconds
 from validator.report.passport_view import TECH_TITLE, duration_line, passport_rows
 from validator.report.render_md import render_md, withdrawn_line
+from validator.report.render_pdf import NBSP, keep_percent, render_pdf
 from validator.report.triage import review_line
 
 RECORDING = ROOT / "tests" / "fixtures" / "e2e" / "md" / "run"
@@ -151,3 +154,15 @@ def test_review_line_explains_minor_findings_kept_in_main_list() -> None:
     assert "Ещё 1 незначительная находка осталась в основном списке" in line
     assert "в основном списке" not in all_in_block
     assert "Ещё 2 незначительные находки остались в основном списке" in two_kept
+
+
+def test_pdf_keeps_number_and_percent_on_one_line() -> None:
+    """В PDF «сверено 100» и «%» разъезжались по строкам: перед «%» теперь неразрывный пробел."""
+    assert keep_percent({"a": ["цитат сверено 100 %", 3], "b": "5 % и 7,5 %"}) == {
+        "a": [f"цитат сверено 100{NBSP}%", 3],
+        "b": f"5{NBSP}% и 7,5{NBSP}%",
+    }
+    doc = pymupdf.open(stream=render_pdf(load("full")), filetype="pdf")
+    lines = [line for page in doc for line in page.get_text().splitlines()]
+
+    assert not [line for line in lines if line.lstrip().startswith("%")]
