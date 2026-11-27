@@ -4,7 +4,16 @@ import {
   NUMBERS, COMPARE, LIMITS, FIRST_PAGE, REPORT_LINKS, DEMO_CHAPTERS, PATHS, ALSO, OUT_TREE,
 } from "./content.js";
 import Intro from "./Intro.jsx";
+import alikhanImg from "./assets/team/alikhan.jpg";
+import ramazanImg from "./assets/team/ramazan.jpg";
+import nurdauletImg from "./assets/team/nurdaulet.jpg";
 import { LOGO_N, logoSvgRects } from "./logo.js";
+
+const TEAM = [
+  ["Айдынулы Алихан", alikhanImg, "50% 35%"],
+  ["Габдулгумаров Рамазан", ramazanImg, "50% 40%"],
+  ["Бейсенбек Нурдаулет", nurdauletImg, "50% 50%"],
+];
 
 const LOGO_RECTS = logoSvgRects();
 function Logo({ size = 24 }) {
@@ -657,12 +666,14 @@ function Team() {
           BCC-HUB x MNU AI Agent Challenge 2026, кейс AI Requirements Validator.
         </SectionHead>
         <div className="team">
-          {[1, 2, 3].map((i) => (
-            <div className="person" key={i} data-reveal>
-              <span className="avatar" aria-hidden="true">?</span>
-              <b>[Имя участника]</b>
-              <span>[роль]</span>
-            </div>
+          {TEAM.map(([name, img, pos], i) => (
+            <figure className="person" key={name} data-reveal style={{ "--d": `${i * 90}ms` }}>
+              <div className="portrait"><img src={img} alt={`Пиксельный портрет: ${name}`} loading="lazy" style={{ objectPosition: pos }} /></div>
+              <figcaption>
+                <b>{name}</b>
+                <span>QAIRU larpers · {String(i + 1).padStart(2, "0")}</span>
+              </figcaption>
+            </figure>
           ))}
         </div>
       </div>
