@@ -671,7 +671,6 @@ function Team() {
               <div className="portrait"><img src={img} alt={`Пиксельный портрет: ${name}`} loading="lazy" style={{ objectPosition: pos }} /></div>
               <figcaption>
                 <b>{name}</b>
-                <span>QAIRU larpers · {String(i + 1).padStart(2, "0")}</span>
               </figcaption>
             </figure>
           ))}
