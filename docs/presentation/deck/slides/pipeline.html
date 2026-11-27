@@ -1,0 +1,26 @@
+<section id="pipeline" data-transition="fade">
+<p class="eyebrow">Архитектура</p>
+<h2 class="title">Модель предлагает, код проверяет</h2>
+<div class="body">
+<p class="card-title">В отчёте на сдачу код понизил 3 противоречия модели до неполноты: F-29, F-32, F-48.</p>
+<div class="steps">
+<div class="step step-code"><p class="label">0 · код</p><p class="step-name">Защита входа</p><p class="step-txt">Тип файла по содержимому, пароль, zip-бомба</p></div>
+<div class="step step-code"><p class="label">1 · код</p><p class="step-name">Разбор</p><p class="step-txt">Блоки с якорями: страница, строка, ячейка</p></div>
+<div class="step step-model"><p class="label label-model">2 · модель</p><p class="step-name">Нарезка</p><p class="step-txt">Модель называет блоки, цитирует их код</p></div>
+<div class="step step-code"><p class="label">3 · код</p><p class="step-name">Линтер</p><p class="step-txt">Десять правил без модели</p></div>
+<div class="step step-model"><p class="label label-model">4 · модель</p><p class="step-name">Поиск</p><p class="step-txt">Дефекты по рубрике стандартов и чек-листам</p></div>
+<div class="step step-code"><p class="label">5 · код</p><p class="step-name">Слияние</p><p class="step-txt">Одна находка на место и свойство</p></div>
+<div class="step step-model"><p class="label label-model">6 · модель</p><p class="step-name">Свидетель</p><p class="step-txt">Пример-сценарий и попытка написать тест</p></div>
+<div class="step step-code"><p class="label">7 · код</p><p class="step-name">Верификатор</p><p class="step-txt">Цитаты, важность, счётчики, светофор</p></div>
+<div class="step step-model"><p class="label label-model">8 · модель</p><p class="step-name">Вопросы</p><p class="step-txt">Автору ТЗ, с вариантами ответа</p></div>
+<div class="step step-code"><p class="label">9 · код</p><p class="step-name">Отчёт</p><p class="step-txt">Markdown, PDF, JSON и самопроверка по ТЗ</p></div>
+</div>
+<p class="txt">Причина: свидетель не нашёл сценария с разными исходами, а без него код противоречие не принимает.</p>
+</div>
+<div class="foot"><p class="src">docs/architecture.md · шесть решений оформлены как ADR 0001–0006</p><div class="pg"></div></div>
+<aside>Агент это конвейер из десяти шагов. Модель Claude делает только то, что умеет только она: решает, где в документе требования, ищет дефекты, строит пример-свидетель и пишет вопросы автору. Всё, от чего зависит доверие к отчёту, делает код без модели. Шаги с моделью и шаги с кодом чередуются: после каждого ответа модели стоит проверка кодом. Модели по шагам: нарезка Sonnet 5.5, поиск, свидетель и вопросы Opus 5.5, попытка теста Sonnet 5.5 (решение D-010 по замеру 33 ответов четырёх моделей).
+
+Граница. Модель решает, есть ли дефект. Код решает всё, что можно проверить без модели: есть ли цитата в документе дословно и на какой странице, какая важность, сколько находок и вопросов, можно ли начинать. Пример из отчёта на сдачу, это главный аргумент за архитектуру: свидетель запрошен для 16 находок, у 5 модель не смогла построить пример-свидетель, сценарий, где два требования дают разный результат; 3 из них были противоречиями (F-29, F-32, F-48), и код перевёл их в неполноту (src/validator/retype.py, диагностика LLM-041). В карточках так и написано: «Свидетель не построен». Что остаётся суждением модели: настоящий ли дефект, и здесь агент не лучше одного промпта (precision 41,7 % строго против 44 %).
+
+Источник: docs/presentation/defense.md, раздел 2; reports/v1.0/report.md, раздел «Диагностика» и карточки «Свидетель не построен»; docs/architecture.md (схема docs/img/pipeline.svg, таблица шагов), docs/adr/0001–0006, docs/decisions.md D-009 и D-010.</aside>
+</section>

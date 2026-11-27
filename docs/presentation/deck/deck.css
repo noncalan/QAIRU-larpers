@@ -1,0 +1,328 @@
+/* QAIRU larpers. Палитра: тёмный #0F1B2D, светлый #F6F4EE, модель (оранжевый) #A94E0E, код (синий) #1D4F91. */
+
+section {
+  counter-increment: page;
+  padding: 128px 128px 160px;
+  background: #F6F4EE;
+  color: #1B2A41;
+  font-family: 'Inter', Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- общий каркас слайда ---------- */
+.eyebrow {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #A94E0E;
+}
+.title {
+  font-family: 'Manrope', Arial, sans-serif;
+  font-size: 60px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -1px;
+  color: #0F1B2D;
+  margin-top: 16px;
+}
+.body {
+  margin-top: 44px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  flex: 1;
+}
+.row {
+  display: flex;
+  gap: 32px;
+}
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1;
+}
+.col-wide {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1.25;
+}
+.spacer { flex: 1; }
+.lead {
+  font-size: 32px;
+  line-height: 1.4;
+  color: #4B5870;
+}
+.txt {
+  font-size: 28px;
+  line-height: 1.4;
+  color: #4B5870;
+}
+.strong {
+  font-size: 28px;
+  line-height: 1.4;
+  font-weight: 600;
+  color: #0F1B2D;
+}
+.foot {
+  position: absolute;
+  left: 128px;
+  right: 128px;
+  bottom: 64px;
+  display: flex;
+  justify-content: space-between;
+  gap: 32px;
+}
+.src {
+  font-size: 24px;
+  line-height: 1.2;
+  color: #5B667A;
+}
+.pg {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 24px;
+  line-height: 1.2;
+  color: #5B667A;
+}
+.pg::after { content: counter(page); }
+
+/* ---------- карточки и числа ---------- */
+.card {
+  background: #FFFDF8;
+  border: 1px solid #D8D2C4;
+  border-radius: 16px;
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+.card-title {
+  font-family: 'Manrope', Arial, sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #0F1B2D;
+}
+.big {
+  font-family: 'Manrope', Arial, sans-serif;
+  font-size: 72px;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -2px;
+  color: #0F1B2D;
+}
+.big-code { color: #1D4F91; }
+.big-model { color: #A94E0E; }
+.label {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #1D4F91;
+}
+.label-model { color: #A94E0E; }
+.quote {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 24px;
+  line-height: 1.45;
+  color: #0F1B2D;
+  background: #ECE7DB;
+  border-radius: 8px;
+  padding: 16px 20px;
+}
+.pill {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #0F1B2D;
+  background: #ECE7DB;
+  border-radius: 8px;
+  padding: 10px 16px;
+}
+.pill-red {
+  color: #FFFDF8;
+  background: #B3261E;
+}
+.pills {
+  display: flex;
+  gap: 12px;
+}
+
+/* ---------- конвейер ---------- */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 24px 16px;
+}
+.step {
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.step-code {
+  background: #DCE8F8;
+  border: 1px solid #2F62A8;
+}
+.step-model {
+  background: #FBE6D2;
+  border: 1px solid #D9772B;
+}
+.step-name {
+  font-family: 'Manrope', Arial, sans-serif;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #0F1B2D;
+}
+.step-txt {
+  font-size: 24px;
+  line-height: 1.35;
+  color: #1B2A41;
+}
+
+/* ---------- сетка карточек 3×2 ---------- */
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+/* ---------- таблицы ---------- */
+.tbl {
+  width: 100%;
+  font-family: 'Inter', Arial, sans-serif;
+  font-size: 28px;
+  color: #1B2A41;
+}
+.tbl-head { background: #ECE7DB; }
+.tbl-accent { background: #DCE8F8; }
+.better { color: #1D4F91; }
+.worse { color: #A94E0E; }
+
+/* ---------- светофор отчёта ---------- */
+.verdict {
+  background: #F8E1DD;
+  border: 1px solid #B3261E;
+  border-radius: 12px;
+  padding: 20px 24px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+.verdict-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.tile {
+  background: #FFFDF8;
+  border: 1px solid #D8D2C4;
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.tile-num {
+  font-family: 'Manrope', Arial, sans-serif;
+  font-size: 60px;
+  font-weight: 800;
+  line-height: 1.05;
+  color: #0F1B2D;
+}
+
+/* ---------- тёмные слайды ---------- */
+.dark {
+  background: #0F1B2D;
+  color: #F3EFE6;
+}
+.dark .eyebrow { color: #F2A65A; }
+.dark .title { color: #F3EFE6; }
+.dark .lead { color: #B9C4D6; }
+.dark .txt { color: #B9C4D6; }
+.dark .src { color: #B9C4D6; }
+.dark .pg { color: #B9C4D6; }
+.dark .card-title { color: #F3EFE6; }
+.dark-list {
+  font-size: 30px;
+  line-height: 1.4;
+  color: #F3EFE6;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.cover { padding: 128px; }
+.cover-title {
+  font-family: 'Manrope', Arial, sans-serif;
+  font-size: 112px;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -3px;
+  color: #F3EFE6;
+  margin-top: 32px;
+}
+.cover-lead {
+  font-size: 30px;
+  line-height: 1.4;
+  color: #B9C4D6;
+  width: 1100px;
+  margin-top: 32px;
+}
+.motto {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+.chip {
+  font-family: 'Manrope', Arial, sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.2;
+  padding: 14px 28px;
+  border-radius: 40px;
+}
+.chip-model {
+  background: #F2A65A;
+  color: #0F1B2D;
+}
+.chip-code {
+  background: #8DB8F0;
+  color: #0F1B2D;
+}
+.chip-human {
+  border: 1px solid #B9C4D6;
+  color: #F3EFE6;
+}
+.cover-team {
+  font-size: 24px;
+  line-height: 1.4;
+  color: #B9C4D6;
+  margin-top: 40px;
+}
+
+/* Имена участников: вписать один раз здесь, они появятся на слайдах 1 и 15 */
+.team-names::after { content: "Айдынулы Алихан, Габдулгумаров Рамазан, Бейсенбек Нурдаулет"; }
+
+.fit { flex: none; }
+
+.bars { display: flex; flex-direction: column; gap: 14px; }
+.bar-row { display: grid; grid-template-columns: 340px 1fr 250px; align-items: center; gap: 20px; }
+.bar-name { font-size: 26px; font-weight: 600; color: #0F1B2D; }
+.bar-track { height: 36px; background: #ECE7DB; border-radius: 8px; }
+.bar-fill { height: 36px; background: #D9772B; border-radius: 8px; }
+.bar-val { font-family: 'JetBrains Mono', monospace; font-size: 24px; color: #4B5870; }
