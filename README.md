@@ -8,13 +8,16 @@
 
 Команда **QAIRU larpers**, отбор **BCC-HUB x MNU AI Agent Challenge 2026**, кейс [AI Requirements Validator](https://github.com/BCC-HUB/ai-requirements-validator-task) (копия ТЗ: [`docs/case/task.md`](docs/case/task.md)).
 
-<!-- Запись терминала 30–60 с (docs/img/demo.gif или .svg) добавит задача «Демо» (#55). -->
+![Демо: проверка PDF одной командой, первая страница отчёта, битый файл, вопросы автору и повторная проверка с ответами](docs/demo/demo.gif)
+
+*Запись терминала, 93 с: модель не вызывается, ответы берутся из записи живого прогона (`--backend replay`). Видео [`docs/demo/demo.mp4`](docs/demo/demo.mp4), сценарий [`docs/demo.md`](docs/demo.md), повторить у себя: `bash docs/demo/demo.sh`.*
 
 ## Для жюри: где что
 
 | Что | Где |
 |---|---|
 | Запустить агента за 5 минут (в том числе без ключа и без подписки) | [Быстрый старт](#быстрый-старт) |
+| Демо: запись терминала и сценарий видео | [`docs/demo/`](docs/demo/README.md), [`docs/demo.md`](docs/demo.md) |
 | Отчёт на сдачу, который сделал этот агент по `requirements.pdf` | Кандидат RC2: [`reports/v0.9-rc2/report.pdf`](reports/v0.9-rc2/report.pdf) (там же Markdown, JSON, вопросы автору, запись вызовов модели, [согласие форматов](reports/v0.9-rc2/formats.md) и [как получен](reports/v0.9-rc2/README.md)). Финальный отчёт кладёт релиз v1.0, 27.11 |
 | Как устроен агент | [Как это работает](#как-это-работает), подробно [`docs/architecture.md`](docs/architecture.md), решения [`docs/adr/`](docs/adr/README.md) |
 | Насколько он точен и чем лучше одного запроса в чат | [Качество агента](#качество-агента), сырые цифры [`evals/results/`](evals/results/summary.md) |
