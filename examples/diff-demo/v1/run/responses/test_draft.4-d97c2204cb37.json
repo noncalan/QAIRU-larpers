@@ -1,0 +1,189 @@
+{
+ "envelope_version": 1,
+ "key": "d97c2204cb3759bdd8823d3ae14496e7ca5575836a92d2124ef7f09171629a81",
+ "call_id": "test_draft.4",
+ "step": "test_draft",
+ "call_index": 4,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T18:21:09.017989+00:00",
+ "payload": {
+  "duration_api_ms": 20974,
+  "stop_reason": "end_turn",
+  "session_id": "8ac23a25-a69d-46b5-8c29-4fcfa0f93445",
+  "total_cost_usd": 0.07109599999999999,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 11183,
+   "cache_read_input_tokens": 0,
+   "output_tokens": 2636,
+   "output_tokens_details": {
+    "thinking_tokens": 1814
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 11183,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 2636,
+     "cache_read_input_tokens": 0,
+     "cache_creation_input_tokens": 11183,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 11183
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 2636,
+    "cacheReadInputTokens": 0,
+    "cacheCreationInputTokens": 11183,
+    "webSearchRequests": 0,
+    "costUSD": 0.07109599999999999,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 1814,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 11183,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n**M-049.** Для теста на чужую карту нужны код ответа и тело. Документ называет их прямо: для чужой карты возвращается 404, тело `{\"message\":\"Карта не найдена\"}`. Условие, при котором возвращается 403, документ не задаёт, и 404 нет в перечне статусов. Но это не меняет ответа для чужой карты: правило про неё сформулировано отдельно, и 403 для неё нигде не назван. Тест на чужую карту написать можно. Тест на 403 написать нельзя, потому что у него нет входного условия. Это отмечено в `note`.\n\n## Ответ\n\n```json\n{\n  \"drafts\": [\n    {\n      \"finding\": \"M-049\",\n      \"can_write\": true,\n      \"precondition\": \"Клиент А авторизован, у него есть действующий токен. Существует карта клиента Б, она не принадлежит клиенту А. Её идентификатор известен тестировщику.\",\n      \"steps\": [\n        \"От имени клиента А отправить запрос сохранения порога на Dev: /alerts/saveLimit с cardId карты клиента Б, amount=50000, enabled=1.\",\n        \"Записать код ответа и тело ответа.\"\n      ],\n      \"expected\": \"Код ответа 404, тело {\\\"message\\\":\\\"Карта не найдена\\\"}. Ответ совпадает с ответом на запрос с несуществующим cardId.\",\n      \"values\": [\n        {\"value\": \"404\", \"quote\": \"Для чужой карты возвращается 404, как и для отсутствующей карты.\"},\n        {\"value\": \"{\\\"message\\\":\\\"Карта не найдена\\\"}\", \"quote\": \"{\\\"message\\\":\\\"Карта не найдена\\\"}\"},\n        {\"value\": \"/alerts/saveLimit\", \"quote\": \"Dev: `/alerts/saveLimit` . Prod: —\"}\n      ],\n      \"gaps\": [],\n      \"note\": \"Для чужой карты код и тело ответа заданы однозначно: правило про неё сформулировано отдельно. Значение amount=50000 выбрано тестировщиком внутри допустимого диапазона и требованием не является. Условие возврата 403 документ не называет, поэтому отдельный тест на 403 написать нельзя. Отсутствие 404 в перечне статусов и размещение описания 404 под заголовком «403» — дефект документа, но на ожидаемый результат для чужой карты он не влияет.\"\n    }\n  ]\n}\n```",
+  "ttft_ms": 15594,
+  "type": "result",
+  "duration_ms": 26795,
+  "uuid": "9cb9fb84-a2e4-4500-afba-599e4165405b",
+  "ttft_stream_ms": 751,
+  "time_to_request_ms": 33,
+  "time_to_request_phases_ms": {
+   "other": 3,
+   "system_prompt": 1,
+   "resume_other": 0,
+   "process_user_input": 1,
+   "input_attachments": 5,
+   "input_hooks": 0,
+   "conversation_append": 0,
+   "tool_pool_refresh": 1,
+   "init_message": 2,
+   "init_frame_send": 1,
+   "engine_pickup": 0,
+   "loop_entry": 1,
+   "message_prep": 1,
+   "model_config_wait": 1,
+   "autocompact": 1,
+   "request_announcements": 1,
+   "query_setup": 1,
+   "model_gates": 0,
+   "tool_schema_build": 7,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 0,
+  "time_to_request_cpu_ms": 59,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "model",
+   "slowest_producer_ms": 2,
+   "cpu_ms": 7,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 0,
+   "ambient_start_ms": 1,
+   "ambient_wait_ms": 1,
+   "render_ms": 0,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 7,
+   "placement_ms": 0,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 7,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 0,
+   "plans_ms": 0,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 2,
+   "record_attempt_ms": 1,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 751,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "credential_expires_at": "2026-12-24T20:08:56.233Z"
+ }
+}

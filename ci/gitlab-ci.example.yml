@@ -1,0 +1,80 @@
+# Пример GitLab CI для merge request, в котором изменился документ требований.
+# Храните report.json для текущей версии документа в целевой ветке, по пути QAIRU_BASELINE_REPORT.
+# Чтобы обновить его, запустите validator для этой версии и добавьте report.json в тот же коммит,
+# что и документ. Задание берёт оба файла из одного коммита и сверяет хеш документа.
+# ANTHROPIC_API_KEY задаётся в GitLab CI/CD Variables. Запускайте проверку только для доверенных
+# веток и участников. Для MR из форка запускайте доверенный конвейер в целевом проекте,
+# где доступны целевая ветка и переменная с ключом.
+# https://docs.gitlab.com/ci/pipelines/merge_request_pipelines/
+# https://docs.gitlab.com/ci/variables/predefined_variables/
+# https://docs.gitlab.com/ci/yaml/#artifactsexpose_as
+
+variables:
+  REQUIREMENTS_DOC: docs/requirements/spec.md # .md, .pdf или .docx
+
+requirements-check:
+  stage: test
+  image: python:3.12-slim
+  variables:
+    QAIRU_BASELINE_REPORT: docs/requirements/report.json
+    QAIRU_BUDGET_USD: "5"
+    QAIRU_PROFILE: standard
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes:
+        paths:
+          - $REQUIREMENTS_DOC
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends ca-certificates git
+    - pip install --quiet uv
+    - uv sync --frozen --no-dev
+  script:
+    - |
+      set -eu
+      if [ "$CI_PROJECT_ID" != "$CI_MERGE_REQUEST_TARGET_PROJECT_ID" ]; then
+        echo "Запустите конвейер в целевом проекте merge request." >&2
+        exit 1
+      fi
+      mkdir -p qairu
+      target_ref=${CI_MERGE_REQUEST_TARGET_BRANCH_SHA:-refs/heads/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME}
+      git fetch --quiet --depth=1 origin "$target_ref"
+      target_commit=$(git rev-parse FETCH_HEAD)
+      old_doc="qairu/old.${REQUIREMENTS_DOC##*.}"
+      git show "$target_commit:$REQUIREMENTS_DOC" > "$old_doc"
+      if ! git show "$target_commit:$QAIRU_BASELINE_REPORT" > qairu/old-report.json; then
+        echo "В целевом коммите $target_commit отсутствует $QAIRU_BASELINE_REPORT." >&2
+        exit 1
+      fi
+      uv run python - "$old_doc" <<'PY'
+      import hashlib
+      import json
+      from pathlib import Path
+      import sys
+
+      report = json.loads(Path("qairu/old-report.json").read_text(encoding="utf-8"))
+      digest = hashlib.sha256(Path(sys.argv[1]).read_bytes()).hexdigest()
+      if report["passport"]["document_sha256"] != digest:
+          sys.exit("Отчёт целевой ветки устарел: его хеш не совпадает с документом.")
+      PY
+      uv run validator "$REQUIREMENTS_DOC" qairu/report.md --backend api --profile "$QAIRU_PROFILE" \
+        --max-budget-usd "$QAIRU_BUDGET_USD" --cache off
+      uv run validator-diff qairu/old-report.json qairu/report.json qairu/diff.md \
+        --json qairu/diff.json --old-doc "$old_doc" --new-doc "$REQUIREMENTS_DOC"
+    - |
+      uv run python - <<'PY'
+      import json
+      from pathlib import Path
+      import sys
+
+      out = Path("qairu")
+      light = json.loads((out / "report.json").read_text(encoding="utf-8"))["verification"]["traffic_light"]
+      new_critical = json.loads((out / "diff.json").read_text(encoding="utf-8"))["summary"]["new_critical"]
+      print(f"Светофор: {light}; новых критичных находок: {new_critical}")
+      sys.exit(1 if light == "red" or new_critical > 0 else 0)
+      PY
+  artifacts:
+    when: always
+    expose_as: "Проверка ТЗ"
+    paths:
+      - qairu/
+    expire_in: 30 days
