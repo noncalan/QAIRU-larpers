@@ -1,0 +1,74 @@
+{
+  "v": 5,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-11-26T08:40:00Z"
+  },
+  "lists": "css",
+  "format": {
+    "v": 1,
+    "shared": [
+      "project/deck.css"
+    ]
+  },
+  "title": "QAIRU larpers: ревью ТЗ с доказательствами",
+  "cover": "cover",
+  "order": [
+    "cover",
+    "problem",
+    "finding",
+    "report",
+    "pipeline",
+    "guarantees",
+    "compare",
+    "holdout",
+    "decisions",
+    "clarify",
+    "robust",
+    "value-time",
+    "value-defect",
+    "cost",
+    "next"
+  ],
+  "sections": {
+    "s1": {
+      "description": "Проблема ревью ТЗ и что агент выдаёт в ответ.",
+      "start": "cover"
+    },
+    "s2": {
+      "description": "Архитектура: модель предлагает, код проверяет.",
+      "start": "pipeline"
+    },
+    "s3": {
+      "description": "Замеры: сравнение с одним промптом, чужие ТЗ и решения по цифрам.",
+      "start": "compare"
+    },
+    "s4": {
+      "description": "Вопросы автору ТЗ и устойчивость к сбоям.",
+      "start": "clarify"
+    },
+    "s5": {
+      "description": "Бизнес-ценность: время, деньги и цена пропущенного дефекта.",
+      "start": "value-time"
+    },
+    "s6": {
+      "description": "Куда уходят время и деньги, ограничения и план к финалу.",
+      "start": "cost"
+    }
+  },
+  "faces": {
+    "inter-tight": {
+      "family": "Inter Tight",
+      "href": "https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500..800&display=swap"
+    },
+    "inter": {
+      "family": "Inter",
+      "href": "https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&display=swap"
+    },
+    "jetbrains-mono": {
+      "family": "JetBrains Mono",
+      "href": "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400..700&display=swap"
+    }
+  },
+  "designSystems": []
+}
