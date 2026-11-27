@@ -10,13 +10,13 @@ description = "Шаблон переменных окружения: в нём �
 paths = ['''(^|/)\.env\.example$''']
 
 [[allowlists]]
-description = "Хеш-ключи кеша вызовов модели и судьи (поле key в JSON/JSONL): это sha256, а не секрет"
+description = "Хеш-ключи кеша и записи вызовов модели и судьи (поле key в JSON/JSONL, run/calls.jsonl, run/responses/): это sha256, а не секрет"
 condition = "AND"
-paths = ['''^evals/(cache|results)/''', '''^tests/fixtures/''']
+paths = ['''^evals/(cache|results|holdout)/''', '''^tests/fixtures/''', '''^reports/''', '''^examples/''']
 regexes = ['''^[0-9a-f]{64}$''']
 
 [[allowlists]]
-description = "Поле stable_key в снапшотах отчёта (tests/fixtures/e2e) и в записанных прогонах eval (evals/results): 12 первых знаков sha256 нормализованной цитаты, а не секрет"
+description = "Поле stable_key в отчётах (report.json), снапшотах (tests/fixtures/e2e) и записанных прогонах: 12 первых знаков sha256 нормализованной цитаты, а не секрет"
 condition = "AND"
-paths = ['''^tests/fixtures/''', '''^evals/results/''']
+paths = ['''^tests/fixtures/''', '''^evals/(results|holdout)/''', '''^reports/''', '''^examples/''']
 regexes = ['''^[0-9a-f]{12}$''']

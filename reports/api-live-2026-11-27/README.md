@@ -1,6 +1,6 @@
 # Живой прогон агента через API Anthropic (27.11.2026)
 
-Первый живой прогон пути `--backend api`. Отчёт не правили руками: все файлы в этой папке записал агент.
+Первый живой прогон пути `--backend api`. Отчёт не правили руками: все файлы в этой папке, кроме этого README, записал агент.
 
 ## Как запускали
 
@@ -42,7 +42,7 @@ env -u ANTHROPIC_BASE_URL ANTHROPIC_API_KEY="$QAIRU_ANTHROPIC_KEY" \
 
 - `report.pdf`, `report.md`, `report.json`: отчёт.
 - `questions.yaml`: вопросы автору.
-- `run/`: запись прогона (`calls.jsonl` и ответы модели); из неё отчёт пересобирается без сети через `--backend replay --replay run`.
+- `run/`: запись прогона (`calls.jsonl` и ответы модели); из неё отчёт пересобирается без сети из корня репозитория: `uv run validator data/input/requirements.pdf out/report.pdf --backend replay --replay reports/api-live-2026-11-27/run` (код 0, 52 нарушения, 7 критичных).
 - `report.log`: шаги и время.
 
 Ключа в файлах нет (проверено поиском по значению ключа и по `sk-ant`).
