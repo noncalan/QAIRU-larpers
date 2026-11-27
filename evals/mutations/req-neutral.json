@@ -1,0 +1,27 @@
+{
+  "schema": "mutations/1",
+  "copy": "req-neutral",
+  "kind": "neutral",
+  "source": "data/input/requirements.md",
+  "source_sha256": "e7dae55e5453a250d93e335f5ff9c7f775f4457ccddd333f4a67e47b20d74381",
+  "copy_sha256": "2ad76c44f0da80689997dd11e0a72683ea38cd03b9604b62a62944aee6a01d02",
+  "neutral": [
+    {
+      "operator": "N1",
+      "name": "Поменять местами соседние разделы",
+      "result": "### Общие сведения ⇄ ### Цели"
+    },
+    {
+      "operator": "N2",
+      "name": "Перенумеровать нумерованные списки",
+      "result": "пунктов: 8"
+    },
+    {
+      "operator": "N3",
+      "name": "Таблицу из двух столбцов превратить в список",
+      "result": "строк: 7"
+    }
+  ],
+  "mutations": [],
+  "skipped": []
+}

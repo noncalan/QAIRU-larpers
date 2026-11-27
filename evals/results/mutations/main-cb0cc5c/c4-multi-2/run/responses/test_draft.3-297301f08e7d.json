@@ -1,0 +1,189 @@
+{
+ "envelope_version": 1,
+ "key": "297301f08e7d742f02df86d84d769ad6431b96f7b7cdf3759c4b2c061e77ddb5",
+ "call_id": "test_draft.3",
+ "step": "test_draft",
+ "call_index": 3,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T19:49:23.807393+00:00",
+ "payload": {
+  "duration_api_ms": 56210,
+  "stop_reason": "end_turn",
+  "session_id": "108812cd-2935-48e4-a80c-d0e706e12b2b",
+  "total_cost_usd": 0.1167373,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 7430,
+   "cache_read_input_tokens": 2133,
+   "output_tokens": 8680,
+   "output_tokens_details": {
+    "thinking_tokens": 3975
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 7430,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 8680,
+     "cache_read_input_tokens": 2133,
+     "cache_creation_input_tokens": 7430,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 7430
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 8680,
+    "cacheReadInputTokens": 2133,
+    "cacheCreationInputTokens": 7430,
+    "webSearchRequests": 0,
+    "costUSD": 0.1167373,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 3975,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 7430,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n**M-029.** Для результата нужно знать, остаётся ли запись в БД после DELETE и сколько хранятся данные. В документе есть только «Удалить сотрудника.». Способа удаления и срока хранения нет, поэтому пропуски.\n\n**M-031.** Нужны код ответа на запрос без сессии и поля тела ошибки. Документ называет только 400, 404, 409 и «структурированные ошибки» без состава. Код для запроса без сессии и схема тела ошибки отсутствуют, поэтому пропуски.\n\n**M-032.** Нужны разрешённые origin и признак передачи cookie. Документ говорит лишь «разрешить все», что для cookie невыполнимо. Конкретных значений нет, поэтому пропуски.\n\n**M-033.** Нужен перечень данных, запрещённых в журнале. В документе его нет, есть только факт логирования ошибок авторизации. Ставлю пропуск.\n\n**M-034.** Нужно знать, входит ли удаление сотрудника в «ключевые операции», а также уровень и поля записи. В документе перечислены только создание компании и ошибки авторизации. Ставлю пропуски.\n\n**M-035.** Нужны метрика и условия измерения «стабильности», а также критерий «интуитивности» и интерфейс, к которому он относится. В документе нет ничего из этого, поэтому пропуски.\n\n**M-037.** Нужны сценарии, порог покрытия и БД для тестов. Документ задаёт только `@SpringBootTest`, поэтому остальное пропуски.\n\n**M-038.** Нужны эталонные ответы эндпоинтов и обязательность Postman-коллекции. Документ даёт пример тела запроса, но не ответы, и пишет «приветствуется». Ставлю пропуски.\n\n**M-039.** Изоляция данных («только свои») и BCrypt в документе есть. Нет кода ответа при чужом ID и при отсутствии сессии, а также критерия приёмки по безопасности. Ставлю пропуски на эти места.\n\n**M-040.** Нужны инструмент и порог оценки. В документе только «соблюдение принципов SOLID», поэтому пропуски.\n\n## Ответ\n\n```json\n{\n  \"drafts\": [\n    {\n      \"finding\": \"M-029\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователь авторизован, в системе есть сотрудник с заполненными ФИО, полом, возрастом и семейным положением.\",\n      \"steps\": [\n        \"Отправить DELETE на эндпоинт удаления этого сотрудника.\",\n        \"Проверить строку сотрудника в таблице БД напрямую.\",\n        \"Запросить список сотрудников через API.\"\n      ],\n      \"expected\": \"Запрос на удаление выполнен. Запись сотрудника в БД: [?1]. Персональные данные сотрудника хранятся ещё [?2].\",\n      \"values\": [\n        {\"value\": \"Удалить сотрудника\", \"quote\": \"Удалить сотрудника.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"что происходит с записью после DELETE: физическое удаление или пометка; документ говорит только «Удалить сотрудника»\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"срок хранения персональных данных сотрудника после удаления\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-031\",\n      \"can_write\": false,\n      \"precondition\": \"Сессии нет: вход не выполнен или выполнен выход.\",\n      \"steps\": [\n        \"Отправить GET на эндпоинт списка компаний без cookie сессии.\"\n      ],\n      \"expected\": \"Данные компаний не возвращаются. Код ответа: [?1]. Тело ответа содержит поля: [?2].\",\n      \"values\": [\n        {\"value\": \"требуется авторизация\", \"quote\": \"(требуется авторизация)\"},\n        {\"value\": \"HTTP 400, 404, 409\", \"quote\": \"Глобальная обработка исключений с возвратом структурированных ошибок (HTTP 400, 404, 409).\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"код ответа на запрос без сессии: в перечне ошибок есть только 400, 404, 409, а 401 и 403 не названы\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"состав «структурированной ошибки»: названия и типы полей тела ответа\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-032\",\n      \"can_write\": false,\n      \"precondition\": \"Тестовое окружение запущено. Есть страница на другом origin, чем API, и зарегистрированный пользователь.\",\n      \"steps\": [\n        \"Со страницы другого origin вызвать вход в систему с передачей учётных данных браузера.\",\n        \"С той же страницы вызвать запрос информации о текущем пользователе, передавая cookie.\"\n      ],\n      \"expected\": \"Разрешённые origin: [?1]. Передача cookie с учётными данными: [?2]. Запрос информации о пользователе выполняется в рамках установленной сессии.\",\n      \"values\": [\n        {\"value\": \"session cookie\", \"quote\": \"Вход (устанавливает session cookie).\"},\n        {\"value\": \"разрешить все для тестового окружения\", \"quote\": \"Настройка CORS (разрешить все для тестового окружения).\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"список разрешённых origin: «разрешить все» несовместимо с передачей cookie, конкретные значения не заданы\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"разрешена ли передача учётных данных (cookie) при запросах с другого origin\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-033\",\n      \"can_write\": false,\n      \"precondition\": \"Приложение запущено, журнал доступен для чтения. Есть пользователь с известным паролем.\",\n      \"steps\": [\n        \"Выполнить вход с неверным паролем.\",\n        \"Создать компанию с ФИО-подобными и иными тестовыми данными в теле запроса.\",\n        \"Просмотреть записи журнала за это время.\"\n      ],\n      \"expected\": \"В журнале есть запись об ошибке авторизации. В журнале нет: [?1].\",\n      \"values\": [\n        {\"value\": \"ошибки авторизации\", \"quote\": \"Логирование ключевых операций (создание компании, ошибки авторизации).\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"перечень данных, запрещённых в журнале (пароли, идентификатор сессии, тела запросов, персональные данные)\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-034\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователь авторизован, в системе есть сотрудник, журнал доступен для чтения.\",\n      \"steps\": [\n        \"Удалить сотрудника.\",\n        \"Просмотреть записи журнала за это время.\"\n      ],\n      \"expected\": \"Запись об удалении сотрудника в журнале [?1]. Уровень записи [?2], поля записи: [?3].\",\n      \"values\": [\n        {\"value\": \"создание компании\", \"quote\": \"Логирование ключевых операций (создание компании, ошибки авторизации).\"},\n        {\"value\": \"ошибки авторизации\", \"quote\": \"Логирование ключевых операций (создание компании, ошибки авторизации).\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"входит ли удаление сотрудника в «ключевые операции»: документ называет только создание компании и ошибки авторизации\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"уровень записи журнала для ключевых операций\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"состав записи журнала: какие поля обязательны\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-035\",\n      \"can_write\": false,\n      \"precondition\": \"Система развёрнута. Из пользовательских интерфейсов в документе есть только REST API и Swagger UI.\",\n      \"steps\": [\n        \"Подать на API нагрузку [?1] в течение [?2].\",\n        \"Зафиксировать долю ошибочных ответов и доступность.\"\n      ],\n      \"expected\": \"Доступность не ниже [?3], доля ошибок не выше [?4]. Интерфейс признаётся интуитивно понятным, если [?5].\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"профиль нагрузки для проверки «стабильной работы»\", \"part\": \"steps\"},\n        {\"number\": 2, \"missing\": \"длительность и условия измерения стабильности\", \"part\": \"steps\"},\n        {\"number\": 3, \"missing\": \"числовой порог доступности\", \"part\": \"expected\"},\n        {\"number\": 4, \"missing\": \"числовой порог доли ошибок\", \"part\": \"expected\"},\n        {\"number\": 5, \"missing\": \"критерий «интуитивно понятного» интерфейса и сам интерфейс, к которому он относится: пользовательского интерфейса в документе нет\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-037\",\n      \"can_write\": false,\n      \"precondition\": \"Есть набор интеграционных тестов проекта.\",\n      \"steps\": [\n        \"Запустить интеграционные тесты.\",\n        \"Сверить перечень сценариев, которые они покрывают, и измерить покрытие.\"\n      ],\n      \"expected\": \"Тесты используют `@SpringBootTest`, покрывают сценарии [?1], покрытие не ниже [?2], тестовая БД: [?3].\",\n      \"values\": [\n        {\"value\": \"@SpringBootTest\", \"quote\": \"Интеграционные тесты с `@SpringBootTest`.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"перечень обязательных сценариев: позитивные, негативные, доступ к чужим данным\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"порог покрытия\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"какая БД используется в тестах\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-038\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователь зарегистрирован и авторизован.\",\n      \"steps\": [\n        \"Отправить POST на создание компании с телом из примера: name «ООО Ромашка», inn «1234567890».\",\n        \"Повторить аналогичный вызов для каждого из остальных эндпоинтов.\"\n      ],\n      \"expected\": \"Для каждого эндпоинта код и тело ответа: [?1]. Поставка Postman-коллекции [?2].\",\n      \"values\": [\n        {\"value\": \"приветствуется\", \"quote\": \"Корректная работа всех эндпоинтов (Postman-коллекция приветствуется).\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"эталонные коды и тела ответов для каждого эндпоинта: в документе есть только примеры запросов\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"обязательна ли Postman-коллекция: «приветствуется» не задаёт обязательность\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-039\",\n      \"can_write\": false,\n      \"precondition\": \"Зарегистрированы пользователи A и B. Пользователь A создал компанию.\",\n      \"steps\": [\n        \"Войти как B и запросить компанию A по ID.\",\n        \"Без сессии запросить компанию A по ID.\",\n        \"Посмотреть в БД значение пароля пользователя A.\"\n      ],\n      \"expected\": \"Данные компании A пользователю B не возвращаются, код ответа: [?1]. Запрос без сессии отклоняется с кодом [?2]. Пароль в БД хранится в виде хэша BCrypt. Цель «безопасный бэкенд» считается достигнутой, если [?3].\",\n      \"values\": [\n        {\"value\": \"только свои\", \"quote\": \"Получить компанию по ID (только свои).\"},\n        {\"value\": \"BCrypt\", \"quote\": \"Хранение паролей в хэшированном виде (BCrypt).\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"код ответа при запросе чужой компании: в перечне ошибок есть 404, но не сказано, какой код возвращать в этом случае\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"код ответа на запрос без сессии (401 или 403 в документе не названы)\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"критерий приёмки по безопасности: ни один критерий оценки не проверяет цель «безопасный»\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-040\",\n      \"can_write\": false,\n      \"precondition\": \"Есть исходный код проекта.\",\n      \"steps\": [\n        \"Два проверяющих независимо оценивают код на соблюдение SOLID с помощью [?1].\"\n      ],\n      \"expected\": \"Код принимается, если оценка не ниже [?2].\",\n      \"values\": [\n        {\"value\": \"SOLID\", \"quote\": \"Чистый код, соблюдение принципов SOLID.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"инструмент или чек-лист оценки «чистого кода» и SOLID\", \"part\": \"steps\"},\n        {\"number\": 2, \"missing\": \"порог принятия оценки\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    }\n  ]\n}\n```",
+  "ttft_ms": 29915,
+  "type": "result",
+  "duration_ms": 59594,
+  "uuid": "cd92b5c3-473b-4981-bf51-04d967300112",
+  "ttft_stream_ms": 916,
+  "time_to_request_ms": 304,
+  "time_to_request_phases_ms": {
+   "other": 2,
+   "system_prompt": 1,
+   "resume_other": 0,
+   "process_user_input": 1,
+   "input_attachments": 25,
+   "input_hooks": 1,
+   "conversation_append": 0,
+   "tool_pool_refresh": 1,
+   "init_message": 2,
+   "init_frame_send": 1,
+   "engine_pickup": 0,
+   "loop_entry": 1,
+   "message_prep": 1,
+   "model_config_wait": 0,
+   "autocompact": 1,
+   "request_announcements": 1,
+   "query_setup": 0,
+   "model_gates": 255,
+   "tool_schema_build": 3,
+   "message_normalization": 1,
+   "client_creation": 3,
+   "request_build": 4
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 1,
+  "time_to_request_cpu_ms": 119,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "at_mentioned_files",
+   "slowest_producer_ms": 20,
+   "cpu_ms": 47,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 21,
+   "ambient_start_ms": 1,
+   "ambient_wait_ms": 2,
+   "render_ms": 0,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 2,
+   "placement_ms": 0,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 1,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 7,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 1,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 0,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 916,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "credential_expires_at": "2026-12-24T20:08:55.712Z"
+ }
+}

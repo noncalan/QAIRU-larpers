@@ -1,0 +1,88 @@
+{
+  "schema": "mutations/1",
+  "copy": "c4-multi-1",
+  "kind": "multi",
+  "source": "data/holdout/c4/c4_tech_task.md",
+  "source_sha256": "fe3bf62e887c60fcfd9739bbe248a0c222490d443dafa9e86a0a4955eabe31f6",
+  "copy_sha256": "0b2a455e8d1f24fd8238046e31243772dc4fbb0e465664df4b096f11bbe83b03",
+  "seed": 51,
+  "mutations": [
+    {
+      "id": "c4-multi-1-01",
+      "operator": "M1",
+      "name": "Размыть число",
+      "expected_properties": [
+        "IND-UNAMB",
+        "IND-VERIF"
+      ],
+      "section": "c4_tech_task_example / **Код (C4)** / **Требования к сущностям**",
+      "original": "13 цифр",
+      "replacement": "приемлемое значение",
+      "start": 1440,
+      "end": 1459,
+      "line": 38,
+      "match_spans": [
+        [
+          1440,
+          1459
+        ]
+      ],
+      "note": ""
+    },
+    {
+      "id": "c4-multi-1-02",
+      "operator": "M6",
+      "name": "Склеить требования",
+      "expected_properties": [
+        "IND-SING"
+      ],
+      "section": "c4_tech_task_example / **Критерии оценки**",
+      "original": "1. Корректная работа всех эндпоинтов (Postman-коллекция приветствуется).\n2. Чистый код, соблюдение принципов SOLID.",
+      "replacement": "1. Корректная работа всех эндпоинтов (Postman-коллекция приветствуется) и/или чистый код, соблюдение принципов SOLID.",
+      "start": 4492,
+      "end": 4609,
+      "line": 123,
+      "match_spans": [
+        [
+          4492,
+          4609
+        ]
+      ],
+      "note": ""
+    },
+    {
+      "id": "c4-multi-1-03",
+      "operator": "M4",
+      "name": "Висячая ссылка",
+      "expected_properties": [
+        "IND-COMPL",
+        "IND-CORR",
+        "IND-TRACE",
+        "SET-COMPL"
+      ],
+      "section": "c4_tech_task_example / **Инструкция для разработчика**",
+      "original": "",
+      "replacement": " Порядок обработки описан в разделе 9.6.",
+      "start": 3477,
+      "end": 3517,
+      "line": 89,
+      "match_spans": [
+        [
+          3477,
+          3517
+        ]
+      ],
+      "note": ""
+    }
+  ],
+  "skipped": [
+    {
+      "operator": "M10",
+      "reason": "места нет"
+    },
+    {
+      "operator": "M9",
+      "reason": "места нет"
+    }
+  ]
+}

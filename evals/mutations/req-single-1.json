@@ -1,0 +1,35 @@
+{
+  "schema": "mutations/1",
+  "copy": "req-single-1",
+  "kind": "single",
+  "source": "data/input/requirements.md",
+  "source_sha256": "e7dae55e5453a250d93e335f5ff9c7f775f4457ccddd333f4a67e47b20d74381",
+  "copy_sha256": "c7b1babb484e7b0cfe2dbf4becb7b58d9bcd526434942cdaf8ba38f74e6f31f9",
+  "seed": 50,
+  "mutations": [
+    {
+      "id": "req-single-1-01",
+      "operator": "M1",
+      "name": "Размыть число",
+      "expected_properties": [
+        "IND-UNAMB",
+        "IND-VERIF"
+      ],
+      "section": "Уведомление о расходах по карте / Часть A. Новый функционал / Требования к изменениям",
+      "original": "от 1 000 до 1 000 000 ₸ включительно",
+      "replacement": "в разумных пределах",
+      "start": 1410,
+      "end": 1429,
+      "line": 37,
+      "match_spans": [
+        [
+          1410,
+          1429
+        ]
+      ],
+      "note": "от 1 000 до 1 000 000 ₸ включительно"
+    }
+  ],
+  "skipped": [],
+  "same_as": "req-multi-1-03"
+}

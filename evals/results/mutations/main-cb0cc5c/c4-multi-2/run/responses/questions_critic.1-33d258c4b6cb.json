@@ -1,0 +1,189 @@
+{
+ "envelope_version": 1,
+ "key": "33d258c4b6cbe7bcb294e2daf13ff7bcdb73be020d2b409ff917308ceb9d3c28",
+ "call_id": "questions_critic.1",
+ "step": "questions_critic",
+ "call_index": 1,
+ "model": "claude-opus-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T19:53:57.083127+00:00",
+ "payload": {
+  "duration_api_ms": 41755,
+  "stop_reason": "end_turn",
+  "session_id": "002e9f45-c9ef-446e-a3e9-f338fcf1f6d6",
+  "total_cost_usd": 0.188098,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 11350,
+   "cache_read_input_tokens": 1650,
+   "output_tokens": 4848,
+   "output_tokens_details": {
+    "thinking_tokens": 2423
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 11350,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 4848,
+     "cache_read_input_tokens": 1650,
+     "cache_creation_input_tokens": 11350,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 11350
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-opus-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 4848,
+    "cacheReadInputTokens": 1650,
+    "cacheCreationInputTokens": 11350,
+    "webSearchRequests": 0,
+    "costUSD": 0.188098,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 2423,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 11350,
+    "canonicalModel": "claude-opus-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n- **Q-01.** В [B004] сказано «своими … сотрудниками», но в Employee ([B027]) нет поля владельца. Как определить владельца непривязанного сотрудника, документ не говорит. Ответа нет. Формулировка в порядке.\n- **Q-02.** «1:1» в [B017] противоречит [B041] и [B039], это и есть предмет вопроса. Разумная правка одна — N:1: вариант B ломает список «по компании» и условие удаления. Поэтому вопрос можно заменить замечанием.\n- **Q-03.** «Только свои» есть только в [B037]. В [B048] 403 нет, но 404 для чужого объекта тоже нигде не задан. Ответа нет.\n- **Q-04.** О CSRF документ молчит, «безопасный» в [B004] — общее слово. Ответа нет.\n- **Q-05.** Тело в [B042] обрезано «...», в [B044] тело не описано. Ответа нет. Две ситуации относятся к одному решению: входит ли companyId в тело.\n- **Q-06.** В [B030] не сказано, создаётся ли сессия; в [B031] cookie ставит только вход. Ответа нет.\n- **Q-07.** Семантика PUT в [B038] и [B044] не задана. Ответа нет.\n- **Q-08.** [B052] — общая фраза без критериев. Ответа нет, конкретного сценария в вопросе нет.\n- **Q-09.** Назначение Redis в [B008] не указано, хранилище сессий не названо. Ответа нет.\n- **Q-10.** [B049] задаёт валидацию ИНН/ОГРН через `@Pattern`, то есть только по формату. Пример 1234567890 в [B036] и [B062] подаётся как корректный. Ответ есть: проверяются только формат и длина.\n- **Q-11.** В [B025] обязательным помечено только `name`. В [B062] REQUIRED тоже только у `name`, у `inn` пометки нет. Два места согласованы: ИНН и ОГРН необязательны.\n- **Q-12.** ИНН из 12 цифр допускается, ОГРН — только из 13 цифр. ОГРНИП не упомянут. Ответа нет.\n- **Q-13.** В [B025] стоит «уникальный» без оговорок. Обычное чтение — уникальность по всей таблице, а дубль даёт 409 из [B048]. Считаю, что ответ есть.\n- **Q-14.** 401 в перечне [B048] нет, ответ без сессии не задан. Ответа нет.\n- **Q-15.** В [B043] прямого правила нет. Но запрос «привязать к компании» с новым companyId по обычному смыслу заменяет текущую привязку, поэтому отмечаю здравый смысл.\n\n## Ответ\n\n```json\n{\n  \"reviews\": [\n    {\n      \"id\": \"Q-01\",\n      \"answered\": false,\n      \"answer\": \"\",\n      \"answer_quote\": \"\",\n      \"common_sense\": false,\n      \"obvious_fix\": false,\n      \"scenario\": true,\n      \"errors\": []\n    },\n    {\n      \"id\": \"Q-02\",\n      \"answered\": false,\n      \"answer\": \"\",\n      \"answer_quote\": \"\",\n      \"common_sense\": false,\n      \"obvious_fix\": true,\n      \"scenario\": true,\n      \"errors\": []\n    },\n    {\n      \"id\": \"Q-03\",\n      \"answered\": false,\n      \"answer\": \"\",\n      \"answer_quote\": \"\",\n      \"common_sense\": false,\n      \"obvious_fix\": false,\n      \"scenario\": true,\n      \"errors\": []\n    },\n    {\n      \"id\": \"Q-04\",\n      \"answered\": false,\n      \"answer\": \"\",\n      \"answer_quote\": \"\",\n      \"common_sense\": false,\n      \"obvious_fix\": false,\n      \"scenario\": true,\n      \"errors\": []\n    },\n    {\n      \"id\": \"Q-05\",\n      \"answered\": false,\n      \"answer\": \"\",\n      \"answer_quote\": \"\",\n      \"common_sense\": false,\n      \"obvious_fix\": false,\n      \"scenario\": true,\n      \"errors\": []\n    },\n    {\n      \"id\": \"Q-06\",\n      \"answered\": false,\n      \"answer\": \"\",\n      \"answer_quote\": \"\",\n      \"common_sense\": false,\n      \"obvious_fix\": false,\n      \"scenario\": true,\n      \"errors\": []\n    },\n    {\n      \"id\": \"Q-07\",\n      \"answered\": false,\n      \"answer\": \"\",\n      \"answer_quote\": \"\",\n      \"common_sense\": false,\n      \"obvious_fix\": false,\n      \"scenario\": true,\n      \"errors\": []\n    },\n    {\n      \"id\": \"Q-08\",\n      \"answered\": false,\n      \"answer\": \"\",\n      \"answer_quote\": \"\",\n      \"common_sense\": false,\n      \"obvious_fix\": false,\n      \"scenario\": false,\n      \"errors\": []\n    },\n    {\n      \"id\": \"Q-09\",\n      \"answered\": false,\n      \"answer\": \"\",\n      \"answer_quote\": \"\",\n      \"common_sense\": false,\n      \"obvious_fix\": false,\n      \"scenario\": true,\n      \"errors\": []\n    },\n    {\n      \"id\": \"Q-10\",\n      \"answered\": true,\n      \"answer\": \"ИНН и ОГРН проверяются только регулярным выражением через @Pattern, без контрольных цифр, поэтому компания с ИНН 1234567890 создаётся\",\n      \"answer_quote\": \"Валидация входных данных через Jakarta Validation (@NotBlank, @Pattern для ИНН/ОГРН).\",\n      \"common_sense\": false,\n      \"obvious_fix\": false,\n      \"scenario\": true,\n      \"errors\": []\n    },\n    {\n      \"id\": \"Q-11\",\n      \"answered\": true,\n      \"answer\": \"Обязательно только название, поэтому компания без ИНН и ОГРН создаётся\",\n      \"answer_quote\": \"name (обязательное)\",\n      \"common_sense\": false,\n      \"obvious_fix\": false,\n      \"scenario\": true,\n      \"errors\": []\n    },\n    {\n      \"id\": \"Q-12\",\n      \"answered\": false,\n      \"answer\": \"\",\n      \"answer_quote\": \"\",\n      \"common_sense\": false,\n      \"obvious_fix\": false,\n      \"scenario\": true,\n      \"errors\": []\n    },\n    {\n      \"id\": \"Q-13\",\n      \"answered\": true,\n      \"answer\": \"ИНН уникален без оговорок, то есть во всей системе, поэтому создание компании с тем же ИНН не проходит\",\n      \"answer_quote\": \"inn (уникальный, 10/12 цифр)\",\n      \"common_sense\": false,\n      \"obvious_fix\": false,\n      \"scenario\": true,\n      \"errors\": []\n    },\n    {\n      \"id\": \"Q-14\",\n      \"answered\": false,\n      \"answer\": \"\",\n      \"answer_quote\": \"\",\n      \"common_sense\": false,\n      \"obvious_fix\": false,\n      \"scenario\": true,\n      \"errors\": []\n    },\n    {\n      \"id\": \"Q-15\",\n      \"answered\": false,\n      \"answer\": \"\",\n      \"answer_quote\": \"\",\n      \"common_sense\": true,\n      \"obvious_fix\": false,\n      \"scenario\": true,\n      \"errors\": []\n    }\n  ]\n}\n```",
+  "ttft_ms": 25060,
+  "type": "result",
+  "duration_ms": 46128,
+  "uuid": "d99b7153-906d-4e57-ab20-0a627722c897",
+  "ttft_stream_ms": 1092,
+  "time_to_request_ms": 530,
+  "time_to_request_phases_ms": {
+   "other": 3,
+   "system_prompt": 1,
+   "resume_other": 0,
+   "process_user_input": 1,
+   "input_attachments": 22,
+   "input_hooks": 1,
+   "conversation_append": 0,
+   "tool_pool_refresh": 0,
+   "init_message": 2,
+   "init_frame_send": 0,
+   "engine_pickup": 1,
+   "loop_entry": 1,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 0,
+   "request_announcements": 1,
+   "query_setup": 1,
+   "model_gates": 477,
+   "tool_schema_build": 5,
+   "message_normalization": 3,
+   "client_creation": 3,
+   "request_build": 7
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 4,
+  "time_to_request_cpu_ms": 130,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "at_mentioned_files",
+   "slowest_producer_ms": 18,
+   "cpu_ms": 39,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 18,
+   "ambient_start_ms": 1,
+   "ambient_wait_ms": 1,
+   "render_ms": 0,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 1,
+   "waits_ms": 3,
+   "placement_ms": 0,
+   "render_ms": 1,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 2,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 1,
+   "messages": 7,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 2,
+   "headers_ms": 0,
+   "cache_break_record_ms": 1,
+   "plans_ms": 2,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 2,
+   "record_attempt_ms": 0,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 1
+  },
+  "first_content_frame_ms": 1092,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "credential_expires_at": "2026-12-24T20:08:55.712Z"
+ }
+}

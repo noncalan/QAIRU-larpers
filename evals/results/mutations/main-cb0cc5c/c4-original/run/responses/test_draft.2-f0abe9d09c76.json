@@ -1,0 +1,189 @@
+{
+ "envelope_version": 1,
+ "key": "f0abe9d09c76e9a756ee2711c785d235be86375d48b8c3370b5a7e629ac2a3b0",
+ "call_id": "test_draft.2",
+ "step": "test_draft",
+ "call_index": 2,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T19:36:19.134394+00:00",
+ "payload": {
+  "duration_api_ms": 94966,
+  "stop_reason": "end_turn",
+  "session_id": "c586d116-071d-4321-9891-3018118d80d1",
+  "total_cost_usd": 0.17523129999999998,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 8191,
+   "cache_read_input_tokens": 2133,
+   "output_tokens": 14225,
+   "output_tokens_details": {
+    "thinking_tokens": 7287
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 8191,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 14225,
+     "cache_read_input_tokens": 2133,
+     "cache_creation_input_tokens": 8191,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 8191
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 14225,
+    "cacheReadInputTokens": 2133,
+    "cacheCreationInputTokens": 8191,
+    "webSearchRequests": 0,
+    "costUSD": 0.17523129999999998,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 7287,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 8191,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n**M-016.** Для теста входа нужны формат тела, код успеха и код при неверном пароле. Документ говорит только, что вход устанавливает session cookie. Остальное стоит пропусками.\n\n**M-017.** Нужны код logout и ответ на запрос со старой cookie. Документ называет только действие «Выход». Время жизни сессии и атрибуты cookie тоже не заданы. Тест на выход и повторное использование cookie получает пропуски.\n\n**M-018.** Нужны код и поля ответа и судьба поля password. Документ задаёт только «информация о текущем пользователе». Сущность User содержит password, но не сказано, возвращается ли оно.\n\n**M-019.** Нужны полный состав тела, код успеха и тело ответа, а для сотрудника ещё и передача companyId. Из документа известны только ограничения полей компании: name обязателен, ИНН 10/12 цифр, ОГРН 13 цифр. Остальное стоит пропусками.\n\n**M-020.** Известно только, что GET компании возвращает «только свои». Коды ответа на чужую компанию при GET, PUT и DELETE в документе не заданы.\n\n**M-021.** Не сказано, полная это замена или частичное обновление. Не заданы также код ответа и поведение при конфликте ИНН на PUT. 409 документ называет только для создания с неуникальным ИНН. Ожидаемый результат стоит пропусками.\n\n**M-022.** Известно только условие «если нет сотрудников». Код и тело отказа, а также код успешного удаления не заданы.\n\n**M-023.** Не определено, чьи сотрудники входят в «всех»: B041 и B004.2 («своими») не дают единого результата. У сотрудника нет владельца, а у сотрудника без компании его нет совсем. Не заданы также ответ на чужой или несуществующий companyId и пагинация.\n\n**M-024.** Ни для одного из четырёх негативных случаев привязки код ответа не задан. Документ только перечисляет 400, 404, 409 и не сопоставляет их условиям.\n\n**M-025.** Не сказано, входит ли компания в тело PUT сотрудника, поэтому состояние привязки после PUT без неё неизвестно.\n\n**M-026.** Известно, что неуникальный ИНН при создании даёт HTTP 409. Поля тела ошибки и формат ошибок по полям не заданы. Код для ошибки валидации документ тоже не сопоставляет.\n\n**M-027.** Известно только, что эндпоинты требуют авторизации. Код для запроса без сессии и для чужого объекта в перечне 400/404/409 отсутствует.\n\n**M-028.** Единственная связка «условие, код» в документе: неуникальный ИНН при создании компании, HTTP 409. Для остальных эндпоинтов нет ни кодов успеха, ни тел ответов, ни условий ошибок.\n\n## Ответ\n\n```json\n{\n  \"drafts\": [\n    {\n      \"finding\": \"M-016\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователь зарегистрирован, сессии нет.\",\n      \"steps\": [\n        \"Отправить POST /api/auth/login с существующим логином и неверным паролем; тело в формате [?1].\",\n        \"Отправить POST /api/auth/login с верным логином и паролем.\"\n      ],\n      \"expected\": \"Шаг 1: ответ с кодом [?2], вход не выполнен. Шаг 2: ответ с кодом [?3], в ответе устанавливается session cookie.\",\n      \"values\": [\n        {\"value\": \"session cookie\", \"quote\": \"Вход (устанавливает session cookie).\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"формат тела запроса входа (JSON или form-data) и его поля: в документе нет описания тела login\", \"part\": \"steps\"},\n        {\"number\": 2, \"missing\": \"код и тело ответа при неверном логине или пароле\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"код и тело ответа при успешном входе\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-017\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователь вошёл, у клиента есть session cookie.\",\n      \"steps\": [\n        \"Отправить POST /api/auth/logout с этой cookie.\",\n        \"Отправить GET /api/companies со старой cookie.\",\n        \"Отправить POST /api/auth/logout без cookie.\"\n      ],\n      \"expected\": \"Шаг 1: ответ с кодом [?1]. Шаг 2: ответ [?2]. Шаг 3: ответ [?3].\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"код и тело ответа logout при успехе\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"ответ на запрос со старой cookie после logout (код и тело); время жизни сессии и атрибуты cookie тоже не заданы\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"ответ на logout без сессии\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-018\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователь зарегистрирован и вошёл.\",\n      \"steps\": [\n        \"Отправить GET /api/users/me с session cookie.\",\n        \"Отправить GET /api/users/me без cookie.\"\n      ],\n      \"expected\": \"Шаг 1: код [?1], тело содержит поля [?2], поле password [?3]. Шаг 2: код [?4].\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"код успешного ответа\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"состав полей ответа: в документе только «информация о текущем пользователе», хотя у User есть id, login, password, createdAt\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"возвращается ли хэш пароля: документ не задаёт исключение поля password\", \"part\": \"expected\"},\n        {\"number\": 4, \"missing\": \"код ответа без сессии\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-019\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователь вошёл. Существует его компания.\",\n      \"steps\": [\n        \"Отправить POST /api/companies с name, inn из 10/12 цифр и ogrn из 13 цифр, остальные поля: [?1].\",\n        \"Отправить POST /api/employees с firstName и age, остальные поля: [?2]; companyId в теле: [?3].\"\n      ],\n      \"expected\": \"Шаг 1: код [?4], тело ответа [?5]. Шаг 2: код [?4], тело ответа [?6].\",\n      \"values\": [\n        {\"value\": \"обязательное\", \"quote\": \"(обязательное)\"},\n        {\"value\": \"10/12 цифр\", \"quote\": \"(уникальный, 10/12 цифр)\"},\n        {\"value\": \"13 цифр\", \"quote\": \"(уникальный, 13 цифр)\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"полный перечень полей запроса создания компании: в примере стоит «...»\", \"part\": \"steps\"},\n        {\"number\": 2, \"missing\": \"полный перечень полей и обязательность полей запроса создания сотрудника: в примере стоит «...»\", \"part\": \"steps\"},\n        {\"number\": 3, \"missing\": \"передаётся ли companyId при создании сотрудника\", \"part\": \"steps\"},\n        {\"number\": 4, \"missing\": \"код успеха создания (201 или 200): документ не называет\", \"part\": \"expected\"},\n        {\"number\": 5, \"missing\": \"состав тела ответа при создании компании\", \"part\": \"expected\"},\n        {\"number\": 6, \"missing\": \"состав тела ответа при создании сотрудника\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-020\",\n      \"can_write\": false,\n      \"precondition\": \"Зарегистрированы пользователи A и B. У A есть компания с известным id.\",\n      \"steps\": [\n        \"Пользователь B отправляет GET /api/companies/{id компании A}.\",\n        \"Пользователь B отправляет PUT /api/companies/{id компании A} с корректным телом.\",\n        \"Пользователь B отправляет DELETE /api/companies/{id компании A}.\"\n      ],\n      \"expected\": \"Шаг 1: код [?1]. Шаг 2: код [?2]. Шаг 3: код [?3].\",\n      \"values\": [\n        {\"value\": \"только свои\", \"quote\": \"Получить компанию по ID (только свои).\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"код и тело ответа GET чужой компании (403 или 404): документ говорит только «только свои»\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"разрешён ли PUT чужой компании и какой код при отказе: ограничение «только свои» стоит лишь у GET\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"разрешён ли DELETE чужой компании и какой код при отказе: ограничение «только свои» стоит лишь у GET\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-021\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователь вошёл. Его компания C1 заполнена полностью: name, fullLegalName, inn, ogrn. У другой компании C2 свой inn.\",\n      \"steps\": [\n        \"Отправить PUT /api/companies/{id C1} с телом, где есть только name с новым значением.\",\n        \"Получить C1 через GET /api/companies/{id C1}.\",\n        \"Отправить PUT /api/companies/{id C1} с inn компании C2.\"\n      ],\n      \"expected\": \"Шаг 1: код [?1]. Шаг 2: fullLegalName, inn и ogrn [?2]. Шаг 3: код [?3].\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"код успеха PUT компании и то, принимается ли тело только с name\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"полная замена или частичное обновление: сбрасываются ли остальные поля, остаются прежними или запрос отклоняется; какие поля вообще можно менять\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"ответ на PUT с ИНН/ОГРН другой компании: 409 в документе назван только для создания с неуникальным ИНН\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-022\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователь вошёл. У его компании есть один сотрудник.\",\n      \"steps\": [\n        \"Отправить DELETE /api/companies/{id} этой компании.\",\n        \"Удалить сотрудника и повторно отправить DELETE /api/companies/{id}.\"\n      ],\n      \"expected\": \"Шаг 1: код [?1], тело [?2]; удаление не выполнено, так как условие «если нет сотрудников» не соблюдено. Шаг 2: код [?3], компания удалена.\",\n      \"values\": [\n        {\"value\": \"если нет сотрудников\", \"quote\": \"Удалить компанию (если нет сотрудников).\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"код ответа при удалении компании с сотрудниками (409?): документ его не называет\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"тело и текст ошибки при отказе в удалении\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"код успешного удаления (200 или 204)\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-023\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователи A и B. У A компания с сотрудниками. У B компания с сотрудниками. Есть сотрудник без компании.\",\n      \"steps\": [\n        \"A отправляет GET /api/employees без companyId.\",\n        \"A отправляет GET /api/employees?companyId={id компании B}.\",\n        \"A отправляет GET /api/employees?companyId={несуществующий id}.\"\n      ],\n      \"expected\": \"Шаг 1: в списке [?1]. Шаг 2: ответ [?2]. Шаг 3: ответ [?3]. Эндпоинт описан как «Список сотрудников (всех или по компании)».\",\n      \"values\": [\n        {\"value\": \"всех или по компании\", \"quote\": \"Список сотрудников (всех или по компании).\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"чьи сотрудники входят в «всех»: B041 говорит «всех», B004.2 говорит о «своих» компаниях и сотрудниках; не задано, попадают ли сотрудники без компании, у которых нет владельца; не задана пагинация\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"ответ на companyId чужой компании (код и тело)\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"ответ на несуществующий companyId (код и тело)\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-024\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователи A и B. У A сотрудник E1, привязанный к компании C1, и вторая компания C2. У B есть компания CB и сотрудник EB.\",\n      \"steps\": [\n        \"A: PATCH /api/employees/{E1}/company с companyId несуществующей компании.\",\n        \"A: PATCH /api/employees/{E1}/company с companyId = CB.\",\n        \"A: PATCH /api/employees/{несуществующий id}/company с companyId = C2.\",\n        \"A: PATCH /api/employees/{EB}/company с companyId = C2.\",\n        \"A: PATCH /api/employees/{E1}/company с companyId = C2 (E1 уже в C1).\"\n      ],\n      \"expected\": \"Шаг 1: [?1]. Шаг 2: [?2]. Шаг 3: [?3]. Шаг 4: [?4]. Шаг 5: [?5].\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"код и тело ответа при несуществующей компании\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"код и тело ответа при компании другого пользователя\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"код и тело ответа при несуществующем сотруднике\", \"part\": \"expected\"},\n        {\"number\": 4, \"missing\": \"код и тело ответа при чужом сотруднике\", \"part\": \"expected\"},\n        {\"number\": 5, \"missing\": \"допускается ли перепривязка сотрудника из одной компании в другую и какой код при отказе\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-025\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователь вошёл. Сотрудник E привязан к его компании C.\",\n      \"steps\": [\n        \"Отправить PUT /api/employees/{E} с изменённым firstName и без поля с компанией.\",\n        \"Получить сотрудника E.\"\n      ],\n      \"expected\": \"Шаг 1: код [?1]. Шаг 2: компания сотрудника E [?2].\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"код успеха PUT сотрудника и то, принимается ли тело без поля компании; входит ли companyId в тело PUT\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"остаётся ли привязка к C или сбрасывается в null: документ не говорит, меняет ли PUT компанию сотрудника, при том что для этого есть отдельный PATCH\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-026\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователь вошёл. Компания с inn X уже существует.\",\n      \"steps\": [\n        \"Отправить POST /api/companies с тем же inn X.\",\n        \"Отправить POST /api/companies с пустым обязательным name.\"\n      ],\n      \"expected\": \"Шаг 1: ответ HTTP 409, тело содержит поля [?1]. Шаг 2: код [?2], тело содержит ошибку по полю name в виде [?3].\",\n      \"values\": [\n        {\"value\": \"HTTP 409\", \"quote\": \"попытка создания компании с неуникальным ИНН должна возвращать HTTP 409\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"поля «структурированной» ошибки (код, сообщение, время, путь и т. д.): документ только требует структуру\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"какой код возвращается при ошибке валидации: документ перечисляет 400, 404, 409, но сопоставляет коды условиям только для неуникального ИНН\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"формат ошибок валидации по полям\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-027\",\n      \"can_write\": false,\n      \"precondition\": \"У A есть компания с известным id. Запросы без cookie выполняются без входа.\",\n      \"steps\": [\n        \"Отправить GET /api/companies без session cookie.\",\n        \"Пользователь B (вошёл) отправляет GET /api/companies/{id компании A}.\"\n      ],\n      \"expected\": \"Шаг 1: код [?1]. Шаг 2: код [?2]. Эндпоинты компаний помечены как «требуется авторизация».\",\n      \"values\": [\n        {\"value\": \"требуется авторизация\", \"quote\": \"(требуется авторизация)\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"код и тело ответа при запросе без сессии: в перечне ошибок только 400, 404, 409, нет 401 и 403; возможен редирект 302\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"код при запросе к чужому объекту (403 или 404)\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-028\",\n      \"can_write\": false,\n      \"precondition\": \"Зарегистрированный и вошедший пользователь. Для условий ошибок подготовлены некорректные данные.\",\n      \"steps\": [\n        \"Выполнить корректный запрос к каждому эндпоинту авторизации и к GET /api/users/me.\",\n        \"Выполнить корректный запрос к каждому эндпоинту компаний.\",\n        \"Выполнить корректный запрос к каждому эндпоинту сотрудников.\",\n        \"Для каждого эндпоинта выполнить запрос, нарушающий его условие ошибки.\",\n        \"Создать компанию с неуникальным ИНН.\"\n      ],\n      \"expected\": \"Шаги 1–3: коды успеха [?1], тела ответов [?2]. Шаг 4: ошибки из перечисленных в требованиях кодов (HTTP 400, 404, 409), конкретный код и тело для каждого условия: [?3]. Шаг 5: HTTP 409.\",\n      \"values\": [\n        {\"value\": \"HTTP 400, 404, 409\", \"quote\": \"Глобальная обработка исключений с возвратом структурированных ошибок (HTTP 400, 404, 409).\"},\n        {\"value\": \"HTTP 409\", \"quote\": \"попытка создания компании с неуникальным ИНН должна возвращать HTTP 409\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"код успеха для каждого эндпоинта (200, 201 или 204): документ не называет ни для одного\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"тело ответа для каждого эндпоинта\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"условия и коды ошибок для каждого эндпоинта: документ называет только 409 для неуникального ИНН при создании компании\", \"part\": \"expected\"}\n      ],\n      \"note\": \"Тест охватывает все эндпоинты, поэтому почти всё ожидаемое остаётся пропусками.\"\n    }\n  ]\n}\n```",
+  "ttft_ms": 56451,
+  "type": "result",
+  "duration_ms": 98370,
+  "uuid": "e192ba0c-4392-4b9b-bb7a-ca4b9dfbe3e9",
+  "ttft_stream_ms": 812,
+  "time_to_request_ms": 256,
+  "time_to_request_phases_ms": {
+   "other": 2,
+   "system_prompt": 1,
+   "resume_other": 0,
+   "process_user_input": 1,
+   "input_attachments": 33,
+   "input_hooks": 1,
+   "conversation_append": 0,
+   "tool_pool_refresh": 0,
+   "init_message": 2,
+   "init_frame_send": 1,
+   "engine_pickup": 1,
+   "loop_entry": 1,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 0,
+   "request_announcements": 2,
+   "query_setup": 0,
+   "model_gates": 205,
+   "tool_schema_build": 1,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 2
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 4,
+  "time_to_request_cpu_ms": 115,
+  "time_to_request_major_faults": 0,
+  "input_attachments_detail": {
+   "slowest_producer": "at_mentioned_files",
+   "slowest_producer_ms": 28,
+   "cpu_ms": 53,
+   "major_faults": 0,
+   "setup_ms": 0,
+   "prompt_producers_ms": 28,
+   "ambient_start_ms": 1,
+   "ambient_wait_ms": 1,
+   "render_ms": 0,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 7,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 0,
+   "plans_ms": 0,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 0,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 812,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "credential_expires_at": "2026-12-24T20:08:55.712Z"
+ }
+}

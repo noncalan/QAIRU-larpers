@@ -1,0 +1,189 @@
+{
+ "envelope_version": 1,
+ "key": "10ac5187efcb48d67fe614f21d655f8b7669e50149e4c9af9c46206403b97a51",
+ "call_id": "test_draft.1",
+ "step": "test_draft",
+ "call_index": 1,
+ "model": "claude-sonnet-5-5",
+ "effort": "high",
+ "backend": "cli",
+ "saved_at": "2026-11-26T19:36:12.945043+00:00",
+ "payload": {
+  "duration_api_ms": 88496,
+  "stop_reason": "end_turn",
+  "session_id": "8996a5ff-563d-41d8-986c-d1b0fd012364",
+  "total_cost_usd": 0.17005130000000002,
+  "usage": {
+   "input_tokens": 2,
+   "cache_creation_input_tokens": 8771,
+   "cache_read_input_tokens": 2133,
+   "output_tokens": 13475,
+   "output_tokens_details": {
+    "thinking_tokens": 7520
+   },
+   "server_tool_use": {
+    "web_search_requests": 0,
+    "web_fetch_requests": 0
+   },
+   "service_tier": "standard",
+   "cache_creation": {
+    "ephemeral_1h_input_tokens": 8771,
+    "ephemeral_5m_input_tokens": 0
+   },
+   "inference_geo": "global",
+   "iterations": [
+    {
+     "input_tokens": 2,
+     "output_tokens": 13475,
+     "cache_read_input_tokens": 2133,
+     "cache_creation_input_tokens": 8771,
+     "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 8771
+     },
+     "type": "message"
+    }
+   ],
+   "speed": "standard",
+   "fallback_credit": null
+  },
+  "modelUsage": {
+   "claude-sonnet-5-5": {
+    "inputTokens": 2,
+    "outputTokens": 13475,
+    "cacheReadInputTokens": 2133,
+    "cacheCreationInputTokens": 8771,
+    "webSearchRequests": 0,
+    "costUSD": 0.17005130000000002,
+    "contextWindow": 1000000,
+    "maxOutputTokens": 128000,
+    "thinkingTokens": 7520,
+    "cacheCreationEphemeral5mInputTokens": 0,
+    "cacheCreationEphemeral1hInputTokens": 8771,
+    "canonicalModel": "claude-sonnet-5-5",
+    "provider": "firstParty",
+    "costBasis": "list"
+   }
+  },
+  "permission_denials": [],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+   "spawned": 0,
+   "requested": {
+    "background": 0,
+    "foreground": 0,
+    "unset": 0
+   },
+   "started_in_background": 0,
+   "max_depth": 0,
+   "spawned_by_subagents": 0,
+   "completed": 0,
+   "failed": 0,
+   "killed": {
+    "parent": 0,
+    "user": 0,
+    "system": 0
+   },
+   "refused": {
+    "depth_limit": 0,
+    "concurrency_limit": 0,
+    "budget": 0
+   },
+   "by_type": {}
+  },
+  "safety_stops": 0,
+  "is_error": false,
+  "num_turns": 1,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "## Рассуждение\n\n**M-003.** Нужно знать, кому принадлежит сотрудник с `company = null` и кто может его менять. В документе у `Employee` нет поля владельца, а «свои сотрудники» сказано только в общем виде. Ожидаемый результат отсутствует.\n\n**M-004.** Нужен перечень проверяемых мер безопасности. Документ называет только хэширование паролей BCrypt. Это единственная проверяемая мера, остальное пропуск.\n\n**M-005.** Нужны срок хранения и порядок удаления данных. В списке эндпоинтов нет удаления аккаунта, нет срока хранения, нет правила для компаний и сотрудников удалённого пользователя. Пропуски стоят и в шагах, и в результате.\n\n**M-006.** Нужен ответ на изменяющий запрос без CSRF-токена. Про CSRF в документе ничего нет, как и про код успешного создания компании.\n\n**M-007.** Нужно знать, какие события считаются «ошибками авторизации». Документ называет их в скобках и не раскрывает, что к ним относится.\n\n**M-008.** Нужно знать, проверяется ли контрольное число ИНН и ОГРН. Документ пишет «валидация ИНН, ОГРН» и задаёт только формат и длину. Для ИНН с неверной контрольной суммой результата нет.\n\n**M-009.** Нужно знать, можно ли привязать второго сотрудника к компании. Документ пишет «1:1 или null», но удаление компании «если нет сотрудников» и список по `companyId` предполагают нескольких. Единого результата нет, пропуск.\n\n**M-010.** Из обязательности известна только у `name`. Для `inn`, `ogrn` и `fullLegalName` в документе её нет, а значит нет и результата для компании без них или для двух компаний с пустым ИНН.\n\n**M-011.** 409 для неуникального ИНН в документе есть. Но не сказано, считается ли неуникальным ИНН компании другого пользователя, поэтому результата для этого сценария нет.\n\n**M-012.** Нужно знать, допустим ли ИНН из 11 цифр. Модель говорит «10/12 цифр», DTO задаёт `minLength = 10, maxLength = 12`. Единого результата нет, оба места названы в пропуске.\n\n**M-013.** Нужно знать, принимается ли ОГРН из 15 цифр при 12-значном ИНН. Документ задаёт ОГРН только в 13 цифр и не говорит, поддерживаются ли ИП, хотя 12-значный ИНН допускает.\n\n**M-014.** Для сотрудника не заданы обязательность, длины, диапазон `age` и код ошибки. Известны только значения enum. Результат для `age = -5`, пустого имени и значения вне enum отсутствует.\n\n**M-015.** Для регистрации не заданы формат login, правила пароля, коды и тела ответов, автоматический вход после регистрации. Известно только, что login уникален.\n\n## Ответ\n\n```json\n{\n  \"drafts\": [\n    {\n      \"finding\": \"M-003\",\n      \"can_write\": false,\n      \"precondition\": \"Зарегистрированы и вошли в систему два пользователя: А и Б.\",\n      \"steps\": [\n        \"Пользователь А создаёт сотрудника без компании (company = null) через POST /api/employees.\",\n        \"Пользователь Б запрашивает GET /api/employees.\",\n        \"Пользователь Б пытается изменить этого сотрудника (PUT /api/employees/{id}) и удалить его (DELETE /api/employees/{id}).\"\n      ],\n      \"expected\": \"Сотрудник А в списке пользователя Б: [?1]. Ответ на изменение и удаление сотрудника пользователем Б: [?2].\",\n      \"values\": [\n        {\"value\": \"может быть null\", \"quote\": \"(может быть null)\"},\n        {\"value\": \"своими компаниями и сотрудниками\", \"quote\": \"Пользователи могут регистрироваться, авторизоваться и выполнять CRUD-операции над своими компаниями и сотрудниками.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"кому принадлежит сотрудник с company = null и виден ли он другому пользователю: у Employee нет поля владельца, а доступ определён только как «свои компании и сотрудники»\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"может ли другой пользователь изменять и удалять сотрудника без компании и какой код ответа возвращается\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-004\",\n      \"can_write\": false,\n      \"precondition\": \"Приложение запущено, база данных пуста.\",\n      \"steps\": [\n        \"Зарегистрировать пользователя через POST /api/auth/register.\",\n        \"Посмотреть значение поля password этого пользователя в таблице users.\",\n        \"Проверить остальные меры безопасности: [?1].\"\n      ],\n      \"expected\": \"В базе хранится хэш пароля BCrypt, а не сам пароль. Критерий «безопасный бекенд» по остальным мерам: [?2].\",\n      \"values\": [\n        {\"value\": \"BCrypt\", \"quote\": \"Хранение паролей в хэшированном виде (BCrypt).\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"перечень проверяемых мер безопасности помимо хэширования паролей: документ их не называет\", \"part\": \"steps\"},\n        {\"number\": 2, \"missing\": \"признаки, по которым бекенд считается безопасным: в цели «Создать безопасный REST-бекенд» критерия нет\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-005\",\n      \"can_write\": false,\n      \"precondition\": \"Есть пользователь с компанией и привязанным к ней сотрудником (ФИО, пол, возраст, семейное положение заполнены).\",\n      \"steps\": [\n        \"Удалить аккаунт пользователя: [?1].\",\n        \"Проверить, что осталось в базе данных.\"\n      ],\n      \"expected\": \"Данные пользователя: [?2]. Его компании и сотрудники: [?2]. Срок хранения персональных данных сотрудников: [?3].\",\n      \"values\": [],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"способ удаления аккаунта: среди эндпоинтов нет удаления пользователя\", \"part\": \"steps\"},\n        {\"number\": 2, \"missing\": \"что происходит с компаниями и сотрудниками после удаления пользователя\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"срок хранения и порядок удаления персональных данных сотрудников\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-006\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователь зарегистрирован и вошёл через POST /api/auth/login, у клиента есть cookie сессии, CSRF-токена нет.\",\n      \"steps\": [\n        \"Отправить POST /api/companies с телом {\\\"name\\\": \\\"ООО Ромашка\\\", \\\"inn\\\": \\\"1234567890\\\"} и cookie сессии, без CSRF-токена.\"\n      ],\n      \"expected\": \"Ответ системы: [?1].\",\n      \"values\": [\n        {\"value\": \"session cookie\", \"quote\": \"Вход (устанавливает session cookie).\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"включена ли CSRF-защита и каков ответ на изменяющий запрос без CSRF-токена (403 или успешное создание); как клиент получает токен; код успешного создания компании тоже не указан\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-007\",\n      \"can_write\": false,\n      \"precondition\": \"Есть пользователи А и Б, у Б есть компания. Доступен лог приложения.\",\n      \"steps\": [\n        \"Выполнить вход с неверным паролем.\",\n        \"Выполнить запрос к GET /api/companies без сессии.\",\n        \"Войти как А и запросить GET /api/companies/{id} компании пользователя Б.\",\n        \"Просмотреть лог приложения.\"\n      ],\n      \"expected\": \"Для каждого из трёх событий в логе: [?1].\",\n      \"values\": [\n        {\"value\": \"ошибки авторизации\", \"quote\": \"Логирование ключевых операций (создание компании, ошибки авторизации).\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"какие события относятся к «ошибкам авторизации»: неудачный вход, запрос без сессии, доступ к чужому объекту. Документ также не называет формат и уровень записи\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-008\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователь вошёл в систему. ОГРН из 13 цифр подобран тестировщиком и в базе не встречается.\",\n      \"steps\": [\n        \"Отправить POST /api/companies с inn = \\\"1234567890\\\" (10 цифр, неверная контрольная сумма) и корректным по длине ОГРН.\"\n      ],\n      \"expected\": \"Компания [?1].\",\n      \"values\": [\n        {\"value\": \"валидацией ИНН, ОГРН\", \"quote\": \"Создание/редактирование/удаление компаний с валидацией ИНН, ОГРН.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"проверяется ли контрольное число ИНН и ОГРН, а не только длина и цифры; принять запрос или отклонить и с каким кодом\", \"part\": \"expected\"}\n      ],\n      \"note\": \"Пример запроса в документе использует тот же ИНН, но результата для него не указывает.\"\n    },\n    {\n      \"finding\": \"M-009\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователь вошёл. Есть компания 1, к ней привязан сотрудник А. Есть сотрудник Б без компании.\",\n      \"steps\": [\n        \"Отправить PATCH /api/employees/{id сотрудника Б}/company с телом {\\\"companyId\\\": 1}.\",\n        \"Запросить GET /api/employees?companyId=1.\"\n      ],\n      \"expected\": \"Ответ на привязку: [?1]. В списке компании 1: [?1].\",\n      \"values\": [\n        {\"value\": \"1:1 или null\", \"quote\": \"Привязка сотрудника к компании (1:1 или null).\"},\n        {\"value\": \"если нет сотрудников\", \"quote\": \"Удалить компанию (если нет сотрудников).\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"может ли у компании быть больше одного сотрудника: «1:1» в одном месте и «список сотрудников по компании», «если нет сотрудников» в других\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-010\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователь вошёл в систему.\",\n      \"steps\": [\n        \"Отправить POST /api/companies только с полем name.\",\n        \"Отправить второй такой же запрос с другим name.\"\n      ],\n      \"expected\": \"Первый запрос: [?1]. Второй запрос (ИНН и ОГРН пустые у обеих компаний при их уникальности): [?2].\",\n      \"values\": [\n        {\"value\": \"обязательное\", \"quote\": \"(обязательное)\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"обязательность inn, ogrn и fullLegalName: обязательным назван только name; не задан и код ответа при отказе\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"разрешены ли несколько компаний с пустым ИНН и ОГРН при требовании их уникальности\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-011\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователи А и Б вошли в систему. У А есть компания с ИНН \\\"1234567890\\\".\",\n      \"steps\": [\n        \"Пользователь Б отправляет POST /api/companies с inn = \\\"1234567890\\\" и другим ОГРН.\"\n      ],\n      \"expected\": \"Ответ на создание компании: [?1].\",\n      \"values\": [\n        {\"value\": \"HTTP 409\", \"quote\": \"Пример: попытка создания компании с неуникальным ИНН должна возвращать HTTP 409.\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"в каких границах уникален ИНН: на всю систему или в пределах пользователя; HTTP 409 назван для «неуникального ИНН», но не сказано, считается ли таким ИНН компании другого пользователя\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-012\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователь вошёл в систему.\",\n      \"steps\": [\n        \"Отправить POST /api/companies с inn из 11 цифр (например, \\\"12345678901\\\").\"\n      ],\n      \"expected\": \"Ответ: [?1].\",\n      \"values\": [\n        {\"value\": \"10/12 цифр\", \"quote\": \"(уникальный, 10/12 цифр)\"},\n        {\"value\": \"minLength = 10, maxLength = 12\", \"quote\": \"minLength = 10, maxLength = 12\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"допустим ли ИНН из 11 цифр: в описании сущности Company «10/12 цифр», в схеме CompanyDTO minLength = 10, maxLength = 12\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-013\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователь вошёл в систему.\",\n      \"steps\": [\n        \"Отправить POST /api/companies с inn из 12 цифр и ogrn из 15 цифр (данные индивидуального предпринимателя).\"\n      ],\n      \"expected\": \"Ответ: [?1].\",\n      \"values\": [\n        {\"value\": \"13 цифр\", \"quote\": \"(уникальный, 13 цифр)\"},\n        {\"value\": \"10/12 цифр\", \"quote\": \"(уникальный, 10/12 цифр)\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"принимается ли ОГРН из 15 цифр и поддерживаются ли ИП: ИНН из 12 цифр допускается, а ОГРН задан только в 13 цифр; не указан и код ответа при отказе\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-014\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователь вошёл в систему.\",\n      \"steps\": [\n        \"Отправить POST /api/employees с age = -5 и остальными полями корректными.\",\n        \"Отправить POST /api/employees с пустым firstName.\",\n        \"Отправить POST /api/employees с gender = \\\"OTHER\\\".\"\n      ],\n      \"expected\": \"Первый запрос: [?1]. Второй запрос: [?2]. Третий запрос: [?3].\",\n      \"values\": [\n        {\"value\": \"MALE, FEMALE\", \"quote\": \"(enum: MALE, FEMALE)\"},\n        {\"value\": \"MARRIED, SINGLE\", \"quote\": \"(enum: MARRIED, SINGLE)\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"тип и допустимый диапазон age, обязательность age и код ошибки\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"обязательность firstName, lastName, middleName и максимальная длина имён; код ошибки\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"реакция на значение вне enum gender и maritalStatus; код ошибки\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    },\n    {\n      \"finding\": \"M-015\",\n      \"can_write\": false,\n      \"precondition\": \"Пользователей в системе нет.\",\n      \"steps\": [\n        \"Отправить POST /api/auth/register с телом {\\\"login\\\": \\\"user1\\\", \\\"password\\\": \\\"pass\\\"}.\",\n        \"Отправить тот же запрос повторно.\",\n        \"Отправить запрос с login длиннее допустимого и с пустым паролем.\"\n      ],\n      \"expected\": \"Первый запрос: код [?1], вошёл ли пользователь в систему сразу: [?2]. Повторный запрос с занятым login: [?3]. Запрос с невалидными данными: [?4].\",\n      \"values\": [\n        {\"value\": \"уникальный\", \"quote\": \"(уникальный)\"}\n      ],\n      \"gaps\": [\n        {\"number\": 1, \"missing\": \"код и тело ответа при успешной регистрации; допустимы ли слабые пароли вроде «pass», требования к длине и составу пароля\", \"part\": \"expected\"},\n        {\"number\": 2, \"missing\": \"входит ли пользователь в систему сразу после регистрации\", \"part\": \"expected\"},\n        {\"number\": 3, \"missing\": \"код и тело ответа при занятом login: документ называет login уникальным, но не говорит, какой код вернуть\", \"part\": \"expected\"},\n        {\"number\": 4, \"missing\": \"допустимые длина и символы login и код ответа при невалидных данных\", \"part\": \"expected\"}\n      ],\n      \"note\": \"\"\n    }\n  ]\n}\n```",
+  "ttft_ms": 56400,
+  "type": "result",
+  "duration_ms": 92168,
+  "uuid": "91b69cb4-6a24-458c-941e-cd5dbb0d66ca",
+  "ttft_stream_ms": 974,
+  "time_to_request_ms": 448,
+  "time_to_request_phases_ms": {
+   "other": 2,
+   "system_prompt": 1,
+   "resume_other": 0,
+   "process_user_input": 1,
+   "input_attachments": 32,
+   "input_hooks": 1,
+   "conversation_append": 0,
+   "tool_pool_refresh": 0,
+   "init_message": 2,
+   "init_frame_send": 1,
+   "engine_pickup": 1,
+   "loop_entry": 1,
+   "message_prep": 0,
+   "model_config_wait": 1,
+   "autocompact": 0,
+   "request_announcements": 2,
+   "query_setup": 0,
+   "model_gates": 398,
+   "tool_schema_build": 1,
+   "message_normalization": 1,
+   "client_creation": 1,
+   "request_build": 2
+  },
+  "turn_start_resume_kind": "none",
+  "process_turn_index": 0,
+  "time_to_request_loop_lag_ms": 1,
+  "time_to_request_cpu_ms": 120,
+  "time_to_request_major_faults": 2,
+  "input_attachments_detail": {
+   "slowest_producer": "at_mentioned_files",
+   "slowest_producer_ms": 26,
+   "cpu_ms": 55,
+   "major_faults": 2,
+   "setup_ms": 0,
+   "prompt_producers_ms": 26,
+   "ambient_start_ms": 1,
+   "ambient_wait_ms": 2,
+   "render_ms": 0,
+   "producers": 44,
+   "token_counts": 0
+  },
+  "tool_schema_build_detail": {
+   "betas_ms": 0,
+   "waits_ms": 1,
+   "placement_ms": 0,
+   "render_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "tools": 0,
+   "new_schemas": 0
+  },
+  "message_normalization_detail": {
+   "before_ms": 0,
+   "normalize_ms": 1,
+   "images_ms": 0,
+   "post_process_ms": 0,
+   "after_ms": 0,
+   "other_ms": 0,
+   "messages": 7,
+   "wire_messages": 2
+  },
+  "request_build_detail": {
+   "records_ms": 0,
+   "system_ms": 1,
+   "headers_ms": 0,
+   "cache_break_record_ms": 0,
+   "plans_ms": 0,
+   "retry_setup_ms": 0,
+   "sent_build_ms": 1,
+   "record_attempt_ms": 0,
+   "other_ms": 0,
+   "sent_build_safety_context_ms": 0,
+   "sent_build_cache_breakpoints_ms": 0,
+   "sent_build_surrogate_scan_ms": 0
+  },
+  "first_content_frame_ms": 974,
+  "queued_turn_count": 0,
+  "result_index": 0,
+  "credential_expires_at": "2026-12-24T20:08:55.712Z"
+ }
+}

@@ -1,0 +1,35 @@
+{
+  "schema": "mutations/1",
+  "copy": "req-single-3",
+  "kind": "single",
+  "source": "data/input/requirements.md",
+  "source_sha256": "e7dae55e5453a250d93e335f5ff9c7f775f4457ccddd333f4a67e47b20d74381",
+  "copy_sha256": "5517aa32f509a657bdb7bc7f0e690763fb983475db1f429300a7911cb9466baa",
+  "seed": 50,
+  "mutations": [
+    {
+      "id": "req-single-3-01",
+      "operator": "M5",
+      "name": "Удалить ветку ошибки",
+      "expected_properties": [
+        "IND-COMPL",
+        "SET-COMPL"
+      ],
+      "section": "Уведомление о расходах по карте / Часть A. Новый функционал / Дизайн процесса UI",
+      "original": " При ошибке ввода сообщение появляется под полем.",
+      "replacement": "",
+      "start": 1112,
+      "end": 1112,
+      "line": 29,
+      "match_spans": [
+        [
+          997,
+          1112
+        ]
+      ],
+      "note": "предложение"
+    }
+  ],
+  "skipped": [],
+  "same_as": "req-multi-2-04"
+}
