@@ -70,6 +70,8 @@ from validator.report.passport_view import (
     passport_rows,
     reuse_cell,
     reuse_header,
+    time_cell,
+    time_header,
     tokens_in,
     tokens_text,
 )
@@ -536,6 +538,8 @@ def report_context(report: Report) -> dict[str, Any]:
         "tokens_text": tokens_text,
         "calls_text": calls_text,
         "reuse_header": reuse_header,
+        "time_cell": time_cell,
+        "time_header": time_header,
         "reuse_cell": reuse_cell,
         "tokens_in": tokens_in,
         "parts_note": PARTS_NOTE,

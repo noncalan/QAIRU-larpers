@@ -21,7 +21,15 @@ from validator.config import load_config
 from validator.models import Backend, DocKind, ReplaySource, Report, Severity
 from validator.pipeline import run
 from validator.report.fmt import digits, money, seconds
-from validator.report.passport_view import TECH_TITLE, duration_line, passport_rows
+from validator.report.passport_view import (
+    RECORDED_TIME_HEADER,
+    TECH_TITLE,
+    TIME_HEADER,
+    duration_line,
+    passport_rows,
+    time_cell,
+    time_header,
+)
 from validator.report.render_md import render_md, withdrawn_line
 from validator.report.render_pdf import NBSP, keep_percent, render_pdf
 from validator.report.triage import review_line
@@ -117,6 +125,33 @@ def test_replay_takes_model_time_from_recording_per_step_of_served_answers(tmp_p
     assert replay.model_seconds == STEP_SECONDS * len(served_steps)
     md = (tmp_path / "out" / "report.md").read_text(encoding="utf-8")
     assert f"при записи модель работала {STEP_SECONDS * len(served_steps)} с" in md
+    assert replay.step_seconds == dict.fromkeys(replay.step_seconds, STEP_SECONDS)
+    assert set(replay.step_seconds) == served_steps
+    assert f"| {RECORDED_TIME_HEADER} |" in md
+
+
+def test_step_table_shows_recorded_time_when_every_call_came_from_recording() -> None:
+    """При пересборке по записи в таблице шагов время записи, а не нули пересборки."""
+    report = _with_replay(load("full"), model_seconds=60.0)
+    steps = [st.model_copy(update={"replayed": st.calls, "duration_s": 0.0}) for st in report.metrics.steps]
+    replay = report.passport.replay
+    assert replay is not None and steps
+    replay = replay.model_copy(update={"step_seconds": {steps[0].step: 33.1}})
+
+    assert time_header(steps, replay) == RECORDED_TIME_HEADER
+    assert time_cell(steps[0], steps, replay) == "33,1"
+    assert all(time_cell(st, steps, replay) == "—" for st in steps[1:])
+
+
+def test_step_table_keeps_run_time_for_live_or_mixed_runs() -> None:
+    report = load("full")
+    steps = report.metrics.steps
+    assert steps
+
+    assert time_header(steps, None) == TIME_HEADER
+    assert time_cell(steps[0], steps, None) == seconds(steps[0].duration_s)
+    replay = ReplaySource(path="run", responses=1, step_seconds={steps[0].step: 33.1})
+    assert time_header(steps, replay) == TIME_HEADER  # не все вызовы из записи: время этого прогона
 
 
 def test_withdrawn_question_inside_numbering_gets_one_line() -> None:

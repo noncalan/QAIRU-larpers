@@ -7,13 +7,13 @@
     "document_sha256": "7fd7c1d145b0c4e01ac8a502856b08eaf0cdbddc896069271687f6a2a16022d5",
     "document_size_bytes": 16072,
     "document_pages": null,
-    "started_at": "2026-11-27T00:48:01.814972Z",
-    "finished_at": "2026-11-27T00:48:02.115352Z",
-    "duration_s": 0.3,
-    "agent_version": "5aabd73-dirty",
+    "started_at": "2026-11-27T09:19:22.038347Z",
+    "finished_at": "2026-11-27T09:19:22.364954Z",
+    "duration_s": 0.33,
+    "agent_version": "v1.0-3-g527a605-dirty",
     "agent_version_source": "git",
     "agent_dirty": true,
-    "agent_commit": "5aabd73",
+    "agent_commit": "527a605",
     "prompts_sha256": "7dd96b1cffa406769efc8daf0df90f974ab4ef58757a546a07948210acc7492d",
     "os": "Linux 6.18.44-fc-v880 (x86_64)",
     "python": "3.13.18",
@@ -57,7 +57,15 @@
       "backends": [
         "cli"
       ],
-      "model_seconds": 876.2
+      "model_seconds": 876.2,
+      "step_seconds": {
+        "segment": 0.0,
+        "search": 333.8,
+        "evidence": 110.0,
+        "test_draft": 212.0,
+        "questions": 179.8,
+        "questions_critic": 40.6
+      }
     },
     "tokens": {
       "input_tokens": 18,
@@ -14038,7 +14046,7 @@
     ]
   },
   "metrics": {
-    "duration_s": 0.3,
+    "duration_s": 0.33,
     "calls_total": 9,
     "calls_failed": 0,
     "calls_cached": 0,

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from validator.models import Report, RunMetrics, SearchInput, StepMetrics, TokenUsage
+from validator.models import ReplaySource, Report, RunMetrics, SearchInput, StepMetrics, TokenUsage
 from validator.report.fmt import digits, money, seconds, status_label, when
 from validator.report.run_metrics import step_label
 
@@ -62,6 +62,29 @@ def reuse_cell(st: StepMetrics, steps: list[StepMetrics]) -> str:
     if header == "Из кеша":
         return str(st.cached)
     return f"{st.cached} / {st.replayed}"
+
+
+TIME_HEADER = "Время, с"
+RECORDED_TIME_HEADER = "Время при записи, с"
+
+
+def _recorded_time(steps: list[StepMetrics], replay: ReplaySource | None) -> bool:
+    """Все вызовы таблицы взяты из записи и у записи есть время шагов: показываем его, а не пересборку."""
+    if replay is None or not replay.step_seconds or not steps:
+        return False
+    return all(st.replayed == st.calls for st in steps)
+
+
+def time_header(steps: list[StepMetrics], replay: ReplaySource | None) -> str:
+    """Заголовок колонки времени в таблице шагов: при пересборке по записи это время модели при записи."""
+    return RECORDED_TIME_HEADER if _recorded_time(steps, replay) else TIME_HEADER
+
+
+def time_cell(st: StepMetrics, steps: list[StepMetrics], replay: ReplaySource | None) -> str:
+    """Ячейка колонки :func:`time_header`: при пересборке нули времени не показываем, берём время записи."""
+    if replay is not None and _recorded_time(steps, replay):
+        return seconds(replay.step_seconds.get(st.step))
+    return seconds(st.duration_s)
 
 
 def document_line(report: Report) -> str:
@@ -211,6 +234,8 @@ __all__ = [
     "replay_line",
     "reuse_cell",
     "reuse_header",
+    "time_cell",
+    "time_header",
     "tokens_in",
     "tokens_text",
     "version_line",

@@ -491,17 +491,17 @@
 | Вопросы: закрытые (2–4 варианта с последствиями) | {{ qm.closed | pct }} |
 | Вопросы: без ошибок формулировки | {{ qm.without_errors | pct }} |
 | Вопросы: дубли с находками, повторы | {{ qm.obvious_fix }}, {{ qm.duplicate_pairs }} |
-| Вопросы: адресаты | {% for a, n in qm.by_addressee.items() %}{{ addressee_label(a) }} {{ n }}{% if not loop.last %}, {% endif %}{% else %}—{% endfor %} |
+| Вопросы: адресаты (у вопроса бывает несколько) | {% for a, n in qm.by_addressee.items() %}{{ addressee_label(a) }} {{ n }}{% if not loop.last %}, {% endif %}{% else %}—{% endfor %} |
 {% endif %}
 {% set m = r.metrics %}
 {% if m.steps %}
 
 ### Вызовы модели по шагам
 
-| Шаг | Модель | Вызовов | С ошибкой | {{ reuse_header(m.steps) }} | Время, с | Токены: вход / выход | Цена по тарифу API |
+| Шаг | Модель | Вызовов | С ошибкой | {{ reuse_header(m.steps) }} | {{ time_header(m.steps, p.replay) }} | Токены: вход / выход | Цена по тарифу API |
 |---|---|---|---|---|---|---|---|
 {% for st in m.steps %}
-| {{ step_label(st.step) }} | {{ p.models.get(st.step, "—") | cell }} | {{ st.calls }} | {{ st.failed }} | {{ reuse_cell(st, m.steps) }} | {{ st.duration_s | seconds }} | {{ tokens_in(st.tokens) | digits }} / {{ st.tokens.output_tokens | digits }} | {{ st.cost_usd | money }} |
+| {{ step_label(st.step) }} | {{ p.models.get(st.step, "—") | cell }} | {{ st.calls }} | {{ st.failed }} | {{ reuse_cell(st, m.steps) }} | {{ time_cell(st, m.steps, p.replay) }} | {{ tokens_in(st.tokens) | digits }} / {{ st.tokens.output_tokens | digits }} | {{ st.cost_usd | money }} |
 {% endfor %}
 {% endif %}
 

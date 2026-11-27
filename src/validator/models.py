@@ -1527,6 +1527,13 @@ class ReplaySource(Contract):
             "от начала первого до конца последнего вызова шага (по calls.jsonl)"
         ),
     )
+    step_seconds: dict[str, float] = Field(
+        default_factory=dict,
+        description=(
+            "То же время по шагам (значение LLMStep → секунды): таблица шагов при пересборке показывает его, "
+            "а не время пересборки"
+        ),
+    )
 
 
 class Passport(Contract):
