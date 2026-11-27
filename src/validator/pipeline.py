@@ -62,6 +62,7 @@ from validator.lint import lint
 from validator.llm import RecordingClient, align_config, instrument, make_client, write_calls_jsonl
 from validator.llm.base import LLMClient
 from validator.llm.calllog import LIVE_BACKENDS
+from validator.llm.pricing import usd_text
 from validator.llm.replay import ReplayLLM
 from validator.merge import merge
 from validator.models import (
@@ -132,6 +133,7 @@ class _State:
     client: RecordingClient | None = None
     backend_used: Backend | None = None
     replay: ReplaySource | None = None
+    replay_llm: ReplayLLM | None = None
     """Запись, из которой replay взял ответы: паспорт пишет «из записи N из M» (RC2)."""
     pdf_written: bool = False
     questions_path: Path | None = None
@@ -278,7 +280,7 @@ def _announce(state: _State, plan: PartPlan) -> None:
     diag = Diagnostic(
         code=LLM_BUDGET_ESTIMATE,
         level=DiagLevel.WARNING,
-        message=f"Оценка цены прогона ${usd:.2f} выше лимита --max-budget-usd ${budget:.2f}",
+        message=f"Оценка цены прогона {usd_text(usd)} выше лимита --max-budget-usd {usd_text(budget)}",
         action="Прогон идёт; при исчерпании лимита оставшиеся вызовы не делаются, отчёт будет неполным",
         hint="Увеличьте --max-budget-usd или возьмите профиль quick (один проход поиска)",
         step="parts",
@@ -387,6 +389,7 @@ def _execute(state: _State) -> None:
     llm = instrument(cfg, client)
     state.client, state.backend_used = llm, client.backend
     state.replay = client.source() if isinstance(client, ReplayLLM) else None
+    state.replay_llm = client if isinstance(client, ReplayLLM) else None
     _announce(state, plan)
     seg = _step(
         state,
@@ -577,7 +580,7 @@ def _context(
         calls=calls,
         exit_code=code,
         checklists=[u.id for u in state.checklists if u.used],
-        replay=state.replay,
+        replay=state.replay_llm.source() if state.replay_llm is not None else state.replay,
     )
     return RunContext(
         cfg=cfg,

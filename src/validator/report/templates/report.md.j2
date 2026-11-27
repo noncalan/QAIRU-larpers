@@ -148,29 +148,17 @@
 
 | Параметр | Значение |
 |---|---|
-| Документ | {{ passport_document | cell }} |
-| SHA-256 документа | {{ p.document_sha256 or "—" }} |
-| Дата прогона | {{ p.started_at | when }} |
-| Длительность | {{ p.duration_s if p.duration_s is not none else "—" }} с |
-| Версия агента | {{ passport_version | cell }} |
-| Хеш промптов | {{ p.prompts_sha256[:12] }} |
-| Способ вызова модели | {{ passport_backend | cell }} |
-{% if passport_replay %}
-| Запись ответов модели | {{ passport_replay | cell }} |
-{% endif %}
-| Модели по шагам | {{ passport_models | cell }} |
-| Фактические модели | {{ p.models_actual | join(", ") if p.models_actual else "—" }} |
-| Профиль | {{ p.profile.value }}, проходов поиска: {{ p.passes }}{% if p.search_input.value == "raw" %}, поиск по тексту без ID блоков{% endif %} |
-| Доменные чек-листы | {{ checklists_passport | cell }} |
-| Вызовов модели | {{ p.calls_total }} (с ошибкой: {{ p.calls_failed }}) |
-| Токены | {{ tokens_text(p.tokens) }} |
-| Цена по тарифу API | {{ p.cost_usd | money }} |
-| Окружение | {{ p.os | cell }}, Python {{ p.python }} |
-| Код завершения | {{ p.exit_code.value }}: {{ p.exit_code.meaning }} |
-| Состояние проверки | {{ r.status | status_label }} |
-{% if r.selfcheck %}
-| Самопроверка отчёта | {{ r.selfcheck.summary | cell }} |
-{% endif %}
+{% for name, value in passport_main %}
+| {{ name }} | {{ value | cell }} |
+{% endfor %}
+
+### {{ passport_tech_title }}
+
+| Параметр | Значение |
+|---|---|
+{% for name, value in passport_tech %}
+| {{ name }} | {{ value | cell }} |
+{% endfor %}
 
 ## 2. Диагностика входа
 
@@ -178,7 +166,7 @@
 {% set d = r.document %}
 | Параметр | Значение |
 |---|---|
-| Файл | {{ d.name | cell }} ({{ d.size_bytes if d.size_bytes is not none else "размер неизвестен" }} байт, SHA-256: {{ d.sha256 or "—" }}) |
+| Файл | {{ d.name | cell }} ({{ d.size_bytes | digits if d.size_bytes is not none else "размер неизвестен" }} байт, SHA-256: {{ d.sha256 or "—" }}) |
 | Тип по содержимому | {{ d.kind.value }} |
 {% if d.pages %}
 | Страниц | {{ d.pages }} |
@@ -186,7 +174,7 @@
 {% if d.extraction %}
 | Способ извлечения текста | {{ d.extraction | cell }} |
 {% endif %}
-| Символов извлечено, блоков | {{ d.chars }}, {{ d.blocks }} |
+| Символов извлечено, блоков | {{ d.chars | digits }}, {{ d.blocks }} |
 | Статус входа | {{ input_status }} |
 
 {% endif %}
@@ -470,6 +458,9 @@
 {% if c.ask_first %}
 - **Спросить автора в первую очередь:** {{ c.ask_first | join(", ") }}.
 {% endif %}
+{% if withdrawn_line %}
+- {{ withdrawn_line }}
+{% endif %}
 
 {% if v and v.traffic_rule %}
 Правило светофора: {{ v.traffic_rule }}
@@ -488,7 +479,7 @@
 | Отброшено верификатором | {{ r.metrics.discarded_total }} |
 | Вызовов модели | {{ calls_text(r.metrics) }} |
 | Токены | {{ tokens_text(r.metrics.tokens) }} |
-| Время прогона | {{ r.metrics.duration_s if r.metrics.duration_s is not none else "—" }} с |
+| Время прогона | {{ passport_duration | cell }} |
 | Цена по тарифу API | {{ r.metrics.cost_usd | money }} |
 {% for name, value in evidence_rows %}
 | {{ name }} | {{ value | cell }} |
@@ -510,7 +501,7 @@
 | Шаг | Модель | Вызовов | С ошибкой | {{ reuse_header(m.steps) }} | Время, с | Токены: вход / выход | Цена по тарифу API |
 |---|---|---|---|---|---|---|---|
 {% for st in m.steps %}
-| {{ step_label(st.step) }} | {{ p.models.get(st.step, "—") | cell }} | {{ st.calls }} | {{ st.failed }} | {{ reuse_cell(st, m.steps) }} | {{ st.duration_s }} | {{ tokens_in(st.tokens) }} / {{ st.tokens.output_tokens }} | {{ st.cost_usd | money }} |
+| {{ step_label(st.step) }} | {{ p.models.get(st.step, "—") | cell }} | {{ st.calls }} | {{ st.failed }} | {{ reuse_cell(st, m.steps) }} | {{ st.duration_s | seconds }} | {{ tokens_in(st.tokens) | digits }} / {{ st.tokens.output_tokens | digits }} | {{ st.cost_usd | money }} |
 {% endfor %}
 {% endif %}
 

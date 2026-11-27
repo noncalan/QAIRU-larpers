@@ -73,6 +73,8 @@ class ReplayLLM:
         self._recorded: dict[str, dict[int, StepModel]] = {}
         self._logged: dict[str, set[int]] = {}
         self._spans: list[tuple[datetime, datetime]] = []
+        self._timing: dict[str, list[tuple[str, datetime, datetime]]] = {}
+        self._served: set[str] = set()
         self._backends: set[Backend] = set()
         self.by_position_calls: list[str] = []
         self._index()
@@ -130,6 +132,9 @@ class ReplayLLM:
         duration = record.get("duration_ms")
         end = start + timedelta(milliseconds=duration if isinstance(duration, int | float) else 0)
         self._spans.append((start, end))
+        key, step = record.get("key"), record.get("step")
+        if isinstance(key, str) and isinstance(step, str):
+            self._timing.setdefault(key, []).append((step, start, end))
         backend = record.get("backend")
         if backend in {b.value for b in Backend} and backend != Backend.REPLAY.value:
             self._backends.add(Backend(backend))
@@ -142,7 +147,23 @@ class ReplayLLM:
             recorded_from=min((s for s, _ in self._spans), default=None),
             recorded_to=max((e for _, e in self._spans), default=None),
             backends=sorted(self._backends, key=lambda b: b.value),
+            model_seconds=self._model_seconds(),
         )
+
+    def _model_seconds(self) -> float | None:
+        """Время модели при записи на взятых ответах: шаг от начала первого до конца последнего вызова.
+
+        Вызовы одного шага (пачки попытки теста) идут параллельно, поэтому шаг считается отрезком, а не
+        суммой вызовов: так же считают время модели в README отчёта на сдачу. ``None``, пока ответов не брали.
+        """
+        steps: dict[str, tuple[datetime, datetime]] = {}
+        for key in self._served:
+            for step, start, end in self._timing.get(key, []):
+                first, last = steps.get(step, (start, end))
+                steps[step] = (min(first, start), max(last, end))
+        if not steps:
+            return None
+        return round(sum((end - start).total_seconds() for start, end in steps.values()), 1)
 
     def calls_in_recording(self, step: LLMStep) -> int:
         """Сколько вызовов шага было в записанном прогоне, считая и упавшие (по наибольшему номеру)."""
@@ -186,6 +207,8 @@ class ReplayLLM:
                 )
             logger.warning("Replay %s: ответ взят по шагу и номеру, ключ запроса не совпал", req.call_id)
             self.by_position_calls.append(req.call_id)
+        else:
+            self._served.add(req.key)
         return parse_cli_payload(payload, req, self.backend)
 
     @property

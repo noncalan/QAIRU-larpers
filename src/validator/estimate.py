@@ -16,7 +16,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from validator.config import FULL_VIEW_MAX_TOKENS
-from validator.llm.pricing import Tokens, price
+from validator.llm.pricing import Tokens, price, usd_text
 from validator.models import LLMStep, RunConfig
 from validator.parts import PartPlan
 
@@ -131,9 +131,9 @@ def estimate_run(plan: PartPlan, cfg: RunConfig) -> RunEstimate:
 def describe_estimate(estimate: RunEstimate) -> str:
     """«около 26 вызовов модели, около $14 по тарифу API»."""
     usd = estimate.usd
-    cost = f", около ${usd:.0f} по тарифу API" if usd is not None and usd >= 1 else ""
+    cost = f", около {usd_text(usd, 0)} по тарифу API" if usd is not None and usd >= 1 else ""
     if usd is not None and usd < 1:
-        cost = f", около ${usd:.2f} по тарифу API"
+        cost = f", около {usd_text(usd)} по тарифу API"
     return f"около {estimate.calls} вызовов модели{cost}"
 
 

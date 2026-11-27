@@ -323,7 +323,7 @@ def test_budget_stops_calls_after_the_limit() -> None:
         client.call(request(3))
 
     assert err.value.code == "LLM-003"
-    assert "$1.00" in err.value.message
+    assert "$1,00" in err.value.message
     assert len(live.calls) == 2
     assert client.spent_usd() == pytest.approx(1.2)
     assert client.records[-1].status is CallStatus.ERROR

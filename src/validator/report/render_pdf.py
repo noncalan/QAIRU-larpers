@@ -25,7 +25,6 @@ from validator.models import (
     Diagnostic,
     DocumentPart,
     Finding,
-    Passport,
     Question,
     QuestionMetrics,
     QuestionOption,
@@ -33,7 +32,6 @@ from validator.models import (
     Report,
     Requirement,
     Scope,
-    SearchInput,
     SelfCheck,
 )
 from validator.report.clarify_view import CLARIFY_TITLE, CLOSED_NOTE, ClarifyView, clarify_view
@@ -50,11 +48,10 @@ from validator.report.coverage import (
     part_search_text,
 )
 from validator.report.first_page import FixItem
-from validator.report.fmt import money, pct, plain, quote_plain, status_label, when, where
+from validator.report.fmt import digits, money, pct, plain, quote_plain, seconds, when, where
 from validator.report.passport_view import (
-    backend_line,
+    TECH_TITLE,
     calls_text,
-    replay_line,
     reuse_cell,
     reuse_header,
     tokens_in,
@@ -337,43 +334,18 @@ def _first_page_clarify(view: ClarifyView | None) -> str:
 # ---------------------------------------------------------------- разделы
 
 
-def _search_input(p: Passport) -> str:
-    """Хвост строки «Профиль»: вход поиска виден, только если он не по умолчанию (как в Markdown)."""
-    return ", поиск по тексту без ID блоков" if p.search_input is SearchInput.RAW else ""
-
-
 def _passport_section(report: Report, ctx: dict[str, Any]) -> Json:
-    p = report.passport
-    rows = [
-        ("Документ", ctx["passport_document"]),
-        ("SHA-256 документа", p.document_sha256 or "—"),
-        ("Дата прогона", when(p.started_at)),
-        ("Длительность", f"{p.duration_s if p.duration_s is not None else '—'} с"),
-        ("Версия агента", ctx["passport_version"]),
-        ("Хеш промптов", p.prompts_sha256[:12]),
-        ("Способ вызова модели", backend_line(report)),
-        *([("Запись ответов модели", replay)] if (replay := replay_line(report)) else []),
-        ("Модели по шагам", ctx["passport_models"]),
-        ("Фактические модели", ", ".join(p.models_actual) or "—"),
-        ("Профиль", f"{p.profile.value}, проходов поиска: {p.passes}{_search_input(p)}"),
-        ("Доменные чек-листы", plain(ctx["checklists_passport"])),
-        ("Вызовов модели", f"{p.calls_total} (с ошибкой: {p.calls_failed})"),
-        ("Токены", tokens_text(p.tokens)),
-        ("Цена по тарифу API", money(p.cost_usd)),
-        ("Окружение", f"{p.os}, Python {p.python}"),
-        ("Код завершения", f"{p.exit_code.value}: {p.exit_code.meaning}"),
-        ("Состояние проверки", status_label(report.status)),
-    ]
-    if report.selfcheck is not None:
-        rows.append(("Самопроверка отчёта", plain(report.selfcheck.summary)))
-    return {"title": SECTION_TITLES["passport"], "blocks": [_kv(rows)]}
+    main = [(name, plain(value)) for name, value in ctx["passport_main"]]
+    tech = [(name, plain(value)) for name, value in ctx["passport_tech"]]
+    blocks: list[Json] = [_kv(main), {"t": "h2", "text": TECH_TITLE}, _kv(tech)]
+    return {"title": SECTION_TITLES["passport"], "blocks": blocks}
 
 
 def _input_section(report: Report, ctx: dict[str, Any]) -> Json:
     blocks: list[Json] = []
     d = report.document
     if d is not None:
-        size = d.size_bytes if d.size_bytes is not None else "размер неизвестен"
+        size = digits(d.size_bytes) if d.size_bytes is not None else "размер неизвестен"
         rows = [
             ("Файл", f"{d.name} ({size} байт, SHA-256: {d.sha256 or '—'})"),
             ("Тип по содержимому", d.kind.value),
@@ -382,7 +354,7 @@ def _input_section(report: Report, ctx: dict[str, Any]) -> Json:
             rows.append(("Страниц", str(d.pages)))
         if d.extraction:
             rows.append(("Способ извлечения текста", plain(d.extraction)))
-        rows.append(("Символов извлечено, блоков", f"{d.chars}, {d.blocks}"))
+        rows.append(("Символов извлечено, блоков", f"{digits(d.chars)}, {d.blocks}"))
         rows.append(("Статус входа", ctx["input_status"]))
         blocks.append(_kv(rows))
     if report.input_diagnostics:
@@ -726,6 +698,8 @@ def _conclusion_section(report: Report, ctx: dict[str, Any]) -> Json:
         )
     if c.ask_first:
         items.append(f"Спросить автора в первую очередь: {', '.join(c.ask_first)}.")
+    if ctx["withdrawn_line"]:
+        items.append(ctx["withdrawn_line"])
     rule = (
         f"Правило светофора: {plain(v.traffic_rule)}"
         if v is not None and v.traffic_rule
@@ -757,7 +731,7 @@ def _metrics_section(report: Report, ctx: dict[str, Any]) -> Json:
             calls_text(m),
         ),
         ("Токены", tokens_text(m.tokens)),
-        ("Время прогона", f"{m.duration_s if m.duration_s is not None else '—'} с"),
+        ("Время прогона", ctx["passport_duration"]),
         ("Цена по тарифу API", money(m.cost_usd)),
         *ctx["evidence_rows"],
     ]
@@ -790,8 +764,8 @@ def _step_blocks(report: Report) -> list[Json]:
             str(st.calls),
             str(st.failed),
             reuse_cell(st, m.steps),
-            str(st.duration_s),
-            f"{tokens_in(st.tokens)} / {st.tokens.output_tokens}",
+            seconds(st.duration_s),
+            f"{digits(tokens_in(st.tokens))} / {digits(st.tokens.output_tokens)}",
             money(st.cost_usd),
         ]
         for st in m.steps

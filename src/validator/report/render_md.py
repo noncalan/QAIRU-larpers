@@ -64,16 +64,14 @@ from validator.report.first_page import (
 )
 from validator.report.fmt import FILTERS, ChecklistItems, found_text, plain, where
 from validator.report.passport_view import (
-    backend_line,
+    TECH_TITLE,
     calls_text,
-    document_line,
-    models_line,
-    replay_line,
+    duration_line,
+    passport_rows,
     reuse_cell,
     reuse_header,
     tokens_in,
     tokens_text,
-    version_line,
 )
 from validator.report.run_metrics import step_label
 from validator.report.testdraft_view import draft_stats, draft_view, stats_line
@@ -441,11 +439,36 @@ PARTS_NOTE = (
 """Пояснение к таблице частей длинного документа (#38), общее для Markdown и PDF."""
 
 
+def withdrawn_line(report: Report) -> str | None:
+    """Почему в нумерации вопросов дыра (#170): снятые самопроверкой номера не переиспользуются.
+
+    Строка нужна только для дыры, то есть для снятого номера меньше последнего оставшегося: снятый
+    последний номер в нумерации не виден. ``None``, если дыр нет.
+    """
+    last = max((_question_number(q.id) for q in report.questions), default=0)
+    ids = [w.question.id for w in report.questions_withdrawn if 0 < _question_number(w.question.id) < last]
+    if not ids:
+        return None
+    many = len(ids) > 1
+    return (
+        f"{'Номера' if many else 'Номер'} {', '.join(ids)} {'пропущены' if many else 'пропущен'}: "
+        f"{'эти вопросы сняла' if many else 'этот вопрос сняла'} самопроверка, ответ есть в документе "
+        "(раздел 6, «Снятые вопросы»)."
+    )
+
+
+def _question_number(qid: str) -> int:
+    """Номер вопроса из «Q-09»; 0 для номера в другом виде (такой в дыру не считаем)."""
+    tail = qid.rpartition("-")[2]
+    return int(tail) if tail.isdigit() else 0
+
+
 def report_context(report: Report) -> dict[str, Any]:
     """Всё, что нужно шаблонам отчёта: готовые списки, связи и подписи. Общий источник для MD и PDF."""
     ver = report.verification
     findings: list[Finding] = list(ver.findings) if ver else []
     requirements: list[Requirement] = list(report.segmentation.requirements) if report.segmentation else []
+    passport_main, passport_tech = passport_rows(report, checklists_passport(report))
     blocking = {
         priority: [q.id for q in report.questions if q.priority is priority]
         for priority in (QuestionPriority.P0, QuestionPriority.P1)
@@ -505,11 +528,11 @@ def report_context(report: Report) -> dict[str, Any]:
         "next_steps": next_steps(report),
         "found": found,
         "segmentation_note": SEGMENTATION_NOTE,
-        "passport_document": document_line(report),
-        "passport_version": version_line(report),
-        "passport_backend": backend_line(report),
-        "passport_replay": replay_line(report),
-        "passport_models": models_line(report),
+        "passport_main": passport_main,
+        "passport_tech": passport_tech,
+        "passport_tech_title": TECH_TITLE,
+        "passport_duration": duration_line(report),
+        "withdrawn_line": withdrawn_line(report),
         "tokens_text": tokens_text,
         "calls_text": calls_text,
         "reuse_header": reuse_header,

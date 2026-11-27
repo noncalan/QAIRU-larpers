@@ -7,13 +7,13 @@
     "document_sha256": "827b313b968e08fe35310bff9dc37687099888e4c9d5bc364e3403f4b2cc66db",
     "document_size_bytes": 205814,
     "document_pages": 8,
-    "started_at": "2026-11-27T00:10:32.164393Z",
-    "finished_at": "2026-11-27T00:10:32.508371Z",
-    "duration_s": 0.34,
-    "agent_version": "916201c-dirty",
+    "started_at": "2026-11-27T00:47:59.574190Z",
+    "finished_at": "2026-11-27T00:47:59.940795Z",
+    "duration_s": 0.37,
+    "agent_version": "5aabd73-dirty",
     "agent_version_source": "git",
     "agent_dirty": true,
-    "agent_commit": "916201c",
+    "agent_commit": "5aabd73",
     "prompts_sha256": "7dd96b1cffa406769efc8daf0df90f974ab4ef58757a546a07948210acc7492d",
     "os": "Linux 6.18.44-fc-v880 (x86_64)",
     "python": "3.13.18",
@@ -56,7 +56,8 @@
       "recorded_to": "2026-11-26T17:29:35.358134Z",
       "backends": [
         "cli"
-      ]
+      ],
+      "model_seconds": 751.5
     },
     "tokens": {
       "input_tokens": 16,
@@ -12792,7 +12793,7 @@
     ]
   },
   "metrics": {
-    "duration_s": 0.34,
+    "duration_s": 0.37,
     "calls_total": 8,
     "calls_failed": 0,
     "calls_cached": 0,
