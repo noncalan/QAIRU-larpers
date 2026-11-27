@@ -148,22 +148,31 @@ class ReplayLLM:
             recorded_to=max((e for _, e in self._spans), default=None),
             backends=sorted(self._backends, key=lambda b: b.value),
             model_seconds=self._model_seconds(),
+            step_seconds={
+                step: round(sec, 1)
+                for step, sec in sorted(
+                    self._step_seconds().items(), key=lambda kv: _STEP_ORDER.get(kv[0], len(_STEP_ORDER))
+                )
+            },
         )
 
-    def _model_seconds(self) -> float | None:
-        """Время модели при записи на взятых ответах: шаг от начала первого до конца последнего вызова.
+    def _step_seconds(self) -> dict[str, float]:
+        """Время модели при записи по шагам на взятых ответах: от начала первого до конца последнего вызова.
 
         Вызовы одного шага (пачки попытки теста) идут параллельно, поэтому шаг считается отрезком, а не
-        суммой вызовов: так же считают время модели в README отчёта на сдачу. ``None``, пока ответов не брали.
+        суммой вызовов: так же считают время модели в README отчёта на сдачу.
         """
         steps: dict[str, tuple[datetime, datetime]] = {}
         for key in self._served:
             for step, start, end in self._timing.get(key, []):
                 first, last = steps.get(step, (start, end))
                 steps[step] = (min(first, start), max(last, end))
-        if not steps:
-            return None
-        return round(sum((end - start).total_seconds() for start, end in steps.values()), 1)
+        return {step: (end - start).total_seconds() for step, (start, end) in steps.items()}
+
+    def _model_seconds(self) -> float | None:
+        """Время модели при записи на взятых ответах: сумма по шагам. ``None``, пока ответов не брали."""
+        steps = self._step_seconds()
+        return round(sum(steps.values()), 1) if steps else None
 
     def calls_in_recording(self, step: LLMStep) -> int:
         """Сколько вызовов шага было в записанном прогоне, считая и упавшие (по наибольшему номеру)."""

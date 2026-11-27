@@ -49,12 +49,14 @@ from validator.report.coverage import (
     part_search_text,
 )
 from validator.report.first_page import FixItem
-from validator.report.fmt import digits, money, pct, plain, quote_plain, seconds, when, where
+from validator.report.fmt import digits, money, pct, plain, quote_plain, when, where
 from validator.report.passport_view import (
     TECH_TITLE,
     calls_text,
     reuse_cell,
     reuse_header,
+    time_cell,
+    time_header,
     tokens_in,
     tokens_text,
 )
@@ -745,7 +747,7 @@ def _metrics_section(report: Report, ctx: dict[str, Any]) -> Json:
             ("Вопросы: без ошибок формулировки", pct(qm.without_errors)),
             ("Вопросы: дубли с находками, повторы", f"{qm.obvious_fix}, {qm.duplicate_pairs}"),
             (
-                "Вопросы: адресаты",
+                "Вопросы: адресаты (у вопроса бывает несколько)",
                 ", ".join(f"{ctx['addressee_label'](a)} {n}" for a, n in qm.by_addressee.items()) or "—",
             ),
         ]
@@ -765,7 +767,7 @@ def _step_blocks(report: Report) -> list[Json]:
             str(st.calls),
             str(st.failed),
             reuse_cell(st, m.steps),
-            seconds(st.duration_s),
+            time_cell(st, m.steps, report.passport.replay),
             f"{digits(tokens_in(st.tokens))} / {digits(st.tokens.output_tokens)}",
             money(st.cost_usd),
         ]
@@ -778,7 +780,7 @@ def _step_blocks(report: Report) -> list[Json]:
             "Вызовов",
             "С ошибкой",
             reuse_header(m.steps),
-            "Время, с",
+            time_header(m.steps, report.passport.replay),
             "Токены: вход / выход",
             "Цена",
         ],
