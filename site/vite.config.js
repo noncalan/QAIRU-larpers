@@ -5,5 +5,7 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   base: "./",
   plugins: [react()],
+  // dev-туннель для показа: localhost.run и Cloudflare quick tunnel
+  server: { allowedHosts: [".lhr.life", ".localhost.run", ".trycloudflare.com"] },
   build: { outDir: "dist", assetsInlineLimit: 0 },
 });
