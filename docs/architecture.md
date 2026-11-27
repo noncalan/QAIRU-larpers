@@ -168,7 +168,7 @@ flowchart LR
 | `cli` | [`llm/claude_cli.py`](../src/validator/llm/claude_cli.py) | Подписка Claude, основной путь команды (D-008, D-009). Запуск из пустой временной папки без инструментов (`--tools ""`), без `CLAUDE.md` и эталона в контексте, `CLAUDE_EFFORT` и ключи убраны из окружения | Живые прогоны, записи в `tests/fixtures/e2e/` |
 | `api` | [`llm/anthropic_api.py`](../src/validator/llm/anthropic_api.py) | Жюри со своим ключом: `--backend api`. Те же промпты и схемы | Только тесты на записанных синтетических ответах (`tests/test_llm_api.py`): оплаченного ключа у команды нет |
 | `replay` | [`llm/replay.py`](../src/validator/llm/replay.py) | Пересборка отчёта без модели и без ключа: `--backend replay --replay out/run` | `tests/test_e2e_replay.py` на трёх форматах в `uv run pytest` |
-| `fake` | [`llm/fake.py`](../src/validator/llm/fake.py) | Smoke-тест и CI | `tests/test_smoke.py` |
+| `fake` | [`llm/fake.py`](../src/validator/llm/fake.py) | Smoke-тест и тесты | `tests/test_smoke.py` |
 
 `--backend auto` (по умолчанию, [`llm/factory.py`](../src/validator/llm/factory.py)): подписка, если `claude` установлен и вошёл в аккаунт; иначе API, если есть ключ; иначе replay из `--replay`. Если `claude` установлен, но `claude auth status` не видит входа, агент всё равно пробует подписку с пометкой в диагностике (статус видит не все способы входа), и сбой покажут сами вызовы. Отчёт с `LLM-001` и кодом 5 сразу, без вызовов, получается, когда нет ни команды `claude`, ни ключа, ни записи. Подписка раньше ключа, потому что она не списывает деньги.
 
