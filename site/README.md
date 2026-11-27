@@ -14,3 +14,4 @@ npm run build    # статика в site/dist
 - `base: "./"`, поэтому сборка работает из любой подпапки, в том числе `/QAIRU-larpers/` на Pages.
 - Шрифты Onest и JetBrains Mono ставятся из npm (`@fontsource-variable`) и попадают в сборку: внешних CDN нет.
 - Публикация: `.github/workflows/pages.yml` при push в `main`. Один раз включить Settings → Pages → Source: GitHub Actions.
+- Vercel: https://qairu-validator.vercel.app. Обновить: `npx vercel@latest build --prod --yes && npx vercel@latest deploy --prebuilt --prod --yes` из `site/` (сборка локальная, потому что медиа берутся из корня репозитория).
