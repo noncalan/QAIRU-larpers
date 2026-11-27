@@ -3,6 +3,17 @@ import {
   REPO, gh, tree, media, SECTIONS, HERO_CMD, HERO_TERMINAL, PROBLEM, AGENT, STEPS, WHO,
   NUMBERS, COMPARE, LIMITS, FIRST_PAGE, REPORT_LINKS, DEMO_CHAPTERS, PATHS, ALSO, OUT_TREE,
 } from "./content.js";
+import Intro from "./Intro.jsx";
+import { LOGO_N, logoSvgRects } from "./logo.js";
+
+const LOGO_RECTS = logoSvgRects();
+function Logo({ size = 24 }) {
+  return (
+    <svg className="logo" width={size} height={size} viewBox={`-0.5 -0.5 ${LOGO_N + 1} ${LOGO_N + 1}`} aria-hidden="true" shapeRendering="crispEdges">
+      {LOGO_RECTS.map((r, i) => <rect key={i} x={r.x} y={r.y} width={r.s} height={r.s} fill={r.fill} />)}
+    </svg>
+  );
+}
 
 const reduced = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -98,9 +109,7 @@ function TopNav() {
   return (
     <header className="topnav">
       <a className="brand" href="#top" aria-label="QAIRU validator, в начало">
-        <span className="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-        </span>
+        <Logo size={26} />
         QAIRU
       </a>
       <nav aria-label="Разделы">
@@ -666,7 +675,7 @@ function Footer() {
     <footer>
       <div className="wrap foot">
         <div>
-          <span className="brand"><span className="brand-mark" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg></span>QAIRU validator</span>
+          <span className="brand"><Logo size={24} />QAIRU validator</span>
           <p>Модель предлагает, код проверяет, человек решает.</p>
         </div>
         <nav aria-label="Документы">
@@ -708,6 +717,7 @@ export default function App() {
 
   return (
     <>
+      <Intro />
       <a className="skip" href="#problem">К содержанию</a>
       <TopNav />
       <main>
