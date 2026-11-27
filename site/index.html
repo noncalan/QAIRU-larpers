@@ -377,7 +377,7 @@ footer .wrap { display: flex; gap: 1rem 2rem; flex-wrap: wrap; justify-content: 
       <p><b>Точность находок ниже, чем у одного промпта.</b> Спорные и ложные находки сидят среди незначительных. Выигрыш агента в доверии к цитатам, а не в числе найденного.</p>
       <p><b>На чужих документах шума больше.</b> На длинном формальном ТЗ на 18 страниц хотя бы один разметчик назвал ложными 38 из 127 находок. Ложных критичных не было.</p>
       <p><b>Длинные документы дороги.</b> 18 страниц стоили $5,49 и 15 минут. Расходы ограничивает флаг --max-budget-usd.</p>
-      <p><b>Путь через API вживую не запускали:</b> оплаченного ключа нет, он проверен тестами на записанных ответах.</p>
+      <p><b>Путь через API прогнан вживую один раз:</b> 27.11, $2,40, тот же итог, что в отчёте на сдачу. Разброс и цену на нём отдельно не мерили.</p>
     </div>
     <p class="src" style="margin-top:1rem">Полный список: <a href="../README.md#ограничения">README, «Ограничения»</a>.</p>
   </div>
@@ -429,8 +429,8 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
       <div class="stage"><span class="badge">2</span><div>
         <div><h3>Скачайте агента</h3></div>
         <div class="term"><div class="panel">
-          <div class="block"><pre id="b-clone">git clone https://github.com/noncalan/QAIRU-larpers-.git
-cd QAIRU-larpers-
+          <div class="block"><pre id="b-clone">git clone https://github.com/noncalan/QAIRU-larpers.git
+cd QAIRU-larpers
 uv sync</pre><button class="copy" type="button" data-copy="b-clone">Копировать</button></div>
         </div></div>
       </div></div>
@@ -455,7 +455,7 @@ uv sync</pre><button class="copy" type="button" data-copy="b-clone">Копиро
 uv run validator data/input/requirements.pdf out/report.pdf</pre><button class="copy" type="button" data-copy="b-sub">Копировать</button></div>
           </div>
           <div class="panel" role="tabpanel" id="p-api" aria-labelledby="t-api" hidden>
-            <p><b>Около $3 за прогон.</b> Ключ читается только из окружения или .env (он в .gitignore) и никуда не печатается. Флаг --max-budget-usd 5 остановит новые вызовы, когда потрачено $5.</p>
+            <p><b>$2,40–3,15 за прогон документа кейса.</b> Ключ читается только из окружения или .env (он в .gitignore) и никуда не печатается. Флаг --max-budget-usd 5 остановит новые вызовы, когда потрачено $5.</p>
             <div class="block"><pre id="b-api">cp .env.example .env        <span class="c"># Windows: copy .env.example .env, затем впишите ANTHROPIC_API_KEY=</span>
 uv run validator data/input/requirements.pdf out/report.pdf --backend api</pre><button class="copy" type="button" data-copy="b-api">Копировать</button></div>
           </div>
