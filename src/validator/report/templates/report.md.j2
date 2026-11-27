@@ -486,7 +486,7 @@
 | Находок после слияния | {{ r.metrics.merged_total }} |
 | Находок после верификатора | {{ r.metrics.findings_total }} |
 | Отброшено верификатором | {{ r.metrics.discarded_total }} |
-| Вызовов модели | {{ r.metrics.calls_total }} (с ошибкой {{ r.metrics.calls_failed }}, из кеша {{ r.metrics.calls_cached }}) |
+| Вызовов модели | {{ calls_text(r.metrics) }} |
 | Токены | {{ tokens_text(r.metrics.tokens) }} |
 | Время прогона | {{ r.metrics.duration_s if r.metrics.duration_s is not none else "—" }} с |
 | Цена по тарифу API | {{ r.metrics.cost_usd | money }} |
@@ -507,10 +507,10 @@
 
 ### Вызовы модели по шагам
 
-| Шаг | Модель | Вызовов | С ошибкой | Из кеша | Время, с | Токены: вход / выход | Цена по тарифу API |
+| Шаг | Модель | Вызовов | С ошибкой | {{ reuse_header(m.steps) }} | Время, с | Токены: вход / выход | Цена по тарифу API |
 |---|---|---|---|---|---|---|---|
 {% for st in m.steps %}
-| {{ step_label(st.step) }} | {{ p.models.get(st.step, "—") | cell }} | {{ st.calls }} | {{ st.failed }} | {{ st.cached + st.replayed }} | {{ st.duration_s }} | {{ tokens_in(st.tokens) }} / {{ st.tokens.output_tokens }} | {{ st.cost_usd | money }} |
+| {{ step_label(st.step) }} | {{ p.models.get(st.step, "—") | cell }} | {{ st.calls }} | {{ st.failed }} | {{ reuse_cell(st, m.steps) }} | {{ st.duration_s }} | {{ tokens_in(st.tokens) }} / {{ st.tokens.output_tokens }} | {{ st.cost_usd | money }} |
 {% endfor %}
 {% endif %}
 

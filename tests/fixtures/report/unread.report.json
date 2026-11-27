@@ -72,6 +72,7 @@
     "calls_total": 0,
     "calls_failed": 0,
     "calls_cached": 0,
+    "calls_replayed": 0,
     "tokens": {
       "input_tokens": 0,
       "output_tokens": 0,

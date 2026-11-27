@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from validator.models import Report, TokenUsage
+from validator.models import Report, RunMetrics, StepMetrics, TokenUsage
 from validator.report.run_metrics import step_label
 
 _VERSION_SOURCES = {"AGENT_VERSION": " (из переменной AGENT_VERSION)"}
@@ -27,6 +27,40 @@ def tokens_text(t: TokenUsage) -> str:
         head += f" (из них через кеш {cached}: записано {t.cache_creation_input_tokens}, "
         head += f"прочитано {t.cache_read_input_tokens})"
     return f"{head}, на выходе {t.output_tokens}"
+
+
+def calls_text(m: RunMetrics) -> str:
+    """Строка «Вызовов модели» в метриках: ответ из записи (replay) не называем кешем (#170).
+
+    «Из кеша» значит, что ответ уже лежал в кеше этого же бэкенда; «из записи» значит, что отчёт
+    пересобран по ``run/`` прошлого живого прогона. Это разные вещи, и таблица шагов ниже называет их
+    так же (:func:`reuse_header`).
+    """
+    parts = [f"с ошибкой {m.calls_failed}"]
+    if m.calls_cached or not m.calls_replayed:
+        parts.append(f"из кеша {m.calls_cached}")
+    if m.calls_replayed:
+        parts.append(f"из записи {m.calls_replayed}")
+    return f"{m.calls_total} ({', '.join(parts)})"
+
+
+def reuse_header(steps: list[StepMetrics]) -> str:
+    """Заголовок колонки готовых ответов в таблице шагов: те же слова, что в :func:`calls_text`."""
+    cached = any(st.cached for st in steps)
+    replayed = any(st.replayed for st in steps)
+    if replayed and cached:
+        return "Из кеша / из записи"
+    return "Из записи" if replayed else "Из кеша"
+
+
+def reuse_cell(st: StepMetrics, steps: list[StepMetrics]) -> str:
+    """Ячейка колонки :func:`reuse_header` для одного шага."""
+    header = reuse_header(steps)
+    if header == "Из записи":
+        return str(st.replayed)
+    if header == "Из кеша":
+        return str(st.cached)
+    return f"{st.cached} / {st.replayed}"
 
 
 def document_line(report: Report) -> str:
