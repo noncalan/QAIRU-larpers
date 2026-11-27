@@ -149,7 +149,7 @@ def test_passport_speaks_plainly() -> None:
     assert "| Версия агента | v1.0, коммит abc1234 |" in passport_md
     assert "| Модели по шагам | Поиск дефектов (проходы): claude-opus-5-5 · medium |" in passport_md
     assert "Критик" not in passport_md  # шаг не вызывался в этом прогоне
-    assert "на входе 1000 (из них через кеш 984" in passport_md
+    assert "на входе 1 000 (из них через кеш 984" in passport_md
     assert "| Документ | «Бронирование переговорных», файл " in passport_md
 
 

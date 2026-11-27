@@ -28,7 +28,7 @@ from typing import Any
 from validator.errors import LLM_ALL_CACHED, LLM_BUDGET, LLMError
 from validator.llm.base import LLMClient, parse_cli_payload, to_payload
 from validator.llm.cache import ResponseCache, make_envelope, write_json_atomic
-from validator.llm.pricing import response_cost
+from validator.llm.pricing import response_cost, usd_text
 from validator.models import (
     Backend,
     CallRecord,
@@ -214,7 +214,7 @@ class RecordingClient:
         spent = self.spent_usd()
         if spent >= self.max_budget_usd:
             raise LLMError(
-                f"Лимит цены прогона ${self.max_budget_usd:.2f} исчерпан: потрачено ${spent:.2f} "
+                f"Лимит цены прогона {usd_text(self.max_budget_usd)} исчерпан: потрачено {usd_text(spent)} "
                 "по тарифу API, вызов не сделан",
                 code=LLM_BUDGET,
                 hint="Увеличьте --max-budget-usd, возьмите профиль quick или пересоберите из кеша",

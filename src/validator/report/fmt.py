@@ -7,6 +7,7 @@ from collections.abc import Mapping, Sequence
 from datetime import datetime
 
 from validator.ingest.blocks import is_empty_cell_quote
+from validator.llm.pricing import usd_text
 from validator.models import Anchor, Extraction, Finding, FindingSource, Quote, ReportStatus, SourceKind
 
 _SPACES = re.compile(r"\s+")
@@ -98,7 +99,19 @@ def pct(value: float | None) -> str:
 
 
 def money(value: float | None) -> str:
-    return "—" if value is None else f"${value:.2f}"
+    return "—" if value is None else usd_text(value)
+
+
+def seconds(value: float | None) -> str:
+    """Секунды по-русски, с десятичной запятой: «0,4», «33,1»."""
+    if value is None:
+        return "—"
+    return f"{value:.2f}".rstrip("0").rstrip(".").replace(".", ",")
+
+
+def digits(value: int | None) -> str:
+    """Целое с пробелами между разрядами: «205 814»."""
+    return "—" if value is None else f"{value:,}".replace(",", " ")
 
 
 def when(value: datetime | None) -> str:
@@ -112,6 +125,8 @@ FILTERS = {
     "quote_text": quote_text,
     "pct": pct,
     "money": money,
+    "seconds": seconds,
+    "digits": digits,
     "when": when,
     "status_label": status_label,
 }

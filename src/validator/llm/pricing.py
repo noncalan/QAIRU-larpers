@@ -80,6 +80,11 @@ class Tokens:
         return self.input + self.cache_read + self.cache_write_5m + self.cache_write_1h
 
 
+def usd_text(value: float, digits: int = 2) -> str:
+    """Цена для человека по-русски: «$2,75», десятичная запятая (отчёт и диагностика на русском)."""
+    return f"${value:.{digits}f}".replace(".", ",")
+
+
 def tariff_for(model: str | None) -> Tariff | None:
     """Тариф по полному имени модели; суффикс вида ``[1m]`` или дата снапшота не мешают."""
     if not model:
@@ -163,4 +168,4 @@ def response_cost(resp: LLMResponse) -> float | None:
     return price(resp.model, _tokens_from_usage(resp.usage, raw.get("usage")))
 
 
-__all__ = ["PRICING_DATE", "TARIFFS", "Tariff", "Tokens", "price", "response_cost", "tariff_for"]
+__all__ = ["PRICING_DATE", "TARIFFS", "Tariff", "Tokens", "price", "response_cost", "tariff_for", "usd_text"]

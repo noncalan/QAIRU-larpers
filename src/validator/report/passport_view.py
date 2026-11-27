@@ -8,7 +8,8 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from validator.models import Report, RunMetrics, StepMetrics, TokenUsage
+from validator.models import Report, RunMetrics, SearchInput, StepMetrics, TokenUsage
+from validator.report.fmt import digits, money, seconds, status_label, when
 from validator.report.run_metrics import step_label
 
 _VERSION_SOURCES = {"AGENT_VERSION": " (из переменной AGENT_VERSION)"}
@@ -22,11 +23,11 @@ def tokens_in(t: TokenUsage) -> int:
 
 def tokens_text(t: TokenUsage) -> str:
     cached = t.cache_creation_input_tokens + t.cache_read_input_tokens
-    head = f"на входе {tokens_in(t)}"
+    head = f"на входе {digits(tokens_in(t))}"
     if cached:
-        head += f" (из них через кеш {cached}: записано {t.cache_creation_input_tokens}, "
-        head += f"прочитано {t.cache_read_input_tokens})"
-    return f"{head}, на выходе {t.output_tokens}"
+        head += f" (из них через кеш {digits(cached)}: записано {digits(t.cache_creation_input_tokens)}, "
+        head += f"прочитано {digits(t.cache_read_input_tokens)})"
+    return f"{head}, на выходе {digits(t.output_tokens)}"
 
 
 def calls_text(m: RunMetrics) -> str:
@@ -68,7 +69,7 @@ def document_line(report: Report) -> str:
     p = report.passport
     meta = [p.document_kind.value]
     if p.document_size_bytes:
-        meta.append(f"{p.document_size_bytes} байт")
+        meta.append(f"{digits(p.document_size_bytes)} байт")
     if p.document_pages:
         meta.append(f"{p.document_pages} стр.")
     file = f"{p.document_name} ({', '.join(meta)})"
@@ -113,6 +114,68 @@ def backend_line(report: Report) -> str:
     return line
 
 
+def duration_line(report: Report) -> str:
+    """Длительность прогона. При replay ещё и сколько работала модель при записи (#170).
+
+    Пересборка по записи идёт доли секунды, и «Длительность 0,4 с» без пояснения читается как прогон агента
+    за 0,4 с. Время модели при записи берётся из ``calls.jsonl`` записи (:class:`ReplaySource`).
+    """
+    p = report.passport
+    line = f"{seconds(p.duration_s)} с"
+    r = p.replay
+    if r is not None and p.calls_replayed:
+        line += " (пересборка по записи"
+        if r.model_seconds is not None:
+            line += f"; при записи модель работала {digits(round(r.model_seconds))} с"
+        line += ")"
+    return line
+
+
+PassportRow = tuple[str, str]
+
+
+def passport_rows(report: Report, checklists: str) -> tuple[list[PassportRow], list[PassportRow]]:
+    """Строки паспорта для MD и PDF: сверху то, что требует ТЗ п. 6, ниже технические детали (#170).
+
+    Сверху документ, дата, модель, версия агента, как вызывали модель, время, цена и итог прогона.
+    Хеш документа и промптов, effort по шагам, токены кеша и окружение нужны для воспроизведения, а не
+    для решения лида QA, поэтому стоят отдельной таблицей «Технические детали прогона».
+    """
+    p = report.passport
+    main: list[PassportRow] = [
+        ("Документ", document_line(report)),
+        ("Дата прогона", when(p.started_at)),
+        ("Модели", ", ".join(p.models_actual) or "модель не вызывалась"),
+        ("Версия агента", version_line(report)),
+        ("Способ вызова модели", backend_line(report)),
+    ]
+    if (replay := replay_line(report)) is not None:
+        main.append(("Запись ответов модели", replay))
+    main += [
+        ("Длительность", duration_line(report)),
+        ("Цена по тарифу API", money(p.cost_usd)),
+        ("Код завершения", f"{p.exit_code.value}: {p.exit_code.meaning}"),
+        ("Состояние проверки", status_label(report.status)),
+    ]
+    if report.selfcheck is not None:
+        main.append(("Самопроверка отчёта", report.selfcheck.summary))
+    raw = ", поиск по тексту без ID блоков" if p.search_input is SearchInput.RAW else ""
+    tech: list[PassportRow] = [
+        ("SHA-256 документа", p.document_sha256 or "—"),
+        ("Хеш промптов", p.prompts_sha256[:12]),
+        ("Модели по шагам", models_line(report)),
+        ("Профиль", f"{p.profile.value}, проходов поиска: {p.passes}{raw}"),
+        ("Доменные чек-листы", checklists),
+        ("Вызовов модели", f"{p.calls_total} (с ошибкой: {p.calls_failed})"),
+        ("Токены", tokens_text(p.tokens)),
+        ("Окружение", f"{p.os}, Python {p.python}"),
+    ]
+    return main, tech
+
+
+TECH_TITLE = "Технические детали прогона"
+
+
 def replay_line(report: Report) -> str | None:
     """Чья запись: папка, когда её писали (по ``calls.jsonl``) и чем вызывали модель. ``None`` без replay."""
     r = report.passport.replay
@@ -138,10 +201,16 @@ def _utc(value: datetime) -> datetime:
 
 
 __all__ = [
+    "TECH_TITLE",
     "backend_line",
+    "calls_text",
     "document_line",
+    "duration_line",
     "models_line",
+    "passport_rows",
     "replay_line",
+    "reuse_cell",
+    "reuse_header",
     "tokens_in",
     "tokens_text",
     "version_line",

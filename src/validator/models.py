@@ -1520,6 +1520,13 @@ class ReplaySource(Contract):
     recorded_from: datetime | None = Field(default=None, description="Начало первого вызова (calls.jsonl)")
     recorded_to: datetime | None = Field(default=None, description="Конец последнего вызова записи")
     backends: list[Backend] = Field(default_factory=list, description="Чем вызывали модель при записи")
+    model_seconds: float | None = Field(
+        default=None,
+        description=(
+            "Сколько работала модель при записи на ответах, которые взял этот прогон: сумма по шагам "
+            "от начала первого до конца последнего вызова шага (по calls.jsonl)"
+        ),
+    )
 
 
 class Passport(Contract):
